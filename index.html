@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Circa Impostor">
 <meta name="theme-color" content="#292929">
-<title>Circa Impostor V20</title>
+<title>Circa Impostor V21</title>
 <style>
 :root{
   --bg:#292929;
@@ -834,7 +834,7 @@ body.cat-alle #topCategory{
 .difficultyEyebrow{margin-top:9px!important;margin-bottom:7px!important}
 .difficultyControl{
   display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
+  grid-template-columns:repeat(4,minmax(0,1fr));
   gap:7px;
 }
 .difficultyButton{
@@ -874,6 +874,13 @@ body.cat-alle #topCategory{
   .difficultyButton{min-height:38px;padding:6px;font-size:11px}
   .difficultyHint{margin-top:3px;font-size:9px}
   .playerControlsRow{margin-top:12px!important}
+}
+
+
+@media(max-width:390px){
+  .difficultyControl{gap:5px}
+  .difficultyButton{padding:7px 4px;font-size:10.5px;gap:3px}
+  .difficultyIcon{font-size:11px}
 }
 
 </style>
@@ -927,6 +934,9 @@ body.cat-alle #topCategory{
     <button type="button" class="difficultyButton" data-difficulty="schwer">
       <span class="difficultyIcon">🔴</span><span>Schwer</span>
     </button>
+    <button type="button" class="difficultyButton" data-difficulty="zufaellig">
+      <span class="difficultyIcon">🎲</span><span>Zufällig</span>
+    </button>
   </div>
   <div id="difficultyHint" class="difficultyHint">Spürbarer Abstand zwischen den beiden Zielwerten</div>
 
@@ -941,7 +951,7 @@ body.cat-alle #topCategory{
   <div id="names"></div>
   <button id="start" type="button" class="full">Spiel starten</button>
   <div id="error" class="notice" aria-live="polite"></div>
-  <div class="count">320 Fragepaare · 3 Schwierigkeitslevel · vollständige Rotation</div><div class="savedHint">Spieler & Fragenfortschritt bleiben auf diesem Gerät gespeichert</div>
+  <div class="count">320 Fragepaare · 4 Schwierigkeitsmodi · vollständige Rotation</div><div class="savedHint">Spieler & Fragenfortschritt bleiben auf diesem Gerät gespeichert</div>
 </section>
 
 <section id="handoff" class="hidden gameScreen">
@@ -1066,8 +1076,9 @@ function difficultyRatio(item){
 function difficultyFits(item,difficulty){
   var ratio=difficultyRatio(item);
 
-  /* The bands intentionally overlap. That keeps every category varied
-     while the average numerical distance still rises clearly by level. */
+  /* "Zufällig" uses the full bank. The fixed bands intentionally overlap,
+     keeping each category varied while the average distance rises by level. */
+  if(difficulty==="zufaellig")return true;
   if(difficulty==="leicht")return ratio<=1.40;
   if(difficulty==="schwer")return ratio>=1.50;
   return ratio>=1.20&&ratio<=2.00; // mittel
@@ -1075,11 +1086,13 @@ function difficultyFits(item,difficulty){
 function difficultyName(difficulty){
   if(difficulty==="leicht")return "Leicht";
   if(difficulty==="schwer")return "Schwer";
+  if(difficulty==="zufaellig")return "Zufällig";
   return "Mittel";
 }
 function difficultyHintText(difficulty){
   if(difficulty==="leicht")return "Ähnliche Zielwerte – der Impostor kann sich leichter verstecken";
   if(difficulty==="schwer")return "Deutlich größerer Abstand – schwieriger für den Impostor";
+  if(difficulty==="zufaellig")return "Alles kann drankommen – von sehr nah bis deutlich auseinander";
   return "Spürbarer Abstand zwischen den beiden Zielwerten";
 }
 function deckKey(cat,difficulty){
@@ -1094,7 +1107,7 @@ function validIdsForDeck(cat,difficulty){
 }
 function loadSavedDifficulty(){
   var saved=storageGet(STORAGE_DIFFICULTY,"mittel");
-  if(saved!=="leicht"&&saved!=="mittel"&&saved!=="schwer")saved="mittel";
+  if(saved!=="leicht"&&saved!=="mittel"&&saved!=="schwer"&&saved!=="zufaellig")saved="mittel";
   selectedDifficulty=saved;
 }
 function syncDifficultyUI(){
@@ -1105,11 +1118,11 @@ function syncDifficultyUI(){
   byId("difficultyHint").textContent=difficultyHintText(selectedDifficulty);
 }
 function setDifficulty(difficulty){
-  if(difficulty!=="leicht"&&difficulty!=="mittel"&&difficulty!=="schwer")return;
+  if(difficulty!=="leicht"&&difficulty!=="mittel"&&difficulty!=="schwer"&&difficulty!=="zufaellig")return;
   selectedDifficulty=difficulty;
   storageSet(STORAGE_DIFFICULTY,selectedDifficulty);
   syncDifficultyUI();
-  tone(difficulty==="leicht"?390:(difficulty==="schwer"?520:450),0.045,0.012,"sine",0);
+  tone(difficulty==="leicht"?390:(difficulty==="schwer"?520:(difficulty==="zufaellig"?590:450)),0.045,0.012,"sine",0);
 }
 function loadDeckProgress(){
   var data=storageGet(STORAGE_DECK,null);
@@ -1126,7 +1139,7 @@ function loadDeckProgress(){
           var oldId=old[oldCat][oi];
           for(var ob=0;ob<bank.length;ob++){
             if(bank[ob].qid===oldId&&bank[ob].cat===oldCat){
-              var levels=["leicht","mittel","schwer"];
+              var levels=["leicht","mittel","schwer","zufaellig"];
               for(var ol=0;ol<levels.length;ol++){
                 if(difficultyFits(bank[ob],levels[ol])){
                   var ok=deckKey(oldCat,levels[ol]);
@@ -1146,7 +1159,7 @@ function loadDeckProgress(){
         for(var l=0;l<legacy.length;l++){
           for(var b=0;b<bank.length;b++){
             if(bank[b].qid===legacy[l]){
-              var lvls=["leicht","mittel","schwer"];
+              var lvls=["leicht","mittel","schwer","zufaellig"];
               for(var z=0;z<lvls.length;z++){
                 if(difficultyFits(bank[b],lvls[z])){
                   var key=deckKey(bank[b].cat,lvls[z]);
@@ -1165,7 +1178,7 @@ function loadDeckProgress(){
   deckProgress={};
   var cats={};
   for(var i=0;i<bank.length;i++)cats[bank[i].cat]=true;
-  var levels2=["leicht","mittel","schwer"];
+  var levels2=["leicht","mittel","schwer","zufaellig"];
   for(var cat in cats){
     for(var d=0;d<levels2.length;d++){
       var diff=levels2[d],key2=deckKey(cat,diff);
