@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Circa Impostor">
 <meta name="theme-color" content="#292929">
-<title>Circa Impostor V17</title>
+<title>Circa Impostor V18</title>
 <style>
 :root{
   --bg:#292929;
@@ -682,14 +682,23 @@ body.cat-pop{--ambientGlow:rgba(255,90,171,.14);--accent:#ff78ba;--accent-soft:r
   pointer-events:none;
   opacity:1;
 }
-.roundIntro.showIntro{animation:introOut 1.70s cubic-bezier(.22,.75,.22,1) both}
+.roundIntro.showIntro{
+  opacity:1;
+  transform:none;
+  animation:none;
+}
 .roundIntroIcon{font-size:52px;margin-bottom:10px}
 .roundIntroText{font-size:39px;font-weight:950;letter-spacing:-1px}
 .roundIntroCategory{margin-top:6px;color:var(--accent);font-size:17px;font-weight:900}
-@keyframes introOut{
-  0%{opacity:1;transform:scale(1.025)}
+.roundIntro.showIntro .roundIntroIcon,
+.roundIntro.showIntro .roundIntroText,
+.roundIntro.showIntro .roundIntroCategory{
+  animation:introContent 1.70s cubic-bezier(.22,.75,.22,1) both;
+}
+@keyframes introContent{
+  0%{opacity:0;transform:scale(1.035)}
   12%{opacity:1;transform:scale(1)}
-  82%{opacity:1;transform:scale(1)}
+  80%{opacity:1;transform:scale(1)}
   100%{opacity:0;transform:scale(.985)}
 }
 
@@ -1334,6 +1343,8 @@ function newRound(confirmFirst){
   void intro.offsetWidth;
   intro.classList.add("showIntro");
 
+  /* The handoff is prepared underneath, but the opaque intro background
+     prevents it from becoming visible before its own animation starts. */
   prepareHandoff();
   soundNextRound();
 
