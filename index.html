@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Circa Impostor">
 <meta name="theme-color" content="#292929">
-<title>Circa Impostor V16</title>
+<title>Circa Impostor V17</title>
 <style>
 :root{
   --bg:#292929;
@@ -687,7 +687,7 @@ body.cat-pop{--ambientGlow:rgba(255,90,171,.14);--accent:#ff78ba;--accent-soft:r
 .roundIntroText{font-size:39px;font-weight:950;letter-spacing:-1px}
 .roundIntroCategory{margin-top:6px;color:var(--accent);font-size:17px;font-weight:900}
 @keyframes introOut{
-  0%{opacity:0;transform:scale(1.035)}
+  0%{opacity:1;transform:scale(1.025)}
   12%{opacity:1;transform:scale(1)}
   82%{opacity:1;transform:scale(1)}
   100%{opacity:0;transform:scale(.985)}
@@ -1321,15 +1321,20 @@ function newRound(confirmFirst){
   byId("saveGuess").disabled=false;
 
   pickRound();
-  prepareHandoff();
 
   var intro=byId("roundIntro");
   byId("roundIntroText").textContent="Runde "+round;
   byId("roundIntroCategory").textContent=current.cat;
   byId("roundIntroIcon").textContent=categoryIcons[current.cat]||"✨";
+
+  /* Cover the screen first. Only then prepare the first player underneath.
+     This prevents the first player's handoff screen from flashing before
+     the round/category animation starts. */
   intro.classList.remove("hidden","showIntro");
   void intro.offsetWidth;
   intro.classList.add("showIntro");
+
+  prepareHandoff();
   soundNextRound();
 
   roundIntroTimer=setTimeout(function(){
