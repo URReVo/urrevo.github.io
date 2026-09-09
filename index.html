@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Circa Impostor">
 <meta name="theme-color" content="#292929">
-<title>Circa Impostor V19</title>
+<title>Circa Impostor V20</title>
 <style>
 :root{
   --bg:#292929;
@@ -829,6 +829,53 @@ body.cat-alle #topCategory{
 
 .savedHint{margin-top:4px;text-align:center;color:#777a82;font-size:10px;font-weight:700}
 
+
+/* V20 – compact impostor difficulty selector */
+.difficultyEyebrow{margin-top:9px!important;margin-bottom:7px!important}
+.difficultyControl{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:7px;
+}
+.difficultyButton{
+  min-height:42px;
+  padding:8px 8px;
+  border-radius:13px;
+  background:rgba(39,40,46,.88);
+  color:#d7d8dc;
+  border:1px solid rgba(255,255,255,.08);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  font-size:12px;
+  font-weight:900;
+  transition:transform .14s ease,border-color .14s ease,background .14s ease,box-shadow .14s ease;
+}
+.difficultyButton:active{transform:scale(.96)}
+.difficultyButton.selected{
+  color:#fff;
+  border-color:var(--accent);
+  background:rgba(243,154,50,.14);
+  box-shadow:0 0 0 1px rgba(243,154,50,.10) inset;
+}
+.difficultyIcon{font-size:12px;line-height:1}
+.difficultyHint{
+  min-height:16px;
+  margin:5px 2px 0;
+  color:#85878e;
+  text-align:center;
+  font-size:10px;
+  line-height:1.25;
+  font-weight:700;
+}
+@media(max-height:760px){
+  .difficultyEyebrow{margin-top:6px!important;margin-bottom:5px!important}
+  .difficultyButton{min-height:38px;padding:6px;font-size:11px}
+  .difficultyHint{margin-top:3px;font-size:9px}
+  .playerControlsRow{margin-top:12px!important}
+}
+
 </style>
 </head>
 <body>
@@ -869,6 +916,20 @@ body.cat-alle #topCategory{
   <div id="categoryDeck" class="categoryDeck" role="group" aria-label="Kategorie auswählen"></div>
   <select id="category" class="hidden" aria-hidden="true" tabindex="-1"></select>
 
+  <div class="sectionEyebrow difficultyEyebrow">IMPOSTOR-SCHWIERIGKEIT</div>
+  <div id="difficultyControl" class="difficultyControl" role="group" aria-label="Impostor-Schwierigkeit auswählen">
+    <button type="button" class="difficultyButton" data-difficulty="leicht">
+      <span class="difficultyIcon">🟢</span><span>Leicht</span>
+    </button>
+    <button type="button" class="difficultyButton selected" data-difficulty="mittel">
+      <span class="difficultyIcon">🟠</span><span>Mittel</span>
+    </button>
+    <button type="button" class="difficultyButton" data-difficulty="schwer">
+      <span class="difficultyIcon">🔴</span><span>Schwer</span>
+    </button>
+  </div>
+  <div id="difficultyHint" class="difficultyHint">Spürbarer Abstand zwischen den beiden Zielwerten</div>
+
   <div class="row between playerControlsRow">
     <label style="margin:0">Spieler</label>
     <div class="controls">
@@ -880,7 +941,7 @@ body.cat-alle #topCategory{
   <div id="names"></div>
   <button id="start" type="button" class="full">Spiel starten</button>
   <div id="error" class="notice" aria-live="polite"></div>
-  <div class="count">320 Fragepaare · geprüft · vollständige Rotation</div><div class="savedHint">Spieler & Fragenfortschritt bleiben auf diesem Gerät gespeichert</div>
+  <div class="count">320 Fragepaare · 3 Schwierigkeitslevel · vollständige Rotation</div><div class="savedHint">Spieler & Fragenfortschritt bleiben auf diesem Gerät gespeichert</div>
 </section>
 
 <section id="handoff" class="hidden gameScreen">
@@ -978,9 +1039,12 @@ var guessLocked=false,guessSaveTimer=null;
 
 var STORAGE_PLAYERS="circaImpostor.players.v1";
 var STORAGE_RECENT_LEGACY="circaImpostor.recentQuestions.v1";
-var STORAGE_DECK="circaImpostor.deckProgress.v2";
+var STORAGE_DECK_OLD="circaImpostor.deckProgress.v2";
+var STORAGE_DECK="circaImpostor.deckProgress.v3";
+var STORAGE_DIFFICULTY="circaImpostor.difficulty.v1";
 var deckProgress={};
 var savedPlayerNames=[];
+var selectedDifficulty="mittel";
 
 function storageGet(key,fallback){
   try{
@@ -993,26 +1057,105 @@ function storageGet(key,fallback){
 function storageSet(key,value){
   try{localStorage.setItem(key,JSON.stringify(value));}catch(e){}
 }
-function validIdsForCategory(cat){
+function difficultyRatio(item){
+  var a=Math.abs(Number(item.normalValue)),b=Math.abs(Number(item.impValue));
+  var low=Math.min(a,b),high=Math.max(a,b);
+  if(!isFinite(low)||!isFinite(high)||low<=0)return 999;
+  return high/low;
+}
+function difficultyFits(item,difficulty){
+  var ratio=difficultyRatio(item);
+
+  /* The bands intentionally overlap. That keeps every category varied
+     while the average numerical distance still rises clearly by level. */
+  if(difficulty==="leicht")return ratio<=1.40;
+  if(difficulty==="schwer")return ratio>=1.50;
+  return ratio>=1.20&&ratio<=2.00; // mittel
+}
+function difficultyName(difficulty){
+  if(difficulty==="leicht")return "Leicht";
+  if(difficulty==="schwer")return "Schwer";
+  return "Mittel";
+}
+function difficultyHintText(difficulty){
+  if(difficulty==="leicht")return "Ähnliche Zielwerte – der Impostor kann sich leichter verstecken";
+  if(difficulty==="schwer")return "Deutlich größerer Abstand – schwieriger für den Impostor";
+  return "Spürbarer Abstand zwischen den beiden Zielwerten";
+}
+function deckKey(cat,difficulty){
+  return cat+"::"+difficulty;
+}
+function validIdsForDeck(cat,difficulty){
   var ids=[];
-  for(var i=0;i<bank.length;i++)if(bank[i].cat===cat)ids.push(bank[i].qid);
+  for(var i=0;i<bank.length;i++){
+    if(bank[i].cat===cat&&difficultyFits(bank[i],difficulty))ids.push(bank[i].qid);
+  }
   return ids;
+}
+function loadSavedDifficulty(){
+  var saved=storageGet(STORAGE_DIFFICULTY,"mittel");
+  if(saved!=="leicht"&&saved!=="mittel"&&saved!=="schwer")saved="mittel";
+  selectedDifficulty=saved;
+}
+function syncDifficultyUI(){
+  var buttons=byId("difficultyControl").querySelectorAll(".difficultyButton");
+  for(var i=0;i<buttons.length;i++){
+    buttons[i].classList.toggle("selected",buttons[i].getAttribute("data-difficulty")===selectedDifficulty);
+  }
+  byId("difficultyHint").textContent=difficultyHintText(selectedDifficulty);
+}
+function setDifficulty(difficulty){
+  if(difficulty!=="leicht"&&difficulty!=="mittel"&&difficulty!=="schwer")return;
+  selectedDifficulty=difficulty;
+  storageSet(STORAGE_DIFFICULTY,selectedDifficulty);
+  syncDifficultyUI();
+  tone(difficulty==="leicht"?390:(difficulty==="schwer"?520:450),0.045,0.012,"sine",0);
 }
 function loadDeckProgress(){
   var data=storageGet(STORAGE_DECK,null);
   if(!data||typeof data!=="object"||Array.isArray(data))data={};
 
-  /* Migrate V15's recent history into the new full-deck progress once. */
+  /* Migrate V16–V19 category progress into all difficulty decks that the
+     already-played pair belongs to. This preserves the user's rotation. */
   if(Object.keys(data).length===0){
-    var legacy=storageGet(STORAGE_RECENT_LEGACY,[]);
-    if(Array.isArray(legacy)){
-      for(var l=0;l<legacy.length;l++){
-        for(var b=0;b<bank.length;b++){
-          if(bank[b].qid===legacy[l]){
-            var c=bank[b].cat;
-            if(!data[c])data[c]=[];
-            if(data[c].indexOf(legacy[l])===-1)data[c].push(legacy[l]);
-            break;
+    var old=storageGet(STORAGE_DECK_OLD,null);
+    if(old&&typeof old==="object"&&!Array.isArray(old)){
+      for(var oldCat in old){
+        if(!Array.isArray(old[oldCat]))continue;
+        for(var oi=0;oi<old[oldCat].length;oi++){
+          var oldId=old[oldCat][oi];
+          for(var ob=0;ob<bank.length;ob++){
+            if(bank[ob].qid===oldId&&bank[ob].cat===oldCat){
+              var levels=["leicht","mittel","schwer"];
+              for(var ol=0;ol<levels.length;ol++){
+                if(difficultyFits(bank[ob],levels[ol])){
+                  var ok=deckKey(oldCat,levels[ol]);
+                  if(!data[ok])data[ok]=[];
+                  if(data[ok].indexOf(oldId)===-1)data[ok].push(oldId);
+                }
+              }
+              break;
+            }
+          }
+        }
+      }
+    }else{
+      /* Older V15 recent-history migration fallback. */
+      var legacy=storageGet(STORAGE_RECENT_LEGACY,[]);
+      if(Array.isArray(legacy)){
+        for(var l=0;l<legacy.length;l++){
+          for(var b=0;b<bank.length;b++){
+            if(bank[b].qid===legacy[l]){
+              var lvls=["leicht","mittel","schwer"];
+              for(var z=0;z<lvls.length;z++){
+                if(difficultyFits(bank[b],lvls[z])){
+                  var key=deckKey(bank[b].cat,lvls[z]);
+                  if(!data[key])data[key]=[];
+                  if(data[key].indexOf(legacy[l])===-1)data[key].push(legacy[l]);
+                }
+              }
+              break;
+            }
           }
         }
       }
@@ -1022,17 +1165,25 @@ function loadDeckProgress(){
   deckProgress={};
   var cats={};
   for(var i=0;i<bank.length;i++)cats[bank[i].cat]=true;
+  var levels2=["leicht","mittel","schwer"];
   for(var cat in cats){
-    var valid=validIdsForCategory(cat),saved=Array.isArray(data[cat])?data[cat]:[],clean=[];
-    for(var j=0;j<saved.length;j++)if(valid.indexOf(saved[j])!==-1&&clean.indexOf(saved[j])===-1)clean.push(saved[j]);
-    deckProgress[cat]=clean;
+    for(var d=0;d<levels2.length;d++){
+      var diff=levels2[d],key2=deckKey(cat,diff);
+      var valid=validIdsForDeck(cat,diff);
+      var saved=Array.isArray(data[key2])?data[key2]:[],clean=[];
+      for(var j=0;j<saved.length;j++){
+        if(valid.indexOf(saved[j])!==-1&&clean.indexOf(saved[j])===-1)clean.push(saved[j]);
+      }
+      deckProgress[key2]=clean;
+    }
   }
   storageSet(STORAGE_DECK,deckProgress);
 }
 function rememberQuestion(item){
   if(!item||!item.qid)return;
-  if(!deckProgress[item.cat])deckProgress[item.cat]=[];
-  if(deckProgress[item.cat].indexOf(item.qid)===-1)deckProgress[item.cat].push(item.qid);
+  var key=deckKey(item.cat,selectedDifficulty);
+  if(!deckProgress[key])deckProgress[key]=[];
+  if(deckProgress[key].indexOf(item.qid)===-1)deckProgress[key].push(item.qid);
   storageSet(STORAGE_DECK,deckProgress);
 }
 function loadSavedPlayers(){
@@ -1295,28 +1446,44 @@ function pickRound(){
   for(var i=0;i<players.length;i++)players[i].guess=null;
 
   var allCats=[],seenCats={};
-  for(var j=0;j<bank.length;j++)if(!seenCats[bank[j].cat]){seenCats[bank[j].cat]=true;allCats.push(bank[j].cat);}
-  var cats=selectedCategories.indexOf("Alle")!==-1?allCats:selectedCategories.slice();
-  if(!cats.length)cats=allCats;
+  for(var j=0;j<bank.length;j++){
+    if(!seenCats[bank[j].cat]){seenCats[bank[j].cat]=true;allCats.push(bank[j].cat);}
+  }
+  var requestedCats=selectedCategories.indexOf("Alle")!==-1?allCats:selectedCategories.slice();
+  if(!requestedCats.length)requestedCats=allCats;
 
-  /* Categories are chosen first, so selected categories are equally likely
-     even if one category contains more questions than another. */
+  /* Keep category weighting fair, but only include categories that have
+     questions in the selected difficulty band. */
+  var cats=[];
+  for(var c=0;c<requestedCats.length;c++){
+    var hasMatch=false;
+    for(var q=0;q<bank.length;q++){
+      if(bank[q].cat===requestedCats[c]&&difficultyFits(bank[q],selectedDifficulty)){
+        hasMatch=true;break;
+      }
+    }
+    if(hasMatch)cats.push(requestedCats[c]);
+  }
+  if(!cats.length)cats=allCats.slice();
+
   var chosenCat=cats[Math.floor(Math.random()*cats.length)];
   var eligible=[];
-  for(var k=0;k<bank.length;k++)if(bank[k].cat===chosenCat)eligible.push(k);
+  for(var k=0;k<bank.length;k++){
+    if(bank[k].cat===chosenCat&&difficultyFits(bank[k],selectedDifficulty))eligible.push(k);
+  }
 
-  if(!deckProgress[chosenCat])deckProgress[chosenCat]=[];
+  var key=deckKey(chosenCat,selectedDifficulty);
+  if(!deckProgress[key])deckProgress[key]=[];
+
   var pool=[];
   for(var a=0;a<eligible.length;a++){
     var idx=eligible[a];
-    if(deckProgress[chosenCat].indexOf(bank[idx].qid)===-1)pool.push(idx);
+    if(deckProgress[key].indexOf(bank[idx].qid)===-1)pool.push(idx);
   }
 
-  /* Every question in a category must appear once before that category starts
-     a new cycle — this survives page reloads and returning to the start screen. */
+  /* Complete the current category+difficulty deck before repeating it. */
   if(pool.length===0){
-    deckProgress[chosenCat]=[];
-    for(var r=0;r<eligible.length;r++)delete used[eligible[r]];
+    deckProgress[key]=[];
     storageSet(STORAGE_DECK,deckProgress);
     pool=eligible.slice();
   }
@@ -1351,7 +1518,7 @@ function newRound(confirmFirst){
 
   var intro=byId("roundIntro");
   byId("roundIntroText").textContent="Runde "+round;
-  byId("roundIntroCategory").textContent=current.cat;
+  byId("roundIntroCategory").textContent=current.cat+" · "+difficultyName(selectedDifficulty);
   byId("roundIntroIcon").textContent=categoryIcons[current.cat]||"✨";
 
   /* Cover the screen first. Only then prepare the first player underneath.
@@ -1733,6 +1900,14 @@ byId("plus").addEventListener("click",function(){if(count<12){count++;if(!avatar
 byId("minus").addEventListener("click",function(){if(count>3){count--;avatarSelections=avatarSelections.slice(0,count);renderNames();savePlayers();}});
 byId("start").addEventListener("click",function(){ensureAudio();tone(300,0.05,0.012,"sine",0);start();});
 
+var difficultyButtons=byId("difficultyControl").querySelectorAll(".difficultyButton");
+for(var db=0;db<difficultyButtons.length;db++){
+  difficultyButtons[db].addEventListener("click",function(){
+    ensureAudio();
+    setDifficulty(this.getAttribute("data-difficulty"));
+  });
+}
+
 /* Game */
 byId("showQuestion").addEventListener("click",openQuestion);
 byId("saveGuess").addEventListener("click",saveGuess);
@@ -1778,7 +1953,7 @@ if(!window.PointerEvent){
   },{passive:false});
 }
 
-loadDeckProgress();loadSavedPlayers();initCategories();renderNames();updateToolbar();show("setup");
+loadSavedDifficulty();loadDeckProgress();loadSavedPlayers();initCategories();syncDifficultyUI();renderNames();updateToolbar();show("setup");
 })();
 </script>
 </body>
