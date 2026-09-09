@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Circa Impostor">
 <meta name="theme-color" content="#292929">
-<title>Circa Impostor V31</title>
+<title>Circa Impostor V32</title>
 <style>
 :root{
   --bg:#292929;
@@ -963,6 +963,20 @@ body.setup-fits:not(.game-active){
 #resultActions button{
   min-height:48px!important;
   height:48px!important;
+}
+
+
+/* V32 – a little more visual separation between question and estimate */
+#questionUnitBadge{
+  margin-bottom:7px!important;
+}
+#question .estimateCompact{
+  margin-top:1px!important;
+}
+@media(max-height:760px){
+  #questionUnitBadge{
+    margin-bottom:5px!important;
+  }
 }
 
 </style>
