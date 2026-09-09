@@ -2,73 +2,238 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Circa Impostor">
-<meta name="theme-color" content="#101216">
-<title>Circa Impostor V3</title>
+<meta name="theme-color" content="#292929">
+<title>Circa Impostor V4</title>
 <style>
-:root{--bg:#101216;--card:#1b1e25;--card2:#242833;--text:#f7f7fb;--muted:#a9afbb;--accent:#745cff;--border:#303540;--warn:#ffd98f}
+:root{
+  --bg:#292929;
+  --panel:#202124;
+  --card:#1c1d20;
+  --card2:#333438;
+  --text:#f8f8fa;
+  --muted:#a8a9ad;
+  --accent:#f39a32;
+  --accent-soft:rgba(243,154,50,.22);
+  --border:#45464b;
+  --white:#f8f8f8;
+  --black:#070707;
+}
 *{box-sizing:border-box}
-html{background:var(--bg)}
-body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
-.app{max-width:720px;margin:0 auto;padding:calc(14px + env(safe-area-inset-top)) 18px calc(34px + env(safe-area-inset-bottom))}
-.hidden{display:none!important} .center{text-align:center}
-.topbar{display:flex;gap:8px;justify-content:space-between;margin-bottom:14px;position:sticky;top:calc(6px + env(safe-area-inset-top));z-index:5;background:rgba(16,18,22,.94);padding:6px 0 8px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
-.topbar button{flex:1;min-height:44px}
-.hero{padding:24px 0 18px} .logo{font-size:56px;line-height:1;margin-bottom:12px}
-h1{font-size:35px;line-height:1.05;margin:0 0 8px} h2{font-size:28px;line-height:1.15;margin:0 0 8px}
-.sub{color:var(--muted);font-size:16px;line-height:1.45}
-label{display:block;font-weight:750;margin:18px 0 8px}
-input,select,button{font-family:inherit;font-size:16px}
-input,select{width:100%;background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:14px;padding:14px;min-height:50px;outline:none;-webkit-appearance:none;appearance:none}
-select{background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 18px) 21px,calc(100% - 13px) 21px;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:38px}
-input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(116,92,255,.18)}
-button{border:0;border-radius:14px;min-height:50px;padding:13px 16px;background:var(--accent);color:#fff;font-weight:800;cursor:pointer;touch-action:manipulation}
-button.secondary{background:var(--card2);border:1px solid var(--border)} button.ghost{background:transparent;border:1px solid var(--border)} button:disabled{opacity:.4}
-.full{width:100%} .row{display:flex;align-items:center;gap:10px;min-width:0} .between{justify-content:space-between} .controls{display:flex;gap:8px} .controls button{min-width:50px}
-.playerInput{margin-bottom:10px} .badge{display:inline-flex;padding:7px 10px;border-radius:999px;background:var(--card2);border:1px solid var(--border);color:var(--muted);font-size:13px;font-weight:750}
-.question{font-size:27px;line-height:1.28;font-weight:900;margin:20px 0 10px;overflow-wrap:anywhere}
-.bigName{font-size:34px;font-weight:900;margin:12px 0;overflow-wrap:anywhere}
-.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:16px;margin:12px 0}
-.answerRow{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:14px 0;border-bottom:1px solid var(--border)} .answerRow:last-child{border-bottom:0} .answerValue{font-size:19px;font-weight:900;text-align:right;white-space:nowrap}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px} .small{font-size:12px;color:var(--muted)} .count{text-align:center;color:var(--muted);font-size:13px;margin-top:14px} .notice{color:var(--warn);font-size:14px;min-height:20px;margin-top:8px}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
+body{min-height:100%}
+button,input,select{font:inherit}
+button{touch-action:manipulation}
+.hidden{display:none!important}
+.app{max-width:720px;margin:0 auto;padding:calc(12px + env(safe-area-inset-top)) 16px calc(20px + env(safe-area-inset-bottom))}
+body.game-active{overflow:hidden}
+body.game-active .app{
+  height:100dvh;
+  display:flex;
+  flex-direction:column;
+  padding:calc(7px + env(safe-area-inset-top)) 14px calc(8px + env(safe-area-inset-bottom));
+}
+.center{text-align:center}
+.sub{color:var(--muted);font-size:15px;line-height:1.4}
+h1,h2,p{margin-top:0}
+h1{font-size:34px;line-height:1.05;margin-bottom:8px}
+h2{font-size:26px;line-height:1.15;margin-bottom:8px}
+.hero{padding:22px 0 15px}
+.logo{font-size:52px;line-height:1;margin-bottom:10px}
 
-.estimateBox{text-align:center;margin:24px 0 18px}
-.estimateLabel{font-size:18px;font-weight:700;color:var(--muted);margin-bottom:4px}
-.estimateValue{font-size:68px;line-height:1;font-weight:900;letter-spacing:-2px;margin-top:8px}
-.estimateUnit{font-size:15px;color:var(--muted);min-height:22px;margin-top:6px}
-.rulerWrap{position:relative;margin:24px 0 4px;padding:18px 2px 0;overflow:hidden}
-.rulerTicks{height:88px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 4px;pointer-events:none}
-.rulerTick{width:2px;height:38px;background:rgba(247,247,251,.78);border-radius:2px}
-.rulerTick.major{height:66px;width:3px;background:rgba(247,247,251,.95)}
-.guessSlider{
-  position:absolute;left:0;right:0;bottom:18px;width:100%;height:72px;margin:0;
-  opacity:.01;z-index:3;cursor:pointer;touch-action:pan-x;
+/* Setup */
+label{display:block;font-weight:750;margin:16px 0 7px}
+input[type="text"],select{
+  width:100%;min-height:48px;padding:12px 14px;border-radius:14px;
+  border:1px solid var(--border);background:var(--card);color:var(--text);
+  font-size:16px;outline:none;-webkit-appearance:none;appearance:none
 }
-.sliderIndicator{
-  position:absolute;bottom:18px;left:50%;width:5px;height:72px;border-radius:4px;
-  background:#ff9d35;transform:translateX(-50%);pointer-events:none;z-index:2
+select{
+  background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+  background-position:calc(100% - 18px) 20px,calc(100% - 13px) 20px;
+  background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:38px
 }
-.rangeFill{
-  position:absolute;bottom:18px;left:2px;height:72px;background:rgba(255,157,53,.18);
-  border-right:3px solid #ff9d35;pointer-events:none;z-index:1
+input[type="text"]:focus,select:focus{border-color:var(--accent)}
+.playerInput{margin-bottom:9px}
+.row{display:flex;align-items:center;gap:9px;min-width:0}
+.between{justify-content:space-between}
+.controls{display:flex;gap:7px}
+button{
+  border:0;border-radius:14px;min-height:48px;padding:12px 15px;
+  background:var(--accent);color:#161616;font-weight:850;cursor:pointer
 }
-.rangeLabels{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin-top:2px}
-.fineControls{display:grid;grid-template-columns:54px 1fr 54px;align-items:center;gap:10px;margin-top:10px}
-.fineBtn{padding:8px;min-height:46px;font-size:24px}
-.fineHint{font-size:13px;color:var(--muted)}
+button.secondary{background:var(--card2);color:var(--text);border:1px solid var(--border)}
+button.ghost{background:transparent;color:var(--text);border:1px solid var(--border)}
+button:disabled{opacity:.4}
+.full{width:100%}
+.notice{color:#ffd48c;font-size:14px;min-height:20px;margin-top:7px}
+.count{text-align:center;color:var(--muted);font-size:12px;margin-top:10px}
 
-@media(max-width:430px){h1{font-size:31px}.question{font-size:24px}.grid2{grid-template-columns:1fr}}
+/* Compact in-game toolbar */
+.gameTopbar{
+  flex:0 0 42px;height:42px;
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  margin-bottom:5px;min-width:0
+}
+.toolbarLeft{display:flex;align-items:center;gap:6px;min-width:0}
+.toolbarBadge{
+  height:36px;display:flex;align-items:center;max-width:190px;
+  padding:0 11px;border-radius:12px;background:var(--card2);
+  border:1px solid var(--border);font-size:13px;font-weight:800;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#eee
+}
+.roundBadge{color:var(--muted);max-width:none}
+.toolbarActions{display:flex;gap:6px}
+.iconButton{
+  width:38px;height:38px;min-height:38px;padding:0;border-radius:12px;
+  display:grid;place-items:center;background:transparent;color:var(--text);
+  border:1px solid transparent
+}
+.iconButton:active{background:var(--card2)}
+.iconButton svg{width:22px;height:22px;display:block}
+
+/* Every game stage occupies only the remaining iPhone viewport. */
+.gameScreen:not(.hidden){flex:1 1 auto;min-height:0}
+#handoff:not(.hidden),#question:not(.hidden),#answers:not(.hidden),#result:not(.hidden){
+  display:flex;flex-direction:column
+}
+
+/* Handoff */
+#handoff{justify-content:center;text-align:center}
+.handoffInner{margin:auto 0}
+.handoffPhone{font-size:52px;line-height:1;margin-bottom:14px}
+.handoffName{font-size:27px;font-weight:900;margin:0 0 8px}
+.handoffButton{margin-top:auto}
+
+/* Question stage */
+.playerMeta{
+  display:flex;justify-content:space-between;align-items:center;
+  min-height:26px;gap:8px;color:var(--muted);font-size:13px;font-weight:750
+}
+.playerMeta strong{color:#fff;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.questionCard{
+  flex:1 1 auto;min-height:145px;max-height:280px;
+  margin:6px 0 7px;padding:18px 18px;border-radius:27px;
+  background:var(--white);color:var(--black);
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  overflow:hidden
+}
+.questionText{
+  width:100%;font-size:28px;line-height:1.18;font-weight:950;
+  letter-spacing:-.45px;overflow-wrap:anywhere
+}
+.questionText.longQ{font-size:24px;line-height:1.18}
+.questionText.veryLongQ{font-size:21px;line-height:1.17}
+.estimateCompact{text-align:center;flex:0 0 auto;padding:1px 0 0}
+.estimateLabel{font-size:14px;color:var(--muted);font-weight:700}
+.estimateLine{display:flex;align-items:baseline;justify-content:center;gap:7px;min-height:60px}
+.estimateValue{font-size:58px;line-height:1;font-weight:950;letter-spacing:-2px}
+.estimateValue.mediumValue{font-size:50px}
+.estimateValue.smallValue{font-size:42px}
+.estimateUnit{font-size:15px;color:#d0d0d3;font-weight:700;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Giant touch slider: the whole field is draggable, not just the line/thumb. */
+.scrubber{
+  flex:0 0 91px;position:relative;margin:2px 0 3px;
+  border-radius:18px;background:#232427;
+  border:1px solid #3b3c40;
+  touch-action:none;user-select:none;-webkit-user-select:none;
+  cursor:ew-resize;outline:none
+}
+.scrubber:focus-visible{box-shadow:0 0 0 2px var(--accent)}
+.sliderRail{
+  position:absolute;left:23px;right:23px;top:37px;height:14px;
+  border-radius:999px;background:#55565a
+}
+.sliderFill{
+  position:absolute;left:0;top:0;height:100%;width:0;
+  border-radius:999px;background:var(--accent)
+}
+.sliderThumb{
+  position:absolute;top:50%;left:0;width:46px;height:46px;
+  transform:translate(-50%,-50%);border-radius:50%;
+  background:var(--white);border:4px solid var(--accent);
+  box-shadow:0 2px 10px rgba(0,0,0,.35);
+  pointer-events:none
+}
+.sliderThumb:after{
+  content:"";position:absolute;inset:11px;border-radius:50%;background:var(--accent)
+}
+.rangeLabels{
+  position:absolute;left:22px;right:22px;bottom:7px;
+  display:flex;justify-content:space-between;color:var(--muted);
+  font-size:11px;font-weight:700;pointer-events:none
+}
+.dragHint{
+  position:absolute;left:0;right:0;top:7px;text-align:center;
+  color:#a9aaae;font-size:11px;font-weight:700;pointer-events:none
+}
+.srRange{
+  position:absolute;width:1px;height:1px;opacity:0;pointer-events:none
+}
+.confirmButton{flex:0 0 48px;min-height:48px;margin-top:3px}
+
+/* Answers: only the list can scroll if there are many players. */
+.stageHeader{flex:0 0 auto}
+.stageHeader h2{margin:2px 0 4px}
+.stageHeader p{margin-bottom:7px}
+.answerList{
+  flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  background:var(--card);border:1px solid var(--border);border-radius:16px;
+  padding:0 13px;margin:4px 0 8px
+}
+.answerRow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)}
+.answerRow:last-child{border-bottom:0}
+.answerValue{font-size:16px;font-weight:900;text-align:right;white-space:nowrap}
+.stageButton{flex:0 0 48px}
+
+/* Result is compact; text area can locally scroll on tiny displays. */
+.resultScroll{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.resultHero{text-align:center;padding:2px 0 4px}
+.resultHero .emoji{font-size:36px}
+.resultHero h2{font-size:20px;margin:2px 0 2px}
+.bigName{font-size:27px;font-weight:950;margin:3px 0 7px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:15px;padding:12px;margin:7px 0}
+.small{font-size:10px;color:var(--muted);font-weight:800;letter-spacing:.4px}
+.resultQuestion{font-weight:800;font-size:14px;line-height:1.3;margin-top:4px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:0 0 auto;margin-top:6px}
+.grid2 button{min-height:46px}
+
+/* Shorter iPhones / browser chrome visible */
+@media(max-height:760px){
+  .questionCard{min-height:125px;max-height:225px;padding:14px}
+  .questionText{font-size:24px}.questionText.longQ{font-size:21px}.questionText.veryLongQ{font-size:19px}
+  .estimateValue{font-size:50px}.estimateLine{min-height:52px}
+  .scrubber{flex-basis:82px}.sliderRail{top:33px}
+  .gameTopbar{height:38px;flex-basis:38px}.iconButton{width:35px;height:35px;min-height:35px}.toolbarBadge{height:34px}
+}
+@media(max-width:390px){
+  h1{font-size:31px}
+  .questionText{font-size:25px}.questionText.longQ{font-size:22px}.questionText.veryLongQ{font-size:19px}
+  .toolbarBadge{max-width:155px}
+  .estimateValue{font-size:54px}
+}
 </style>
 </head>
 <body>
 <div class="app" id="app">
 
-<div id="gameTopbar" class="topbar hidden">
-  <button id="freshRound" type="button" class="secondary">↻ Neue Runde</button>
-  <button id="leaveGame" type="button" class="ghost">✕ Spiel verlassen</button>
+<div id="gameTopbar" class="gameTopbar hidden">
+  <div class="toolbarLeft">
+    <div id="topCategory" class="toolbarBadge">Kategorie</div>
+    <div id="topRound" class="toolbarBadge roundBadge">R1</div>
+  </div>
+  <div class="toolbarActions">
+    <button id="freshRound" type="button" class="iconButton" aria-label="Neue Runde" title="Neue Runde">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.34 5.66" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M20 5v6h-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button id="leaveGame" type="button" class="iconButton" aria-label="Spiel verlassen" title="Spiel verlassen">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+    </button>
+  </div>
 </div>
 
 <section id="setup">
@@ -82,7 +247,7 @@ button.secondary{background:var(--card2);border:1px solid var(--border)} button.
   <select id="category"></select>
 
   <div class="row between">
-    <label style="margin-bottom:8px">Spieler</label>
+    <label style="margin-bottom:7px">Spieler</label>
     <div class="controls">
       <button id="minus" type="button" class="secondary" aria-label="Spieler entfernen">−</button>
       <button id="plus" type="button" class="secondary" aria-label="Spieler hinzufügen">+</button>
@@ -92,63 +257,75 @@ button.secondary{background:var(--card2);border:1px solid var(--border)} button.
   <div id="names"></div>
   <button id="start" type="button" class="full">Spiel starten</button>
   <div id="error" class="notice" aria-live="polite"></div>
-  <div class="count">270 überarbeitete Fragepaare · Daumen-Skala · offline spielbar</div>
+  <div class="count">270 Fragepaare · für iPhone kompakt optimiert</div>
 </section>
 
-<section id="handoff" class="hidden center">
-  <div class="hero">
-    <div id="roundLabel" class="badge"></div>
-    <div class="logo">📱</div>
-    <h2 id="handoffName"></h2>
+<section id="handoff" class="hidden gameScreen">
+  <div class="handoffInner">
+    <div class="handoffPhone">📱</div>
+    <div id="handoffName" class="handoffName"></div>
     <p class="sub">Nur diese Person darf jetzt auf den Bildschirm schauen.</p>
   </div>
-  <button id="showQuestion" type="button" class="full">Ich bin bereit</button>
+  <button id="showQuestion" type="button" class="full handoffButton">Ich bin bereit</button>
 </section>
 
-<section id="question" class="hidden">
-  <div class="row between"><span id="catLabel" class="badge"></span><span id="progress" class="badge"></span></div>
-  <div id="currentName" class="sub" style="margin-top:22px"></div>
-  <div id="questionText" class="question"></div>
-  <div id="unitLabel" class="sub"></div>
+<section id="question" class="hidden gameScreen">
+  <div class="playerMeta">
+    <strong id="currentName"></strong>
+    <span id="progress"></span>
+  </div>
 
-  <div class="estimateBox">
+  <div class="questionCard">
+    <div id="questionText" class="questionText"></div>
+  </div>
+
+  <div class="estimateCompact">
     <div class="estimateLabel">Deine Schätzung</div>
-    <div id="estimateValue" class="estimateValue">0</div>
-    <div id="estimateUnit" class="estimateUnit"></div>
-
-    <div class="rulerWrap">
-      <div id="rulerTicks" class="rulerTicks" aria-hidden="true"></div>
-      <input id="guessSlider" class="guessSlider" type="range" min="0" max="100" step="1" value="50"
-             aria-label="Schätzung mit dem Finger einstellen">
-      <div class="rangeLabels"><span id="rangeMin">0</span><span id="rangeMax">100</span></div>
-    </div>
-
-    <div class="fineControls">
-      <button id="minusGuess" type="button" class="secondary fineBtn">−</button>
-      <div class="fineHint">Mit dem Daumen verschieben</div>
-      <button id="plusGuess" type="button" class="secondary fineBtn">+</button>
+    <div class="estimateLine">
+      <span id="estimateValue" class="estimateValue">0</span>
+      <span id="estimateUnit" class="estimateUnit"></span>
     </div>
   </div>
 
-  <p class="sub">Frage nicht laut vorlesen.</p>
-  <button id="saveGuess" type="button" class="full">Schätzung übernehmen</button>
-</section>
-
-<section id="answers" class="hidden">
-  <h2>Alle Schätzungen</h2>
-  <p class="sub">Diskutiert jetzt selbst, wer vermutlich eine andere Frage hatte.</p>
-  <div id="answerList" class="card"></div>
-  <button id="reveal" type="button" class="full">Auflösen</button>
-</section>
-
-<section id="result" class="hidden">
-  <div class="center hero">
-    <div class="logo">😈</div>
-    <h2>Der Impostor war</h2>
-    <div id="impostorName" class="bigName"></div>
+  <div id="scrubber" class="scrubber" role="slider" tabindex="0"
+       aria-label="Schätzung einstellen" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+    <div class="dragHint">Irgendwo tippen oder mit dem Daumen ziehen</div>
+    <div id="sliderRail" class="sliderRail">
+      <div id="sliderFill" class="sliderFill"></div>
+      <div id="sliderThumb" class="sliderThumb"></div>
+    </div>
+    <div class="rangeLabels"><span>0</span><span id="rangeMax">100</span></div>
   </div>
-  <div class="card"><div class="small">NORMALE FRAGE</div><div id="normalQ" style="font-weight:800;margin-top:7px;line-height:1.4"></div></div>
-  <div class="card"><div class="small">IMPOSTOR-FRAGE</div><div id="impostorQ" style="font-weight:800;margin-top:7px;line-height:1.4"></div></div>
+  <input id="guessSlider" class="srRange" type="range" min="0" max="100" step="1" value="0" tabindex="-1">
+
+  <button id="saveGuess" type="button" class="full confirmButton">Schätzung übernehmen</button>
+</section>
+
+<section id="answers" class="hidden gameScreen">
+  <div class="stageHeader">
+    <h2>Alle Schätzungen</h2>
+    <p class="sub">Diskutiert jetzt, wer vermutlich die andere Frage hatte.</p>
+  </div>
+  <div id="answerList" class="answerList"></div>
+  <button id="reveal" type="button" class="full stageButton">Auflösen</button>
+</section>
+
+<section id="result" class="hidden gameScreen">
+  <div class="resultScroll">
+    <div class="resultHero">
+      <div class="emoji">😈</div>
+      <h2>Der Impostor war</h2>
+      <div id="impostorName" class="bigName"></div>
+    </div>
+    <div class="card">
+      <div class="small">NORMALE FRAGE</div>
+      <div id="normalQ" class="resultQuestion"></div>
+    </div>
+    <div class="card">
+      <div class="small">IMPOSTOR-FRAGE</div>
+      <div id="impostorQ" class="resultQuestion"></div>
+    </div>
+  </div>
   <div class="grid2">
     <button id="restart" type="button" class="ghost">Zum Start</button>
     <button id="next" type="button">Nächste Runde</button>
@@ -163,12 +340,17 @@ button.secondary{background:var(--card2);border:1px solid var(--border)} button.
 var bank=[{"cat": "Allgemein", "normal": "Wie viele Minuten dauert ein durchschnittlicher Kinofilm ungefähr?", "imp": "Wie viele Minuten dauert eine längere Zugfahrt zwischen zwei Großstädten ungefähr?", "unit": "Minuten"}, {"cat": "Allgemein", "normal": "Wie viele Länder gibt es ungefähr auf der Welt?", "imp": "Wie viele Knochen hat ein erwachsener Mensch ungefähr?", "unit": "Stück"}, {"cat": "Allgemein", "normal": "Wie viele Tasten hat ein klassisches Klavier?", "imp": "Wie viele Karten hat ein klassisches UNO-Spiel ungefähr?", "unit": "Stück"}, {"cat": "Allgemein", "normal": "Wie viele Tage hat ein Jahr?", "imp": "Wie viele Meter ist der Eiffelturm ungefähr hoch?", "unit": "Einheiten"}, {"cat": "Allgemein", "normal": "Wie viele Stunden hat eine Woche?", "imp": "Wie viele Seiten hat ein dünner Roman ungefähr?", "unit": "Einheiten"}, {"cat": "Allgemein", "normal": "Wie viele Minuten hat ein Tag?", "imp": "Wie viele Kilometer ist Deutschland von Nord nach Süd ungefähr?", "unit": "Einheiten"}, {"cat": "Allgemein", "normal": "Wie viele Seiten hat ein Würfel?", "imp": "Wie viele Saiten hat eine normale Gitarre?", "unit": "Stück"}, {"cat": "Allgemein", "normal": "Wie viele Karten hat ein klassisches Skatblatt?", "imp": "Wie viele Zähne hat ein Erwachsener normalerweise?", "unit": "Stück"}, {"cat": "Allgemein", "normal": "Wie viele Felder hat ein Schachbrett?", "imp": "Wie viele Tasten hat ein kleines Computertastatur-Layout ungefähr?", "unit": "Stück"}, {"cat": "Allgemein", "normal": "Wie viele Wochen hat ein Jahr ungefähr?", "imp": "Wie viele Bundesstaaten haben die USA?", "unit": "Stück"}, {"cat": "Allgemein", "normal": "Wie viele Monate hat ein Jahr?", "imp": "Wie viele Spieler stehen beim Fußball insgesamt auf dem Feld?", "unit": "Stück"}, {"cat": "Allgemein", "normal": "Wie viele Nullen hat eine Milliarde?", "imp": "Wie viele Planeten hat unser Sonnensystem?", "unit": "Stück"}, {"cat": "Allgemein", "normal": "Wie viele Jahre umfasst ein Jahrhundert?", "imp": "Wie viele Minuten dauert ein typischer Spielfilm weniger als zwei Stunden ungefähr?", "unit": "Einheiten"}, {"cat": "Allgemein", "normal": "Wie viele Minuten dauert eine Schulstunde meistens?", "imp": "Wie viele Kilometer fährt ein Hobby-Radfahrer bei einer kleinen Tour ungefähr?", "unit": "Einheiten"}, {"cat": "Allgemein", "normal": "Wie viele Stunden schläft ein Erwachsener ungefähr pro Nacht?", "imp": "Wie viele Kilometer läuft ein Fußballprofi in einem Spiel ungefähr?", "unit": "Einheiten"}, {"cat": "Allgemein", "normal": "Wie viele Personen passen ungefähr in einen normalen Linienbus?", "imp": "Wie viele Gäste sind auf einer größeren privaten Feier ungefähr?", "unit": "Personen"}, {"cat": "Allgemein", "normal": "Wie viele Seiten hat ein durchschnittlicher Roman ungefähr?", "imp": "Wie viele Meter ist ein großes Kreuzfahrtschiff ungefähr lang?", "unit": "Einheiten"}, {"cat": "Allgemein", "normal": "Wie viele Minuten dauert ein typischer Supermarkt-Einkauf ungefähr?", "imp": "Wie viele Minuten dauert eine kurze Serienfolge ungefähr?", "unit": "Minuten"}, {"cat": "Allgemein", "normal": "Wie viele Jahre dauert es ungefähr vom Schulanfang bis zum Abitur?", "imp": "Wie viele Jahre kann ein großer Hund ungefähr alt werden?", "unit": "Jahre"}, {"cat": "Allgemein", "normal": "Wie viele Liter fasst eine normale Badewanne ungefähr?", "imp": "Wie viele Personen passen ungefähr in einen kleinen Kinosaal?", "unit": "Einheiten"}, {"cat": "Allgemein", "normal": "Wie viele Gramm wiegt ein Apfel ungefähr?", "imp": "Wie viele Seiten hat ein kleines Taschenbuch ungefähr?", "unit": "Einheiten"}, {"cat": "Allgemein", "normal": "Wie viele Kilometer fährt ein Auto im Jahr ungefähr?", "imp": "Wie viele Schritte macht ein Mensch an einem aktiven Tag ungefähr?", "unit": "Einheiten"}, {"cat": "Allgemein", "normal": "Wie viele Euro kostet ein normales Kinoticket ungefähr?", "imp": "Wie viele Minuten dauert eine kurze Taxifahrt in der Stadt ungefähr?", "unit": "Einheiten"}, {"cat": "Allgemein", "normal": "Wie viele Minuten dauert eine typische Mittagspause ungefähr?", "imp": "Wie viele Kilometer fährt man bei einer kurzen Pendelstrecke ungefähr?", "unit": "Einheiten"}, {"cat": "Allgemein", "normal": "Wie viele Stunden hat ein Wochenende?", "imp": "Wie viele Kilometer ist ein Marathon ungefähr lang?", "unit": "Einheiten"}, {"cat": "Geografie", "normal": "Wie hoch ist der Eiffelturm ungefähr?", "imp": "Wie lang ist ein großes Kreuzfahrtschiff ungefähr?", "unit": "Meter"}, {"cat": "Geografie", "normal": "Wie lang ist der Rhein ungefähr?", "imp": "Wie viele Kilometer fährt ein typisches Auto mit einer Tankfüllung ungefähr?", "unit": "Kilometer"}, {"cat": "Geografie", "normal": "Wie viele Einwohner hat Berlin ungefähr?", "imp": "Wie viele Menschen besuchen ein sehr großes Volksfest in mehreren Tagen ungefähr?", "unit": "Millionen"}, {"cat": "Geografie", "normal": "Wie hoch ist die Zugspitze ungefähr?", "imp": "Wie tief kann ein Pottwal ungefähr tauchen?", "unit": "Meter"}, {"cat": "Geografie", "normal": "Wie groß ist Deutschland ungefähr?", "imp": "Wie viele Quadratkilometer hat ein mittelgroßer europäischer Staat ungefähr?", "unit": "km²"}, {"cat": "Geografie", "normal": "Wie tief ist der Marianengraben ungefähr?", "imp": "Wie viele Meter hoch fliegt ein Verkehrsflugzeug typischerweise?", "unit": "Meter"}, {"cat": "Geografie", "normal": "Wie lang ist Deutschland von Nord nach Süd ungefähr?", "imp": "Wie weit fährt ein Fernzug auf einer längeren Strecke ungefähr?", "unit": "Kilometer"}, {"cat": "Geografie", "normal": "Wie viele Einwohner hat München ungefähr?", "imp": "Wie viele Besucher hat ein großes Stadion über viele Heimspiele in einer Saison ungefähr?", "unit": "Millionen"}, {"cat": "Geografie", "normal": "Wie viele Einwohner hat Deutschland ungefähr?", "imp": "Wie viele verkaufte Smartphones gibt es in einem großen Land pro Jahr ungefähr?", "unit": "Millionen"}, {"cat": "Geografie", "normal": "Wie hoch ist der Mount Everest ungefähr?", "imp": "Wie hoch fliegt ein Passagierflugzeug im Reiseflug ungefähr?", "unit": "Meter"}, {"cat": "Geografie", "normal": "Wie lang ist die Seine ungefähr?", "imp": "Wie viele Kilometer Reichweite hat ein moderner Langstrecken-Elektrowagen ungefähr?", "unit": "Kilometer"}, {"cat": "Geografie", "normal": "Wie viele Länder grenzen an Deutschland?", "imp": "Wie viele Spieler stehen beim Baseball pro Team auf dem Feld?", "unit": "Stück"}, {"cat": "Geografie", "normal": "Wie viele Einwohner hat Paris ungefähr?", "imp": "Wie viele Autos sind in einer großen deutschen Stadt ungefähr zugelassen?", "unit": "Millionen"}, {"cat": "Geografie", "normal": "Wie viele Quadratkilometer hat Mallorca ungefähr?", "imp": "Wie viele Quadratkilometer groß ist ein sehr großer See ungefähr?", "unit": "km²"}, {"cat": "Geografie", "normal": "Wie lang ist die Elbe ungefähr?", "imp": "Wie weit fährt man ungefähr von Hamburg nach München auf der Straße?", "unit": "Kilometer"}, {"cat": "Geografie", "normal": "Wie viele Einwohner hat Wien ungefähr?", "imp": "Wie viele Zuschauer sehen ein sehr großes TV-Ereignis in einem kleineren Land ungefähr?", "unit": "Millionen"}, {"cat": "Geografie", "normal": "Wie hoch liegt München ungefähr über dem Meeresspiegel?", "imp": "Wie viele Meter ist ein sehr hoher Wolkenkratzer ungefähr hoch?", "unit": "Meter"}, {"cat": "Geografie", "normal": "Wie viele Kilometer Luftlinie liegen ungefähr zwischen Berlin und München?", "imp": "Wie weit kann ein modernes Elektroauto ungefähr fahren?", "unit": "Kilometer"}, {"cat": "Geografie", "normal": "Wie groß ist die Schweiz ungefähr?", "imp": "Wie viele Quadratkilometer Waldfläche hat ein kleineres Land ungefähr?", "unit": "km²"}, {"cat": "Geografie", "normal": "Wie viele Einwohner hat die Schweiz ungefähr?", "imp": "Wie viele Menschen besuchen ein sehr großes Festival über mehrere Tage ungefähr?", "unit": "Millionen"}, {"cat": "Geografie", "normal": "Wie lang ist die Insel Sylt ungefähr?", "imp": "Wie lang ist ein Marathon ungefähr?", "unit": "Kilometer"}, {"cat": "Geografie", "normal": "Wie viele Kilometer Küste hat Italien ungefähr?", "imp": "Wie viele Kilometer fährt ein Vielfahrer pro Jahr ungefähr?", "unit": "Kilometer"}, {"cat": "Geografie", "normal": "Wie hoch ist der Fernsehturm Berlin ungefähr?", "imp": "Wie viele Meter ist ein großer Staudamm ungefähr hoch?", "unit": "Meter"}, {"cat": "Geografie", "normal": "Wie viele Einwohner hat New York City ungefähr?", "imp": "Wie viele verkaufte Konzerttickets hat eine große Welttournee insgesamt ungefähr?", "unit": "Millionen"}, {"cat": "Geografie", "normal": "Wie viele Quadratkilometer hat Berlin ungefähr?", "imp": "Wie viele Quadratkilometer Fläche hat ein größerer Landkreis ungefähr?", "unit": "km²"}, {"cat": "Technik", "normal": "Wie schnell kann ein moderner ICE ungefähr fahren?", "imp": "Wie schnell kann ein leistungsstarkes Motorrad ungefähr fahren?", "unit": "km/h"}, {"cat": "Technik", "normal": "Wie viele Volt hat eine typische Autobatterie?", "imp": "Wie viele Spieler stehen beim Fußball pro Team auf dem Feld?", "unit": "Einheiten"}, {"cat": "Technik", "normal": "Wie viele Megapixel hat 4K ungefähr?", "imp": "Wie viele Stunden schläft ein Erwachsener ungefähr pro Nacht?", "unit": "Einheiten"}, {"cat": "Technik", "normal": "Wie viele Gigabyte hat ein Terabyte nach Dezimalangabe?", "imp": "Wie viele Kilometer ist eine lange Tagesetappe mit dem Auto ungefähr?", "unit": "Einheiten"}, {"cat": "Technik", "normal": "Wie viele Bilder pro Sekunde zeigt ein 120-Hz-Display maximal an?", "imp": "Wie viele Kilometer pro Stunde fährt man auf einer deutschen Landstraße häufig maximal?", "unit": "Einheiten"}, {"cat": "Technik", "normal": "Wie viele Pins hat ein USB-C-Stecker?", "imp": "Wie viele Stunden hat ein Tag?", "unit": "Stück"}, {"cat": "Technik", "normal": "Wie viel Watt hat ein typisches Smartphone-Schnellladegerät ungefähr?", "imp": "Wie viele Minuten dauert ein normales Mittagessen ungefähr?", "unit": "Einheiten"}, {"cat": "Technik", "normal": "Wie viele Bits hat ein Byte?", "imp": "Wie viele Planeten hat unser Sonnensystem?", "unit": "Stück"}, {"cat": "Technik", "normal": "Wie viele Zeichen kann eine klassische SMS ungefähr enthalten?", "imp": "Wie viele Gramm wiegt ein großer Apfel ungefähr?", "unit": "Einheiten"}, {"cat": "Technik", "normal": "Wie viele Stunden hält ein Smartphone-Akku bei normaler Nutzung ungefähr?", "imp": "Wie viele Kilometer läuft ein Wanderer bei einer Tagestour ungefähr?", "unit": "Einheiten"}, {"cat": "Technik", "normal": "Wie viele Megabyte hat eine typische MP3-Datei ungefähr?", "imp": "Wie viele Minuten dauert ein kurzer Song ungefähr?", "unit": "Einheiten"}, {"cat": "Technik", "normal": "Wie viele Hertz hat das europäische Stromnetz?", "imp": "Wie viele Meter ist ein olympisches Schwimmbecken lang?", "unit": "Einheiten"}, {"cat": "Technik", "normal": "Wie viele Watt hat ein Wasserkocher ungefähr?", "imp": "Wie viele Kilogramm wiegt ein kleiner Pkw ungefähr?", "unit": "Einheiten"}, {"cat": "Technik", "normal": "Wie viele Sekunden braucht ein moderner PC ungefähr zum Hochfahren?", "imp": "Wie viele Sekunden steht man ungefähr an einer langen roten Ampel?", "unit": "Sekunden"}, {"cat": "Technik", "normal": "Wie viele Meter reicht Bluetooth unter guten Bedingungen ungefähr?", "imp": "Wie viele Meter ist ein Fußballfeld ungefähr breit?", "unit": "Meter"}, {"cat": "Technik", "normal": "Wie viele Gigabyte RAM hat ein modernes Smartphone ungefähr?", "imp": "Wie viele Jahre kann eine Hauskatze ungefähr alt werden?", "unit": "Einheiten"}, {"cat": "Technik", "normal": "Wie viele Zoll hat ein großes Smartphone-Display ungefähr?", "imp": "Wie viele Personen sitzen typischerweise an einem großen Esstisch ungefähr?", "unit": "Einheiten"}, {"cat": "Technik", "normal": "Wie viele Wattstunden hat ein großer Smartphone-Akku ungefähr?", "imp": "Wie viele Kilometer fährt ein E-Scooter mit einer Ladung ungefähr?", "unit": "Einheiten"}, {"cat": "Technik", "normal": "Wie viele Millisekunden Ping sind beim Online-Gaming ungefähr gut?", "imp": "Wie viele Minuten braucht ein Schnellgericht ungefähr zum Kochen?", "unit": "Einheiten"}, {"cat": "Technik", "normal": "Wie viele Minuten dauert ein großes Smartphone-Systemupdate ungefähr?", "imp": "Wie viele Minuten braucht man ungefähr zum Duschen und Fertigmachen?", "unit": "Minuten"}, {"cat": "Technik", "normal": "Wie viele Meter ist ein typisches Ladekabel ungefähr lang?", "imp": "Wie viele Meter ist ein Auto ungefähr lang?", "unit": "Meter"}, {"cat": "Technik", "normal": "Wie viele Kilowatt hat eine typische Wallbox zuhause?", "imp": "Wie viele Kilometer läuft ein Fußballspieler ungefähr in einem Spiel?", "unit": "Einheiten"}, {"cat": "Technik", "normal": "Wie viele Watt verbraucht ein großer Fernseher ungefähr?", "imp": "Wie viele Gramm wiegt eine große Tafel Schokolade ungefähr?", "unit": "Einheiten"}, {"cat": "Technik", "normal": "Wie viele Stunden Video passen ungefähr auf 128 GB Speicher?", "imp": "Wie viele Stunden dauert ein Langstreckenflug ungefähr?", "unit": "Stunden"}, {"cat": "Technik", "normal": "Wie viele Jahre hält ein Smartphone typischerweise?", "imp": "Wie viele Jahre dauert eine längere Berufsausbildung plus erste Berufserfahrung ungefähr?", "unit": "Jahre"}, {"cat": "Natur", "normal": "Wie viele Knochen hat ein erwachsener Mensch ungefähr?", "imp": "Wie viele Seiten hat ein typischer Roman ungefähr?", "unit": "Einheiten"}, {"cat": "Natur", "normal": "Wie viele Liter Blut hat ein Erwachsener ungefähr?", "imp": "Wie viele Liter Motoröl braucht ein Pkw ungefähr?", "unit": "Liter"}, {"cat": "Natur", "normal": "Wie schnell kann ein Gepard ungefähr laufen?", "imp": "Wie schnell fährt man auf einer Landstraße häufig maximal?", "unit": "km/h"}, {"cat": "Natur", "normal": "Wie lange dauert eine Schwangerschaft beim Menschen ungefähr?", "imp": "Wie viele Monate dauert ein Schuljahr ungefähr?", "unit": "Monate"}, {"cat": "Natur", "normal": "Wie viele Herzschläge pro Minute hat ein ruhender Erwachsener ungefähr?", "imp": "Wie viele Kilometer pro Stunde fährt ein gemütlicher Radfahrer ungefähr?", "unit": "Einheiten"}, {"cat": "Natur", "normal": "Wie alt kann eine Hauskatze ungefähr werden?", "imp": "Wie viele Jahre ist ein altes Auto ungefähr in Gebrauch?", "unit": "Jahre"}, {"cat": "Natur", "normal": "Wie hoch kann eine Giraffe ungefähr werden?", "imp": "Wie viele Meter ist ein Kleinwagen ungefähr lang?", "unit": "Meter"}, {"cat": "Natur", "normal": "Wie schwer ist ein ausgewachsener Elefant ungefähr?", "imp": "Wie viele Kilogramm kann ein kleiner Lieferwagen ungefähr wiegen?", "unit": "Kilogramm"}, {"cat": "Natur", "normal": "Wie lang kann ein Blauwal ungefähr werden?", "imp": "Wie viele Meter ist ein großer Stadtbus ungefähr lang?", "unit": "Meter"}, {"cat": "Natur", "normal": "Wie schnell schwimmt ein Delfin ungefähr?", "imp": "Wie schnell fährt ein E-Bike ungefähr mit Unterstützung?", "unit": "km/h"}, {"cat": "Natur", "normal": "Wie alt kann eine Riesenschildkröte ungefähr werden?", "imp": "Wie viele Jahre kann ein sehr altes Gebäude ohne große Sanierung stehen?", "unit": "Jahre"}, {"cat": "Natur", "normal": "Wie viele Eier legt ein Huhn im Jahr ungefähr?", "imp": "Wie viele Arbeitstage hat ein Jahr ungefähr?", "unit": "Stück"}, {"cat": "Natur", "normal": "Wie viel Prozent des menschlichen Körpers bestehen ungefähr aus Wasser?", "imp": "Wie viel Prozent Akku versucht man bei einem Handy idealerweise nicht dauerhaft zu unterschreiten?", "unit": "Prozent"}, {"cat": "Natur", "normal": "Wie viel Kilogramm wiegt ein erwachsener Wolf ungefähr?", "imp": "Wie viele Kilogramm wiegt ein großer Koffer ungefähr voll beladen?", "unit": "Kilogramm"}, {"cat": "Natur", "normal": "Wie viele Stunden schläft eine Katze pro Tag ungefähr?", "imp": "Wie viele Stunden dauert ein sehr langer Arbeitstag ungefähr?", "unit": "Stunden"}, {"cat": "Natur", "normal": "Wie viele Jahre kann ein Pferd ungefähr alt werden?", "imp": "Wie viele Jahre läuft eine typische Immobilienfinanzierung ungefähr?", "unit": "Jahre"}, {"cat": "Natur", "normal": "Wie viele Kilometer wandert ein Zugvogel bei einem langen Zug ungefähr?", "imp": "Wie viele Kilometer fährt ein Vielfahrer in einem Monat ungefähr?", "unit": "Kilometer"}, {"cat": "Natur", "normal": "Wie viele Kilogramm wiegt ein Löwe ungefähr?", "imp": "Wie viele Liter fasst ein sehr großer Wassertank ungefähr?", "unit": "Einheiten"}, {"cat": "Natur", "normal": "Wie viele Zentimeter wächst menschliches Haar pro Jahr ungefähr?", "imp": "Wie viele Zentimeter ist ein großes Lineal ungefähr lang?", "unit": "Zentimeter"}, {"cat": "Natur", "normal": "Wie viele Liter Luft atmet ein Mensch pro Minute in Ruhe ungefähr?", "imp": "Wie viele Liter verbraucht ein sparsamer Pkw auf 100 km ungefähr?", "unit": "Liter"}, {"cat": "Natur", "normal": "Wie viele Meter tief kann ein Pottwal ungefähr tauchen?", "imp": "Wie viele Meter ist ein sehr hoher Berg in Deutschland ungefähr?", "unit": "Meter"}, {"cat": "Natur", "normal": "Wie viele Jahre lebt eine Honigbienen-Königin ungefähr?", "imp": "Wie viele Jahre hält ein günstiges Smartphone ungefähr?", "unit": "Jahre"}, {"cat": "Natur", "normal": "Wie schnell kann ein Strauß ungefähr laufen?", "imp": "Wie schnell fährt ein kleines Moped ungefähr?", "unit": "km/h"}, {"cat": "Natur", "normal": "Wie viele Kilogramm wiegt ein Eisbär ungefähr?", "imp": "Wie viele Kilogramm kann ein großer Kühlschrank ungefähr wiegen?", "unit": "Kilogramm"}, {"cat": "Natur", "normal": "Wie viele Liter Wasser trinkt ein Elefant am Tag ungefähr?", "imp": "Wie viele Liter fasst eine normale Badewanne ungefähr?", "unit": "Liter"}, {"cat": "Alltag", "normal": "Wie viele Liter passen ungefähr in eine normale Badewanne?", "imp": "Wie viele Personen passen ungefähr in einen kleinen Kinosaal?", "unit": "Einheiten"}, {"cat": "Alltag", "normal": "Wie viele Gramm wiegt ein typischer Apfel ungefähr?", "imp": "Wie viele Seiten hat ein dünnes Taschenbuch ungefähr?", "unit": "Einheiten"}, {"cat": "Alltag", "normal": "Wie viele Liter fasst ein typischer Pkw-Tank ungefähr?", "imp": "Wie viele Minuten dauert eine normale Mittagspause ungefähr?", "unit": "Einheiten"}, {"cat": "Alltag", "normal": "Wie viele Kilokalorien hat eine große Pizza ungefähr?", "imp": "Wie viele Kilometer fährt ein Pendler in einer Woche ungefähr?", "unit": "Einheiten"}, {"cat": "Alltag", "normal": "Wie viele Minuten braucht man zu Fuß für 5 Kilometer ungefähr?", "imp": "Wie viele Minuten dauert eine Folge einer längeren Dramaserie ungefähr?", "unit": "Minuten"}, {"cat": "Alltag", "normal": "Wie viele Schritte sind ungefähr ein Kilometer?", "imp": "Wie viele Meter ist ein sehr hoher Berg ungefähr hoch?", "unit": "Einheiten"}, {"cat": "Alltag", "normal": "Wie viele Liter Wasser verbraucht eine Dusche in 10 Minuten ungefähr?", "imp": "Wie viele Liter fasst ein kleiner Warmwasserspeicher ungefähr?", "unit": "Liter"}, {"cat": "Alltag", "normal": "Wie viele Rollen Toilettenpapier verbraucht eine Person im Monat ungefähr?", "imp": "Wie viele Bücher liest eine Person in einem Jahr ungefähr?", "unit": "Stück"}, {"cat": "Alltag", "normal": "Wie viele Minuten dauert ein normaler Waschgang ungefähr?", "imp": "Wie viele Minuten dauert ein längerer Kinofilm ungefähr?", "unit": "Minuten"}, {"cat": "Alltag", "normal": "Wie viele Tassen Kaffee trinkt ein Kaffeetrinker am Tag ungefähr?", "imp": "Wie viele Kilometer läuft eine Person an einem ruhigen Tag ungefähr?", "unit": "Einheiten"}, {"cat": "Alltag", "normal": "Wie viele Euro kostet ein Kinoticket ungefähr?", "imp": "Wie viele Minuten braucht ein kurzer Stadtweg mit dem Auto ungefähr?", "unit": "Einheiten"}, {"cat": "Alltag", "normal": "Wie viele Gramm Pasta rechnet man pro Person ungefähr?", "imp": "Wie viele Seiten hat ein dünnes Heft ungefähr?", "unit": "Einheiten"}, {"cat": "Alltag", "normal": "Wie viele Minuten kocht ein Ei mittelhart ungefähr?", "imp": "Wie viele Kilometer fährt man für einen kurzen Einkauf ungefähr?", "unit": "Einheiten"}, {"cat": "Alltag", "normal": "Wie viele Liter Milch gibt eine Kuh pro Tag ungefähr?", "imp": "Wie viele Kilometer fährt ein E-Scooter mit einer Ladung ungefähr?", "unit": "Einheiten"}, {"cat": "Alltag", "normal": "Wie viele Kilometer fährt ein Auto im Jahr ungefähr?", "imp": "Wie viele Schritte macht ein aktiver Mensch pro Tag ungefähr?", "unit": "Einheiten"}, {"cat": "Alltag", "normal": "Wie viele Minuten braucht man morgens ungefähr im Bad?", "imp": "Wie viele Minuten dauert eine kurze Serienfolge ungefähr?", "unit": "Minuten"}, {"cat": "Alltag", "normal": "Wie viele Kleidungsstücke hat eine Person ungefähr im Kleiderschrank?", "imp": "Wie viele Seiten hat ein kleines Notizbuch ungefähr?", "unit": "Einheiten"}, {"cat": "Alltag", "normal": "Wie viele Minuten wartet man in einer Arztpraxis ungefähr?", "imp": "Wie viele Minuten braucht man für einen normalen Einkauf ungefähr?", "unit": "Minuten"}, {"cat": "Alltag", "normal": "Wie viele Euro gibt eine Person pro Woche ungefähr für Lebensmittel aus?", "imp": "Wie viele Kilometer fährt ein Pendler in einer Arbeitswoche ungefähr?", "unit": "Einheiten"}, {"cat": "Alltag", "normal": "Wie viele Minuten dauert ein typischer Supermarkt-Einkauf ungefähr?", "imp": "Wie viele Minuten dauert ein typischer Arbeitsweg ungefähr?", "unit": "Minuten"}, {"cat": "Alltag", "normal": "Wie viele Liter Müll produziert ein Haushalt pro Woche ungefähr?", "imp": "Wie viele Liter fasst ein großer Reisekoffer ungefähr?", "unit": "Liter"}, {"cat": "Alltag", "normal": "Wie viele Stunden verbringt ein Mensch pro Tag ungefähr am Smartphone?", "imp": "Wie viele Kilometer läuft ein Mensch an einem normalen Tag ungefähr?", "unit": "Einheiten"}, {"cat": "Alltag", "normal": "Wie viele Euro kostet ein Haarschnitt beim Herrenfriseur ungefähr?", "imp": "Wie viele Minuten dauert ein Haarschnitt ungefähr?", "unit": "Einheiten"}, {"cat": "Alltag", "normal": "Wie viele Minuten dauert eine normale Autofahrt zur Arbeit ungefähr?", "imp": "Wie viele Minuten dauert ein durchschnittliches Mittagessen ungefähr?", "unit": "Minuten"}, {"cat": "Alltag", "normal": "Wie viele Stunden pro Woche verbringt man ungefähr mit Hausarbeit?", "imp": "Wie viele Kilometer läuft man bei mehreren kurzen Erledigungen in einer Woche ungefähr?", "unit": "Einheiten"}, {"cat": "Sport", "normal": "Wie lang ist ein Marathon?", "imp": "Wie viele Kilometer fährt ein durchschnittlicher Pendler an einem Tag ungefähr?", "unit": "Kilometer"}, {"cat": "Sport", "normal": "Wie viele Spieler stehen beim Fußball pro Team auf dem Feld?", "imp": "Wie viele Jahre dauert eine längere Schulzeit ungefähr?", "unit": "Einheiten"}, {"cat": "Sport", "normal": "Wie viele Meter ist ein olympisches Schwimmbecken lang?", "imp": "Wie viele Meter reicht Bluetooth unter guten Bedingungen ungefähr?", "unit": "Meter"}, {"cat": "Sport", "normal": "Wie hoch hängt ein Basketballkorb?", "imp": "Wie viele Meter ist ein Kleinwagen ungefähr lang?", "unit": "Meter"}, {"cat": "Sport", "normal": "Wie viele Punkte braucht man im Tischtennis zum Satzgewinn?", "imp": "Wie viele Kilometer läuft ein Fußballprofi im Spiel ungefähr?", "unit": "Einheiten"}, {"cat": "Sport", "normal": "Wie viele Löcher hat eine normale Golfrunde?", "imp": "Wie viele Jahre kann eine Hauskatze ungefähr alt werden?", "unit": "Einheiten"}, {"cat": "Sport", "normal": "Wie viele Minuten dauert ein NBA-Spiel regulär?", "imp": "Wie viele Minuten dauert ein typischer Arbeitsweg ungefähr?", "unit": "Minuten"}, {"cat": "Sport", "normal": "Wie viele Sätze muss man im Herren-Tennis bei einem Grand Slam gewinnen?", "imp": "Wie viele Mahlzeiten isst man an einem normalen Tag ungefähr?", "unit": "Stück"}, {"cat": "Sport", "normal": "Wie viele Kilometer fährt ein Tour-de-France-Fahrer an einem Renntag ungefähr?", "imp": "Wie viele Seiten hat ein kleines Taschenbuch ungefähr?", "unit": "Einheiten"}, {"cat": "Sport", "normal": "Wie viele Spieler sind beim Volleyball pro Team auf dem Feld?", "imp": "Wie viele Saiten hat eine Gitarre?", "unit": "Stück"}, {"cat": "Sport", "normal": "Wie viele Runden hat ein Boxkampf maximal ungefähr?", "imp": "Wie viele Monate hat ein Jahr?", "unit": "Stück"}, {"cat": "Sport", "normal": "Wie viele Meter ist ein Fußballfeld ungefähr lang?", "imp": "Wie viele Seiten hat ein dünnes Schulheft ungefähr?", "unit": "Einheiten"}, {"cat": "Sport", "normal": "Wie viele Gramm wiegt ein Fußball ungefähr?", "imp": "Wie viele Milliliter hat eine kleine Getränkeflasche ungefähr?", "unit": "Einheiten"}, {"cat": "Sport", "normal": "Wie viele Minuten dauert ein Eishockeyspiel regulär?", "imp": "Wie viele Minuten hat eine Stunde?", "unit": "Minuten"}, {"cat": "Sport", "normal": "Wie schnell ist ein Tennisaufschlag eines Profis ungefähr?", "imp": "Wie viele Kilometer fährt ein Auto auf einer längeren Tagesfahrt ungefähr?", "unit": "Einheiten"}, {"cat": "Sport", "normal": "Wie viele Kilometer läuft ein Marathonläufer pro Trainingswoche ungefähr?", "imp": "Wie viele Stunden arbeitet jemand in einer normalen Arbeitswoche ungefähr?", "unit": "Einheiten"}, {"cat": "Sport", "normal": "Wie viele Sekunden dauert ein Formel-1-Boxenstopp ungefähr?", "imp": "Wie viele Sekunden dauert eine kurze Sprachnachricht ungefähr?", "unit": "Sekunden"}, {"cat": "Sport", "normal": "Wie viele Kalorien verbrennt man bei einer Stunde Joggen ungefähr?", "imp": "Wie viele Kilometer fährt ein Auto mit einer Tankfüllung ungefähr?", "unit": "Einheiten"}, {"cat": "Sport", "normal": "Wie schnell fährt ein Profi-Radfahrer im Schnitt ungefähr?", "imp": "Wie viele Minuten dauert eine Schulstunde ungefähr?", "unit": "Einheiten"}, {"cat": "Sport", "normal": "Wie viele Zuschauer passen in ein großes Fußballstadion ungefähr?", "imp": "Wie viele Einwohner hat eine kleinere Stadt ungefähr?", "unit": "Personen"}, {"cat": "Sport", "normal": "Wie viele Minuten dauert ein Tennismatch durchschnittlich ungefähr?", "imp": "Wie viele Kilometer fährt man bei einer längeren Autobahnfahrt ungefähr?", "unit": "Einheiten"}, {"cat": "Sport", "normal": "Wie viele Schläge braucht ein Amateur ungefähr auf 18 Loch Golf?", "imp": "Wie viele Seiten liest jemand an einem langen Leseabend ungefähr?", "unit": "Einheiten"}, {"cat": "Sport", "normal": "Wie viele Kilometer schwimmt ein Triathlet beim Ironman?", "imp": "Wie viele Stunden dauert ein normaler Arbeitstag ungefähr?", "unit": "Einheiten"}, {"cat": "Sport", "normal": "Wie viele Meter springt ein guter Weitspringer ungefähr?", "imp": "Wie viele Meter ist ein großer Transporter ungefähr lang?", "unit": "Meter"}, {"cat": "Sport", "normal": "Wie viele Sekunden läuft ein sehr guter Sprinter über 100 Meter ungefähr?", "imp": "Wie viele Sekunden dauert ein kurzer Handy-Neustart ungefähr?", "unit": "Sekunden"}, {"cat": "Auto", "normal": "Wie viele Liter Kofferraum hat ein typischer Kompaktwagen ungefähr?", "imp": "Wie viele Seiten hat ein dicker Roman ungefähr?", "unit": "Einheiten"}, {"cat": "Auto", "normal": "Wie viele Sekunden braucht ein Kompaktwagen von 0 auf 100 ungefähr?", "imp": "Wie viele Sekunden dauert ein kurzer Fahrstuhlweg ungefähr?", "unit": "Sekunden"}, {"cat": "Auto", "normal": "Wie viele Kilometer hält ein Satz Sommerreifen ungefähr?", "imp": "Wie viele Kilometer fährt ein Vielfahrer in zwei Jahren ungefähr?", "unit": "Kilometer"}, {"cat": "Auto", "normal": "Wie viele Liter Motoröl braucht ein typischer Pkw ungefähr?", "imp": "Wie viele Liter Blut hat ein Erwachsener ungefähr?", "unit": "Liter"}, {"cat": "Auto", "normal": "Wie viele Bar Reifendruck hat ein Pkw ungefähr?", "imp": "Wie viele Liter Wasser trinkt ein Mensch am Tag ungefähr?", "unit": "Einheiten"}, {"cat": "Auto", "normal": "Wie viele Kilometer Reichweite hat ein modernes Elektroauto ungefähr?", "imp": "Wie viele Seiten hat ein sehr dicker Roman ungefähr?", "unit": "Einheiten"}, {"cat": "Auto", "normal": "Wie viele Kilowatt Leistung hat ein Kompaktwagen ungefähr?", "imp": "Wie viele Minuten dauert ein längerer Kinofilm ungefähr?", "unit": "Einheiten"}, {"cat": "Auto", "normal": "Wie viele Kilometer fährt ein Taxi pro Jahr ungefähr?", "imp": "Wie viele Zuschauer passen in ein großes Stadion ungefähr?", "unit": "Einheiten"}, {"cat": "Auto", "normal": "Wie viele Liter verbraucht ein moderner Benziner auf 100 km ungefähr?", "imp": "Wie viele Stunden schläft ein Erwachsener ungefähr?", "unit": "Einheiten"}, {"cat": "Auto", "normal": "Wie viele Minuten dauert ein normaler Tankstopp ungefähr?", "imp": "Wie viele Minuten dauert ein kurzer Kaffee-Stopp ungefähr?", "unit": "Minuten"}, {"cat": "Auto", "normal": "Wie viele Kilogramm wiegt ein Kompaktwagen ungefähr?", "imp": "Wie viele Liter Wasser passen in einen kleinen Swimmingpool ungefähr?", "unit": "Einheiten"}, {"cat": "Auto", "normal": "Wie viele Jahre hält eine Autobatterie ungefähr?", "imp": "Wie viele Jahre dauert eine typische Ausbildung plus Probezeit ungefähr?", "unit": "Jahre"}, {"cat": "Auto", "normal": "Wie viele Meter beträgt der Bremsweg aus 100 km/h ungefähr?", "imp": "Wie viele Meter ist ein olympisches Schwimmbecken lang?", "unit": "Meter"}, {"cat": "Auto", "normal": "Wie viele Liter Scheibenwaschwasser passen in einen Pkw ungefähr?", "imp": "Wie viele Liter fasst ein großer Kochtopf ungefähr?", "unit": "Liter"}, {"cat": "Auto", "normal": "Wie viele Kilometer kann ein Auto mit vollem Tank ungefähr fahren?", "imp": "Wie viele Kilometer ist eine längere Zugstrecke ungefähr?", "unit": "Kilometer"}, {"cat": "Auto", "normal": "Wie viele Minuten dauert eine Hauptuntersuchung beim Auto ungefähr?", "imp": "Wie viele Minuten dauert ein Friseurbesuch ungefähr?", "unit": "Minuten"}, {"cat": "Auto", "normal": "Wie viele Euro kostet ein Satz guter Sommerreifen ungefähr?", "imp": "Wie viele Euro kostet ein günstiges Smartphone ungefähr?", "unit": "Euro"}, {"cat": "Auto", "normal": "Wie viele Kilometer fährt ein Dienstwagenfahrer im Jahr ungefähr?", "imp": "Wie viele Schritte macht ein sehr aktiver Mensch in drei Tagen ungefähr?", "unit": "Einheiten"}, {"cat": "Auto", "normal": "Wie viele Liter fasst der Tank eines Kleinwagens ungefähr?", "imp": "Wie viele Minuten dauert eine normale Serienfolge ungefähr?", "unit": "Einheiten"}, {"cat": "Auto", "normal": "Wie viele Kilometer hält ein Kupplungssatz ungefähr?", "imp": "Wie viele Kilometer fährt ein Vielfahrer in mehreren Jahren ungefähr?", "unit": "Kilometer"}, {"cat": "Auto", "normal": "Wie viele Minuten braucht man für einen Reifenwechsel zuhause ungefähr?", "imp": "Wie viele Minuten dauert ein kurzer Werkstatttermin ungefähr?", "unit": "Minuten"}, {"cat": "Auto", "normal": "Wie viele Euro kostet eine durchschnittliche Autowäsche ungefähr?", "imp": "Wie viele Minuten dauert eine Autowäsche ungefähr?", "unit": "Einheiten"}, {"cat": "Auto", "normal": "Wie viele Kilometer kann man mit einer Tankreserve ungefähr noch fahren?", "imp": "Wie viele Minuten dauert eine längere Stadtfahrt ungefähr?", "unit": "Einheiten"}, {"cat": "Auto", "normal": "Wie viele Liter verbraucht ein Auto im Leerlauf pro Stunde ungefähr?", "imp": "Wie viele Liter Wasser trinkt man an einem normalen Tag ungefähr?", "unit": "Liter"}, {"cat": "Auto", "normal": "Wie viele Jahre ist ein Auto ungefähr alt, wenn es verschrottet wird?", "imp": "Wie viele Jahre kann ein großer Hund ungefähr alt werden?", "unit": "Jahre"}, {"cat": "Essen", "normal": "Wie viele Kalorien hat ein Big Mac ungefähr?", "imp": "Wie viele Kilometer fährt man bei einer längeren Radtour ungefähr?", "unit": "Einheiten"}, {"cat": "Essen", "normal": "Wie viele Gramm wiegt eine Tiefkühlpizza ungefähr?", "imp": "Wie viele Milliliter hat eine große Getränkeflasche ungefähr?", "unit": "Einheiten"}, {"cat": "Essen", "normal": "Wie viele Milliliter hat ein normales Bierglas ungefähr?", "imp": "Wie viele Gramm wiegt ein Basketball ungefähr?", "unit": "Einheiten"}, {"cat": "Essen", "normal": "Wie viele Gramm Zucker hat eine 0,5-Liter-Cola ungefähr?", "imp": "Wie viele Kilometer läuft ein Mensch an einem normalen Tag ungefähr?", "unit": "Einheiten"}, {"cat": "Essen", "normal": "Wie viele Minuten braucht eine Tiefkühlpizza im Ofen ungefähr?", "imp": "Wie viele Minuten dauert ein kurzer Arbeitsweg ungefähr?", "unit": "Minuten"}, {"cat": "Essen", "normal": "Wie viele Gramm Kaffeebohnen braucht man für eine Tasse Kaffee ungefähr?", "imp": "Wie viele Seiten liest man in zehn Minuten ungefähr?", "unit": "Einheiten"}, {"cat": "Essen", "normal": "Wie viele Kalorien hat eine Banane ungefähr?", "imp": "Wie viele Minuten dauert eine durchschnittliche Serienfolge ungefähr?", "unit": "Einheiten"}, {"cat": "Essen", "normal": "Wie viele Gramm Salz sollte man pro Tag höchstens ungefähr essen?", "imp": "Wie viele Kilometer fährt man für einen kurzen Einkauf ungefähr?", "unit": "Einheiten"}, {"cat": "Essen", "normal": "Wie viele Eier sind in einem typischen Eierkarton?", "imp": "Wie viele Monate hat ein Jahr?", "unit": "Stück"}, {"cat": "Essen", "normal": "Wie viele Milliliter hat ein Espresso ungefähr?", "imp": "Wie viele Minuten dauert eine kurze Dusche ungefähr?", "unit": "Einheiten"}, {"cat": "Essen", "normal": "Wie viele Gramm wiegt eine Kugel Eis ungefähr?", "imp": "Wie viele Seiten hat ein dünnes Heft ungefähr?", "unit": "Einheiten"}, {"cat": "Essen", "normal": "Wie viele Minuten muss Reis ungefähr kochen?", "imp": "Wie viele Kilometer fährt ein E-Bike auf einer kurzen Tour ungefähr?", "unit": "Einheiten"}, {"cat": "Essen", "normal": "Wie viele Liter Bier trinkt ein Besucher auf einem großen Volksfest ungefähr?", "imp": "Wie viele Stunden dauert ein typisches Abendprogramm ungefähr?", "unit": "Einheiten"}, {"cat": "Essen", "normal": "Wie viele Kalorien hat eine Portion Pommes ungefähr?", "imp": "Wie viele Kilometer fährt ein Auto auf einer mittleren Strecke ungefähr?", "unit": "Einheiten"}, {"cat": "Essen", "normal": "Wie viele Gramm Käse liegen auf einer Pizza ungefähr?", "imp": "Wie viele Seiten hat ein kleines Taschenbuch ungefähr?", "unit": "Einheiten"}, {"cat": "Essen", "normal": "Wie viele Gramm Nudeln sind eine große Portion ungefähr?", "imp": "Wie viele Milliliter hat ein großes Trinkglas ungefähr?", "unit": "Einheiten"}, {"cat": "Essen", "normal": "Wie viele Milliliter fasst eine normale Kaffeetasse ungefähr?", "imp": "Wie viele Gramm wiegt ein Fußball ungefähr?", "unit": "Einheiten"}, {"cat": "Essen", "normal": "Wie viele Minuten braucht ein Steak in der Pfanne ungefähr?", "imp": "Wie viele Minuten dauert ein kurzer Fußweg ungefähr?", "unit": "Minuten"}, {"cat": "Essen", "normal": "Wie viele Kalorien hat ein Croissant ungefähr?", "imp": "Wie viele Seiten hat ein dünner Roman ungefähr?", "unit": "Einheiten"}, {"cat": "Essen", "normal": "Wie viele Gramm wiegt eine Scheibe Brot ungefähr?", "imp": "Wie viele Kilometer läuft man bei einem kurzen Spaziergang ungefähr?", "unit": "Einheiten"}, {"cat": "Essen", "normal": "Wie viele Euro kostet ein Döner ungefähr?", "imp": "Wie viele Minuten dauert eine kurze Taxifahrt ungefähr?", "unit": "Einheiten"}, {"cat": "Essen", "normal": "Wie viele Milliliter hat eine typische Getränkedose?", "imp": "Wie viele Meter ist der Eiffelturm ungefähr hoch?", "unit": "Einheiten"}, {"cat": "Essen", "normal": "Wie viele Gramm Zucker hat ein Schokoriegel ungefähr?", "imp": "Wie viele Minuten dauert eine kurze Mittagspause ungefähr?", "unit": "Einheiten"}, {"cat": "Essen", "normal": "Wie viele Kalorien hat ein Latte Macchiato ungefähr?", "imp": "Wie viele Kilometer fährt man bei einer kleinen Fahrradtour ungefähr?", "unit": "Einheiten"}, {"cat": "Essen", "normal": "Wie viele Minuten backt ein Kuchen ungefähr?", "imp": "Wie viele Kilometer fährt man ungefähr bei einer kurzen Pendelstrecke?", "unit": "Einheiten"}, {"cat": "Popkultur", "normal": "Wie viele Staffeln hat Breaking Bad?", "imp": "Wie viele Jahre dauert eine längere Schulzeit ungefähr?", "unit": "Einheiten"}, {"cat": "Popkultur", "normal": "Wie viele Filme gibt es in der Harry-Potter-Hauptreihe?", "imp": "Wie viele Planeten hat unser Sonnensystem?", "unit": "Stück"}, {"cat": "Popkultur", "normal": "Wie viele Folgen hat eine typische Sitcom-Staffel ungefähr?", "imp": "Wie viele Kilometer läuft ein Mensch an einem aktiven Tag ungefähr?", "unit": "Einheiten"}, {"cat": "Popkultur", "normal": "Wie viele Minuten dauert eine typische Dramaserien-Folge ungefähr?", "imp": "Wie viele Kilometer fährt ein Pendler an einem Tag ungefähr?", "unit": "Einheiten"}, {"cat": "Popkultur", "normal": "Wie viele Mitglieder hatten die Beatles?", "imp": "Wie viele Räder hat ein Auto plus Ersatzrad ungefähr?", "unit": "Stück"}, {"cat": "Popkultur", "normal": "Wie viele Saiten hat eine normale Gitarre?", "imp": "Wie viele Seiten hat ein Würfel?", "unit": "Stück"}, {"cat": "Popkultur", "normal": "Wie viele Tasten hat ein Computertastatur-Layout ungefähr?", "imp": "Wie viele Meter ist ein Fußballfeld ungefähr lang?", "unit": "Einheiten"}, {"cat": "Popkultur", "normal": "Wie viele Minuten dauert ein Musikalbum ungefähr?", "imp": "Wie viele Kilometer fährt man bei einer kurzen Autofahrt ungefähr?", "unit": "Einheiten"}, {"cat": "Popkultur", "normal": "Wie viele Personen passen in ein großes Fußballstadion ungefähr?", "imp": "Wie viele Einwohner hat eine kleinere Stadt ungefähr?", "unit": "Personen"}, {"cat": "Popkultur", "normal": "Wie viele Jahre läuft die Simpsons-Serie ungefähr schon?", "imp": "Wie viele Jahre kann ein Pferd ungefähr alt werden?", "unit": "Jahre"}, {"cat": "Popkultur", "normal": "Wie viele Minuten dauert ein typischer YouTube-Vlog ungefähr?", "imp": "Wie viele Kilometer fährt man bei einer kurzen Radtour ungefähr?", "unit": "Einheiten"}, {"cat": "Popkultur", "normal": "Wie viele Songs hat ein normales Studioalbum ungefähr?", "imp": "Wie viele Monate hat ein Jahr?", "unit": "Stück"}, {"cat": "Popkultur", "normal": "Wie viele Minuten dauert ein Kinotrailer ungefähr?", "imp": "Wie viele Kilometer fährt man für einen sehr kurzen Weg ungefähr?", "unit": "Einheiten"}, {"cat": "Popkultur", "normal": "Wie viele Episoden hat eine kurze Streaming-Miniserie ungefähr?", "imp": "Wie viele Tage hat eine Woche?", "unit": "Stück"}, {"cat": "Popkultur", "normal": "Wie viele Stunden dauert ein großes Musikfestival pro Tag ungefähr?", "imp": "Wie viele Kilometer läuft ein Mensch an einem aktiven Tag ungefähr?", "unit": "Einheiten"}, {"cat": "Popkultur", "normal": "Wie viele Personen sind in einer typischen Band ungefähr?", "imp": "Wie viele Türen hat ein normales Auto ungefähr?", "unit": "Stück"}, {"cat": "Popkultur", "normal": "Wie viele Minuten dauert ein Podcast ungefähr?", "imp": "Wie viele Kilometer fährt ein E-Scooter mit einer Ladung ungefähr?", "unit": "Einheiten"}, {"cat": "Popkultur", "normal": "Wie viele Folgen hat eine lange Anime-Staffel ungefähr?", "imp": "Wie viele Kilometer fährt ein Fahrradfahrer bei einer kleinen Tour ungefähr?", "unit": "Einheiten"}, {"cat": "Popkultur", "normal": "Wie viele Euro kostet ein Kinobesuch mit Snack ungefähr?", "imp": "Wie viele Minuten dauert eine kurze Zugfahrt ungefähr?", "unit": "Einheiten"}, {"cat": "Popkultur", "normal": "Wie viele Songs hat eine typische Spotify-Playlist ungefähr?", "imp": "Wie viele Seiten liest man an einem längeren Leseabend ungefähr?", "unit": "Einheiten"}, {"cat": "Spicy 🌶️", "normal": "Nach wie vielen Dates kommt es deiner Schätzung nach im Schnitt zum ersten Kuss?", "imp": "Wie viele Stunden dauert ein richtig gutes erstes Date ungefähr?", "unit": "Einheiten"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Menschen hat eine durchschnittliche Person bis 30 ungefähr geküsst?", "imp": "Wie viele Dates hat eine Single-Person ungefähr in einem Jahr?", "unit": "Personen/Treffen"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Minuten dauert ein leidenschaftlicher Kuss ungefähr?", "imp": "Wie viele Minuten braucht man vor einem Date ungefähr zum Fertigmachen?", "unit": "Minuten"}, {"cat": "Spicy 🌶️", "normal": "Nach wie vielen Tagen schreibt man nach einem guten ersten Date normalerweise wieder?", "imp": "Nach wie vielen Tagen löscht man ein schlechtes Match ungefähr wieder?", "unit": "Tage"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Dates hat eine Single-Person ungefähr pro Jahr?", "imp": "Wie viele neue Flirts entstehen bei mehreren Partyabenden im Jahr ungefähr?", "unit": "Treffen"}, {"cat": "Spicy 🌶️", "normal": "Wie viel Prozent der Menschen würden beim ersten Date küssen?", "imp": "Wie viel Prozent würden jemanden aus dem Freundeskreis daten?", "unit": "Prozent"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Ex-Partner hat eine Person mit Ende 20 ungefähr?", "imp": "Wie viele wirklich enge Freunde hat eine Person ungefähr?", "unit": "Personen"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Minuten dauert ein typisches erstes Date ungefähr?", "imp": "Wie viele Minuten dauert ein längerer Abend im Restaurant ungefähr?", "unit": "Minuten"}, {"cat": "Spicy 🌶️", "normal": "Nach wie vielen Wochen Dating wird es durchschnittlich exklusiv?", "imp": "Nach wie vielen Wochen kennt man typischerweise die besten Freunde des anderen?", "unit": "Wochen"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Nachrichten schreibt man sich vor einem ersten Date ungefähr?", "imp": "Wie viele Nachrichten schreibt man in einer aktiven Freundesgruppe an einem Abend ungefähr?", "unit": "Nachrichten"}, {"cat": "Spicy 🌶️", "normal": "Wie viele aktive Dating-Kontakte hat jemand gleichzeitig ungefähr?", "imp": "Wie viele enge Chats hat jemand in einem Messenger ungefähr gleichzeitig?", "unit": "Personen/Chats"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Matches bekommt ein Dating-App-Nutzer pro Woche ungefähr?", "imp": "Wie viele neue Kontakte speichert jemand in einem Monat ungefähr?", "unit": "Stück"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Minuten verbringt ein Nutzer täglich ungefähr auf Dating-Apps?", "imp": "Wie viele Minuten verbringt jemand täglich ungefähr auf Social Media?", "unit": "Minuten"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Komplimente bekommt jemand bei einem guten Date ungefähr?", "imp": "Wie viele Getränke bestellt jemand an einem längeren Abend ungefähr?", "unit": "Stück"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Dates braucht man ungefähr, bis man die Freunde des anderen kennenlernt?", "imp": "Wie viele Treffen braucht man ungefähr, bis man jemanden als guten Freund bezeichnet?", "unit": "Treffen"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Wochen dauert eine typische Kennenlernphase ungefähr?", "imp": "Wie viele Wochen dauert eine Probezeit in einem neuen Hobbykurs ungefähr?", "unit": "Wochen"}, {"cat": "Spicy 🌶️", "normal": "Wie viel Prozent der Menschen haben schon einmal jemanden beim ersten Date geküsst?", "imp": "Wie viel Prozent der Menschen würden spontan allein verreisen?", "unit": "Prozent"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Minuten dauert Vorspiel deiner Schätzung nach durchschnittlich?", "imp": "Wie viele Minuten dauert eine normale Dusche ungefähr?", "unit": "Minuten"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Male pro Monat hat ein junges Paar durchschnittlich Sex?", "imp": "Wie viele Restaurantbesuche hat ein junges Paar ungefähr pro Monat?", "unit": "Mal"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Sekunden dauert ein leidenschaftlicher Kuss ungefähr?", "imp": "Wie viele Sekunden dauert eine längere Sprachnachricht ungefähr?", "unit": "Sekunden"}, {"cat": "Spicy 🌶️", "normal": "Wie viel Prozent der Menschen würden ihren Ex noch einmal küssen?", "imp": "Wie viel Prozent würden ihrem Ex noch einmal schreiben?", "unit": "Prozent"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Dates dauert es ungefähr, bis man bei jemandem zuhause ist?", "imp": "Wie viele Treffen dauert es ungefähr, bis man bei einem neuen Freund zuhause ist?", "unit": "Treffen"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Stunden nach einem Date wartet man ungefähr mit der ersten Nachricht?", "imp": "Wie viele Stunden wartet man ungefähr, bevor man auf eine wichtige private Nachricht antwortet?", "unit": "Stunden"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Menschen lernt man in einem Jahr beim Feiern flirtend kennen?", "imp": "Wie viele neue Bekannte lernt man in einem Jahr ungefähr kennen?", "unit": "Personen"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Beziehungen hatte eine durchschnittliche Person bis Mitte 20 ungefähr?", "imp": "Wie viele Arbeitgeber hatte eine Person bis Mitte 20 ungefähr?", "unit": "Anzahl"}, {"cat": "Spicy 🌶️", "normal": "Wie viel Prozent der Singles würden jemanden aus dem Freundeskreis daten?", "imp": "Wie viel Prozent würden für einen neuen Job in eine andere Stadt ziehen?", "unit": "Prozent"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Wochen nach einer Trennung beginnt jemand durchschnittlich wieder zu daten?", "imp": "Wie viele Wochen dauert es ungefähr, bis man nach einem Umzug einen neuen Alltag hat?", "unit": "Wochen"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Stunden verbringt ein Paar bei einem typischen Date zusammen?", "imp": "Wie viele Stunden verbringt man bei einem längeren Abend mit Freunden zusammen?", "unit": "Stunden"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Dates braucht es ungefähr bis zum ersten Übernachten?", "imp": "Wie viele Treffen braucht es ungefähr, bis man gemeinsam einen Tagesausflug macht?", "unit": "Treffen"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Minuten verbringt man vor einem Date ungefähr mit Fertigmachen?", "imp": "Wie viele Minuten verbringt man vor einem Clubabend ungefähr mit Fertigmachen?", "unit": "Minuten"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Flirts hat eine Single-Person ungefähr pro Monat?", "imp": "Wie viele neue Leute lernt man in einem aktiven Monat ungefähr kennen?", "unit": "Stück"}, {"cat": "Spicy 🌶️", "normal": "Wie viel Prozent würden nach einem guten ersten Date direkt ein zweites vereinbaren?", "imp": "Wie viel Prozent würden nach einem guten Vorstellungsgespräch direkt zusagen?", "unit": "Prozent"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Tage dauert es ungefähr, bis man nach einem Match ein Date ausmacht?", "imp": "Wie viele Tage dauert es ungefähr, bis man mit einem neuen Kontakt ein Treffen plant?", "unit": "Tage"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Personen küsst jemand durchschnittlich in einem Jahr als Single?", "imp": "Wie viele neue Freunde gewinnt jemand durchschnittlich in einem Jahr ungefähr?", "unit": "Personen"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Wochen dauert es ungefähr, bis man den Eltern vorgestellt wird?", "imp": "Wie viele Wochen dauert es ungefähr, bis man mit neuen Kollegen privat etwas unternimmt?", "unit": "Wochen"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Stunden dauert ein sehr gutes erstes Date ungefähr?", "imp": "Wie viele Stunden dauert ein längerer Restaurant- und Barabend ungefähr?", "unit": "Stunden"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Nachrichten pro Tag schreiben sich zwei Leute in einer frischen Kennenlernphase ungefähr?", "imp": "Wie viele Nachrichten pro Tag entstehen in einem aktiven Gruppenchat ungefähr?", "unit": "Nachrichten"}, {"cat": "Spicy 🌶️", "normal": "Wie viel Prozent der Menschen haben schon einmal einen Ex zurückgenommen?", "imp": "Wie viel Prozent würden zu einem früheren Arbeitgeber zurückkehren?", "unit": "Prozent"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Dates braucht es ungefähr, bis man gemeinsam kocht?", "imp": "Wie viele Treffen braucht es ungefähr, bis man mit einem neuen Freund gemeinsam kocht?", "unit": "Treffen"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Minuten dauert ein typischer Flirt im Club ungefähr?", "imp": "Wie viele Minuten dauert ein Gespräch mit einer neuen Person auf einer Party ungefähr?", "unit": "Minuten"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Wochen dauert es ungefähr, bis man einen Schlüssel zur Wohnung des Partners bekommt?", "imp": "Wie viele Wochen dauert es ungefähr, bis man regelmäßig Sachen beim anderen liegen lässt?", "unit": "Wochen"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Dates braucht es ungefähr, bis man über Ex-Partner spricht?", "imp": "Wie viele Treffen braucht es ungefähr, bis man über frühere Beziehungen spricht?", "unit": "Treffen"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Personen hat jemand ungefähr in seiner Close-Friends-Story?", "imp": "Wie viele Personen lädt jemand ungefähr zu einer privaten Geburtstagsfeier ein?", "unit": "Personen"}, {"cat": "Spicy 🌶️", "normal": "Wie viel Prozent würden auf einer Party jemanden küssen, den sie gerade erst kennengelernt haben?", "imp": "Wie viel Prozent würden auf einer Party mit einer fremden Person Nummern tauschen?", "unit": "Prozent"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Minuten dauert ein durchschnittlicher Flirt-Chat am Abend ungefähr?", "imp": "Wie viele Minuten dauert ein längerer privater Chat mit einem Freund ungefähr?", "unit": "Minuten"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Dates braucht es ungefähr, bis man beim anderen duscht?", "imp": "Wie viele Übernachtungen braucht es ungefähr, bis man eigene Sachen dort lässt?", "unit": "Treffen"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Wochen dauert es ungefähr, bis man ein gemeinsames Foto postet?", "imp": "Wie viele Wochen dauert es ungefähr, bis man regelmäßig gemeinsam Wochenenden plant?", "unit": "Wochen"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Stunden verbringt man nach einem guten Date noch mit Schreiben ungefähr?", "imp": "Wie viele Stunden verbringt man nach einem guten Abend noch im Gruppenchat ungefähr?", "unit": "Stunden"}, {"cat": "Spicy 🌶️", "normal": "Wie viel Prozent würden jemanden daten, der deutlich älter ist?", "imp": "Wie viel Prozent würden einen Job annehmen, bei dem alle Kollegen deutlich älter sind?", "unit": "Prozent"}, {"cat": "Spicy 🌶️", "normal": "Wie viele Dates braucht es ungefähr bis zur ersten kleinen Eifersuchtsszene?", "imp": "Wie viele Treffen braucht es ungefähr bis zur ersten kleinen Meinungsverschiedenheit?", "unit": "Treffen"}];
 function byId(id){return document.getElementById(id);}
 var sections=["setup","handoff","question","answers","result"];
-var count=3,players=[],active=0,impIndex=0,round=0,current=null,used={};
+var count=3,players=[],active=0,impIndex=0,round=0,current=null,used={},scrubbing=false;
 
 function show(id){
   for(var i=0;i<sections.length;i++) byId(sections[i]).classList.toggle("hidden",sections[i]!==id);
   byId("gameTopbar").classList.toggle("hidden",id==="setup");
+  document.body.classList.toggle("game-active",id!=="setup");
   try{window.scrollTo(0,0);}catch(e){}
+}
+function updateToolbar(){
+  byId("topCategory").textContent=current?current.cat:"Kategorie";
+  byId("topRound").textContent="R"+round;
 }
 function initCategories(){
   var seen={},cats=["Alle"];
@@ -183,205 +365,260 @@ function getOldNames(){
 }
 function renderNames(){
   var old=getOldNames(),box=byId("names");box.innerHTML="";
-  for(var i=0;i<count;i++){var inp=document.createElement("input");inp.type="text";inp.className="playerInput";inp.autocomplete="off";inp.value=old[i]||("Spieler "+(i+1));inp.placeholder="Spieler "+(i+1);box.appendChild(inp);}
+  for(var i=0;i<count;i++){
+    var inp=document.createElement("input");
+    inp.type="text";inp.className="playerInput";inp.autocomplete="off";
+    inp.value=old[i]||("Spieler "+(i+1));inp.placeholder="Spieler "+(i+1);
+    box.appendChild(inp);
+  }
   byId("minus").disabled=count<=3;byId("plus").disabled=count>=12;
 }
 function start(){
   var nodes=byId("names").querySelectorAll("input"),names=[],set={};
-  for(var i=0;i<nodes.length;i++){var n=nodes[i].value.replace(/^\s+|\s+$/g,"");if(n)names.push(n);}
+  for(var i=0;i<nodes.length;i++){
+    var n=nodes[i].value.replace(/^\s+|\s+$/g,"");
+    if(n) names.push(n);
+  }
   if(names.length<3){byId("error").textContent="Mindestens 3 Spieler eintragen.";return;}
-  for(var j=0;j<names.length;j++){if(set[names[j]]){byId("error").textContent="Jeder Spieler braucht einen anderen Namen.";return;}set[names[j]]=true;}
-  byId("error").textContent="";players=[];
+  for(var j=0;j<names.length;j++){
+    if(set[names[j]]){byId("error").textContent="Jeder Spieler braucht einen anderen Namen.";return;}
+    set[names[j]]=true;
+  }
+  byId("error").textContent="";
+  players=[];
   for(var k=0;k<names.length;k++) players.push({name:names[k],guess:null});
-  round=0;used={};newRound(false);
+  round=0;used={};
+  newRound(false);
 }
 function pickRound(){
   for(var i=0;i<players.length;i++) players[i].guess=null;
   var cat=byId("category").value,eligible=[],pool=[];
   for(var j=0;j<bank.length;j++) if(cat==="Alle"||bank[j].cat===cat) eligible.push(j);
   for(var k=0;k<eligible.length;k++) if(!used[eligible[k]]) pool.push(eligible[k]);
-  if(pool.length===0){for(var a=0;a<eligible.length;a++) delete used[eligible[a]];pool=eligible.slice();}
+  if(pool.length===0){
+    for(var a=0;a<eligible.length;a++) delete used[eligible[a]];
+    pool=eligible.slice();
+  }
   var idx=pool[Math.floor(Math.random()*pool.length)];
-  used[idx]=true;current=bank[idx];impIndex=Math.floor(Math.random()*players.length);active=0;round++;
+  used[idx]=true;current=bank[idx];impIndex=Math.floor(Math.random()*players.length);
+  active=0;round++;
+  updateToolbar();
 }
 function newRound(confirmFirst){
   if(confirmFirst && !window.confirm("Aktuelle Runde abbrechen und eine neue Runde starten?")) return;
   pickRound();handoff();
 }
-function handoff(){byId("roundLabel").textContent="Runde "+round;byId("handoffName").textContent="Handy an "+players[active].name;show("handoff");}
+function handoff(){
+  byId("handoffName").textContent="Handy an "+players[active].name;
+  show("handoff");
+}
+function fitQuestion(){
+  var el=byId("questionText"),len=el.textContent.length;
+  el.classList.remove("longQ","veryLongQ");
+  if(len>115) el.classList.add("veryLongQ");
+  else if(len>82) el.classList.add("longQ");
+}
 function openQuestion(){
-  byId("catLabel").textContent=current.cat;
   byId("progress").textContent=(active+1)+"/"+players.length;
   byId("currentName").textContent=players[active].name;
   byId("questionText").textContent=(active===impIndex?current.imp:current.normal);
-  byId("unitLabel").textContent="Schätzung in "+current.unit;
-
+  fitQuestion();
   configureSlider(current);
   show("question");
-}
-function saveGuess(){
-  var v=Number(byId("guessSlider").value);
-  if(!isFinite(v)) return;
-  players[active].guess=v;
-  if(active<players.length-1){active++;handoff();}else{renderAnswers();show("answers");}
 }
 
 function scaleForQuestion(item){
   var text=(item.normal+" "+item.imp).toLowerCase();
   var unit=item.unit;
-
   function has(words){
     for(var i=0;i<words.length;i++) if(text.indexOf(words[i])!==-1) return true;
     return false;
   }
 
-  if(unit==="Prozent") return {min:0,max:100,step:1,start:50};
-  if(unit==="Millionen") return {min:0,max:100,step:0.5,start:10};
-  if(unit==="km/h") return {min:0,max:350,step:5,start:100};
-  if(unit==="km²") return {min:0,max:600000,step:5000,start:100000};
+  /* Every scale starts at 0. Max/step only adapt to the type of estimate. */
+  if(unit==="Prozent") return {max:100,step:1};
+  if(unit==="Millionen") return {max:100,step:.5};
+  if(unit==="km/h") return {max:350,step:5};
+  if(unit==="km²") return {max:600000,step:5000};
   if(unit==="Kilogramm"){
-    if(has(["elefant","giraffe"])) return {min:0,max:7000,step:50,start:3000};
-    return {min:0,max:1000,step:10,start:100};
+    if(has(["elefant","giraffe"])) return {max:7000,step:50};
+    if(has(["auto","pkw","suv"])) return {max:3000,step:25};
+    return {max:1000,step:10};
   }
-  if(unit==="Zentimeter") return {min:0,max:100,step:1,start:20};
-  if(unit==="Sekunden") return {min:0,max:180,step:1,start:30};
-  if(unit==="Tage"){
-    if(has(["jahr","schaltjahr"])) return {min:300,max:400,step:1,start:365};
-    return {min:0,max:60,step:1,start:7};
-  }
-  if(unit==="Monate") return {min:0,max:30,step:1,start:9};
-  if(unit==="Wochen") return {min:0,max:52,step:1,start:8};
-  if(unit==="Jahre") return {min:0,max:120,step:1,start:20};
-  if(unit==="Stunden") return {min:0,max:48,step:0.5,start:8};
+  if(unit==="Zentimeter") return {max:100,step:1};
+  if(unit==="Sekunden") return {max:180,step:1};
+  if(unit==="Tage") return {max:400,step:1};
+  if(unit==="Monate") return {max:36,step:1};
+  if(unit==="Wochen") return {max:60,step:1};
+  if(unit==="Jahre") return {max:150,step:1};
+  if(unit==="Stunden") return {max:48,step:.5};
   if(unit==="Liter"){
-    if(has(["badewanne","elefant","wassertank"])) return {min:0,max:500,step:5,start:150};
-    if(has(["tank","reichweite"])) return {min:0,max:120,step:1,start:50};
-    return {min:0,max:100,step:1,start:10};
+    if(has(["badewanne","elefant","wassertank"])) return {max:500,step:5};
+    if(has(["tank","warmwasserspeicher"])) return {max:150,step:1};
+    return {max:100,step:1};
   }
   if(unit==="Meter"){
-    if(has(["everest","kilimandscharo","marianengraben","pottwal","flugzeug","zugspitze"])) return {min:0,max:12000,step:100,start:3000};
-    if(has(["eiffelturm","fernsehturm","kreuzfahrtschiff","wolkenkratzer","staudamm"])) return {min:0,max:700,step:5,start:300};
-    return {min:0,max:200,step:1,start:50};
+    if(has(["everest","kilimandscharo","marianengraben","pottwal","flugzeug","zugspitze"])) return {max:12000,step:100};
+    if(has(["eiffelturm","fernsehturm","kreuzfahrtschiff","wolkenkratzer","staudamm"])) return {max:800,step:5};
+    return {max:250,step:1};
   }
   if(unit==="Kilometer"){
-    if(has(["jahr","reifen","taxi","vielfahrer","kupplung","küste","dienstwagen"])) return {min:0,max:100000,step:500,start:15000};
-    if(has(["rhein","elbe","deutschland","zugstrecke","autobahn","tankfüllung","reichweite"])) return {min:0,max:2000,step:10,start:500};
-    return {min:0,max:300,step:1,start:40};
+    if(has(["jahr","reifen","taxi","vielfahrer","kupplung","küste","dienstwagen"])) return {max:100000,step:500};
+    if(has(["rhein","elbe","deutschland","zugstrecke","autobahn","tankfüllung","reichweite"])) return {max:2500,step:10};
+    return {max:350,step:1};
   }
   if(unit==="Minuten"){
-    if(has(["kinofilm","waschgang","tennismatch","restaurant","erstes date","serienfolge","dramaserie"])) return {min:0,max:300,step:5,start:90};
-    if(has(["update","arbeitsweg","einkauf","friseur","mittagspause","arztpraxis"])) return {min:0,max:120,step:1,start:30};
-    return {min:0,max:180,step:1,start:30};
+    if(has(["kinofilm","waschgang","tennismatch","restaurant","erstes date","serienfolge","dramaserie"])) return {max:300,step:5};
+    return {max:180,step:1};
   }
   if(unit==="Euro"){
-    if(has(["reifen","smartphone"])) return {min:0,max:1500,step:10,start:500};
-    return {min:0,max:200,step:1,start:30};
+    if(has(["reifen","smartphone"])) return {max:1500,step:10};
+    return {max:250,step:1};
   }
-  if(unit==="Nachrichten") return {min:0,max:300,step:5,start:50};
-  if(unit==="Treffen"||unit==="Personen"||unit==="Personen/Treffen"||unit==="Personen/Chats"||unit==="Mal"||unit==="Anzahl"){
-    return {min:0,max:100,step:1,start:10};
-  }
+  if(unit==="Nachrichten") return {max:300,step:5};
+  if(unit==="Treffen"||unit==="Personen"||unit==="Personen/Treffen"||unit==="Personen/Chats"||unit==="Mal"||unit==="Anzahl") return {max:100,step:1};
   if(unit==="Stück"){
-    if(has(["knochen","länder","karten","seiten","felder","tasten"])) return {min:0,max:250,step:1,start:50};
-    return {min:0,max:100,step:1,start:10};
+    if(has(["knochen","länder","karten","seiten","felder","tasten"])) return {max:250,step:1};
+    return {max:120,step:1};
   }
 
-  /* Questions labelled "Einheiten" intentionally pair different topics.
-     Pick a useful range from the actual wording. */
-  if(has(["einwohner","zuschauer","stadion","schritte","taxi pro jahr","dienstwagenfahrer"])) return {min:0,max:100000,step:500,start:10000};
-  if(has(["watt","wasserkocher","fernseher"])) return {min:0,max:3000,step:25,start:500};
-  if(has(["kalorien"])) return {min:0,max:2000,step:10,start:500};
-  if(has(["seiten","gramm","milliliter","meter","kilometer","reichweite"])) return {min:0,max:1500,step:5,start:200};
-  if(has(["minuten","schulstunde","arbeitsweg","mittagessen","serienfolge","taxifahrt"])) return {min:0,max:240,step:1,start:45};
-  if(has(["stunden","schläft","arbeitstag"])) return {min:0,max:48,step:0.5,start:8};
-  if(has(["jahre","hauskatze","hund","pferd"])) return {min:0,max:120,step:1,start:20};
-  if(has(["gigabyte","hertz","tasten","bilder pro sekunde"])) return {min:0,max:250,step:1,start:60};
-
-  return {min:0,max:500,step:1,start:100};
+  /* Mixed-topic pairs intentionally use a generic unit. Keep ranges usable on a phone. */
+  if(has(["volt","megapixel","pins","planeten","spieler pro team","monate hat","saiten","türen"])) return {max:50,step:1};
+  if(has(["bilder pro sekunde","hertz","kilowatt","schulstunde","arbeitsweg","mittagessen","serienfolge"])) return {max:250,step:1};
+  if(has(["gigabyte","reichweite","seiten","gramm","milliliter","meter","kalorien"])) return {max:2000,step:5};
+  if(has(["watt","wasserkocher","fernseher"])) return {max:3000,step:25};
+  if(has(["einwohner","zuschauer","stadion","schritte"])) return {max:100000,step:500};
+  if(has(["jahre","hauskatze","hund","pferd"])) return {max:150,step:1};
+  if(has(["stunden","schläft","arbeitstag"])) return {max:48,step:.5};
+  return {max:500,step:1};
 }
-
-function decimalPlaces(n){
-  var s=String(n);
-  return s.indexOf(".")===-1?0:(s.length-s.indexOf(".")-1);
+function decimals(n){
+  var s=String(n),p=s.indexOf(".");
+  return p<0?0:s.length-p-1;
 }
 function formatEstimate(v){
   var step=Number(byId("guessSlider").step)||1;
-  var places=decimalPlaces(step);
-  return Number(v).toFixed(places).replace(".",",");
-}
-function renderRuler(){
-  var box=byId("rulerTicks");
-  box.innerHTML="";
-  for(var i=0;i<=30;i++){
-    var t=document.createElement("span");
-    t.className="rulerTick"+(i%5===0?" major":"");
-    box.appendChild(t);
-  }
-  if(!byId("sliderIndicator")){
-    var indicator=document.createElement("div");
-    indicator.id="sliderIndicator";
-    indicator.className="sliderIndicator";
-    byId("guessSlider").parentNode.insertBefore(indicator,byId("guessSlider"));
-  }
-  if(!byId("rangeFill")){
-    var fill=document.createElement("div");
-    fill.id="rangeFill";
-    fill.className="rangeFill";
-    byId("guessSlider").parentNode.insertBefore(fill,byId("guessSlider"));
-  }
-}
-function updateSliderVisual(){
-  var slider=byId("guessSlider");
-  var min=Number(slider.min),max=Number(slider.max),v=Number(slider.value);
-  var pct=max===min?0:((v-min)/(max-min))*100;
-  byId("estimateValue").textContent=formatEstimate(v);
-  byId("estimateUnit").textContent=current?current.unit:"";
-  if(byId("sliderIndicator")) byId("sliderIndicator").style.left=pct+"%";
-  if(byId("rangeFill")) byId("rangeFill").style.width=pct+"%";
+  return Number(v).toFixed(decimals(step)).replace(".",",");
 }
 function configureSlider(item){
   var s=scaleForQuestion(item),slider=byId("guessSlider");
-  slider.min=s.min; slider.max=s.max; slider.step=s.step;
-  var start=Math.max(s.min,Math.min(s.max,s.start));
-  slider.value=start;
-  byId("rangeMin").textContent=String(s.min).replace(".",",");
+  slider.min=0;slider.max=s.max;slider.step=s.step;slider.value=0;
   byId("rangeMax").textContent=String(s.max).replace(".",",");
-  renderRuler();
+  var scrub=byId("scrubber");
+  scrub.setAttribute("aria-valuemin","0");
+  scrub.setAttribute("aria-valuemax",String(s.max));
   updateSliderVisual();
 }
-function nudgeSlider(dir){
-  var slider=byId("guessSlider");
-  var next=Number(slider.value)+dir*Number(slider.step);
-  next=Math.max(Number(slider.min),Math.min(Number(slider.max),next));
-  slider.value=next;
+function updateSliderVisual(){
+  var slider=byId("guessSlider"),min=0,max=Number(slider.max),v=Number(slider.value);
+  var pct=max<=0?0:(v/max)*100;
+  byId("sliderFill").style.width=pct+"%";
+  byId("sliderThumb").style.left=pct+"%";
+  var val=byId("estimateValue"),txt=formatEstimate(v);
+  val.textContent=txt;val.classList.remove("mediumValue","smallValue");
+  if(txt.length>=7) val.classList.add("smallValue");
+  else if(txt.length>=5) val.classList.add("mediumValue");
+  byId("estimateUnit").textContent=current?current.unit:"";
+  var scrub=byId("scrubber");
+  scrub.setAttribute("aria-valuenow",String(v));
+  scrub.setAttribute("aria-valuetext",txt+" "+(current?current.unit:""));
+}
+function setEstimateFromClientX(clientX){
+  var rail=byId("sliderRail"),r=rail.getBoundingClientRect();
+  var pct=(clientX-r.left)/r.width;
+  pct=Math.max(0,Math.min(1,pct));
+  var slider=byId("guessSlider"),max=Number(slider.max),step=Number(slider.step)||1;
+  var raw=pct*max;
+  var value=Math.round(raw/step)*step;
+  value=Math.max(0,Math.min(max,value));
+  slider.value=value;
   updateSliderVisual();
 }
-
+function nudge(dir){
+  var slider=byId("guessSlider"),step=Number(slider.step)||1;
+  var v=Number(slider.value)+dir*step;
+  slider.value=Math.max(0,Math.min(Number(slider.max),v));
+  updateSliderVisual();
+}
+function saveGuess(){
+  var v=Number(byId("guessSlider").value);
+  if(!isFinite(v)) return;
+  players[active].guess=v;
+  if(active<players.length-1){active++;handoff();}
+  else{renderAnswers();show("answers");}
+}
 function fmt(v){return String(v).replace(".",",");}
 function renderAnswers(){
   var box=byId("answerList");box.innerHTML="";
-  for(var i=0;i<players.length;i++){var row=document.createElement("div");row.className="answerRow";var a=document.createElement("strong");a.textContent=players[i].name;var b=document.createElement("div");b.className="answerValue";b.textContent=fmt(players[i].guess)+" "+current.unit;row.appendChild(a);row.appendChild(b);box.appendChild(row);}
+  for(var i=0;i<players.length;i++){
+    var row=document.createElement("div");row.className="answerRow";
+    var a=document.createElement("strong");a.textContent=players[i].name;
+    var b=document.createElement("div");b.className="answerValue";
+    b.textContent=fmt(players[i].guess)+" "+current.unit;
+    row.appendChild(a);row.appendChild(b);box.appendChild(row);
+  }
 }
-function reveal(){byId("impostorName").textContent=players[impIndex].name;byId("normalQ").textContent=current.normal;byId("impostorQ").textContent=current.imp;show("result");}
+function reveal(){
+  byId("impostorName").textContent=players[impIndex].name;
+  byId("normalQ").textContent=current.normal;
+  byId("impostorQ").textContent=current.imp;
+  show("result");
+}
 function leaveGame(){
   if(!window.confirm("Spiel verlassen und zurück zum Start?")) return;
-  players=[];active=0;round=0;current=null;used={};byId("error").textContent="";show("setup");
+  players=[];active=0;round=0;current=null;used={};
+  byId("error").textContent="";
+  show("setup");
 }
 
+/* Setup controls */
 byId("plus").addEventListener("click",function(){if(count<12){count++;renderNames();}});
 byId("minus").addEventListener("click",function(){if(count>3){count--;renderNames();}});
 byId("start").addEventListener("click",start);
+
+/* Game */
 byId("showQuestion").addEventListener("click",openQuestion);
 byId("saveGuess").addEventListener("click",saveGuess);
-byId("guessSlider").addEventListener("input",updateSliderVisual);
-byId("guessSlider").addEventListener("change",updateSliderVisual);
-byId("minusGuess").addEventListener("click",function(){nudgeSlider(-1);});
-byId("plusGuess").addEventListener("click",function(){nudgeSlider(1);});
 byId("reveal").addEventListener("click",reveal);
 byId("next").addEventListener("click",function(){newRound(false);});
 byId("freshRound").addEventListener("click",function(){newRound(true);});
 byId("leaveGame").addEventListener("click",leaveGame);
 byId("restart").addEventListener("click",leaveGame);
+
+/* Huge thumb-friendly slider: touch anywhere in the field and drag. */
+var scrubber=byId("scrubber");
+scrubber.addEventListener("pointerdown",function(e){
+  scrubbing=true;
+  try{scrubber.setPointerCapture(e.pointerId);}catch(err){}
+  setEstimateFromClientX(e.clientX);
+  e.preventDefault();
+});
+scrubber.addEventListener("pointermove",function(e){
+  if(!scrubbing)return;
+  setEstimateFromClientX(e.clientX);
+  e.preventDefault();
+});
+function stopScrub(e){scrubbing=false;}
+scrubber.addEventListener("pointerup",stopScrub);
+scrubber.addEventListener("pointercancel",stopScrub);
+scrubber.addEventListener("keydown",function(e){
+  if(e.key==="ArrowLeft"||e.key==="ArrowDown"){nudge(-1);e.preventDefault();}
+  if(e.key==="ArrowRight"||e.key==="ArrowUp"){nudge(1);e.preventDefault();}
+  if(e.key==="Home"){byId("guessSlider").value=0;updateSliderVisual();e.preventDefault();}
+  if(e.key==="End"){byId("guessSlider").value=byId("guessSlider").max;updateSliderVisual();e.preventDefault();}
+});
+
+/* Fallback for older WebKit builds without Pointer Events. */
+if(!window.PointerEvent){
+  scrubber.addEventListener("touchstart",function(e){
+    if(!e.touches.length)return;
+    setEstimateFromClientX(e.touches[0].clientX);e.preventDefault();
+  },{passive:false});
+  scrubber.addEventListener("touchmove",function(e){
+    if(!e.touches.length)return;
+    setEstimateFromClientX(e.touches[0].clientX);e.preventDefault();
+  },{passive:false});
+}
 
 initCategories();renderNames();show("setup");
 })();
