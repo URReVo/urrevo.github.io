@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Circa Impostor">
 <meta name="theme-color" content="#292929">
-<title>Circa Impostor V18</title>
+<title>Circa Impostor V19</title>
 <style>
 :root{
   --bg:#292929;
@@ -23,7 +23,7 @@
   --black:#070707;
 }
 *{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;min-height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
 body{min-height:100%}
 button,input,select{font:inherit}
 button{touch-action:manipulation}
@@ -671,16 +671,34 @@ body.cat-pop{--ambientGlow:rgba(255,90,171,.14);--accent:#ff78ba;--accent-soft:r
 
 
 .roundIntro{
-  position:fixed;inset:0;z-index:1000;border-radius:0;
+  position:fixed;
+  left:0;top:0;
+  width:100vw;
+  width:100dvw;
+  height:100vh;
+  height:100dvh;
+  min-height:-webkit-fill-available;
+  z-index:1000;
+  box-sizing:border-box;
+  border-radius:0;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   padding:
     calc(14px + env(safe-area-inset-top))
     18px
     calc(18px + env(safe-area-inset-bottom));
-  background:rgba(14,15,18,.985);
-  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  background:#0e0f12;
   pointer-events:none;
   opacity:1;
+  overflow:hidden;
+}
+.roundIntro::after{
+  content:"";
+  position:fixed;
+  left:0;right:0;
+  bottom:-80px;
+  height:100px;
+  background:#0e0f12;
+  pointer-events:none;
 }
 .roundIntro.showIntro{
   opacity:1;
