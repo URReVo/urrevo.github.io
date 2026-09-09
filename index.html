@@ -3,20 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-
-  <link rel="icon" type="image/svg+xml" href='data:image/svg+xml;utf8,
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-    <rect width="64" height="64" rx="14" fill="%230e0f12"/>
-    <text x="50%" y="56%" text-anchor="middle" font-size="38">🕵️</text>
-  </svg>'>
-  <meta name="theme-color" content="#0e0f12">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="circa_impostor_detective_icon_180.png">
-  <link rel="icon" type="image/png" sizes="180x180" href="circa_impostor_detective_icon_180.png">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Circa Impostor">
-<title>Circa Impostor V30</title>
+<link rel="icon" type="image/svg+xml" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="%230e0f12"/><text x="50%25" y="56%25" text-anchor="middle" font-size="38">🕵️</text></svg>'>
+<link rel="apple-touch-icon" sizes="180x180" href="circa_impostor_detective_icon_180.png">
+<link rel="icon" type="image/png" sizes="180x180" href="circa_impostor_detective_icon_180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Circa Impostor">
+<meta name="theme-color" content="#292929">
+<title>Circa Impostor V31</title>
 <style>
 :root{
   --bg:#292929;
@@ -910,89 +904,31 @@ input[type="text"]{
 }
 
 
+/* V31 – minimal V23-compatible polish. No replacement layout system. */
 
-/* V30 – consolidated viewport/layout system.
-   This replaces the stacked V24–V29 overrides with one coherent layout. */
-
-:root{
-  --app-height:100dvh;
-  --game-action-height:50px;
-}
-
-/* The actual page is pinned to the current visible iOS viewport.
-   The body background is the only full-screen scene background, so there
-   are no transparent strips between sections or below the result screen. */
-html{
-  width:100%;
-  height:100%;
-  min-height:100%;
-  margin:0;
-  overflow:hidden;
-  background:#15171c;
-}
-body{
-  position:fixed;
-  inset:0;
-  width:100%;
-  height:var(--app-height,100dvh);
-  min-height:var(--app-height,100dvh);
-  margin:0;
-  overflow:hidden!important;
-  overscroll-behavior:none;
-  background:
-    radial-gradient(circle at 18% 4%, rgba(116,92,255,.11), transparent 28%),
-    radial-gradient(circle at 88% 15%, rgba(243,154,50,.08), transparent 25%),
-    linear-gradient(180deg,#15171c 0%,#25262b 42%,#1d1e22 100%)!important;
-}
-
-/* Keep the ambient grid/glow full-screen as well. */
-body:before{
-  position:fixed!important;
-  inset:0!important;
-  z-index:0!important;
-}
-.app{
-  position:relative;
-  z-index:1;
-  width:100%;
-  max-width:720px;
-  height:var(--app-height,100dvh)!important;
-  min-height:0!important;
-  margin:0 auto;
-  padding:
-    calc(6px + env(safe-area-inset-top))
-    14px
-    calc(6px + env(safe-area-inset-bottom));
-  overflow:hidden!important;
-  display:flex;
-  flex-direction:column;
-  background:transparent!important;
-}
-
-/* Setup gets a little more horizontal breathing room. */
-body:not(.game-active) .app{
-  padding-left:16px;
-  padding-right:16px;
-}
-
-/* The setup never scrolls with the default three players.
-   Scrolling is enabled explicitly after players are added. */
+/* V9's setup minimum height subtracted 28 px while the surrounding app
+   uses 12 px top + 20 px bottom padding. That four-pixel mismatch was the
+   remaining "phantom" scroll on a setup that otherwise already fit. */
 #setup{
-  flex:1 1 auto!important;
+  min-height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 32px)!important;
+}
+
+/* Empty validation text used to reserve ~27 px even when there was no error. */
+#error:empty{
+  display:none!important;
   min-height:0!important;
-  display:flex;
-  flex-direction:column;
-  overflow:hidden!important;
-  padding-bottom:0!important;
-  overscroll-behavior-y:none;
+  height:0!important;
+  margin:0!important;
+  padding:0!important;
+}
+
+/* Hide browser scroll indicators without changing the underlying scroll layout. */
+html,body,.categoryDeck,.answerGrid,.answerList,.resultScroll,.resolutionMain{
   scrollbar-width:none;
   -ms-overflow-style:none;
 }
-#setup.setup-scrollable{
-  overflow-y:auto!important;
-  -webkit-overflow-scrolling:touch;
-}
-#setup::-webkit-scrollbar,
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
 .categoryDeck::-webkit-scrollbar,
 .answerGrid::-webkit-scrollbar,
 .answerList::-webkit-scrollbar,
@@ -1002,259 +938,31 @@ body:not(.game-active) .app{
   width:0!important;
   height:0!important;
 }
-.categoryDeck,.answerGrid,.answerList,.resultScroll,.resolutionMain{
-  scrollbar-width:none;
-  -ms-overflow-style:none;
-}
 
-/* Empty validation area used to reserve invisible height on the start screen. */
-#error:empty{
-  display:none!important;
-  min-height:0!important;
-  height:0!important;
-  margin:0!important;
-  padding:0!important;
-}
-#error:not(:empty){
-  display:block;
-  min-height:0;
-  margin-top:5px;
-}
-
-/* Category carousel remains fully visible and only scrolls horizontally. */
-#categoryDeck{
-  width:100%;
-  max-width:100%;
-  min-width:0;
-  flex:0 0 auto!important;
-  overflow-x:auto!important;
-  overflow-y:hidden!important;
-  -webkit-overflow-scrolling:touch;
-  overscroll-behavior-x:contain;
-  touch-action:pan-x;
-}
-.categoryCard{
-  flex:0 0 auto!important;
-}
-
-/* Start screen: roomier than V28/V29, but sized to fit three players without
-   the one-to-five-pixel phantom scroll that Safari was allowing. */
-#setup .hero{
-  padding-top:6px!important;
-  padding-bottom:5px!important;
-  margin-bottom:0!important;
-}
-#setup .logo{
-  width:78px!important;
-  height:78px!important;
-  margin-bottom:8px!important;
-  padding:5px!important;
-  border-radius:24px!important;
-  font-size:36px!important;
-}
-#setup h1{
-  font-size:34px!important;
-  line-height:1.04!important;
-  margin-bottom:5px!important;
-}
-#setup .hero .sub{
-  font-size:14px!important;
-  line-height:1.28!important;
-  margin-bottom:5px!important;
-}
-.sectionEyebrow{
-  margin-top:8px!important;
-  margin-bottom:5px!important;
-  font-size:10.5px!important;
-}
-.categoryDeck{
-  gap:8px!important;
-  padding:1px 1px 4px!important;
-}
-.categoryCard{
-  min-width:90px!important;
-  height:65px!important;
-  padding:8px 9px!important;
-  border-radius:16px!important;
-}
-.categoryEmoji{font-size:22px!important}
-.categoryName{font-size:11.5px!important}
-
-.difficultyEyebrow{
-  margin-top:6px!important;
-  margin-bottom:5px!important;
-}
-.difficultyControl{gap:6px!important}
-.difficultyButton{
-  min-height:38px!important;
-  padding:6px 4px!important;
-  font-size:11px!important;
-  gap:3px!important;
-}
-.difficultyHint{
-  min-height:12px!important;
-  margin-top:2px!important;
-  font-size:9.5px!important;
-}
-.playerControlsRow{
-  margin-top:8px!important;
-  margin-bottom:6px!important;
-}
-#names{
-  gap:5px!important;
-  margin:0!important;
-}
-.playerRow{
-  grid-template-columns:45px minmax(0,1fr)!important;
-  gap:7px!important;
-}
-.playerAvatarButton{
-  width:45px!important;
-  height:45px!important;
-  min-height:45px!important;
-  border-radius:14px!important;
-  font-size:23px!important;
-}
-.playerInput{
-  min-height:45px!important;
-  height:45px!important;
-  padding:9px 11px!important;
-  font-size:16px!important;
-}
-#start{
-  margin-top:8px!important;
-  min-height:46px!important;
-  height:46px!important;
-  padding:9px 14px!important;
-  font-size:16px!important;
-}
-.count{
-  margin-top:5px!important;
-  padding:0!important;
-  font-size:12px!important;
-}
-.savedHint{
-  margin-top:2px!important;
-  padding:0!important;
-  font-size:10px!important;
-  line-height:1.2!important;
-}
-
-/* The toolbar is fixed-height; every stage then gets exactly the same
-   remaining vertical area. */
-.gameTopbar{
-  flex:0 0 42px!important;
-  height:42px!important;
-}
-.gameScreen:not(.hidden){
-  flex:1 1 auto!important;
-  min-height:0!important;
+/* If the normal setup already fits, Safari must not create a tiny phantom scroll.
+   On shorter screens / with extra players the page remains naturally scrollable. */
+body.setup-fits:not(.game-active){
   overflow:hidden;
-}
-#handoff:not(.hidden),
-#question:not(.hidden),
-#answers:not(.hidden),
-#result:not(.hidden){
-  display:flex!important;
-  flex-direction:column!important;
+  overscroll-behavior-y:none;
 }
 
-/* All primary in-game actions share the same height and bottom baseline. */
-#showQuestion,
-#saveGuess,
-#reveal{
-  flex:0 0 var(--game-action-height)!important;
-  height:var(--game-action-height)!important;
-  min-height:var(--game-action-height)!important;
+/* V23 already places handoff/reveal/result actions on the bottom edge.
+   Put the question confirmation on that same baseline and normalize result buttons. */
+#question .confirmButton{
   margin-top:auto!important;
-  margin-bottom:0!important;
-  padding-top:10px!important;
-  padding-bottom:10px!important;
+  flex:0 0 48px!important;
+  min-height:48px!important;
+  height:48px!important;
 }
-
-/* Result layout: content uses the available middle area; awards and the
-   two final buttons stay attached to the same bottom action baseline. */
-#result.resolutionScreen{
-  position:relative;
-  flex:1 1 auto!important;
-  min-height:0!important;
-  overflow:hidden!important;
-  justify-content:flex-start!important;
-  padding:0!important;
-  margin:0!important;
+#handoff .handoffButton,
+#answers .stageButton{
+  flex-basis:48px!important;
+  min-height:48px!important;
+  height:48px!important;
 }
-#result .resolutionMain{
-  flex:1 1 auto!important;
-  min-height:0!important;
-  overflow-y:auto!important;
-  -webkit-overflow-scrolling:touch;
-  padding:4px 5px 0!important;
-}
-#result #roundAwards{
-  flex:0 0 auto!important;
-  margin:5px 0 6px!important;
-}
-#result #resultActions{
-  flex:0 0 var(--game-action-height)!important;
-  height:var(--game-action-height)!important;
-  min-height:var(--game-action-height)!important;
-  margin:0!important;
-  gap:8px!important;
-}
-#result #resultActions button{
-  height:var(--game-action-height)!important;
-  min-height:var(--game-action-height)!important;
-  padding-top:10px!important;
-  padding-bottom:10px!important;
-}
-
-/* The old V29 result overlay/negative margin was the source of visible
-   background cutoffs. The body now owns the full-screen background. */
-#result.resolutionScreen:after{
-  display:none!important;
-}
-
-/* Keep the question/answers buttons at the same bottom line even when their
-   content above changes height. */
-#question .confirmButton,
-#answers .stageButton,
-#handoff .handoffButton{
-  align-self:stretch;
-}
-
-/* Short visible Safari viewports: compact only the start content, not the
-   bottom action placement. */
-@media(max-height:760px){
-  #setup .hero{padding-top:3px!important;padding-bottom:3px!important}
-  #setup .logo{
-    width:66px!important;height:66px!important;
-    margin-bottom:5px!important;font-size:31px!important;
-  }
-  #setup h1{font-size:30px!important;margin-bottom:3px!important}
-  #setup .hero .sub{font-size:12.5px!important;margin-bottom:3px!important}
-  .sectionEyebrow{margin-top:5px!important;margin-bottom:4px!important}
-  .categoryCard{height:58px!important;min-width:86px!important}
-  .categoryEmoji{font-size:20px!important}
-  .difficultyEyebrow{margin-top:4px!important}
-  .difficultyButton{min-height:34px!important;padding:4px!important}
-  .difficultyHint{margin-top:1px!important;min-height:10px!important}
-  .playerControlsRow{margin-top:5px!important;margin-bottom:4px!important}
-  #names{gap:4px!important}
-  .playerAvatarButton,
-  .playerInput{height:41px!important;min-height:41px!important}
-  #start{height:43px!important;min-height:43px!important;margin-top:6px!important}
-  .count{margin-top:3px!important}
-  .savedHint{margin-top:1px!important;font-size:9.5px!important}
-}
-
-/* Extremely short viewports still remain usable once extra players are added. */
-@media(max-height:650px){
-  #setup .logo{width:58px!important;height:58px!important;font-size:28px!important}
-  #setup h1{font-size:27px!important}
-  .categoryCard{height:54px!important}
-  .difficultyButton{min-height:32px!important}
-  .playerAvatarButton,
-  .playerInput{height:39px!important;min-height:39px!important}
+#resultActions button{
+  min-height:48px!important;
+  height:48px!important;
 }
 
 </style>
@@ -1617,18 +1325,30 @@ var categoryIcons={
 
 
 
-/* V30: keep the app exactly as tall as Safari's currently visible viewport. */
-function syncAppViewportHeight(){
-  var h=(window.visualViewport&&window.visualViewport.height)?window.visualViewport.height:window.innerHeight;
-  if(h&&isFinite(h))document.documentElement.style.setProperty("--app-height",Math.round(h)+"px");
+/* V31: keep V23's natural setup layout. Lock scrolling only when everything
+   actually fits in the visible viewport; otherwise allow normal page scrolling. */
+var setupFitFrame=0;
+function syncSetupScrollFit(){
+  if(document.body.classList.contains("game-active")){
+    document.body.classList.remove("setup-fits");
+    return;
+  }
+  document.body.classList.remove("setup-fits");
+  if(setupFitFrame)cancelAnimationFrame(setupFitFrame);
+  setupFitFrame=requestAnimationFrame(function(){
+    setupFitFrame=0;
+    var doc=document.documentElement;
+    var needed=Math.max(doc.scrollHeight,document.body.scrollHeight);
+    var viewport=window.innerHeight||doc.clientHeight||0;
+    var fits=needed<=viewport+1;
+    document.body.classList.toggle("setup-fits",fits);
+    if(fits){
+      try{window.scrollTo(0,0);}catch(e){}
+    }
+  });
 }
-syncAppViewportHeight();
-window.addEventListener("resize",syncAppViewportHeight,{passive:true});
-window.addEventListener("orientationchange",function(){setTimeout(syncAppViewportHeight,60);},{passive:true});
-if(window.visualViewport){
-  window.visualViewport.addEventListener("resize",syncAppViewportHeight,{passive:true});
-  window.visualViewport.addEventListener("scroll",syncAppViewportHeight,{passive:true});
-}
+window.addEventListener("resize",syncSetupScrollFit,{passive:true});
+window.addEventListener("orientationchange",function(){setTimeout(syncSetupScrollFit,80);},{passive:true});
 
 var audioCtx=null,soundEnabled=true,lastSliderSoundAt=0,lastSliderSoundValue=null;
 
@@ -1775,6 +1495,7 @@ function show(id){
   byId("gameTopbar").classList.toggle("hidden",id==="setup");
   document.body.classList.toggle("game-active",id!=="setup");
   try{window.scrollTo(0,0);}catch(e){}
+  if(id==="setup")syncSetupScrollFit();
 }
 function updateToolbar(){
   byId("topCategory").textContent=current ? current.cat : selectedCategoryLabel();
@@ -1887,11 +1608,7 @@ function renderNames(){
     })(i);
   }
   byId("minus").disabled=count<=3;byId("plus").disabled=count>=12;
-  var setup=byId("setup");
-  if(setup){
-    setup.classList.toggle("setup-scrollable",count>3);
-    if(count<=3)setup.scrollTop=0;
-  }
+  syncSetupScrollFit();
 }
 function start(){
   var nodes=byId("names").querySelectorAll("input"),names=[],set={};
@@ -2389,8 +2106,8 @@ byId("soundToggle").addEventListener("click",function(){setSoundEnabled(!soundEn
 
 
 
-/* iOS Safari can suspend/interupt Web Audio after navigation, locking the
-   screen or returning from the app switcher. Re-unlock on real gestures. */
+/* iOS Safari can pause Web Audio after locking the device or switching apps.
+   Re-unlock it on the next real interaction without changing the page layout. */
 document.addEventListener("pointerdown",function(){if(soundEnabled)unlockAudio();},{passive:true,capture:true});
 document.addEventListener("touchstart",function(){if(soundEnabled)unlockAudio();},{passive:true,capture:true});
 window.addEventListener("pageshow",function(){if(soundEnabled)unlockAudio();});
@@ -2415,47 +2132,6 @@ document.addEventListener("cut",function(e){
   if(e.target&&e.target.closest&&e.target.closest('input[type="text"]'))return;
   e.preventDefault();
 });
-
-
-/* Prevent vertical iOS rubber-band scrolling past the setup content.
-   Horizontal category swipes are handled entirely by the category deck. */
-(function(){
-  var setupScroller=byId("setup");
-  var lastY=0;
-
-  setupScroller.addEventListener("touchstart",function(e){
-    if(!e.touches||!e.touches.length)return;
-    lastY=e.touches[0].clientY;
-  },{passive:true});
-
-  setupScroller.addEventListener("touchmove",function(e){
-    if(!e.touches||!e.touches.length)return;
-
-    /* Never intercept the horizontal category carousel. */
-    if(e.target&&e.target.closest&&e.target.closest("#categoryDeck"))return;
-
-    /* Default three-player setup is intentionally locked to one screen. */
-    if(!setupScroller.classList.contains("setup-scrollable")){
-      e.preventDefault();
-      return;
-    }
-
-    var y=e.touches[0].clientY;
-    var dy=y-lastY;
-    lastY=y;
-
-    var maxScroll=Math.max(0,setupScroller.scrollHeight-setupScroller.clientHeight);
-    if(maxScroll<=1){
-      e.preventDefault();
-      return;
-    }
-
-    var atTop=setupScroller.scrollTop<=0;
-    var atBottom=setupScroller.scrollTop>=maxScroll-1;
-    if((atTop&&dy>0)||(atBottom&&dy<0))e.preventDefault();
-  },{passive:false});
-})();
-
 
 /* Huge thumb-friendly slider: touch anywhere in the field and drag. */
 var scrubber=byId("scrubber");
