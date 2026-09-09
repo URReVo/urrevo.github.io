@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Circa Impostor">
 <meta name="theme-color" content="#292929">
-<title>Circa Impostor V22</title>
+<title>Circa Impostor V23</title>
 <style>
 :root{
   --bg:#292929;
@@ -881,6 +881,23 @@ body.cat-alle #topCategory{
   .difficultyControl{gap:5px}
   .difficultyButton{padding:7px 4px;font-size:10.5px;gap:3px}
   .difficultyIcon{font-size:11px}
+}
+
+
+/* V23 – app-like Safari behavior: game UI cannot be selected/copied */
+html,body,.app,
+button,label,p,h1,h2,h3,
+section,div,span{
+  -webkit-user-select:none;
+  user-select:none;
+  -webkit-touch-callout:none;
+}
+
+/* Player-name fields must stay normally editable/selectable. */
+input[type="text"]{
+  -webkit-user-select:text;
+  user-select:text;
+  -webkit-touch-callout:default;
 }
 
 </style>
@@ -1930,6 +1947,25 @@ byId("freshRound").addEventListener("click",function(){ensureAudio();newRound(tr
 byId("leaveGame").addEventListener("click",leaveGame);
 byId("restart").addEventListener("click",leaveGame);
 byId("soundToggle").addEventListener("click",function(){setSoundEnabled(!soundEnabled);});
+
+
+/* App-like Safari interaction: suppress selection/copy callouts outside inputs. */
+document.addEventListener("selectstart",function(e){
+  if(e.target&&e.target.closest&&e.target.closest('input[type="text"]'))return;
+  e.preventDefault();
+});
+document.addEventListener("contextmenu",function(e){
+  if(e.target&&e.target.closest&&e.target.closest('input[type="text"]'))return;
+  e.preventDefault();
+});
+document.addEventListener("copy",function(e){
+  if(e.target&&e.target.closest&&e.target.closest('input[type="text"]'))return;
+  e.preventDefault();
+});
+document.addEventListener("cut",function(e){
+  if(e.target&&e.target.closest&&e.target.closest('input[type="text"]'))return;
+  e.preventDefault();
+});
 
 /* Huge thumb-friendly slider: touch anywhere in the field and drag. */
 var scrubber=byId("scrubber");
