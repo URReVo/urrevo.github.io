@@ -10,11 +10,17 @@
     <text x="50%" y="56%" text-anchor="middle" font-size="38">🕵️</text>
   </svg>'>
   <meta name="theme-color" content="#0e0f12">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="circa_impostor_detective_icon_180.png">
+  <link rel="icon" type="image/png" sizes="180x180" href="circa_impostor_detective_icon_180.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Circa Impostor">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Circa Impostor">
 <meta name="theme-color" content="#292929">
-<title>Circa Impostor V25</title>
+<title>Circa Impostor V27</title>
 <style>
 :root{
   --bg:#292929;
@@ -950,6 +956,25 @@ body.game-active .app{
 .categoryDeck,.answerGrid,.answerList,.resultScroll,.resolutionMain{
   scrollbar-width:none;
   -ms-overflow-style:none;
+}
+
+
+/* V27 – fix category visibility inside the fixed setup scroller */
+#setup > *{
+  flex-shrink:0;
+}
+#categoryDeck{
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  flex:0 0 auto;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  -webkit-overflow-scrolling:touch;
+  touch-action:pan-x;
+}
+.categoryCard{
+  flex-shrink:0!important;
 }
 
 </style>
@@ -2093,35 +2118,39 @@ document.addEventListener("cut",function(e){
 });
 
 
-/* Prevent iOS rubber-band scrolling past the actual setup content.
-   Horizontal category swipes are left untouched. */
+/* Prevent vertical iOS rubber-band scrolling past the setup content.
+   Horizontal category swipes are handled entirely by the category deck. */
 (function(){
   var setupScroller=byId("setup");
-  var lastX=0,lastY=0;
+  var lastY=0;
+
   setupScroller.addEventListener("touchstart",function(e){
     if(!e.touches||!e.touches.length)return;
-    lastX=e.touches[0].clientX;
     lastY=e.touches[0].clientY;
   },{passive:true});
+
   setupScroller.addEventListener("touchmove",function(e){
     if(!e.touches||!e.touches.length)return;
-    var x=e.touches[0].clientX,y=e.touches[0].clientY;
-    var dx=x-lastX,dy=y-lastY;
-    lastX=x;lastY=y;
 
-    /* A deliberate horizontal swipe belongs to the category carousel. */
-    if(Math.abs(dx)>Math.abs(dy))return;
+    /* Never intercept the horizontal category carousel. */
+    if(e.target&&e.target.closest&&e.target.closest("#categoryDeck"))return;
+
+    var y=e.touches[0].clientY;
+    var dy=y-lastY;
+    lastY=y;
 
     var maxScroll=Math.max(0,setupScroller.scrollHeight-setupScroller.clientHeight);
     if(maxScroll<=1){
       e.preventDefault();
       return;
     }
+
     var atTop=setupScroller.scrollTop<=0;
     var atBottom=setupScroller.scrollTop>=maxScroll-1;
     if((atTop&&dy>0)||(atBottom&&dy<0))e.preventDefault();
   },{passive:false});
 })();
+
 
 /* Huge thumb-friendly slider: touch anywhere in the field and drag. */
 var scrubber=byId("scrubber");
