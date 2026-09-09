@@ -3,15 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<link rel="icon" type="image/png" sizes="180x180" href="circa_impostor_detective_icon_180.png"><rect width="64" height="64" rx="14" fill="%230e0f12"/><text x="50%25" y="56%25" text-anchor="middle" font-size="38">🕵️</text></svg>'>
-<link rel="apple-touch-icon" sizes="180x180" href="circa_impostor_detective_icon_180.png">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="180x180" href="circa_impostor_detective_icon_180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Circa Impostor">
 <meta name="theme-color" content="#292929">
-<title>Circa Impostor V33</title>
+<link rel="apple-touch-icon" sizes="180x180" href="circa_impostor_detective_icon_180.png">
+<link rel="icon" type="image/png" sizes="180x180" href="circa_impostor_detective_icon_180.png">
+<title>Circa Impostor V34</title>
 <style>
 :root{
   --bg:#292929;
@@ -1124,6 +1122,17 @@ body.setup-fits:not(.game-active){
   width:30%;
   height:30%;
   background:rgba(243,154,50,.24);
+}
+
+
+
+/* V34 – Safari canvas/safe-area background hardening.
+   Layout remains V31/V32; this only guarantees no transparent canvas strips. */
+html{
+  background-color:var(--bg)!important;
+}
+body{
+  background-color:var(--bg)!important;
 }
 
 </style>
