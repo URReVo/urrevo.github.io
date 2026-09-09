@@ -20,7 +20,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Circa Impostor">
 <meta name="theme-color" content="#292929">
-<title>Circa Impostor V28</title>
+<title>Circa Impostor V29</title>
 <style>
 :root{
   --bg:#292929;
@@ -1121,6 +1121,167 @@ body:before{
   .difficultyButton{min-height:34px!important}
   .playerAvatarButton,
   .playerInput{min-height:41px!important;height:41px!important}
+}
+
+
+/* V29 – restore the roomier start layout without forcing initial scrolling. */
+@media (max-height:920px){
+  #setup .hero{
+    padding-top:7px!important;
+    padding-bottom:6px!important;
+  }
+  #setup .logo{
+    width:78px!important;
+    height:78px!important;
+    margin-bottom:8px!important;
+    padding:5px!important;
+    border-radius:24px!important;
+    font-size:36px!important;
+  }
+  #setup h1{
+    font-size:33px!important;
+    margin-bottom:5px!important;
+  }
+  #setup .hero .sub{
+    font-size:14px!important;
+    line-height:1.28!important;
+    margin-bottom:6px!important;
+  }
+
+  .sectionEyebrow{
+    margin-top:9px!important;
+    margin-bottom:6px!important;
+    font-size:10.5px!important;
+  }
+  .categoryDeck{
+    gap:8px!important;
+    padding-bottom:5px!important;
+  }
+  .categoryCard{
+    min-width:90px!important;
+    height:66px!important;
+    padding:8px 9px!important;
+  }
+  .categoryEmoji{font-size:22px!important}
+  .categoryName{font-size:11.5px!important}
+
+  .difficultyEyebrow{
+    margin-top:7px!important;
+    margin-bottom:6px!important;
+  }
+  .difficultyControl{gap:6px!important}
+  .difficultyButton{
+    min-height:38px!important;
+    padding:6px 4px!important;
+    font-size:11px!important;
+  }
+  .difficultyHint{
+    min-height:13px!important;
+    margin-top:3px!important;
+    font-size:9.5px!important;
+  }
+
+  .playerControlsRow{
+    margin-top:10px!important;
+    margin-bottom:7px!important;
+  }
+  #names{gap:6px!important}
+  .playerRow{
+    grid-template-columns:46px minmax(0,1fr)!important;
+    gap:8px!important;
+  }
+  .playerAvatarButton{
+    width:46px!important;
+    height:46px!important;
+    min-height:46px!important;
+    font-size:23px!important;
+  }
+  .playerInput{
+    min-height:46px!important;
+    padding:10px 12px!important;
+    font-size:16px!important;
+  }
+  #start{
+    margin-top:9px!important;
+    min-height:46px!important;
+    padding:10px 14px!important;
+    font-size:16px!important;
+  }
+  .count{
+    margin-top:6px!important;
+  }
+  .savedHint{
+    margin-top:2px!important;
+    font-size:10px!important;
+  }
+}
+
+/* Resolution screen:
+   keep the content at the top, but put the final actions back at the very
+   bottom of the usable screen like before. */
+#result.resolutionScreen{
+  position:relative;
+  justify-content:flex-start!important;
+  flex:1 1 auto!important;
+  min-height:0!important;
+
+  /* Extend the result scene through the app's bottom safe-area padding so
+     its background visually reaches the physical bottom of the iPhone. */
+  margin-bottom:calc(-8px - env(safe-area-inset-bottom))!important;
+  padding-bottom:calc(8px + env(safe-area-inset-bottom))!important;
+}
+
+#result .resolutionMain{
+  flex:0 1 auto!important;
+  min-height:0!important;
+}
+
+#result #roundAwards{
+  flex:0 0 auto!important;
+}
+
+#result #resultActions{
+  flex:0 0 auto!important;
+  margin-top:auto!important;
+  margin-bottom:0!important;
+  padding-bottom:0!important;
+}
+
+/* A full-height result-scene wash prevents a visible background cutoff below
+   the awards/actions while preserving the existing ambient category glow. */
+#result.resolutionScreen:after{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  pointer-events:none;
+  left:-14px;
+  right:-14px;
+  top:-4px;
+  bottom:calc(-8px - env(safe-area-inset-bottom));
+  background:
+    radial-gradient(circle at 50% 22%,var(--ambientGlow,rgba(116,92,255,.10)),transparent 42%),
+    linear-gradient(180deg,rgba(21,23,28,.05),rgba(29,30,34,.16));
+}
+
+/* Short screens still stay usable rather than clipping content. */
+@media (max-height:720px){
+  #setup .hero{
+    padding-top:4px!important;
+    padding-bottom:4px!important;
+  }
+  #setup .logo{
+    width:64px!important;
+    height:64px!important;
+    font-size:30px!important;
+    margin-bottom:5px!important;
+  }
+  #setup h1{font-size:29px!important}
+  #setup .hero .sub{font-size:12.5px!important}
+  .categoryCard{height:59px!important}
+  .difficultyButton{min-height:35px!important}
+  .playerAvatarButton,
+  .playerInput{height:42px!important;min-height:42px!important}
+  #start{min-height:43px!important}
 }
 
 </style>
