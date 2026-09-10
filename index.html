@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#292929">
 <link rel="apple-touch-icon" sizes="180x180" href="circa_impostor_detective_icon_180.png">
 <link rel="icon" type="image/png" sizes="180x180" href="circa_impostor_detective_icon_180.png">
-<title>Circa Impostor V46</title>
+<title>Circa Impostor V47</title>
 <style>
 :root{
   --bg:#292929;
@@ -883,6 +883,7 @@ body.cat-alle #topCategory{
   gap:8px
 }
 .statsPlayerAvatar{font-size:23px;flex:0 0 auto}
+.statsPlayerInfo{min-width:0}
 .statsPlayerName{
   min-width:0;
   overflow:hidden;
@@ -891,6 +892,16 @@ body.cat-alle #topCategory{
   font-size:14px;
   font-weight:900
 }
+.statsPlayerAverage{
+  margin-top:2px;
+  color:var(--muted);
+  font-size:9px;
+  line-height:1.2;
+  font-weight:750;
+  white-space:nowrap
+}
+.statsAverageNear{color:#d8d9dd}
+.statsAverageAway{color:#9d9fa6}
 .statsScore{
   font-variant-numeric:tabular-nums;
   color:var(--accent);
@@ -907,6 +918,14 @@ body.cat-alle #topCategory{
   border:1px dashed var(--border);
   font-size:13px;
   line-height:1.35
+}
+.statsDeviceRounds{
+  margin:12px 0 3px;
+  text-align:center;
+  color:#777a82;
+  font-size:10px;
+  line-height:1.3;
+  font-weight:750
 }
 .statsResetButton{
   min-height:40px;
@@ -1349,6 +1368,7 @@ body.setup-fits:not(.game-active){
   <div id="statsLeaderboard" class="statsLeaderboard"></div>
   <div id="statsEmpty" class="statsEmpty hidden">Noch keine abgeschlossenen Runden gespeichert.</div>
 
+  <div id="statsDeviceRounds" class="statsDeviceRounds">Auf diesem Gerät gespielt: 0 Runden</div>
   <button id="resetStats" type="button" class="ghost full statsResetButton">Statistiken zurücksetzen</button>
 </section>
 
@@ -1999,6 +2019,7 @@ var count=3,players=[],active=0,impIndex=0,round=0,current=null,scrubbing=false;
 var guessLocked=false,guessSaveTimer=null;
 var normalQuestionRevealed=false;
 var playerStats={};
+var deviceStats={roundsPlayed:0};
 var selectedStatsMetric="closest";
 var roundStatsRecorded=false;
 var roundOutcomeChoice=null;
@@ -2008,6 +2029,7 @@ var STORAGE_DECK="circaImpostor.deckProgress.v5";
 var STORAGE_DIFFICULTY="circaImpostor.difficulty.v1";
 var STORAGE_CATEGORIES="circaImpostor.categories.v1";
 var STORAGE_STATS="circaImpostor.playerStats.v1";
+var STORAGE_DEVICE_STATS="circaImpostor.deviceStats.v1";
 var deckProgress={};
 var savedPlayerNames=[];
 var selectedDifficulty="mittel";
@@ -2136,6 +2158,8 @@ function loadPlayerStats(){
     if(!name)continue;
 
     var safeKey=statsPlayerKey(name);
+    var errorSum=Number(item.errorSum);
+    var errorSamples=sanitizeStatNumber(item.errorSamples);
     playerStats[safeKey]={
       name:name,
       avatar:String(item.avatar||"😎").slice(0,8),
@@ -2143,12 +2167,19 @@ function loadPlayerStats(){
       farthest:sanitizeStatNumber(item.farthest),
       impostor:sanitizeStatNumber(item.impostor),
       impostorWins:sanitizeStatNumber(item.impostorWins),
-      rounds:sanitizeStatNumber(item.rounds)
+      rounds:sanitizeStatNumber(item.rounds),
+      errorSum:isFinite(errorSum)&&errorSum>=0?errorSum:0,
+      errorSamples:errorSamples
     };
   }
+
+  var savedDevice=storageGet(STORAGE_DEVICE_STATS,{roundsPlayed:0});
+  if(!savedDevice||typeof savedDevice!=="object"||Array.isArray(savedDevice))savedDevice={roundsPlayed:0};
+  deviceStats={roundsPlayed:sanitizeStatNumber(savedDevice.roundsPlayed)};
 }
 function savePlayerStats(){
   storageSet(STORAGE_STATS,playerStats);
+  storageSet(STORAGE_DEVICE_STATS,deviceStats);
 }
 function ensurePlayerStat(player){
   var key=statsPlayerKey(player.name);
@@ -2160,9 +2191,13 @@ function ensurePlayerStat(player){
       farthest:0,
       impostor:0,
       impostorWins:0,
-      rounds:0
+      rounds:0,
+      errorSum:0,
+      errorSamples:0
     };
   }else{
+    if(!isFinite(Number(playerStats[key].errorSum))||Number(playerStats[key].errorSum)<0)playerStats[key].errorSum=0;
+    playerStats[key].errorSamples=sanitizeStatNumber(playerStats[key].errorSamples);
     playerStats[key].name=cleanPlayerName(player.name);
     playerStats[key].avatar=player.avatar||playerStats[key].avatar||"😎";
   }
@@ -2194,12 +2229,21 @@ function recordRoundBaseStats(){
   if(!perf.length)return;
 
   for(var i=0;i<players.length;i++){
-    ensurePlayerStat(players[i]).rounds++;
+    var stat=ensurePlayerStat(players[i]);
+    stat.rounds++;
+
+    var target=playerTargetValue(i);
+    var err=errorPercent(Number(players[i].guess),target);
+    if(isFinite(err)&&err>=0){
+      stat.errorSum+=err;
+      stat.errorSamples++;
+    }
   }
 
   ensurePlayerStat(players[perf[0].index]).closest++;
   ensurePlayerStat(players[perf[perf.length-1].index]).farthest++;
   ensurePlayerStat(players[impIndex]).impostor++;
+  deviceStats.roundsPlayed++;
 
   roundStatsRecorded=true;
   savePlayerStats();
@@ -2255,8 +2299,27 @@ function statsScoreLabel(metric,value){
   if(metric==="impostorWins")return value===1?"1 Sieg":value+" Siege";
   return value+"×";
 }
+function averageDeviation(item){
+  var samples=sanitizeStatNumber(item.errorSamples);
+  if(!samples)return null;
+  var sum=Number(item.errorSum);
+  if(!isFinite(sum)||sum<0)return null;
+  return sum/samples;
+}
+function averageCloseness(item){
+  var deviation=averageDeviation(item);
+  if(deviation===null)return null;
+  return Math.max(0,100-deviation);
+}
+function statPercent(value){
+  if(value===null||!isFinite(value))return "–";
+  if(value>=100)return Math.round(value)+" %";
+  return value.toLocaleString("de-DE",{minimumFractionDigits:1,maximumFractionDigits:1})+" %";
+}
 function renderStatistics(){
   var meta=statsMetricMeta[selectedStatsMetric]||statsMetricMeta.closest;
+  var played=deviceStats.roundsPlayed||0;
+  byId("statsDeviceRounds").textContent="Auf diesem Gerät gespielt: "+played+(played===1?" Runde":" Runden");
   byId("statsMetricIcon").textContent=meta.icon;
   byId("statsMetricTitle").textContent=meta.title;
   byId("statsMetricHint").textContent=meta.hint;
@@ -2323,16 +2386,38 @@ function renderStatistics(){
     avatar.className="statsPlayerAvatar";
     avatar.textContent=item.avatar||"😎";
 
-    var name=document.createElement("span");
+    var info=document.createElement("div");
+    info.className="statsPlayerInfo";
+
+    var name=document.createElement("div");
     name.className="statsPlayerName";
     name.textContent=item.name;
+
+    var avg=document.createElement("div");
+    avg.className="statsPlayerAverage";
+    var near=averageCloseness(item),away=averageDeviation(item);
+    if(near===null||away===null){
+      avg.textContent="Ø Nähe – · Ø Abweichung –";
+    }else{
+      var nearSpan=document.createElement("span");
+      nearSpan.className="statsAverageNear";
+      nearSpan.textContent="Ø Nähe "+statPercent(near);
+      var awaySpan=document.createElement("span");
+      awaySpan.className="statsAverageAway";
+      awaySpan.textContent=" · Ø Abweichung "+statPercent(away);
+      avg.appendChild(nearSpan);
+      avg.appendChild(awaySpan);
+    }
+
+    info.appendChild(name);
+    info.appendChild(avg);
 
     var scoreEl=document.createElement("div");
     scoreEl.className="statsScore";
     scoreEl.textContent=statsScoreLabel(selectedStatsMetric,score);
 
     player.appendChild(avatar);
-    player.appendChild(name);
+    player.appendChild(info);
     row.appendChild(rank);
     row.appendChild(player);
     row.appendChild(scoreEl);
@@ -2349,7 +2434,9 @@ function closeStatistics(){
 function resetStatistics(){
   if(!window.confirm("Alle lokal gespeicherten Statistiken zurücksetzen?"))return;
   playerStats={};
+  deviceStats={roundsPlayed:0};
   storageSet(STORAGE_STATS,playerStats);
+  storageSet(STORAGE_DEVICE_STATS,deviceStats);
   renderStatistics();
 }
 function loadSavedPlayers(){
