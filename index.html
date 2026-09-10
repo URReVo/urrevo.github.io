@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#292929">
 <link rel="apple-touch-icon" sizes="180x180" href="circa_impostor_detective_icon_180.png">
 <link rel="icon" type="image/png" sizes="180x180" href="circa_impostor_detective_icon_180.png">
-<title>Circa Impostor V48</title>
+<title>Circa Impostor V49</title>
 <style>
 :root{
   --bg:#292929;
@@ -142,8 +142,10 @@ button:disabled{opacity:.4}
 .stageHeader p{margin-bottom:7px}
 .stageButton{flex:0 0 48px}
 
-.normalRevealScreen{justify-content:space-between}
+.normalRevealScreen{justify-content:flex-start}
+.normalRevealScreen .stageButton{margin-top:auto}
 .normalRevealCard{margin-top:10px;margin-bottom:10px}
+.normalRevealUnitReserved{visibility:hidden}
 .normalRevealQuestion.concealedQuestion{
   font-size:76px;line-height:1;font-weight:950;letter-spacing:0
 }
@@ -1087,6 +1089,7 @@ body.setup-fits:not(.game-active){
   height:48px!important;
 }
 #handoff .handoffButton,
+#normalReveal .stageButton,
 #answers .stageButton{
   flex-basis:48px!important;
   min-height:48px!important;
@@ -1425,7 +1428,7 @@ body.setup-fits:not(.game-active){
   <div id="normalRevealCard" class="questionCard normalRevealCard">
     <div id="normalRevealQuestion" class="questionText normalRevealQuestion concealedQuestion">?</div>
   </div>
-  <div id="normalRevealUnit" class="questionUnitBadge hidden">Einheit: –</div>
+  <div id="normalRevealUnit" class="questionUnitBadge normalRevealUnitReserved">Einheit: –</div>
 
   <button id="revealNormalQuestion" type="button" class="full stageButton">Richtige Frage aufdecken</button>
 </section>
@@ -3083,7 +3086,7 @@ function prepareNormalQuestionReveal(){
 
   var unit=byId("normalRevealUnit");
   unit.textContent="Einheit: –";
-  unit.classList.add("hidden");
+  unit.classList.add("normalRevealUnitReserved");
 
   var button=byId("revealNormalQuestion");
   button.disabled=false;
@@ -3111,7 +3114,7 @@ function revealNormalQuestion(){
 
     var unit=byId("normalRevealUnit");
     unit.textContent="Einheit: "+(current.normalUnit||"–");
-    unit.classList.remove("hidden");
+    unit.classList.remove("normalRevealUnitReserved");
 
     byId("revealNormalQuestion").textContent="Schätzungen anzeigen";
 
