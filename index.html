@@ -1013,6 +1013,45 @@ body.setup-fits:not(.game-active){
   background:rgba(243,154,50,.24);
 }
 
+
+/* V37 – more breathing room between question card and estimate block */
+#questionUnitBadge{
+  margin-top:14px!important;
+  margin-bottom:12px!important;
+}
+#question .estimateCompact{
+  margin-top:8px!important;
+}
+@media(max-height:760px){
+  #questionUnitBadge{
+    margin-top:10px!important;
+    margin-bottom:9px!important;
+  }
+  #question .estimateCompact{
+    margin-top:5px!important;
+  }
+}
+
+
+/* V38 – default setup is a true one-screen view on iOS Safari */
+html.setup-scroll-locked,
+body.setup-scroll-locked:not(.game-active){
+  overflow:hidden!important;
+  overscroll-behavior-y:none!important;
+}
+body.setup-scroll-locked:not(.game-active) .app{
+  overflow:hidden!important;
+}
+body.setup-scroll-locked:not(.game-active) #setup{
+  overflow:visible!important;
+}
+
+/* Extra player rows restore natural document scrolling. */
+body:not(.setup-scroll-locked):not(.game-active){
+  overflow-y:auto;
+  overscroll-behavior-y:auto;
+}
+
 </style>
 </head>
 <body>
@@ -1380,30 +1419,52 @@ var categoryIcons={
 
 
 
-/* V31: keep V23's natural setup layout. Lock scrolling only when everything
-   actually fits in the visible viewport; otherwise allow normal page scrolling. */
-var setupFitFrame=0;
+/* V38: setup scrolling follows the player count, not Safari's reported
+   scrollHeight. With the default 3 players the setup is locked to one screen.
+   From 4 players onward the page may scroll naturally to reach extra rows. */
 function syncSetupScrollFit(){
-  if(document.body.classList.contains("game-active")){
-    document.body.classList.remove("setup-fits");
-    return;
+  var onSetup=!document.body.classList.contains("game-active");
+  var lock=onSetup&&count<=3;
+
+  document.body.classList.toggle("setup-fits",lock);
+  document.body.classList.toggle("setup-scroll-locked",lock);
+  document.documentElement.classList.toggle("setup-scroll-locked",lock);
+
+  if(lock){
+    try{window.scrollTo(0,0);}catch(e){}
   }
-  document.body.classList.remove("setup-fits");
-  if(setupFitFrame)cancelAnimationFrame(setupFitFrame);
-  setupFitFrame=requestAnimationFrame(function(){
-    setupFitFrame=0;
-    var doc=document.documentElement;
-    var needed=Math.max(doc.scrollHeight,document.body.scrollHeight);
-    var viewport=window.innerHeight||doc.clientHeight||0;
-    var fits=needed<=viewport+1;
-    document.body.classList.toggle("setup-fits",fits);
-    if(fits){
-      try{window.scrollTo(0,0);}catch(e){}
-    }
-  });
 }
 window.addEventListener("resize",syncSetupScrollFit,{passive:true});
 window.addEventListener("orientationchange",function(){setTimeout(syncSetupScrollFit,80);},{passive:true});
+
+/* iOS Safari can rubber-band the visual viewport even with overflow:hidden.
+   Block only vertical setup gestures while the default 3-player screen is
+   locked. Horizontal swiping of the category carousel remains available. */
+var setupTouchStartX=0,setupTouchStartY=0;
+document.addEventListener("touchstart",function(e){
+  if(!document.body.classList.contains("setup-scroll-locked"))return;
+  if(!e.touches||!e.touches.length)return;
+  setupTouchStartX=e.touches[0].clientX;
+  setupTouchStartY=e.touches[0].clientY;
+},{passive:true,capture:true});
+
+document.addEventListener("touchmove",function(e){
+  if(!document.body.classList.contains("setup-scroll-locked"))return;
+  if(document.body.classList.contains("game-active"))return;
+  if(!e.touches||!e.touches.length)return;
+
+  var x=e.touches[0].clientX;
+  var y=e.touches[0].clientY;
+  var dx=x-setupTouchStartX;
+  var dy=y-setupTouchStartY;
+  var target=e.target;
+
+  /* Preserve the deliberate horizontal category swipe. */
+  if(target&&target.closest&&target.closest("#categoryDeck")&&Math.abs(dx)>Math.abs(dy))return;
+
+  /* Everything else on the default setup is vertically fixed. */
+  if(Math.abs(dy)>=Math.abs(dx))e.preventDefault();
+},{passive:false,capture:true});
 
 var audioCtx=null,soundEnabled=true,lastSliderSoundAt=0,lastSliderSoundValue=null;
 
