@@ -1747,6 +1747,7 @@ function pickRound(){
   impIndex=Math.floor(Math.random()*players.length);
   active=0;round++;
   updateToolbar();
+  return true;
 }
 function prepareHandoff(){
   byId("handoffName").textContent="Handy an "+players[active].name;
