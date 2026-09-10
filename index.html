@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#292929">
 <link rel="apple-touch-icon" sizes="180x180" href="circa_impostor_detective_icon_180.png">
 <link rel="icon" type="image/png" sizes="180x180" href="circa_impostor_detective_icon_180.png">
-<title>Circa Impostor V45</title>
+<title>Circa Impostor V46</title>
 <style>
 :root{
   --bg:#292929;
@@ -340,6 +340,9 @@ body.revealPulse .app{animation:screenPulse .3s ease}
   .normalRevealQuestion.concealedQuestion{font-size:66px}
   .answersQuestionSummary{padding:8px 10px}
   .answersQuestionText{font-size:14px}
+  .impostorOutcome{margin-top:5px;padding:6px 8px}
+  .impostorOutcomeText{margin-bottom:5px;font-size:10px}
+  .outcomeButton{min-height:33px;height:33px}
 }
 @media(prefers-reduced-motion:reduce){
   .answerTile.impostorCaught,.answerTile.impostorCaught .impostorX,
@@ -762,7 +765,194 @@ body.cat-alle #topCategory{
 .categoryCard[data-category="Spicy 🌶️"].selected{background:linear-gradient(145deg,rgba(255,118,92,.22),#25262b)}
 
 
+
 .savedHint{margin-top:4px;text-align:center;color:#777a82;font-size:10px;font-weight:700}
+.statsHomeButton{
+  min-height:40px;
+  margin-top:8px;
+  padding:8px 12px;
+  font-size:13px;
+  border-radius:12px
+}
+
+/* Local statistics screen */
+.statsScreen{
+  min-height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 32px);
+  padding:4px 0 10px
+}
+.statsHeader{
+  display:flex;
+  align-items:center;
+  gap:11px;
+  margin:2px 0 5px
+}
+.statsHeader h2{margin:1px 0 0;font-size:29px}
+.statsEyebrow{margin:0!important}
+.statsBackButton{
+  flex:0 0 42px;
+  width:42px;
+  height:42px;
+  min-height:42px;
+  padding:0 0 4px;
+  display:grid;
+  place-items:center;
+  border-radius:13px;
+  background:var(--card2);
+  color:var(--text);
+  border:1px solid var(--border);
+  font-size:34px;
+  line-height:1
+}
+.statsIntro{margin:0 0 12px}
+.statsTabs{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:7px;
+  margin-bottom:10px
+}
+.statsTab{
+  min-height:43px;
+  padding:8px 9px;
+  border-radius:13px;
+  background:rgba(39,40,46,.88);
+  color:#cfd0d4;
+  border:1px solid rgba(255,255,255,.08);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  font-size:11px;
+  font-weight:900
+}
+.statsTab.selected{
+  color:#fff;
+  border-color:var(--accent);
+  background:var(--accent-soft);
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 20%,transparent) inset
+}
+.statsMetricCard{
+  display:flex;
+  align-items:center;
+  gap:11px;
+  padding:12px 13px;
+  border-radius:16px;
+  background:linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.025));
+  border:1px solid rgba(255,255,255,.08);
+  margin-bottom:9px
+}
+.statsMetricIcon{
+  flex:0 0 42px;
+  width:42px;
+  height:42px;
+  display:grid;
+  place-items:center;
+  border-radius:13px;
+  background:rgba(255,255,255,.06);
+  font-size:22px
+}
+.statsMetricTitle{font-size:15px;font-weight:950}
+.statsMetricHint{margin-top:2px;color:var(--muted);font-size:10px;line-height:1.3;font-weight:700}
+.statsLeaderboard{
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+  margin-bottom:10px
+}
+.statsRow{
+  min-height:57px;
+  display:grid;
+  grid-template-columns:44px minmax(0,1fr) auto;
+  align-items:center;
+  gap:8px;
+  padding:8px 11px;
+  border-radius:15px;
+  background:var(--card);
+  border:1px solid var(--border)
+}
+.statsRank{
+  font-size:14px;
+  font-weight:950;
+  color:var(--muted);
+  text-align:center
+}
+.statsRank.medal{font-size:23px}
+.statsPlayer{
+  min-width:0;
+  display:flex;
+  align-items:center;
+  gap:8px
+}
+.statsPlayerAvatar{font-size:23px;flex:0 0 auto}
+.statsPlayerName{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:14px;
+  font-weight:900
+}
+.statsScore{
+  font-variant-numeric:tabular-nums;
+  color:var(--accent);
+  font-size:16px;
+  font-weight:950;
+  white-space:nowrap
+}
+.statsEmpty{
+  margin:18px 0;
+  padding:18px 12px;
+  text-align:center;
+  color:var(--muted);
+  border-radius:15px;
+  border:1px dashed var(--border);
+  font-size:13px;
+  line-height:1.35
+}
+.statsResetButton{
+  min-height:40px;
+  margin-top:7px;
+  font-size:12px
+}
+
+/* Small round-outcome prompt used for local impostor-win statistics. */
+.impostorOutcome{
+  flex:0 0 auto;
+  margin-top:7px;
+  padding:8px 9px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.09);
+  background:rgba(255,255,255,.035)
+}
+.impostorOutcomeText{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  color:#d8d9dd;
+  text-align:center;
+  font-size:11px;
+  line-height:1.25;
+  font-weight:750;
+  margin-bottom:7px
+}
+.impostorOutcomeText strong{color:#fff}
+.impostorOutcomeButtons{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:7px
+}
+.outcomeButton{
+  min-height:36px;
+  height:36px;
+  padding:5px 10px;
+  border-radius:11px;
+  font-size:11px
+}
+.outcomeButton.selected{
+  border-color:var(--accent)!important;
+  background:var(--accent-soft)!important;
+  color:#fff!important
+}
 
 
 /* Compact impostor difficulty selector. */
@@ -1117,8 +1307,49 @@ body.setup-fits:not(.game-active){
 
   <div id="names"></div>
   <button id="start" type="button" class="full">Spiel starten</button>
+  <button id="openStats" type="button" class="full secondary statsHomeButton">📊 Statistiken</button>
   <div id="error" class="notice" aria-live="polite"></div>
-  <div class="count">520 Fragepaare</div><div class="savedHint">Spieler, Kategorien & Fragenfortschritt bleiben auf diesem Gerät gespeichert</div>
+  <div class="count">520 Fragepaare</div><div class="savedHint">Spieler, Kategorien, Statistiken &amp; Fragenfortschritt bleiben auf diesem Gerät gespeichert</div>
+</section>
+
+<section id="stats" class="hidden statsScreen">
+  <div class="statsHeader">
+    <button id="closeStats" type="button" class="statsBackButton" aria-label="Zurück zum Start">‹</button>
+    <div>
+      <div class="sectionEyebrow statsEyebrow">LOKALE AUSWERTUNG</div>
+      <h2>Statistiken</h2>
+    </div>
+  </div>
+
+  <p class="sub statsIntro">Die Ranglisten werden nur auf diesem Gerät gespeichert.</p>
+
+  <div id="statsTabs" class="statsTabs" role="tablist" aria-label="Statistik auswählen">
+    <button type="button" class="statsTab selected" data-stat="closest" role="tab" aria-selected="true">
+      <span>🎯</span><span>Nah dran</span>
+    </button>
+    <button type="button" class="statsTab" data-stat="farthest" role="tab" aria-selected="false">
+      <span>😵</span><span>Weit weg</span>
+    </button>
+    <button type="button" class="statsTab" data-stat="impostor" role="tab" aria-selected="false">
+      <span>🎭</span><span>Impostor</span>
+    </button>
+    <button type="button" class="statsTab" data-stat="impostorWins" role="tab" aria-selected="false">
+      <span>🥷</span><span>Impostor-Siege</span>
+    </button>
+  </div>
+
+  <div class="statsMetricCard">
+    <div id="statsMetricIcon" class="statsMetricIcon">🎯</div>
+    <div>
+      <div id="statsMetricTitle" class="statsMetricTitle">Am meisten nah dran</div>
+      <div id="statsMetricHint" class="statsMetricHint">Wer lag über die gespielten Runden am häufigsten am nächsten?</div>
+    </div>
+  </div>
+
+  <div id="statsLeaderboard" class="statsLeaderboard"></div>
+  <div id="statsEmpty" class="statsEmpty hidden">Noch keine abgeschlossenen Runden gespeichert.</div>
+
+  <button id="resetStats" type="button" class="ghost full statsResetButton">Statistiken zurücksetzen</button>
 </section>
 
 <section id="handoff" class="hidden gameScreen">
@@ -1216,6 +1447,17 @@ body.setup-fits:not(.game-active){
   <div id="roundAwards" class="roundAwards hidden">
     <div id="closestAward" class="awardCard"></div>
     <div id="wildAward" class="awardCard"></div>
+  </div>
+
+  <div id="impostorOutcome" class="impostorOutcome hidden">
+    <div class="impostorOutcomeText">
+      <span id="impostorOutcomeAvatar">🎭</span>
+      <span>Konnte sich <strong id="impostorOutcomeName">der Impostor</strong> verstecken?</span>
+    </div>
+    <div class="impostorOutcomeButtons">
+      <button id="impostorWonYes" type="button" class="secondary outcomeButton" data-outcome="yes">Ja</button>
+      <button id="impostorWonNo" type="button" class="secondary outcomeButton" data-outcome="no">Nein</button>
+    </div>
   </div>
 
   <div id="resultActions" class="grid2 resultActions hidden">
@@ -1752,15 +1994,20 @@ var bank=[
   {"cat":"Popkultur","normal":"Wie viele Minuten dauert ein typischer Animationsfilm ungefähr?","imp":"Wie viele Zuschauer hat ein kleiner etablierter Twitch-Kanal etwa gleichzeitig?","normalValue":95,"normalAnswer":"Richtwert: ca. 95 Minuten","impValue":200,"impAnswer":"Richtwert: ca. 200 Zuschauer","max":300.0,"step":2,"qid":"v22-0200","normalUnit":"Minuten","impUnit":"Zuschauer"}
 ];
 function byId(id){return document.getElementById(id);}
-var sections=["setup","handoff","question","normalReveal","answers","result"];
+var sections=["setup","stats","handoff","question","normalReveal","answers","result"];
 var count=3,players=[],active=0,impIndex=0,round=0,current=null,scrubbing=false;
 var guessLocked=false,guessSaveTimer=null;
 var normalQuestionRevealed=false;
+var playerStats={};
+var selectedStatsMetric="closest";
+var roundStatsRecorded=false;
+var roundOutcomeChoice=null;
 
 var STORAGE_PLAYERS="circaImpostor.players.v1";
 var STORAGE_DECK="circaImpostor.deckProgress.v5";
 var STORAGE_DIFFICULTY="circaImpostor.difficulty.v1";
 var STORAGE_CATEGORIES="circaImpostor.categories.v1";
+var STORAGE_STATS="circaImpostor.playerStats.v1";
 var deckProgress={};
 var savedPlayerNames=[];
 var selectedDifficulty="mittel";
@@ -1868,6 +2115,242 @@ function rememberQuestion(item){
 }
 function cleanPlayerName(value){
   return String(value==null?"":value).replace(/^\s+|\s+$/g,"").slice(0,24);
+}
+function statsPlayerKey(name){
+  return cleanPlayerName(name).toLocaleLowerCase("de-DE");
+}
+function sanitizeStatNumber(value){
+  value=Number(value);
+  return isFinite(value)&&value>=0?Math.floor(value):0;
+}
+function loadPlayerStats(){
+  var saved=storageGet(STORAGE_STATS,{});
+  if(!saved||typeof saved!=="object"||Array.isArray(saved))saved={};
+  playerStats={};
+
+  for(var key in saved){
+    if(!Object.prototype.hasOwnProperty.call(saved,key))continue;
+    var item=saved[key];
+    if(!item||typeof item!=="object")continue;
+    var name=cleanPlayerName(item.name);
+    if(!name)continue;
+
+    var safeKey=statsPlayerKey(name);
+    playerStats[safeKey]={
+      name:name,
+      avatar:String(item.avatar||"😎").slice(0,8),
+      closest:sanitizeStatNumber(item.closest),
+      farthest:sanitizeStatNumber(item.farthest),
+      impostor:sanitizeStatNumber(item.impostor),
+      impostorWins:sanitizeStatNumber(item.impostorWins),
+      rounds:sanitizeStatNumber(item.rounds)
+    };
+  }
+}
+function savePlayerStats(){
+  storageSet(STORAGE_STATS,playerStats);
+}
+function ensurePlayerStat(player){
+  var key=statsPlayerKey(player.name);
+  if(!playerStats[key]){
+    playerStats[key]={
+      name:cleanPlayerName(player.name),
+      avatar:player.avatar||"😎",
+      closest:0,
+      farthest:0,
+      impostor:0,
+      impostorWins:0,
+      rounds:0
+    };
+  }else{
+    playerStats[key].name=cleanPlayerName(player.name);
+    playerStats[key].avatar=player.avatar||playerStats[key].avatar||"😎";
+  }
+  return playerStats[key];
+}
+function roundPerformance(){
+  var stats=[];
+  for(var i=0;i<players.length;i++){
+    var target=playerTargetValue(i);
+    stats.push({
+      index:i,
+      name:players[i].name,
+      avatar:players[i].avatar||"😎",
+      guess:Number(players[i].guess),
+      target:target,
+      err:errorPercent(Number(players[i].guess),target)
+    });
+  }
+  stats.sort(function(a,b){
+    if(a.err!==b.err)return a.err-b.err;
+    return a.index-b.index;
+  });
+  return stats;
+}
+function recordRoundBaseStats(){
+  if(roundStatsRecorded||!players.length||!current)return;
+
+  var perf=roundPerformance();
+  if(!perf.length)return;
+
+  for(var i=0;i<players.length;i++){
+    ensurePlayerStat(players[i]).rounds++;
+  }
+
+  ensurePlayerStat(players[perf[0].index]).closest++;
+  ensurePlayerStat(players[perf[perf.length-1].index]).farthest++;
+  ensurePlayerStat(players[impIndex]).impostor++;
+
+  roundStatsRecorded=true;
+  savePlayerStats();
+}
+function setImpostorOutcome(won){
+  if(!roundStatsRecorded)recordRoundBaseStats();
+  if(!players[impIndex])return;
+
+  var stat=ensurePlayerStat(players[impIndex]);
+
+  /* Allow correcting a mistaken tap before the next round. */
+  if(roundOutcomeChoice===true&&stat.impostorWins>0)stat.impostorWins--;
+  roundOutcomeChoice=!!won;
+  if(roundOutcomeChoice)stat.impostorWins++;
+
+  savePlayerStats();
+
+  byId("impostorWonYes").classList.toggle("selected",roundOutcomeChoice===true);
+  byId("impostorWonNo").classList.toggle("selected",roundOutcomeChoice===false);
+  byId("impostorWonYes").setAttribute("aria-pressed",roundOutcomeChoice===true?"true":"false");
+  byId("impostorWonNo").setAttribute("aria-pressed",roundOutcomeChoice===false?"true":"false");
+
+  byId("resultActions").classList.remove("hidden");
+  tone(roundOutcomeChoice?620:390,0.07,0.018,"sine",0);
+}
+var statsMetricMeta={
+  closest:{
+    icon:"🎯",
+    title:"Am meisten nah dran",
+    hint:"Wer lag über die gespielten Runden am häufigsten am nächsten?",
+    empty:"Noch keine abgeschlossenen Runden gespeichert."
+  },
+  farthest:{
+    icon:"😵",
+    title:"Am meisten am weitesten weg",
+    hint:"Wer hatte am häufigsten die größte Abweichung von der eigenen richtigen Antwort?",
+    empty:"Noch keine abgeschlossenen Runden gespeichert."
+  },
+  impostor:{
+    icon:"🎭",
+    title:"Am meisten Impostor",
+    hint:"Wer wurde bisher am häufigsten zufällig als Impostor ausgewählt?",
+    empty:"Noch keine Impostor-Runden gespeichert."
+  },
+  impostorWins:{
+    icon:"🥷",
+    title:"Meiste Impostor-Siege",
+    hint:"Wer konnte sich als Impostor am häufigsten bis zum Ende verstecken?",
+    empty:"Noch kein Impostor-Sieg gespeichert."
+  }
+};
+function statsScoreLabel(metric,value){
+  if(metric==="impostorWins")return value===1?"1 Sieg":value+" Siege";
+  return value+"×";
+}
+function renderStatistics(){
+  var meta=statsMetricMeta[selectedStatsMetric]||statsMetricMeta.closest;
+  byId("statsMetricIcon").textContent=meta.icon;
+  byId("statsMetricTitle").textContent=meta.title;
+  byId("statsMetricHint").textContent=meta.hint;
+
+  var tabs=byId("statsTabs").querySelectorAll(".statsTab");
+  for(var t=0;t<tabs.length;t++){
+    var selected=tabs[t].getAttribute("data-stat")===selectedStatsMetric;
+    tabs[t].classList.toggle("selected",selected);
+    tabs[t].setAttribute("aria-selected",selected?"true":"false");
+  }
+
+  var list=[];
+  for(var key in playerStats){
+    if(!Object.prototype.hasOwnProperty.call(playerStats,key))continue;
+    var item=playerStats[key];
+    list.push(item);
+  }
+
+  list.sort(function(a,b){
+    var diff=(b[selectedStatsMetric]||0)-(a[selectedStatsMetric]||0);
+    if(diff!==0)return diff;
+    if((b.rounds||0)!==(a.rounds||0))return (b.rounds||0)-(a.rounds||0);
+    return String(a.name).localeCompare(String(b.name),"de-DE");
+  });
+
+  var box=byId("statsLeaderboard");
+  box.innerHTML="";
+
+  var hasPositive=false;
+  for(var x=0;x<list.length;x++){
+    if((list[x][selectedStatsMetric]||0)>0){hasPositive=true;break;}
+  }
+
+  if(!list.length||!hasPositive){
+    byId("statsEmpty").textContent=meta.empty;
+    byId("statsEmpty").classList.remove("hidden");
+    return;
+  }
+
+  byId("statsEmpty").classList.add("hidden");
+
+  var previousScore=null,currentRank=0;
+  for(var i=0;i<list.length;i++){
+    var item=list[i],score=item[selectedStatsMetric]||0;
+    if(score<=0)continue;
+
+    if(previousScore===null||score!==previousScore)currentRank=i+1;
+    previousScore=score;
+
+    var row=document.createElement("div");
+    row.className="statsRow";
+
+    var rank=document.createElement("div");
+    rank.className="statsRank";
+    if(currentRank===1){rank.textContent="🥇";rank.classList.add("medal");}
+    else if(currentRank===2){rank.textContent="🥈";rank.classList.add("medal");}
+    else if(currentRank===3){rank.textContent="🥉";rank.classList.add("medal");}
+    else rank.textContent="#"+currentRank;
+
+    var player=document.createElement("div");
+    player.className="statsPlayer";
+
+    var avatar=document.createElement("span");
+    avatar.className="statsPlayerAvatar";
+    avatar.textContent=item.avatar||"😎";
+
+    var name=document.createElement("span");
+    name.className="statsPlayerName";
+    name.textContent=item.name;
+
+    var scoreEl=document.createElement("div");
+    scoreEl.className="statsScore";
+    scoreEl.textContent=statsScoreLabel(selectedStatsMetric,score);
+
+    player.appendChild(avatar);
+    player.appendChild(name);
+    row.appendChild(rank);
+    row.appendChild(player);
+    row.appendChild(scoreEl);
+    box.appendChild(row);
+  }
+}
+function openStatistics(){
+  renderStatistics();
+  show("stats");
+}
+function closeStatistics(){
+  show("setup");
+}
+function resetStatistics(){
+  if(!window.confirm("Alle lokal gespeicherten Statistiken zurücksetzen?"))return;
+  playerStats={};
+  storageSet(STORAGE_STATS,playerStats);
+  renderStatistics();
 }
 function loadSavedPlayers(){
   var data=storageGet(STORAGE_PLAYERS,null);
@@ -2118,8 +2601,10 @@ function setSoundEnabled(on){
 
 function show(id){
   for(var i=0;i<sections.length;i++) byId(sections[i]).classList.toggle("hidden",sections[i]!==id);
-  byId("gameTopbar").classList.toggle("hidden",id==="setup");
-  document.body.classList.toggle("game-active",id!=="setup");
+  var isGame=id!=="setup"&&id!=="stats";
+  byId("gameTopbar").classList.toggle("hidden",!isGame);
+  document.body.classList.toggle("game-active",isGame);
+  if(id!=="setup")document.body.classList.remove("setup-fits");
   try{window.scrollTo(0,0);}catch(e){}
   if(id==="setup")syncSetupScrollFit();
 }
@@ -2334,6 +2819,8 @@ function newRound(confirmFirst){
   if(guessSaveTimer){clearTimeout(guessSaveTimer);guessSaveTimer=null;}
   guessLocked=false;
   normalQuestionRevealed=false;
+  roundStatsRecorded=false;
+  roundOutcomeChoice=null;
   byId("saveGuess").disabled=false;
 
   if(!pickRound()){
@@ -2713,12 +3200,7 @@ function errorPercent(guess,target){
 }
 function buildAwards(){
   if(!players.length) return;
-  var stats=[];
-  for(var i=0;i<players.length;i++){
-    var target=playerTargetValue(i),err=errorPercent(Number(players[i].guess),target);
-    stats.push({index:i,name:players[i].name,avatar:players[i].avatar||"😎",guess:Number(players[i].guess),target:target,err:err});
-  }
-  stats.sort(function(a,b){return a.err-b.err;});
+  var stats=roundPerformance();
   var closest=stats[0],wild=stats[stats.length-1];
 
   var c=byId("closestAward");
@@ -2758,6 +3240,13 @@ function startResolution(){
   byId("impResolution").classList.remove("reveal");
   byId("resultActions").classList.add("hidden");
   byId("roundAwards").classList.add("hidden");
+  byId("impostorOutcome").classList.add("hidden");
+  byId("impostorWonYes").classList.remove("selected");
+  byId("impostorWonNo").classList.remove("selected");
+  byId("impostorWonYes").setAttribute("aria-pressed","false");
+  byId("impostorWonNo").setAttribute("aria-pressed","false");
+  byId("impostorOutcomeName").textContent=players[impIndex]?players[impIndex].name:"der Impostor";
+  byId("impostorOutcomeAvatar").textContent=players[impIndex]?(players[impIndex].avatar||"🎭"):"🎭";
   byId("spicyNote").classList.toggle("hidden",current.cat!=="Spicy 🌶️");
 
   show("result");
@@ -2779,8 +3268,9 @@ function startResolution(){
             byId("impAnswer").classList.add("visible");
             revealTimers.push(setTimeout(function(){
               buildAwards();
+              recordRoundBaseStats();
               byId("roundAwards").classList.remove("hidden");
-              byId("resultActions").classList.remove("hidden");
+              byId("impostorOutcome").classList.remove("hidden");
             },300));
           });
         },320));
@@ -2796,6 +3286,8 @@ function leaveGame(){
   if(intro){intro.classList.add("hidden");intro.classList.remove("showIntro");}
   if(typeof clearRevealTimers==="function")clearRevealTimers();
   guessLocked=false;
+  roundStatsRecorded=false;
+  roundOutcomeChoice=null;
   byId("saveGuess").disabled=false;
   players=[];active=0;round=0;current=null;
   byId("error").textContent="";
@@ -2807,6 +3299,18 @@ function leaveGame(){
 byId("plus").addEventListener("click",function(){if(count<12){count++;if(!avatarSelections[count-1])avatarSelections[count-1]=avatarPool[(count-1)%avatarPool.length];renderNames();savePlayers();}});
 byId("minus").addEventListener("click",function(){if(count>3){count--;avatarSelections=avatarSelections.slice(0,count);renderNames();savePlayers();}});
 byId("start").addEventListener("click",function(){ensureAudio();tone(300,0.05,0.012,"sine",0);start();});
+byId("openStats").addEventListener("click",openStatistics);
+byId("closeStats").addEventListener("click",closeStatistics);
+byId("resetStats").addEventListener("click",resetStatistics);
+
+var statsTabs=byId("statsTabs").querySelectorAll(".statsTab");
+for(var st=0;st<statsTabs.length;st++){
+  statsTabs[st].addEventListener("click",function(){
+    selectedStatsMetric=this.getAttribute("data-stat")||"closest";
+    renderStatistics();
+    tone(430,0.04,0.010,"sine",0);
+  });
+}
 
 var difficultyButtons=byId("difficultyControl").querySelectorAll(".difficultyButton");
 for(var db=0;db<difficultyButtons.length;db++){
@@ -2821,6 +3325,8 @@ byId("showQuestion").addEventListener("click",openQuestion);
 byId("saveGuess").addEventListener("click",saveGuess);
 byId("revealNormalQuestion").addEventListener("click",revealNormalQuestion);
 byId("reveal").addEventListener("click",reveal);
+byId("impostorWonYes").addEventListener("click",function(){setImpostorOutcome(true);});
+byId("impostorWonNo").addEventListener("click",function(){setImpostorOutcome(false);});
 byId("next").addEventListener("click",function(){ensureAudio();newRound(false);});
 byId("freshRound").addEventListener("click",function(){ensureAudio();newRound(true);});
 byId("leaveGame").addEventListener("click",leaveGame);
@@ -2890,7 +3396,7 @@ if(!window.PointerEvent){
   },{passive:false});
 }
 
-loadSavedDifficulty();loadDeckProgress();loadSavedPlayers();initCategories();syncDifficultyUI();renderNames();updateToolbar();show("setup");
+loadSavedDifficulty();loadDeckProgress();loadSavedPlayers();loadPlayerStats();initCategories();syncDifficultyUI();renderNames();updateToolbar();show("setup");
 })();
 </script>
 </body>
