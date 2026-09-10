@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#292929">
 <link rel="apple-touch-icon" sizes="180x180" href="circa_impostor_detective_icon_180.png">
 <link rel="icon" type="image/png" sizes="180x180" href="circa_impostor_detective_icon_180.png">
-<title>Circa Impostor V35 Final</title>
+<title>Circa Impostor V42</title>
 <style>
 :root{
   --bg:#292929;
@@ -83,7 +83,7 @@ button:disabled{opacity:.4}
 .roundBadge{color:var(--muted);max-width:none}
 .toolbarActions{display:flex;gap:6px}
 .iconButton{
-  width:38px;height:38px;min-height:38px;padding:0;border-radius:12px;
+  width:38px;height:38px;min-height:38px;padding:0;border-radius:10px;
   display:grid;place-items:center;background:transparent;color:var(--text);
   border:1px solid transparent
 }
@@ -150,7 +150,6 @@ button:disabled{opacity:.4}
   .questionCard{min-height:125px;max-height:225px;padding:14px}
   .questionText{font-size:24px}.questionText.longQ{font-size:21px}.questionText.veryLongQ{font-size:19px}
   .estimateValue{font-size:50px}.estimateLine{min-height:52px}
-  .scrubber{flex-basis:82px}.sliderRail{top:33px}
   .gameTopbar{height:38px;flex-basis:38px}.iconButton{width:35px;height:35px;min-height:35px}.toolbarBadge{height:34px}
 }
 @media(max-width:390px){
@@ -171,7 +170,7 @@ button:disabled{opacity:.4}
 /* Player-list spacing */
 .playerControlsRow + #names{margin-top:2px}
 
-/* V4 slider look retained, with the entire rectangle as the touch target. */
+/* Large touch-friendly estimate slider. */
 .scrubber{
   flex:0 0 96px;position:relative;margin:2px 0 4px;
   border-radius:18px;background:#232427;border:1px solid #3b3c40;
@@ -217,7 +216,7 @@ button:disabled{opacity:.4}
   transform:translateZ(0)
 }
 .answerTileName{font-size:12px;font-weight:850;color:#e78b21;margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.answerTileValue{font-size:25px;line-height:1;font-weight:950}
+.answerTileValue{font-size:23px;line-height:1;font-weight:950}
 .answerTile.impostorCaught{animation:cardHit .48s cubic-bezier(.2,.8,.2,1)}
 .answerTile.impostorCaught .answerTileName,.answerTile.impostorCaught .answerTileValue{color:#ff334f}
 .impostorX{
@@ -281,7 +280,6 @@ button:disabled{opacity:.4}
 .impNumber.locked{color:#00d747;animation:answerLock .45s cubic-bezier(.17,.9,.28,1.3)}
 .impAnswerText{font-size:11px;color:var(--muted);min-height:16px;opacity:0}
 .impAnswerText.visible{animation:textIn .35s ease forwards}
-.resultActions{margin-top:5px}
 @keyframes answerLock{
   0%{transform:scale(.93)}
   45%{transform:scale(1.08)}
@@ -313,7 +311,7 @@ body.revealPulse .app{animation:screenPulse .3s ease}
 }
 
 
-/* V7 – extra game feel without bloating the layout */
+/* Game micro-interactions and progress feedback. */
 .progressDots{
   flex:0 0 12px;display:flex;justify-content:center;align-items:center;gap:5px;
   margin:1px 0 3px
@@ -405,7 +403,7 @@ body.categoryPulse #topCategory{animation:categoryPulse .5s ease}
 }
 
 
-/* V8 PREMIUM GAME DESIGN */
+/* Premium dark visual theme. */
 html,body{
   background:
     radial-gradient(circle at 18% 4%, rgba(116,92,255,.11), transparent 28%),
@@ -492,7 +490,6 @@ body:before{
   backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)
 }
 .toolbarBadge{background:transparent;border-color:transparent}
-.iconButton{border-radius:10px}
 
 /* Player avatars inside game */
 .handoffAvatar{
@@ -535,7 +532,6 @@ body:before{
   display:grid;place-items:center;font-size:20px
 }
 .answerTileName,.answerTileValue{min-width:0}
-.answerTileValue{font-size:23px}
 
 /* Result scene */
 .resolutionScreen:before{
@@ -587,7 +583,7 @@ body.cat-pop{--ambientGlow:rgba(255,90,171,.14);--accent:#ff78ba;--accent-soft:r
     18px
     calc(18px + env(safe-area-inset-bottom));
   background:#0e0f12;
-  pointer-events:none;
+  pointer-events:auto;
   opacity:1;
   overflow:hidden;
 }
@@ -621,7 +617,7 @@ body.cat-pop{--ambientGlow:rgba(255,90,171,.14);--accent:#ff78ba;--accent-soft:r
 }
 
 
-/* V9 layout corrections */
+/* Viewport and compact mobile layout. */
 html,body{min-height:100dvh}
 body:not(.game-active) .app{
   min-height:100dvh;
@@ -673,7 +669,7 @@ body:not(.game-active) .app{
 }
 
 
-/* V10 fixes */
+/* Question unit badge. */
 .questionUnitBadge{
   flex:0 0 auto;
   align-self:center;
@@ -692,7 +688,7 @@ body:not(.game-active) .app{
 }
 
 
-/* V13 – every category gets its own look */
+/* Category-specific accent themes. */
 body.cat-allgemein{--ambientGlow:rgba(117,154,255,.14);--accent:#7ca3ff;--accent-soft:rgba(124,163,255,.16)}
 body.cat-natur{--ambientGlow:rgba(78,210,126,.14);--accent:#63d683;--accent-soft:rgba(99,214,131,.16)}
 body.cat-alltag{--ambientGlow:rgba(255,170,92,.14);--accent:#ffb16a;--accent-soft:rgba(255,177,106,.16)}
@@ -730,7 +726,7 @@ body.cat-alle #topCategory{
 .savedHint{margin-top:4px;text-align:center;color:#777a82;font-size:10px;font-weight:700}
 
 
-/* V20 – compact impostor difficulty selector */
+/* Compact impostor difficulty selector. */
 .difficultyEyebrow{margin-top:9px!important;margin-bottom:7px!important}
 .difficultyControl{
   display:grid;
@@ -784,7 +780,7 @@ body.cat-alle #topCategory{
 }
 
 
-/* V23 – app-like Safari behavior: game UI cannot be selected/copied */
+/* App-like Safari behavior: game UI cannot be selected/copied. */
 html,body,.app,
 button,label,p,h1,h2,h3,
 section,div,span{
@@ -801,7 +797,7 @@ input[type="text"]{
 }
 
 
-/* V31/V35 – small Safari setup and action polish. */
+/* Safari setup and action polish. */
 
 /* Empty validation text used to reserve ~27 px even when there was no error. */
 #error:empty{
@@ -834,8 +830,7 @@ body.setup-fits:not(.game-active){
   overscroll-behavior-y:none;
 }
 
-/* V23 already places handoff/reveal/result actions on the bottom edge.
-   Put the question confirmation on that same baseline and normalize result buttons. */
+/* Align the primary actions of all game stages on the same bottom baseline. */
 #question .confirmButton{
   margin-top:auto!important;
   flex:0 0 48px!important;
@@ -854,21 +849,7 @@ body.setup-fits:not(.game-active){
 }
 
 
-/* V32 – a little more visual separation between question and estimate */
-#questionUnitBadge{
-  margin-bottom:7px!important;
-}
-#question .estimateCompact{
-  margin-top:1px!important;
-}
-@media(max-height:760px){
-  #questionUnitBadge{
-    margin-bottom:5px!important;
-  }
-}
-
-
-/* V33 – in-app logo switched to Option D (Premium Monogram) */
+/* Premium Monogram app logo. */
 .logo{
   position:relative;
   overflow:hidden;
@@ -1014,7 +995,7 @@ body.setup-fits:not(.game-active){
 }
 
 
-/* V37 – more breathing room between question card and estimate block */
+/* Breathing room between question card and estimate block. */
 #questionUnitBadge{
   margin-top:14px!important;
   margin-bottom:12px!important;
@@ -1098,7 +1079,7 @@ body.setup-fits:not(.game-active){
   <div id="names"></div>
   <button id="start" type="button" class="full">Spiel starten</button>
   <div id="error" class="notice" aria-live="polite"></div>
-  <div class="count">520 Fragepaare</div><div class="savedHint">Spieler & Fragenfortschritt bleiben auf diesem Gerät gespeichert</div>
+  <div class="count">520 Fragepaare</div><div class="savedHint">Spieler, Kategorien & Fragenfortschritt bleiben auf diesem Gerät gespeichert</div>
 </section>
 
 <section id="handoff" class="hidden gameScreen">
@@ -1199,6 +1180,7 @@ var STORAGE_RECENT_LEGACY="circaImpostor.recentQuestions.v1";
 var STORAGE_DECK_OLD="circaImpostor.deckProgress.v2";
 var STORAGE_DECK="circaImpostor.deckProgress.v3";
 var STORAGE_DIFFICULTY="circaImpostor.difficulty.v1";
+var STORAGE_CATEGORIES="circaImpostor.categories.v1";
 var deckProgress={};
 var savedPlayerNames=[];
 var selectedDifficulty="mittel";
@@ -1223,12 +1205,12 @@ function difficultyRatio(item){
 function difficultyFits(item,difficulty){
   var ratio=difficultyRatio(item);
 
-  /* V24: fixed levels are now mutually exclusive. With 520 pairs there is
-     enough variety in every category without overlapping difficulty bands. */
+  /* Fixed levels are mutually exclusive; Random uses the full bank. */
   if(difficulty==="zufaellig")return true;
   if(difficulty==="leicht")return ratio<=1.30;
   if(difficulty==="mittel")return ratio>1.30&&ratio<=1.80;
-  return ratio>1.80; // schwer
+  if(difficulty==="schwer")return ratio>1.80;
+  return false;
 }
 function difficultyName(difficulty){
   if(difficulty==="leicht")return "Leicht";
@@ -1379,7 +1361,39 @@ function savePlayers(){
 }
 
 var roundIntroTimer=null;
+var categoryPulseTimer=null;
 var selectedCategories=["Alle"];
+
+function saveSelectedCategories(){
+  storageSet(STORAGE_CATEGORIES,selectedCategories.slice());
+}
+function loadSavedCategories(){
+  var saved=storageGet(STORAGE_CATEGORIES,["Alle"]);
+  if(!Array.isArray(saved)){
+    selectedCategories=["Alle"];
+    return;
+  }
+
+  var valid=[],seenValid={};
+  for(var v=0;v<bank.length;v++){
+    if(!seenValid[bank[v].cat]){seenValid[bank[v].cat]=true;valid.push(bank[v].cat);}
+  }
+  var clean=[];
+
+  /* "Alle" is exclusive. Old/corrupt values are discarded safely. */
+  if(saved.indexOf("Alle")!==-1){
+    selectedCategories=["Alle"];
+    return;
+  }
+
+  for(var i=0;i<saved.length;i++){
+    if(valid.indexOf(saved[i])!==-1&&clean.indexOf(saved[i])===-1){
+      clean.push(saved[i]);
+    }
+  }
+
+  selectedCategories=clean.length?clean:["Alle"];
+}
 
 var avatarPool=["😎","🦊","🐼","🤠","👾","🐸","🦁","🐯","🦄","🐵","🧸","🥷","👽","🤖","😈","🐧"];
 var avatarSelections=["😎","🦊","🐼"];
@@ -1398,19 +1412,22 @@ var categoryIcons={
 };
 
 
-
-/* V31: keep V23's natural setup layout. Lock scrolling only when everything
-   actually fits in the visible viewport; otherwise allow normal page scrolling. */
+/* Keep the natural setup layout. Suppress only tiny phantom scrolling when
+   the content already fits; shorter screens remain naturally scrollable. */
 var setupFitFrame=0;
 function syncSetupScrollFit(){
+  if(setupFitFrame){cancelAnimationFrame(setupFitFrame);setupFitFrame=0;}
   if(document.body.classList.contains("game-active")){
     document.body.classList.remove("setup-fits");
     return;
   }
   document.body.classList.remove("setup-fits");
-  if(setupFitFrame)cancelAnimationFrame(setupFitFrame);
   setupFitFrame=requestAnimationFrame(function(){
     setupFitFrame=0;
+    if(document.body.classList.contains("game-active")){
+      document.body.classList.remove("setup-fits");
+      return;
+    }
     var doc=document.documentElement;
     var needed=Math.max(doc.scrollHeight,document.body.scrollHeight);
     var viewport=window.innerHeight||doc.clientHeight||0;
@@ -1449,10 +1466,7 @@ function unlockAudio(){
   var ctx=getAudioContext();
   if(!ctx)return null;
   try{
-    if(ctx.state==="running"){
-      primeAudio(ctx);
-      return ctx;
-    }
+    if(ctx.state==="running")return ctx;
     var resumed=ctx.resume();
     if(resumed&&typeof resumed.then==="function"){
       resumed.then(function(){primeAudio(ctx);}).catch(function(){});
@@ -1591,9 +1605,13 @@ function updateToolbar(){
   if(cat==="Alltag") document.body.classList.add("cat-alltag");
   if(cat==="Alle") document.body.classList.add("cat-alle");
 
+  if(categoryPulseTimer){clearTimeout(categoryPulseTimer);categoryPulseTimer=null;}
   void document.body.offsetWidth;
   document.body.classList.add("categoryPulse");
-  setTimeout(function(){document.body.classList.remove("categoryPulse");},550);
+  categoryPulseTimer=setTimeout(function(){
+    document.body.classList.remove("categoryPulse");
+    categoryPulseTimer=null;
+  },550);
 }
 function syncCategoryUI(){
   var deck=byId("categoryDeck"),cards=deck.querySelectorAll(".categoryCard");
@@ -1608,7 +1626,9 @@ function syncCategoryUI(){
 function toggleCategory(cat){
   if(cat==="Alle"){
     selectedCategories=["Alle"];
+    saveSelectedCategories();
     syncCategoryUI();
+    updateToolbar();
     tone(430,0.045,0.012,"sine",0);
     return;
   }
@@ -1620,7 +1640,9 @@ function toggleCategory(cat){
     selectedCategories.push(cat);
   }
   if(selectedCategories.length===0) selectedCategories=["Alle"];
+  saveSelectedCategories();
   syncCategoryUI();
+  updateToolbar();
   tone(430,0.045,0.012,"sine",0);
 }
 function selectedCategoryLabel(){
@@ -1645,7 +1667,7 @@ function initCategories(){
     b.addEventListener("click",function(){toggleCategory(this.getAttribute("data-category"));});
     deck.appendChild(b);
   }
-  selectedCategories=["Alle"];
+  loadSavedCategories();
   syncCategoryUI();
 }
 function getOldNames(){
@@ -1725,15 +1747,6 @@ function pickRound(){
       }
     }
     if(hasMatch)cats.push(requestedCats[c]);
-  }
-  if(!cats.length){
-    for(var fc=0;fc<allCats.length;fc++){
-      for(var fq=0;fq<bank.length;fq++){
-        if(bank[fq].cat===allCats[fc]&&difficultyFits(bank[fq],selectedDifficulty)){
-          cats.push(allCats[fc]);break;
-        }
-      }
-    }
   }
   if(!cats.length)return false;
 
@@ -1882,9 +1895,11 @@ function configureSlider(item,unitLabel){
   var scrub=byId("scrubber");
   scrub.setAttribute("aria-valuemin","0");
   scrub.setAttribute("aria-valuemax",String(item.max));
-  updateSliderVisual();
+  lastSliderSoundAt=0;
+  lastSliderSoundValue=null;
+  updateSliderVisual(true);
 }
-function updateSliderVisual(){
+function updateSliderVisual(silent){
   var slider=byId("guessSlider"),max=Number(slider.max),v=Number(slider.value);
   var pct=max<=0?0:(v/max)*100;
   byId("sliderFill").style.width=pct+"%";
@@ -1900,7 +1915,7 @@ function updateSliderVisual(){
   scrub.setAttribute("aria-valuenow",String(v));
   scrub.setAttribute("aria-valuetext",txt+" "+(current?activeQuestionUnit():""));
   scrub.classList.remove("tickFlash");void scrub.offsetWidth;scrub.classList.add("tickFlash");
-  soundTick(v);
+  if(!silent)soundTick(v);
 }
 function setEstimateFromClientX(clientX){
   var rail=byId("sliderRail"),r=rail.getBoundingClientRect();
@@ -1938,8 +1953,10 @@ function saveGuess(){
 }
 var revealStage=0;
 var revealTimers=[];
+var revealRunToken=0;
 
 function clearRevealTimers(){
+  revealRunToken++;
   for(var i=0;i<revealTimers.length;i++) clearTimeout(revealTimers[i]);
   revealTimers=[];
   document.body.classList.remove("revealPulse");
@@ -2058,10 +2075,12 @@ function roundedStart(value){
   return Math.floor(v*0.15/1000)*1000;
 }
 function animateNumber(el,value,duration,onDone){
+  var token=revealRunToken;
   var end=Number(value),start=roundedStart(end),begin=null;
   var whole=Math.abs(end-Math.round(end))<0.000001;
   el.classList.remove("locked");
   function frame(ts){
+    if(token!==revealRunToken)return;
     if(begin===null) begin=ts;
     var p=Math.min(1,(ts-begin)/duration);
     var eased=1-Math.pow(1-p,3);
@@ -2070,6 +2089,7 @@ function animateNumber(el,value,duration,onDone){
     el.textContent=numberString(now,whole);
     if(p<1) requestAnimationFrame(frame);
     else{
+      if(token!==revealRunToken)return;
       el.textContent=numberString(end,whole);
       el.classList.add("locked");
       softHaptic([30,25,55]);
@@ -2203,7 +2223,6 @@ byId("restart").addEventListener("click",leaveGame);
 byId("soundToggle").addEventListener("click",function(){setSoundEnabled(!soundEnabled);});
 
 
-
 /* iOS Safari can pause Web Audio after locking the device or switching apps.
    Re-unlock it on the next real interaction without changing the page layout. */
 document.addEventListener("pointerdown",function(){if(soundEnabled)unlockAudio();},{passive:true,capture:true});
@@ -2244,7 +2263,7 @@ scrubber.addEventListener("pointermove",function(e){
   setEstimateFromClientX(e.clientX);
   e.preventDefault();
 });
-function stopScrub(e){scrubbing=false;}
+function stopScrub(){scrubbing=false;}
 scrubber.addEventListener("pointerup",stopScrub);
 scrubber.addEventListener("pointercancel",stopScrub);
 scrubber.addEventListener("keydown",function(e){
