@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#292929">
 <link rel="apple-touch-icon" sizes="180x180" href="circa_impostor_detective_icon_180.png">
 <link rel="icon" type="image/png" sizes="180x180" href="circa_impostor_detective_icon_180.png">
-<title>Circa Impostor V53</title>
+<title>Circa Impostor V54</title>
 <style>
 :root{
   --bg:#292929;
@@ -1168,6 +1168,20 @@ input[type="text"]{
   -webkit-user-select:text;
   user-select:text;
   -webkit-touch-callout:default;
+}
+
+/* V54: Text selection/copy is temporarily enabled only while the protected
+   DEV panel is open. Closing DEV restores the app-wide copy lock. */
+body.devCopyMode #devPanelOverlay,
+body.devCopyMode #devPanelOverlay *{
+  -webkit-user-select:text!important;
+  user-select:text!important;
+  -webkit-touch-callout:default!important;
+}
+body.devCopyMode #devPanelOverlay button{
+  -webkit-user-select:none!important;
+  user-select:none!important;
+  -webkit-touch-callout:none!important;
 }
 
 
@@ -4257,12 +4271,18 @@ function refreshDiagPanel(){
 function openDiagPanel(){
   if(!diagUnlocked()){openDiagGate();return;}
   refreshDiagPanel();
+  document.body.classList.add("devCopyMode");
   byId("devPanelOverlay").classList.remove("hidden");
   byId("devPanelOverlay").setAttribute("aria-hidden","false");
 }
 function closeDiagPanel(){
   byId("devPanelOverlay").classList.add("hidden");
   byId("devPanelOverlay").setAttribute("aria-hidden","true");
+  document.body.classList.remove("devCopyMode");
+  try{
+    var sel=window.getSelection&&window.getSelection();
+    if(sel&&sel.removeAllRanges)sel.removeAllRanges();
+  }catch(e){}
 }
 function diagSimProbabilities(n,counts,last){
   if(n!==3&&n!==4){
@@ -4312,6 +4332,7 @@ function runDiagSimulation(rounds){
 }
 function lockDiag(){
   setDiagUnlocked(false);
+  document.body.classList.remove("devCopyMode");
   closeDiagPanel();
 }
 function handleDiagTrigger(){
@@ -4405,20 +4426,32 @@ document.addEventListener("visibilitychange",function(){
   if(!document.hidden&&soundEnabled)unlockAudio();
 });
 
-/* App-like Safari interaction: suppress selection/copy callouts outside inputs. */
+/* App-like Safari interaction: suppress selection/copy callouts outside inputs.
+   V54 exception: while the protected DEV panel is open, its text may be
+   selected and copied. Leaving DEV restores the normal lock immediately. */
+function devCopyAllowed(target){
+  return !!(
+    document.body.classList.contains("devCopyMode") &&
+    target&&target.closest&&target.closest("#devPanelOverlay")
+  );
+}
 document.addEventListener("selectstart",function(e){
+  if(devCopyAllowed(e.target))return;
   if(e.target&&e.target.closest&&e.target.closest('input'))return;
   e.preventDefault();
 });
 document.addEventListener("contextmenu",function(e){
+  if(devCopyAllowed(e.target))return;
   if(e.target&&e.target.closest&&e.target.closest('input'))return;
   e.preventDefault();
 });
 document.addEventListener("copy",function(e){
+  if(devCopyAllowed(e.target))return;
   if(e.target&&e.target.closest&&e.target.closest('input'))return;
   e.preventDefault();
 });
 document.addEventListener("cut",function(e){
+  if(devCopyAllowed(e.target))return;
   if(e.target&&e.target.closest&&e.target.closest('input'))return;
   e.preventDefault();
 });
