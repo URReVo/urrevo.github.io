@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#292929">
 <link rel="apple-touch-icon" sizes="180x180" href="circa_impostor_detective_icon_180.png">
 <link rel="icon" type="image/png" sizes="180x180" href="circa_impostor_detective_icon_180.png">
-<title>Circa Impostor V52</title>
+<title>Circa Impostor V53</title>
 <style>
 :root{
   --bg:#292929;
@@ -134,6 +134,42 @@ button:disabled{opacity:.4}
   color:#babcc3;font-size:11px;line-height:1.45;white-space:pre-wrap
 }
 .devDanger{border-color:rgba(255,88,103,.35)!important;color:#ff9aa3!important}
+.devButtonGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.devButtonGrid button,.devButtonStack button{min-height:42px;padding:9px 10px;font-size:11px}
+.devButtonStack{display:grid;grid-template-columns:1fr;gap:7px}
+.devControlRow{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:7px}
+.devField,.devSelect{
+  width:100%;min-height:43px;padding:9px 10px;border-radius:12px;
+  border:1px solid #44464c;background:#15161a;color:#f5f5f6;
+  font-size:12px;outline:none;-webkit-appearance:none;appearance:none
+}
+.devField:focus,.devSelect:focus{border-color:var(--accent)}
+.devStatus{min-height:17px;margin-top:7px;color:#aeb0b7;font-size:11px;line-height:1.35}
+.devStatus.error{color:#ff979f}
+.devCardTitleRow{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.devTinyButton{
+  min-height:28px!important;height:28px!important;padding:3px 9px!important;
+  border-radius:9px!important;font-size:9px!important
+}
+.devLog{
+  max-height:220px;overflow:auto;border-radius:12px;background:#15161a;
+  border:1px solid rgba(255,255,255,.055)
+}
+.devLogEmpty{padding:12px;color:#858890;font-size:11px}
+.devLogItem{
+  display:grid;grid-template-columns:58px 88px minmax(0,1fr);gap:7px;
+  padding:8px 9px;border-top:1px solid rgba(255,255,255,.05);
+  font-size:10px;line-height:1.35
+}
+.devLogItem:first-child{border-top:0}
+.devLogTime{color:#72757d;font-variant-numeric:tabular-nums}
+.devLogType{color:#f0a24a;font-weight:900;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.devLogText{color:#c7c9ce;overflow-wrap:anywhere}
+@media(max-width:390px){
+  .devButtonGrid{grid-template-columns:1fr}
+  .devControlRow{grid-template-columns:1fr}
+  .devLogItem{grid-template-columns:52px 72px minmax(0,1fr)}
+}
 @media(min-width:560px){
   .devGrid{grid-template-columns:1fr 1fr}
   .devCard.devWide{grid-column:1/-1}
@@ -1622,6 +1658,53 @@ body.setup-fits:not(.game-active){
       </div>
 
       <div class="devCard devWide">
+        <div class="devCardTitle">SCREEN-JUMP</div>
+        <div class="devButtonGrid" id="devJumpButtons">
+          <button type="button" class="secondary" data-dev-jump="handoff">Übergabe</button>
+          <button type="button" class="secondary" data-dev-jump="question">Frage</button>
+          <button type="button" class="secondary" data-dev-jump="normalHidden">Richtige Frage · verdeckt</button>
+          <button type="button" class="secondary" data-dev-jump="normalOpen">Richtige Frage · offen</button>
+          <button type="button" class="secondary" data-dev-jump="answers">Schätzungen</button>
+          <button type="button" class="secondary" data-dev-jump="impostor">Impostor revealed</button>
+          <button type="button" class="secondary" data-dev-jump="result">Ergebnis</button>
+        </div>
+        <div id="devActionStatus" class="devStatus"></div>
+      </div>
+
+      <div class="devCard">
+        <div class="devCardTitle">IMPOSTOR ERZWINGEN</div>
+        <div id="devForceImpostorButtons" class="devButtonStack"></div>
+        <div class="devQuestionMeta">Nur für die aktuelle Test-Runde. Diese Runde wird danach nicht in die dauerhaften Statistiken geschrieben.</div>
+      </div>
+
+      <div class="devCard">
+        <div class="devCardTitle">FRAGE LADEN</div>
+        <input id="devQidInput" class="devField" type="text" autocomplete="off" placeholder="QID, z. B. base-0001">
+        <div class="devControlRow">
+          <select id="devQuestionCategory" class="devSelect" aria-label="DEV Kategorie"></select>
+          <select id="devQuestionDifficulty" class="devSelect" aria-label="DEV Schwierigkeit">
+            <option value="zufaellig">Alle Schwierigkeiten</option>
+            <option value="leicht">Leicht</option>
+            <option value="mittel">Mittel</option>
+            <option value="schwer">Schwer</option>
+          </select>
+        </div>
+        <div class="devActions">
+          <button id="devLoadQid" type="button" class="secondary">QID laden</button>
+          <button id="devLoadRandomQuestion" type="button" class="secondary">Zufällige laden</button>
+        </div>
+        <div id="devQuestionPickerStatus" class="devStatus"></div>
+      </div>
+
+      <div class="devCard devWide">
+        <div class="devCardTitle devCardTitleRow">
+          <span>EVENTLOG</span>
+          <button id="devClearLog" type="button" class="devTinyButton secondary">Leeren</button>
+        </div>
+        <div id="devEventLog" class="devLog"></div>
+      </div>
+
+      <div class="devCard devWide">
         <div class="devCardTitle">TEST & SPEICHER</div>
         <div id="devStorageInfo" class="devKv"></div>
         <div class="devActions">
@@ -2175,6 +2258,7 @@ var deviceStats={roundsPlayed:0};
 var selectedStatsMetric="closest";
 var roundStatsRecorded=false;
 var roundOutcomeChoice=null;
+var diagRoundDirty=false;
 
 var STORAGE_PLAYERS="circaImpostor.players.v1";
 var STORAGE_DECK="circaImpostor.deckProgress.v5";
@@ -2376,6 +2460,11 @@ function roundPerformance(){
 }
 function recordRoundBaseStats(){
   if(roundStatsRecorded||!players.length||!current)return;
+  if(diagRoundDirty){
+    roundStatsRecorded=true;
+    diagLog("Statistik","DEV-manipulierte Runde wurde nicht gespeichert");
+    return;
+  }
 
   var perf=roundPerformance();
   if(!perf.length)return;
@@ -2401,6 +2490,19 @@ function recordRoundBaseStats(){
   savePlayerStats();
 }
 function setImpostorOutcome(won){
+  if(diagRoundDirty){
+    roundStatsRecorded=true;
+    roundOutcomeChoice=!!won;
+    byId("impostorWonYes").classList.toggle("selected",roundOutcomeChoice===true);
+    byId("impostorWonNo").classList.toggle("selected",roundOutcomeChoice===false);
+    byId("impostorWonYes").setAttribute("aria-pressed",roundOutcomeChoice===true?"true":"false");
+    byId("impostorWonNo").setAttribute("aria-pressed",roundOutcomeChoice===false?"true":"false");
+    byId("resultActions").classList.remove("hidden");
+    diagLog("Ergebnis","DEV-Runde: Impostor versteckt = "+(roundOutcomeChoice?"Ja":"Nein"));
+    tone(roundOutcomeChoice?620:390,0.07,0.018,"sine",0);
+    return;
+  }
+
   if(!roundStatsRecorded)recordRoundBaseStats();
   if(!players[impIndex])return;
 
@@ -2419,6 +2521,7 @@ function setImpostorOutcome(won){
   byId("impostorWonNo").setAttribute("aria-pressed",roundOutcomeChoice===false?"true":"false");
 
   byId("resultActions").classList.remove("hidden");
+  diagLog("Ergebnis","Impostor versteckt = "+(roundOutcomeChoice?"Ja":"Nein"));
   tone(roundOutcomeChoice?620:390,0.07,0.018,"sine",0);
 }
 var statsMetricMeta={
@@ -2985,6 +3088,7 @@ function start(){
   savePlayers();
   round=0;
   resetImpostorFairness();
+  diagLog("Partie","Gestartet mit "+players.length+" Spielern");
   newRound(false);
 }
 
@@ -3107,6 +3211,13 @@ function selectImpostor(){
   impostorSessionCounts[chosen]=(impostorSessionCounts[chosen]||0)+1;
   impostorRecent.push(chosen);
   if(impostorRecent.length>2)impostorRecent.shift();
+
+  var probParts=[];
+  for(var pi=0;pi<probabilities.length;pi++){
+    var pn=players[pi]?players[pi].name:("Spieler "+(pi+1));
+    probParts.push(pn+" "+(probabilities[pi]*100).toFixed(1)+"%");
+  }
+  diagLog("Impostor","Gewählt: "+(players[chosen]?players[chosen].name:("Spieler "+(chosen+1)))+" · "+probParts.join(" · "));
   return chosen;
 }
 function rollbackCurrentImpostorSelection(){
@@ -3173,6 +3284,7 @@ function pickRound(){
   impIndex=selectImpostor();
   active=0;round++;
   updateToolbar();
+  diagLog("Runde","R"+round+" · "+current.qid+" · "+current.cat+" · "+diagDifficultyName(current));
   return true;
 }
 function prepareHandoff(){
@@ -3198,6 +3310,7 @@ function newRound(confirmFirst){
   normalQuestionRevealed=false;
   roundStatsRecorded=false;
   roundOutcomeChoice=null;
+  diagRoundDirty=false;
   byId("saveGuess").disabled=false;
 
   if(!pickRound()){
@@ -3342,6 +3455,7 @@ function saveGuess(){
   if(!isFinite(v))return;
   guessLocked=true;
   players[active].guess=v;
+  diagLog("Schätzung",players[active].name+" = "+formatEstimate(v)+" "+(activeQuestionUnit()||""));
 
   var btn=byId("saveGuess");
   btn.disabled=true;
@@ -3387,6 +3501,7 @@ function revealNormalQuestion(){
 
   if(!normalQuestionRevealed){
     normalQuestionRevealed=true;
+    diagLog("Reveal","Richtige Frage aufgedeckt · "+current.qid);
 
     var question=byId("normalRevealQuestion");
     question.textContent=current.normal;
@@ -3517,6 +3632,7 @@ function reveal(){
       soundImpact();
       softHaptic([45,35,90]);
       pulseScreen();
+      diagLog("Reveal","Impostor: "+(players[impIndex]?players[impIndex].name:"–"));
       byId("reveal").disabled=false;
       byId("reveal").textContent="Auflösung";
     },finalDelay));
@@ -3679,6 +3795,7 @@ var diagSessionKey="ci.diag.session.v1";
 var diagTapTimes=[];
 var diagFailures=0;
 var diagLockedUntil=0;
+var diagEvents=[];
 
 function diagUnlocked(){
   try{return sessionStorage.getItem(diagSessionKey)==="1";}catch(e){return false;}
@@ -3789,10 +3906,11 @@ function diagEsc(value){
 function diagSessionHtml(){
   var activePlayers=players.length?players.length:count;
   return [
-    '<div class="k">Version</div><div class="v">V52</div>',
+    '<div class="k">Version</div><div class="v">V53</div>',
     '<div class="k">Ansicht</div><div class="v">'+diagEsc(diagVisibleSection())+'</div>',
     '<div class="k">Spieler</div><div class="v">'+activePlayers+'</div>',
     '<div class="k">Runde</div><div class="v">'+(round||0)+'</div>',
+    '<div class="k">DEV manipuliert</div><div class="v">'+(diagRoundDirty?"Ja · keine Statistik":"Nein")+'</div>',
     '<div class="k">Geräterunden</div><div class="v">'+(deviceStats&&deviceStats.roundsPlayed||0)+'</div>'
   ].join("");
 }
@@ -3852,11 +3970,289 @@ function diagStorageHtml(){
     '<div class="k">Kategorien</div><div class="v">'+diagEsc(selectedCategories.join(", "))+'</div>'
   ].join("");
 }
+
+function diagLog(type,text){
+  var now=new Date();
+  var hh=String(now.getHours()).padStart(2,"0");
+  var mm=String(now.getMinutes()).padStart(2,"0");
+  var ss=String(now.getSeconds()).padStart(2,"0");
+  diagEvents.push({time:hh+":"+mm+":"+ss,type:String(type||"Event"),text:String(text||"")});
+  if(diagEvents.length>40)diagEvents.splice(0,diagEvents.length-40);
+  if(byId("devEventLog"))renderDiagLog();
+}
+function renderDiagLog(){
+  var box=byId("devEventLog");
+  if(!box)return;
+  if(!diagEvents.length){
+    box.innerHTML='<div class="devLogEmpty">Noch keine Ereignisse in dieser Sitzung.</div>';
+    return;
+  }
+  var rows=[];
+  for(var i=diagEvents.length-1;i>=0;i--){
+    var e=diagEvents[i];
+    rows.push(
+      '<div class="devLogItem">'+
+      '<div class="devLogTime">'+diagEsc(e.time)+'</div>'+
+      '<div class="devLogType">'+diagEsc(e.type)+'</div>'+
+      '<div class="devLogText">'+diagEsc(e.text)+'</div>'+
+      '</div>'
+    );
+  }
+  box.innerHTML=rows.join("");
+}
+function clearDiagLog(){
+  diagEvents=[];
+  renderDiagLog();
+}
+function diagSetStatus(id,text,isError){
+  var el=byId(id);
+  if(!el)return;
+  el.textContent=text||"";
+  el.classList.toggle("error",!!isError);
+}
+function diagMarkRoundDirty(reason){
+  diagRoundDirty=true;
+  if(reason)diagLog("DEV",reason);
+}
+function populateDiagQuestionFilters(){
+  var select=byId("devQuestionCategory");
+  if(!select||select.options.length)return;
+  var cats=[],seen={};
+  for(var i=0;i<bank.length;i++){
+    if(!seen[bank[i].cat]){seen[bank[i].cat]=true;cats.push(bank[i].cat);}
+  }
+  cats.sort(function(a,b){return a.localeCompare(b,"de");});
+  var all=document.createElement("option");
+  all.value="Alle";all.textContent="Alle Kategorien";
+  select.appendChild(all);
+  for(var c=0;c<cats.length;c++){
+    var opt=document.createElement("option");
+    opt.value=cats[c];opt.textContent=cats[c];
+    select.appendChild(opt);
+  }
+}
+function renderDiagForceButtons(){
+  var box=byId("devForceImpostorButtons");
+  if(!box)return;
+  box.innerHTML="";
+  if(!players.length){
+    box.innerHTML='<div class="devQuestionMeta">Erst eine Partie starten.</div>';
+    return;
+  }
+  for(var i=0;i<players.length;i++){
+    var btn=document.createElement("button");
+    btn.type="button";
+    btn.className="secondary";
+    btn.setAttribute("data-dev-force",String(i));
+    btn.textContent=(players[i].avatar||"🎭")+" "+players[i].name+(i===impIndex?" · aktuell":"");
+    btn.addEventListener("click",function(){
+      forceDiagImpostor(Number(this.getAttribute("data-dev-force")));
+    });
+    box.appendChild(btn);
+  }
+}
+function forceDiagImpostor(index){
+  if(!players.length||!current){
+    diagSetStatus("devActionStatus","Erst eine Partie starten.",true);
+    return;
+  }
+  if(index<0||index>=players.length)return;
+  if(roundStatsRecorded&&!diagRoundDirty){
+    diagSetStatus("devActionStatus","Diese Runde ist bereits dauerhaft ausgewertet. Bitte neue Runde starten.",true);
+    return;
+  }
+
+  rollbackCurrentImpostorSelection();
+  impIndex=index;
+  ensureImpostorFairnessState();
+  impostorSessionCounts[index]=(impostorSessionCounts[index]||0)+1;
+  impostorRecent.push(index);
+  if(impostorRecent.length>2)impostorRecent.shift();
+
+  diagMarkRoundDirty("Impostor erzwungen: "+players[index].name);
+  diagSetStatus("devActionStatus","Impostor auf "+players[index].name+" gesetzt.",false);
+
+  var visible=diagVisibleSection();
+  if(visible==="question")openQuestion();
+  else if(visible==="answers"){diagEnsureGuesses();renderAnswers();show("answers");}
+  else if(visible==="result")diagRenderResultInstant();
+
+  refreshDiagPanel();
+}
+function findDiagQuestionByQid(qid){
+  var needle=String(qid||"").trim().toLowerCase();
+  if(!needle)return null;
+  for(var i=0;i<bank.length;i++){
+    if(String(bank[i].qid).toLowerCase()===needle)return bank[i];
+  }
+  return null;
+}
+function applyDiagQuestion(item){
+  if(!item)return false;
+  current=item;
+  normalQuestionRevealed=false;
+  revealStage=0;
+  if(players.length){
+    for(var i=0;i<players.length;i++)players[i].guess=null;
+    active=Math.max(0,Math.min(active,players.length-1));
+    diagMarkRoundDirty("Frage geladen: "+item.qid);
+  }else{
+    diagLog("DEV","Frage vorgeladen: "+item.qid);
+  }
+  updateToolbar();
+
+  var visible=diagVisibleSection();
+  if(players.length&&visible==="question")openQuestion();
+  else if(players.length&&visible==="normalReveal")prepareNormalQuestionReveal();
+  else if(players.length&&visible==="answers"){diagEnsureGuesses();renderAnswers();show("answers");}
+  else if(players.length&&visible==="result")diagRenderResultInstant();
+
+  diagSetStatus("devQuestionPickerStatus","Geladen: "+item.qid+" · "+item.cat+" · "+diagDifficultyName(item),false);
+  refreshDiagPanel();
+  return true;
+}
+function loadDiagQid(){
+  var item=findDiagQuestionByQid(byId("devQidInput").value);
+  if(!item){
+    diagSetStatus("devQuestionPickerStatus","QID nicht gefunden.",true);
+    return;
+  }
+  applyDiagQuestion(item);
+}
+function loadDiagRandomQuestion(){
+  var cat=byId("devQuestionCategory").value||"Alle";
+  var difficulty=byId("devQuestionDifficulty").value||"zufaellig";
+  var pool=[];
+  for(var i=0;i<bank.length;i++){
+    if(cat!=="Alle"&&bank[i].cat!==cat)continue;
+    if(!difficultyFits(bank[i],difficulty))continue;
+    pool.push(bank[i]);
+  }
+  if(!pool.length){
+    diagSetStatus("devQuestionPickerStatus","Für diesen Filter gibt es keine Frage.",true);
+    return;
+  }
+  var item=pool[Math.floor(randomUnit()*pool.length)];
+  byId("devQidInput").value=item.qid;
+  applyDiagQuestion(item);
+}
+function diagEnsureGuesses(){
+  if(!players.length||!current)return;
+  var factors=[0.88,1.06,0.96,1.14,0.81,1.21,0.92,1.09,0.74,1.27,0.99,1.17];
+  var step=Number(current.step)||1;
+  var max=Number(current.max)||100;
+  var changed=false;
+  for(var i=0;i<players.length;i++){
+    if(players[i].guess!==null&&isFinite(Number(players[i].guess)))continue;
+    var target=playerTargetValue(i);
+    var value=Math.round((target*factors[i%factors.length])/step)*step;
+    value=Math.max(0,Math.min(max,value));
+    players[i].guess=value;
+    changed=true;
+  }
+  if(changed)diagMarkRoundDirty("Test-Schätzungen automatisch erzeugt");
+}
+function diagRevealImpostorInstant(){
+  diagEnsureGuesses();
+  renderAnswers();
+  show("answers");
+  revealStage=1;
+  var grid=byId("answerList"),tiles=grid.querySelectorAll(".answerTile");
+  for(var i=0;i<tiles.length;i++){
+    tiles[i].classList.add("dimmed");
+    tiles[i].classList.remove("focused","impostorCaught");
+  }
+  var tile=grid.querySelector('[data-player-index="'+impIndex+'"]');
+  if(tile){
+    tile.classList.remove("dimmed");
+    tile.classList.add("focused","impostorCaught");
+  }
+  byId("reveal").disabled=false;
+  byId("reveal").textContent="Auflösung";
+}
+function diagRenderResultInstant(){
+  if(!players.length||!current)return;
+  diagEnsureGuesses();
+  clearRevealTimers();
+
+  byId("normalQ").textContent=current.normal;
+  byId("normalAnswer").textContent=current.normalAnswer;
+  byId("normalAnswer").classList.add("visible");
+  byId("normalCounter").textContent=numberString(current.normalValue,Math.abs(Number(current.normalValue)-Math.round(Number(current.normalValue)))<0.000001);
+  byId("normalCounter").classList.add("locked");
+
+  byId("impostorQ").textContent=current.imp;
+  byId("impAnswer").textContent=current.impAnswer;
+  byId("impAnswer").classList.add("visible");
+  byId("impCounter").textContent=numberString(current.impValue,Math.abs(Number(current.impValue)-Math.round(Number(current.impValue)))<0.000001);
+  byId("impCounter").classList.add("locked");
+
+  byId("impResolution").classList.remove("hidden");
+  byId("impResolution").classList.add("reveal");
+  byId("resultActions").classList.add("hidden");
+  byId("impostorWonYes").classList.remove("selected");
+  byId("impostorWonNo").classList.remove("selected");
+  byId("impostorWonYes").setAttribute("aria-pressed","false");
+  byId("impostorWonNo").setAttribute("aria-pressed","false");
+  roundOutcomeChoice=null;
+
+  byId("impostorOutcomeName").textContent=players[impIndex]?players[impIndex].name:"der Impostor";
+  byId("impostorOutcomeAvatar").textContent=players[impIndex]?(players[impIndex].avatar||"🎭"):"🎭";
+  byId("spicyNote").classList.toggle("hidden",current.cat!=="Spicy 🌶️");
+
+  buildAwards();
+  byId("roundAwards").classList.remove("hidden");
+  byId("impostorOutcome").classList.remove("hidden");
+  show("result");
+}
+function jumpDiagScreen(stage){
+  if(!players.length||!current){
+    diagSetStatus("devActionStatus","Erst eine Partie starten.",true);
+    return;
+  }
+
+  if(roundIntroTimer){clearTimeout(roundIntroTimer);roundIntroTimer=null;}
+  if(guessSaveTimer){clearTimeout(guessSaveTimer);guessSaveTimer=null;}
+  var intro=byId("roundIntro");
+  if(intro){intro.classList.add("hidden");intro.classList.remove("showIntro");}
+  clearRevealTimers();
+  diagMarkRoundDirty("Screen-Jump: "+stage);
+
+  if(stage==="handoff"){
+    active=Math.max(0,Math.min(active,players.length-1));
+    prepareHandoff();
+  }else if(stage==="question"){
+    active=Math.max(0,Math.min(active,players.length-1));
+    openQuestion();
+  }else if(stage==="normalHidden"){
+    prepareNormalQuestionReveal();
+  }else if(stage==="normalOpen"){
+    prepareNormalQuestionReveal();
+    revealNormalQuestion();
+  }else if(stage==="answers"){
+    diagEnsureGuesses();
+    renderAnswers();
+    show("answers");
+  }else if(stage==="impostor"){
+    diagRevealImpostorInstant();
+  }else if(stage==="result"){
+    diagRenderResultInstant();
+  }else{
+    diagSetStatus("devActionStatus","Unbekanntes Ziel.",true);
+    return;
+  }
+
+  closeDiagPanel();
+}
+
 function refreshDiagPanel(){
   byId("devSessionInfo").innerHTML=diagSessionHtml();
   byId("devImpostorInfo").innerHTML=diagImpostorHtml();
   byId("devQuestionInfo").innerHTML=diagQuestionHtml();
   byId("devStorageInfo").innerHTML=diagStorageHtml();
+  populateDiagQuestionFilters();
+  renderDiagForceButtons();
+  renderDiagLog();
 }
 function openDiagPanel(){
   if(!diagUnlocked()){openDiagGate();return;}
@@ -3942,8 +4338,22 @@ byId("devCloseBottom").addEventListener("click",closeDiagPanel);
 byId("devRefresh").addEventListener("click",refreshDiagPanel);
 byId("devSimulate").addEventListener("click",function(){runDiagSimulation(1000);});
 byId("devLock").addEventListener("click",lockDiag);
+byId("devLoadQid").addEventListener("click",loadDiagQid);
+byId("devLoadRandomQuestion").addEventListener("click",loadDiagRandomQuestion);
+byId("devQidInput").addEventListener("keydown",function(e){
+  if(e.key==="Enter"){loadDiagQid();e.preventDefault();}
+});
+byId("devClearLog").addEventListener("click",clearDiagLog);
+
+var diagJumpButtons=byId("devJumpButtons").querySelectorAll("[data-dev-jump]");
+for(var dj=0;dj<diagJumpButtons.length;dj++){
+  diagJumpButtons[dj].addEventListener("click",function(){
+    jumpDiagScreen(this.getAttribute("data-dev-jump"));
+  });
+}
 
 syncDiagVisibility();
+renderDiagLog();
 /* ------------------------ end hidden diagnostics ------------------------ */
 
 
