@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#292929">
 <link rel="apple-touch-icon" sizes="180x180" href="circa_impostor_detective_icon_180.png">
 <link rel="icon" type="image/png" sizes="180x180" href="circa_impostor_detective_icon_180.png">
-<title>Circa Impostor V49</title>
+<title>Circa Impostor V52</title>
 <style>
 :root{
   --bg:#292929;
@@ -67,6 +67,77 @@ button:disabled{opacity:.4}
 .full{width:100%}
 .notice{color:#ffd48c;font-size:14px;min-height:20px;margin-top:7px}
 .count{text-align:center;color:var(--muted);font-size:12px;margin-top:10px}
+
+
+/* Hidden DEV tools. Nothing is visible until the private unlock flow succeeds. */
+.devHomeButton{margin-top:8px}
+.devToolbarButton{
+  width:34px!important;min-width:34px!important;height:34px!important;min-height:34px!important;
+  padding:0!important;border:1px solid rgba(243,154,50,.30)!important;
+  color:#f3a14a!important;font-size:9px!important;letter-spacing:.45px!important;font-weight:950!important
+}
+.devOverlay{
+  position:fixed;inset:0;z-index:6000;
+  display:flex;align-items:flex-end;justify-content:center;
+  padding:16px max(14px,env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));
+  background:rgba(0,0,0,.66);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)
+}
+.devSheet{
+  width:min(100%,620px);max-height:min(86dvh,820px);overflow:auto;
+  border-radius:25px;padding:16px;
+  background:#1d1e22;border:1px solid rgba(255,255,255,.10);
+  box-shadow:0 30px 90px rgba(0,0,0,.55)
+}
+.devSheetHeader{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.devSheetTitle{font-size:20px;font-weight:950;letter-spacing:-.25px}
+.devClose{
+  width:38px;height:38px;min-height:38px;padding:0;border-radius:12px;
+  background:#303136!important;color:#fff!important;border:1px solid rgba(255,255,255,.08)!important
+}
+.devGateText{color:#aaaeb6;font-size:13px;line-height:1.4;margin:0 0 12px}
+.devPin{
+  width:100%;height:52px;border-radius:14px;padding:10px 14px;
+  border:1px solid #47484e;background:#111216;color:#fff;
+  text-align:center;font-size:24px;font-weight:900;letter-spacing:7px;outline:none;
+  -webkit-appearance:none;appearance:none
+}
+.devPin:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(243,154,50,.12)}
+.devGateError{min-height:20px;margin-top:8px;color:#ff8d97;font-size:12px;font-weight:750}
+.devGateActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.devGateActions button{min-height:46px}
+.devGrid{display:grid;grid-template-columns:1fr;gap:10px}
+.devCard{
+  border-radius:17px;padding:12px;
+  background:#25262b;border:1px solid rgba(255,255,255,.07)
+}
+.devCardTitle{
+  color:#f0a24a;font-size:10px;letter-spacing:1px;font-weight:950;margin-bottom:9px
+}
+.devKv{display:grid;grid-template-columns:minmax(105px,.75fr) 1.25fr;gap:6px 10px;font-size:12px;line-height:1.35}
+.devKv .k{color:#93959c;font-weight:750}
+.devKv .v{color:#f2f2f4;font-weight:780;overflow-wrap:anywhere}
+.devProbRow{
+  display:grid;grid-template-columns:minmax(0,1fr) 60px 54px;gap:8px;align-items:center;
+  padding:7px 0;border-top:1px solid rgba(255,255,255,.055);font-size:12px
+}
+.devProbRow:first-child{border-top:0;padding-top:0}
+.devProbName{font-weight:850;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.devProbChance{text-align:right;color:#ffb45b;font-weight:950}
+.devProbCount{text-align:right;color:#9a9ca3;font-size:11px}
+.devQuestionText{font-size:12px;line-height:1.4;color:#f2f2f4;margin-top:6px}
+.devQuestionMeta{font-size:11px;line-height:1.35;color:#9b9da4;margin-top:4px}
+.devActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.devActions button{min-height:44px;padding:10px 11px;font-size:12px}
+.devSimulation{
+  margin-top:9px;padding:9px 10px;border-radius:12px;background:#17181c;
+  color:#babcc3;font-size:11px;line-height:1.45;white-space:pre-wrap
+}
+.devDanger{border-color:rgba(255,88,103,.35)!important;color:#ff9aa3!important}
+@media(min-width:560px){
+  .devGrid{grid-template-columns:1fr 1fr}
+  .devCard.devWide{grid-column:1/-1}
+}
 
 /* Compact in-game toolbar */
 .gameTopbar{
@@ -143,6 +214,22 @@ button:disabled{opacity:.4}
 .stageButton{flex:0 0 48px}
 
 .normalRevealScreen{justify-content:flex-start}
+
+/* Keep the unrevealed and revealed card on the exact same Y-position.
+   The two header texts have different lengths, so their space is fixed. */
+.normalRevealScreen .stageHeader{
+  flex:0 0 80px;
+  height:80px;
+  overflow:hidden;
+}
+.normalRevealScreen .stageHeader h2{
+  font-size:clamp(19px,5.3vw,22px);
+  line-height:1.15;
+  white-space:nowrap;
+}
+.normalRevealScreen .stageHeader .sub{
+  min-height:42px;
+}
 .normalRevealScreen .stageButton{margin-top:auto}
 .normalRevealCard{margin-top:10px;margin-bottom:10px}
 .normalRevealUnitReserved{visibility:hidden}
@@ -1281,6 +1368,7 @@ body.setup-fits:not(.game-active){
     <div id="topRound" class="toolbarBadge roundBadge">R1</div>
   </div>
   <div class="toolbarActions">
+    <button id="devOpenGame" type="button" class="iconButton devOnly hidden devToolbarButton" aria-label="DEV Tools" title="DEV">DEV</button>
     <button id="soundToggle" type="button" class="iconButton" aria-label="Sound ausschalten" aria-pressed="true" title="Sound">
       <svg id="soundOnIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M16 9.5c1.4 1.4 1.4 3.6 0 5M18.5 7c2.8 2.8 2.8 7.2 0 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       <svg id="soundOffIcon" class="hidden" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M17 9l5 6M22 9l-5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -1296,7 +1384,7 @@ body.setup-fits:not(.game-active){
 
 <section id="setup">
   <div class="hero center">
-    <div class="logo"><div class="logoInnerD" aria-hidden="true"><span class="logoGlowA"></span><span class="logoGlowB"></span><span class="logoPlate"></span><span class="logoHatBrim"></span><span class="logoHatTop"></span><span class="logoHatBand"></span><span class="logoC"></span><span class="logoI"></span><span class="logoMagnifierRing"></span><span class="logoMagnifierHandle"></span><span class="logoSpark"></span></div></div>
+    <div id="devGateTrigger" class="logo"><div class="logoInnerD" aria-hidden="true"><span class="logoGlowA"></span><span class="logoGlowB"></span><span class="logoPlate"></span><span class="logoHatBrim"></span><span class="logoHatTop"></span><span class="logoHatBand"></span><span class="logoC"></span><span class="logoI"></span><span class="logoMagnifierRing"></span><span class="logoMagnifierHandle"></span><span class="logoSpark"></span></div></div>
     <h1>Circa Impostor</h1>
     <p class="sub">Alle bekommen dieselbe Schätzfrage – außer einer Person.</p>
   </div>
@@ -1331,6 +1419,7 @@ body.setup-fits:not(.game-active){
   <div id="names"></div>
   <button id="start" type="button" class="full">Spiel starten</button>
   <button id="openStats" type="button" class="full secondary statsHomeButton">📊 Statistiken</button>
+  <button id="devOpenSetup" type="button" class="full secondary devOnly hidden devHomeButton">🔧 DEV Tools</button>
   <div id="error" class="notice" aria-live="polite"></div>
   <div class="count">520 Fragepaare</div><div class="savedHint">Spieler, Kategorien, Statistiken &amp; Fragenfortschritt bleiben auf diesem Gerät gespeichert</div>
 </section>
@@ -1490,6 +1579,61 @@ body.setup-fits:not(.game-active){
   </div>
 </section>
 
+</div>
+
+
+<div id="devGateOverlay" class="devOverlay hidden" aria-hidden="true">
+  <div class="devSheet" role="dialog" aria-modal="true" aria-labelledby="devGateTitle">
+    <div class="devSheetHeader">
+      <div id="devGateTitle" class="devSheetTitle">Zugriff</div>
+      <button id="devGateClose" type="button" class="devClose" aria-label="Schließen">✕</button>
+    </div>
+    <p class="devGateText">Geschützter Bereich.</p>
+    <input id="devPinInput" class="devPin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" aria-label="PIN">
+    <div id="devGateError" class="devGateError" aria-live="polite"></div>
+    <div class="devGateActions">
+      <button id="devGateCancel" type="button" class="secondary">Abbrechen</button>
+      <button id="devGateSubmit" type="button">Entsperren</button>
+    </div>
+  </div>
+</div>
+
+<div id="devPanelOverlay" class="devOverlay hidden" aria-hidden="true">
+  <div class="devSheet" role="dialog" aria-modal="true" aria-labelledby="devPanelTitle">
+    <div class="devSheetHeader">
+      <div id="devPanelTitle" class="devSheetTitle">DEV Tools</div>
+      <button id="devPanelClose" type="button" class="devClose" aria-label="Schließen">✕</button>
+    </div>
+
+    <div class="devGrid">
+      <div class="devCard">
+        <div class="devCardTitle">SESSION</div>
+        <div id="devSessionInfo" class="devKv"></div>
+      </div>
+
+      <div class="devCard">
+        <div class="devCardTitle">IMPOSTOR</div>
+        <div id="devImpostorInfo"></div>
+      </div>
+
+      <div class="devCard devWide">
+        <div class="devCardTitle">FRAGE</div>
+        <div id="devQuestionInfo"></div>
+      </div>
+
+      <div class="devCard devWide">
+        <div class="devCardTitle">TEST & SPEICHER</div>
+        <div id="devStorageInfo" class="devKv"></div>
+        <div class="devActions">
+          <button id="devRefresh" type="button" class="secondary">↻ Aktualisieren</button>
+          <button id="devSimulate" type="button" class="secondary">1000 Runden simulieren</button>
+          <button id="devLock" type="button" class="secondary devDanger">DEV sperren</button>
+          <button id="devCloseBottom" type="button">Fertig</button>
+        </div>
+        <div id="devSimulationResult" class="devSimulation hidden"></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -2021,6 +2165,10 @@ function byId(id){return document.getElementById(id);}
 var sections=["setup","stats","handoff","question","normalReveal","answers","result"];
 var count=3,players=[],active=0,impIndex=0,round=0,current=null,scrubbing=false;
 var guessLocked=false,guessSaveTimer=null;
+
+/* V51: Fairness state exists only for the current game session. */
+var impostorSessionCounts=[];
+var impostorRecent=[];
 var normalQuestionRevealed=false;
 var playerStats={};
 var deviceStats={roundsPlayed:0};
@@ -2289,7 +2437,7 @@ var statsMetricMeta={
   impostor:{
     icon:"🎭",
     title:"Am meisten Impostor",
-    hint:"Wer wurde bisher am häufigsten zufällig als Impostor ausgewählt?",
+    hint:"Wer wurde bisher am häufigsten als Impostor ausgewählt?",
     empty:"Noch keine Impostor-Runden gespeichert."
   },
   impostorWins:{
@@ -2836,8 +2984,142 @@ function start(){
   for(var k=0;k<names.length;k++) players.push({name:names[k],avatar:avatarSelections[k]||avatarPool[k%avatarPool.length],guess:null});
   savePlayers();
   round=0;
+  resetImpostorFairness();
   newRound(false);
 }
+
+function randomUnit(){
+  try{
+    if(window.crypto&&window.crypto.getRandomValues){
+      var a=new Uint32Array(1);
+      window.crypto.getRandomValues(a);
+      return a[0]/4294967296;
+    }
+  }catch(e){}
+  return Math.random();
+}
+function resetImpostorFairness(){
+  impostorSessionCounts=[];
+  for(var i=0;i<players.length;i++)impostorSessionCounts.push(0);
+  impostorRecent=[];
+}
+function ensureImpostorFairnessState(){
+  if(impostorSessionCounts.length!==players.length)resetImpostorFairness();
+}
+function boundedProbabilities(weights,minP,maxP){
+  /* Symmetric projection into the configured probability interval.
+     A single common scale factor prevents player-index/order bias. */
+  var clean=[],i;
+  for(i=0;i<weights.length;i++){
+    var w=Number(weights[i]);
+    clean.push(isFinite(w)&&w>0?w:1e-9);
+  }
+
+  function totalAt(scale){
+    var sum=0;
+    for(var t=0;t<clean.length;t++){
+      var p=scale*clean[t];
+      if(p<minP)p=minP;
+      if(p>maxP)p=maxP;
+      sum+=p;
+    }
+    return sum;
+  }
+
+  var low=0,high=1;
+  while(totalAt(high)<1)high*=2;
+
+  for(var step=0;step<32;step++){
+    var mid=(low+high)/2;
+    if(totalAt(mid)<1)low=mid;
+    else high=mid;
+  }
+
+  var scale=(low+high)/2,probs=[],sum=0;
+  for(i=0;i<clean.length;i++){
+    var value=scale*clean[i];
+    if(value<minP)value=minP;
+    if(value>maxP)value=maxP;
+    probs.push(value);
+    sum+=value;
+  }
+
+  /* Remove floating-point dust while preserving all bounds. */
+  var diff=1-sum;
+  if(Math.abs(diff)>1e-10){
+    var free=[];
+    for(i=0;i<probs.length;i++){
+      if(diff>0&&probs[i]<maxP-1e-10)free.push(i);
+      if(diff<0&&probs[i]>minP+1e-10)free.push(i);
+    }
+    if(free.length){
+      var share=diff/free.length;
+      for(var f=0;f<free.length;f++)probs[free[f]]+=share;
+    }
+  }
+  return probs;
+}
+function impostorProbabilities(){
+  ensureImpostorFairnessState();
+  var n=players.length;
+
+  /* 5+ players keep equal random probabilities. */
+  if(n!==3&&n!==4){
+    var uniform=[];
+    for(var u=0;u<n;u++)uniform.push(1/n);
+    return uniform;
+  }
+
+  /* 3 players: 25–45 %. 4 players: 20–35 %.
+     No player can ever be excluded, even after hundreds of rounds. */
+  var minP=n===3?0.25:0.20;
+  var maxP=n===3?0.45:0.35;
+  var fairnessStrength=1.20;
+
+  var totalSelections=0;
+  for(var c=0;c<n;c++)totalSelections+=impostorSessionCounts[c]||0;
+  var expected=totalSelections/n;
+  var weights=[];
+
+  for(var i=0;i<n;i++){
+    var deficit=expected-(impostorSessionCounts[i]||0);
+    var weight=Math.exp(fairnessStrength*deficit);
+
+    /* The previous Impostor gets a penalty, but never a ban. */
+    if(impostorRecent.length&&impostorRecent[impostorRecent.length-1]===i){
+      weight*=0.62;
+    }
+    weights.push(weight);
+  }
+
+  return boundedProbabilities(weights,minP,maxP);
+}
+function selectImpostor(){
+  var probabilities=impostorProbabilities();
+  var roll=randomUnit(),cursor=0,chosen=probabilities.length-1;
+
+  for(var i=0;i<probabilities.length;i++){
+    cursor+=probabilities[i];
+    if(roll<cursor){chosen=i;break;}
+  }
+
+  ensureImpostorFairnessState();
+  impostorSessionCounts[chosen]=(impostorSessionCounts[chosen]||0)+1;
+  impostorRecent.push(chosen);
+  if(impostorRecent.length>2)impostorRecent.shift();
+  return chosen;
+}
+function rollbackCurrentImpostorSelection(){
+  /* Aborted unfinished rounds do not affect the following weighting. */
+  ensureImpostorFairnessState();
+  if(impIndex>=0&&impIndex<impostorSessionCounts.length&&impostorSessionCounts[impIndex]>0){
+    impostorSessionCounts[impIndex]--;
+  }
+  if(impostorRecent.length&&impostorRecent[impostorRecent.length-1]===impIndex){
+    impostorRecent.pop();
+  }
+}
+
 function pickRound(){
   for(var i=0;i<players.length;i++)players[i].guess=null;
 
@@ -2888,7 +3170,7 @@ function pickRound(){
   var chosen=pool[Math.floor(Math.random()*pool.length)];
   current=bank[chosen];
   rememberQuestion(current);
-  impIndex=Math.floor(Math.random()*players.length);
+  impIndex=selectImpostor();
   active=0;round++;
   updateToolbar();
   return true;
@@ -2905,6 +3187,10 @@ function animateHandoff(){
 }
 function newRound(confirmFirst){
   if(confirmFirst && !window.confirm("Aktuelle Runde abbrechen und eine neue Runde starten?"))return;
+  var previousRoundCompleted=roundStatsRecorded;
+  if(confirmFirst&&round>0&&!previousRoundCompleted){
+    rollbackCurrentImpostorSelection();
+  }
   if(typeof clearRevealTimers==="function")clearRevealTimers();
   if(roundIntroTimer){clearTimeout(roundIntroTimer);roundIntroTimer=null;}
   if(guessSaveTimer){clearTimeout(guessSaveTimer);guessSaveTimer=null;}
@@ -3381,10 +3667,285 @@ function leaveGame(){
   roundOutcomeChoice=null;
   byId("saveGuess").disabled=false;
   players=[];active=0;round=0;current=null;
+  impostorSessionCounts=[];impostorRecent=[];
   byId("error").textContent="";
   updateToolbar();
   show("setup");
 }
+
+
+/* -------------------------- V52 hidden diagnostics -------------------------- */
+var diagSessionKey="ci.diag.session.v1";
+var diagTapTimes=[];
+var diagFailures=0;
+var diagLockedUntil=0;
+
+function diagUnlocked(){
+  try{return sessionStorage.getItem(diagSessionKey)==="1";}catch(e){return false;}
+}
+function setDiagUnlocked(value){
+  try{
+    if(value)sessionStorage.setItem(diagSessionKey,"1");
+    else sessionStorage.removeItem(diagSessionKey);
+  }catch(e){}
+  syncDiagVisibility();
+}
+function syncDiagVisibility(){
+  var unlocked=diagUnlocked();
+  var items=document.querySelectorAll(".devOnly");
+  for(var i=0;i<items.length;i++)items[i].classList.toggle("hidden",!unlocked);
+}
+function openDiagGate(){
+  if(diagUnlocked()){openDiagPanel();return;}
+  byId("devPinInput").value="";
+  byId("devGateError").textContent="";
+  byId("devGateOverlay").classList.remove("hidden");
+  byId("devGateOverlay").setAttribute("aria-hidden","false");
+  setTimeout(function(){try{byId("devPinInput").focus();}catch(e){}},80);
+}
+function closeDiagGate(){
+  byId("devGateOverlay").classList.add("hidden");
+  byId("devGateOverlay").setAttribute("aria-hidden","true");
+  byId("devPinInput").value="";
+}
+function b64Bytes(text){
+  var raw=atob(text),out=new Uint8Array(raw.length);
+  for(var i=0;i<raw.length;i++)out[i]=raw.charCodeAt(i);
+  return out;
+}
+function sameBytes(a,b){
+  if(a.length!==b.length)return false;
+  var diff=0;
+  for(var i=0;i<a.length;i++)diff|=(a[i]^b[i]);
+  return diff===0;
+}
+async function verifyDiagEntry(value){
+  if(!window.crypto||!window.crypto.subtle||!window.TextEncoder)return false;
+  var material=await window.crypto.subtle.importKey(
+    "raw",new TextEncoder().encode(String(value||"")),"PBKDF2",false,["deriveBits"]
+  );
+  var bits=await window.crypto.subtle.deriveBits(
+    {name:"PBKDF2",salt:b64Bytes("2vIOc2m/dMogebMxv2A8YA=="),iterations:180000,hash:"SHA-256"},
+    material,256
+  );
+  return sameBytes(new Uint8Array(bits),b64Bytes("YkZr4kQ14jp6eIv00xAYKCr265VTIWWuWiQCWQtN2B0="));
+}
+async function submitDiagGate(){
+  var now=Date.now();
+  if(now<diagLockedUntil){
+    var left=Math.ceil((diagLockedUntil-now)/1000);
+    byId("devGateError").textContent="Bitte "+left+" Sekunden warten.";
+    return;
+  }
+  var value=byId("devPinInput").value.trim();
+  if(value.length!==6||!/^[0-9]+$/.test(value)){
+    byId("devGateError").textContent="Ungültige Eingabe.";
+    return;
+  }
+
+  byId("devGateSubmit").disabled=true;
+  byId("devGateError").textContent="Prüfe …";
+  var ok=false;
+  try{ok=await verifyDiagEntry(value);}catch(e){ok=false;}
+  byId("devGateSubmit").disabled=false;
+
+  if(ok){
+    diagFailures=0;
+    diagLockedUntil=0;
+    setDiagUnlocked(true);
+    closeDiagGate();
+    openDiagPanel();
+    return;
+  }
+
+  diagFailures++;
+  byId("devPinInput").value="";
+  if(diagFailures>=5){
+    diagFailures=0;
+    diagLockedUntil=Date.now()+30000;
+    byId("devGateError").textContent="Zu viele Versuche. 30 Sekunden gesperrt.";
+  }else{
+    byId("devGateError").textContent="Zugriff nicht möglich.";
+  }
+}
+function diagVisibleSection(){
+  for(var i=0;i<sections.length;i++){
+    var el=byId(sections[i]);
+    if(el&&!el.classList.contains("hidden"))return sections[i];
+  }
+  return "–";
+}
+function diagDifficultyName(item){
+  if(!item)return "–";
+  var r=difficultyRatio(item);
+  if(r<=1.30)return "Leicht";
+  if(r<=1.80)return "Mittel";
+  return "Schwer";
+}
+function diagEsc(value){
+  return String(value===undefined||value===null?"–":value)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+function diagSessionHtml(){
+  var activePlayers=players.length?players.length:count;
+  return [
+    '<div class="k">Version</div><div class="v">V52</div>',
+    '<div class="k">Ansicht</div><div class="v">'+diagEsc(diagVisibleSection())+'</div>',
+    '<div class="k">Spieler</div><div class="v">'+activePlayers+'</div>',
+    '<div class="k">Runde</div><div class="v">'+(round||0)+'</div>',
+    '<div class="k">Geräterunden</div><div class="v">'+(deviceStats&&deviceStats.roundsPlayed||0)+'</div>'
+  ].join("");
+}
+function diagImpostorHtml(){
+  if(!players.length){
+    return '<div class="devQuestionMeta">Noch keine laufende Partie. Die Fairness startet beim Spielstart neutral.</div>';
+  }
+  ensureImpostorFairnessState();
+  var probs=impostorProbabilities();
+  var rows=[];
+  for(var i=0;i<players.length;i++){
+    rows.push(
+      '<div class="devProbRow">'+
+      '<div class="devProbName">'+diagEsc((players[i].avatar||"")+" "+players[i].name)+'</div>'+
+      '<div class="devProbChance">'+(probs[i]*100).toFixed(1).replace(".",",")+' %</div>'+
+      '<div class="devProbCount">'+(impostorSessionCounts[i]||0)+'×</div>'+
+      '</div>'
+    );
+  }
+  var currentImp=(round>0&&players[impIndex])?diagEsc(players[impIndex].name):"–";
+  var recent="–";
+  if(impostorRecent.length){
+    var recentNames=[];
+    for(var r=0;r<impostorRecent.length;r++){
+      var rp=players[impostorRecent[r]];
+      if(rp)recentNames.push(diagEsc(rp.name));
+    }
+    if(recentNames.length)recent=recentNames.join(" → ");
+  }
+  rows.push('<div class="devQuestionMeta" style="margin-top:7px">Aktueller Impostor: <strong>'+currentImp+'</strong><br>Letzte Auswahl: '+recent+'<br>Prozentwerte = Chance für die nächste Auswahl.</div>');
+  return rows.join("");
+}
+function diagQuestionHtml(){
+  if(!current){
+    return '<div class="devQuestionMeta">Noch kein Fragepaar aktiv.</div>';
+  }
+  return [
+    '<div class="devKv">',
+      '<div class="k">QID</div><div class="v">'+diagEsc(current.qid)+'</div>',
+      '<div class="k">Kategorie</div><div class="v">'+diagEsc(current.cat)+'</div>',
+      '<div class="k">Schwierigkeit</div><div class="v">'+diagEsc(diagDifficultyName(current))+' · Ratio '+difficultyRatio(current).toFixed(2)+'</div>',
+    '</div>',
+    '<div class="devQuestionText"><strong>Normal:</strong> '+diagEsc(current.normal)+'</div>',
+    '<div class="devQuestionMeta">'+diagEsc(current.normalValue)+' '+diagEsc(current.normalUnit||"")+' · '+diagEsc(current.normalAnswer||"")+'</div>',
+    '<div class="devQuestionText"><strong>Impostor:</strong> '+diagEsc(current.imp)+'</div>',
+    '<div class="devQuestionMeta">'+diagEsc(current.impValue)+' '+diagEsc(current.impUnit||"")+' · '+diagEsc(current.impAnswer||"")+'</div>'
+  ].join("");
+}
+function diagStorageHtml(){
+  var statPlayers=0,deckKeys=0;
+  try{statPlayers=Object.keys(playerStats||{}).length;}catch(e){}
+  try{deckKeys=Object.keys(deckProgress||{}).length;}catch(e){}
+  return [
+    '<div class="k">Statistik-Spieler</div><div class="v">'+statPlayers+'</div>',
+    '<div class="k">Deck-Fortschritte</div><div class="v">'+deckKeys+'</div>',
+    '<div class="k">Schwierigkeit</div><div class="v">'+diagEsc(difficultyName(selectedDifficulty))+'</div>',
+    '<div class="k">Kategorien</div><div class="v">'+diagEsc(selectedCategories.join(", "))+'</div>'
+  ].join("");
+}
+function refreshDiagPanel(){
+  byId("devSessionInfo").innerHTML=diagSessionHtml();
+  byId("devImpostorInfo").innerHTML=diagImpostorHtml();
+  byId("devQuestionInfo").innerHTML=diagQuestionHtml();
+  byId("devStorageInfo").innerHTML=diagStorageHtml();
+}
+function openDiagPanel(){
+  if(!diagUnlocked()){openDiagGate();return;}
+  refreshDiagPanel();
+  byId("devPanelOverlay").classList.remove("hidden");
+  byId("devPanelOverlay").setAttribute("aria-hidden","false");
+}
+function closeDiagPanel(){
+  byId("devPanelOverlay").classList.add("hidden");
+  byId("devPanelOverlay").setAttribute("aria-hidden","true");
+}
+function diagSimProbabilities(n,counts,last){
+  if(n!==3&&n!==4){
+    var uniform=[];
+    for(var u=0;u<n;u++)uniform.push(1/n);
+    return uniform;
+  }
+  var minP=n===3?0.25:0.20;
+  var maxP=n===3?0.45:0.35;
+  var expected=0;
+  for(var c=0;c<n;c++)expected+=counts[c]||0;
+  expected/=n;
+  var weights=[];
+  for(var i=0;i<n;i++){
+    var weight=Math.exp(1.20*(expected-(counts[i]||0)));
+    if(last===i)weight*=0.62;
+    weights.push(weight);
+  }
+  return boundedProbabilities(weights,minP,maxP);
+}
+function runDiagSimulation(rounds){
+  var n=players.length||count;
+  var counts=[],i;
+  for(i=0;i<n;i++)counts.push(0);
+  var last=-1,maxRun=0,run=0,previous=-1;
+  for(var r=0;r<rounds;r++){
+    var p=diagSimProbabilities(n,counts,last);
+    var roll=randomUnit(),sum=0,chosen=n-1;
+    for(i=0;i<n;i++){
+      sum+=p[i];
+      if(roll<sum){chosen=i;break;}
+    }
+    counts[chosen]++;
+    if(chosen===previous)run++;else run=1;
+    if(run>maxRun)maxRun=run;
+    previous=chosen;
+    last=chosen;
+  }
+  var lines=["Simulation: "+rounds+" Runden · "+n+" Spieler"];
+  for(i=0;i<n;i++){
+    var label=players[i]?players[i].name:("Spieler "+(i+1));
+    lines.push(label+": "+counts[i]+"× ("+(counts[i]/rounds*100).toFixed(1).replace(".",",")+" %)");
+  }
+  lines.push("Längste direkte Impostor-Serie: "+maxRun);
+  byId("devSimulationResult").textContent=lines.join("\n");
+  byId("devSimulationResult").classList.remove("hidden");
+}
+function lockDiag(){
+  setDiagUnlocked(false);
+  closeDiagPanel();
+}
+function handleDiagTrigger(){
+  var now=Date.now();
+  diagTapTimes=diagTapTimes.filter(function(t){return now-t<=4000;});
+  diagTapTimes.push(now);
+  if(diagTapTimes.length>=7){
+    diagTapTimes=[];
+    openDiagGate();
+  }
+}
+
+byId("devGateTrigger").addEventListener("click",handleDiagTrigger);
+byId("devGateClose").addEventListener("click",closeDiagGate);
+byId("devGateCancel").addEventListener("click",closeDiagGate);
+byId("devGateSubmit").addEventListener("click",submitDiagGate);
+byId("devPinInput").addEventListener("keydown",function(e){
+  if(e.key==="Enter"){submitDiagGate();e.preventDefault();}
+});
+byId("devOpenSetup").addEventListener("click",openDiagPanel);
+byId("devOpenGame").addEventListener("click",openDiagPanel);
+byId("devPanelClose").addEventListener("click",closeDiagPanel);
+byId("devCloseBottom").addEventListener("click",closeDiagPanel);
+byId("devRefresh").addEventListener("click",refreshDiagPanel);
+byId("devSimulate").addEventListener("click",function(){runDiagSimulation(1000);});
+byId("devLock").addEventListener("click",lockDiag);
+
+syncDiagVisibility();
+/* ------------------------ end hidden diagnostics ------------------------ */
+
 
 /* Setup controls */
 byId("plus").addEventListener("click",function(){if(count<12){count++;if(!avatarSelections[count-1])avatarSelections[count-1]=avatarPool[(count-1)%avatarPool.length];renderNames();savePlayers();}});
@@ -3436,19 +3997,19 @@ document.addEventListener("visibilitychange",function(){
 
 /* App-like Safari interaction: suppress selection/copy callouts outside inputs. */
 document.addEventListener("selectstart",function(e){
-  if(e.target&&e.target.closest&&e.target.closest('input[type="text"]'))return;
+  if(e.target&&e.target.closest&&e.target.closest('input'))return;
   e.preventDefault();
 });
 document.addEventListener("contextmenu",function(e){
-  if(e.target&&e.target.closest&&e.target.closest('input[type="text"]'))return;
+  if(e.target&&e.target.closest&&e.target.closest('input'))return;
   e.preventDefault();
 });
 document.addEventListener("copy",function(e){
-  if(e.target&&e.target.closest&&e.target.closest('input[type="text"]'))return;
+  if(e.target&&e.target.closest&&e.target.closest('input'))return;
   e.preventDefault();
 });
 document.addEventListener("cut",function(e){
-  if(e.target&&e.target.closest&&e.target.closest('input[type="text"]'))return;
+  if(e.target&&e.target.closest&&e.target.closest('input'))return;
   e.preventDefault();
 });
 
