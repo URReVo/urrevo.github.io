@@ -6,6 +6,8 @@ Alle Spieler bekommen eine numerische Schätzfrage aus derselben Kategorie – m
 
 👉 **Live spielen:** https://urrevo.github.io/
 
+> **Hinweis zu iOS 27:** Bei als Home-Screen-Web-App installierten Versionen kann aktuell ein heller Streifen am oberen Bildschirmrand auftreten. Die Behebung wird derzeit untersucht; die experimentellen Workarounds wurden aus der Hauptversion wieder entfernt.
+
 ## 🎮 Spielprinzip
 
 1. Spieler hinzufügen und Kategorien auswählen.
