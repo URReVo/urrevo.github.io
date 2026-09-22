@@ -21,9 +21,13 @@
       if(versionMatch)major=parseInt(versionMatch[1],10);
     }
     if(major!==27)return;
-    document.documentElement.classList.add("ios27-statusbar-fix");
-    var meta=document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-    if(meta)meta.setAttribute("content","default");
+    var standalone=
+      navigator.standalone===true ||
+      (window.matchMedia &&
+        (window.matchMedia("(display-mode: standalone)").matches ||
+         window.matchMedia("(display-mode: fullscreen)").matches));
+    if(!standalone)return;
+    document.documentElement.classList.add("ios27-home-screen");
   }catch(e){}
 })();
 </script>
@@ -31,7 +35,7 @@
 <meta name="theme-color" content="#292929">
 <link rel="apple-touch-icon" sizes="180x180" href="circa_impostor_detective_icon_180.png">
 <link rel="icon" type="image/png" sizes="180x180" href="circa_impostor_detective_icon_180.png">
-<title>Circa Impostor V55</title>
+<title>Circa Impostor V56</title>
 <style>
 :root{
   --bg:#292929;
@@ -50,10 +54,21 @@
 html,body{margin:0;width:100%;min-height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;overscroll-behavior-y:none}
 html{background-color:var(--bg)}
 body{min-height:100%;background-color:var(--bg)}
-#ios27StatusBarProbe{display:none}
-html.ios27-statusbar-fix #ios27StatusBarProbe{
-  display:block;position:fixed;top:0;left:0;right:0;width:100%;
-  height:1px;min-height:1px;background:#292929;pointer-events:none;z-index:2147483647;
+#ios27StatusBarTint{display:none}
+@media (orientation:portrait){
+  html.ios27-home-screen #ios27StatusBarTint{
+    display:block;
+    position:fixed;
+    top:0;
+    left:0;
+    right:0;
+    width:100%;
+    height:16px;
+    min-height:16px;
+    background:#292929;
+    pointer-events:none;
+    z-index:2147483647;
+  }
 }
 button,input{font:inherit}
 button{touch-action:manipulation}
@@ -1432,7 +1447,7 @@ body.setup-fits:not(.game-active){
 </style>
 </head>
 <body>
-<div id="ios27StatusBarProbe" aria-hidden="true"></div>
+<div id="ios27StatusBarTint" aria-hidden="true"></div>
 <div class="app" id="app">
 <div id="roundIntro" class="roundIntro hidden" aria-hidden="true">
   <div id="roundIntroIcon" class="roundIntroIcon">✨</div>
