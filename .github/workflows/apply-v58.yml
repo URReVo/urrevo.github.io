@@ -1,0 +1,171 @@
+name: Apply V58
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-v58.yml'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Patch clean V54 to V58
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path("index.html")
+          s=p.read_text(encoding="utf-8")
+
+          def rep(old,new,label):
+              global s
+              if old not in s:
+                  raise SystemExit(label+" not found")
+              s=s.replace(old,new,1)
+
+          rep("<title>Circa Impostor V54</title>",
+              "<title>Circa Impostor V58</title>",
+              "title")
+
+          rep('''var STORAGE_STATS="circaImpostor.playerStats.v1";
+          var STORAGE_DEVICE_STATS="circaImpostor.deviceStats.v1";
+          var deckProgress={};
+          var savedPlayerNames=[];''',
+          '''var STORAGE_STATS="circaImpostor.playerStats.v1";
+          var STORAGE_DEVICE_STATS="circaImpostor.deviceStats.v1";
+          var STORAGE_COMPLETED_QUESTIONS="circaImpostor.completedQuestions.v1";
+          var deckProgress={};
+          var completedQuestionIds=[];
+          var savedPlayerNames=[];''',
+          "storage vars")
+
+          rep('''function rememberQuestion(item){
+            if(!item||!item.qid)return;
+            var key=deckKey(item.cat,selectedDifficulty);
+            if(!deckProgress[key])deckProgress[key]=[];
+            if(deckProgress[key].indexOf(item.qid)===-1)deckProgress[key].push(item.qid);
+            storageSet(STORAGE_DECK,deckProgress);
+          }
+          function cleanPlayerName(value){''',
+          '''function rememberQuestion(item){
+            if(!item||!item.qid)return;
+            var key=deckKey(item.cat,selectedDifficulty);
+            if(!deckProgress[key])deckProgress[key]=[];
+            if(deckProgress[key].indexOf(item.qid)===-1)deckProgress[key].push(item.qid);
+            storageSet(STORAGE_DECK,deckProgress);
+          }
+
+          /* V58: unique, successfully completed question pairs.
+             Deck progress is still used separately for repeat prevention. */
+          function validQuestionId(qid){
+            if(!qid)return false;
+            for(var i=0;i<bank.length;i++){
+              if(bank[i].qid===qid)return true;
+            }
+            return false;
+          }
+          function loadCompletedQuestionIds(){
+            var saved=storageGet(STORAGE_COMPLETED_QUESTIONS,null);
+            var clean=[];
+
+            if(Array.isArray(saved)){
+              for(var i=0;i<saved.length;i++){
+                var qid=String(saved[i]||"");
+                if(validQuestionId(qid)&&clean.indexOf(qid)===-1)clean.push(qid);
+              }
+            }else{
+              try{
+                for(var key in deckProgress){
+                  if(!Object.prototype.hasOwnProperty.call(deckProgress,key))continue;
+                  var arr=deckProgress[key];
+                  if(!Array.isArray(arr))continue;
+                  for(var j=0;j<arr.length;j++){
+                    var legacyQid=String(arr[j]||"");
+                    if(validQuestionId(legacyQid)&&clean.indexOf(legacyQid)===-1)clean.push(legacyQid);
+                  }
+                }
+              }catch(e){}
+            }
+
+            completedQuestionIds=clean;
+            storageSet(STORAGE_COMPLETED_QUESTIONS,completedQuestionIds);
+          }
+          function markQuestionCompleted(item){
+            if(!item||!item.qid||!validQuestionId(item.qid))return;
+            if(completedQuestionIds.indexOf(item.qid)!==-1)return;
+            completedQuestionIds.push(item.qid);
+            storageSet(STORAGE_COMPLETED_QUESTIONS,completedQuestionIds);
+          }
+          function completedQuestionCount(){
+            return completedQuestionIds.length;
+          }
+          function cleanPlayerName(value){''',
+          "completion tracker")
+
+          rep('''  ensurePlayerStat(players[perf[0].index]).closest++;
+            ensurePlayerStat(players[perf[perf.length-1].index]).farthest++;
+            ensurePlayerStat(players[impIndex]).impostor++;
+            deviceStats.roundsPlayed++;
+
+            roundStatsRecorded=true;''',
+          '''  ensurePlayerStat(players[perf[0].index]).closest++;
+            ensurePlayerStat(players[perf[perf.length-1].index]).farthest++;
+            ensurePlayerStat(players[impIndex]).impostor++;
+            deviceStats.roundsPlayed++;
+            markQuestionCompleted(current);
+
+            roundStatsRecorded=true;''',
+          "round completion")
+
+          rep('''    '<div class="k">Version</div><div class="v">V53</div>',''',
+          '''    '<div class="k">Version</div><div class="v">V58</div>',''',
+          "DEV version")
+
+          rep('''    '<div class="k">Statistik-Spieler</div><div class="v">'+statPlayers+'</div>',
+              '<div class="k">Deck-Fortschritte</div><div class="v">'+deckKeys+'</div>',''',
+          '''    '<div class="k">Statistik-Spieler</div><div class="v">'+statPlayers+'</div>',
+              '<div class="k">Erfolgreich gespielte Fragepaare</div><div class="v">'+completedQuestionCount()+' / '+bank.length+'</div>',
+              '<div class="k">Deck-Fortschritte</div><div class="v">'+deckKeys+'</div>',''',
+          "DEV counter")
+
+          rep('''loadSavedDifficulty();loadDeckProgress();loadSavedPlayers();loadPlayerStats();initCategories();syncDifficultyUI();renderNames();updateToolbar();show("setup");''',
+          '''loadSavedDifficulty();loadDeckProgress();loadCompletedQuestionIds();loadSavedPlayers();loadPlayerStats();initCategories();syncDifficultyUI();renderNames();updateToolbar();show("setup");''',
+          "startup load")
+
+          failed=[
+            "ios27-statusbar-fix","ios27StatusBarProbe","ios27-home-screen",
+            "ios27StatusBarTint",'setAttribute("content","default")','new URL("ios27.html"'
+          ]
+          for x in failed:
+              if x in s:
+                  raise SystemExit("stale iOS workaround: "+x)
+
+          required=[
+            "<title>Circa Impostor V58</title>",
+            'STORAGE_COMPLETED_QUESTIONS="circaImpostor.completedQuestions.v1"',
+            "function loadCompletedQuestionIds()",
+            "function markQuestionCompleted(item)",
+            "markQuestionCompleted(current);",
+            "Erfolgreich gespielte Fragepaare",
+            "loadCompletedQuestionIds();"
+          ]
+          for x in required:
+              if x not in s:
+                  raise SystemExit("missing V58 marker: "+x)
+
+          if "191102" in s:
+              raise SystemExit("plaintext PIN found")
+          if s.count('"qid":') != 520:
+              raise SystemExit("question count changed")
+
+          p.write_text(s,encoding="utf-8")
+
+      - name: Commit V58
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Update Circa Impostor to V58"
+          git push origin main
