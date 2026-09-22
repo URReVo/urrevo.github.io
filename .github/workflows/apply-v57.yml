@@ -1,0 +1,130 @@
+name: Apply V57
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-v57.yml'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Rebuild V57 from clean V54
+        shell: python
+        run: |
+          from pathlib import Path
+          import subprocess
+
+          CLEAN_V54="b2b796f683ee029b2bfe5ad147f75dc46fe53bcd"
+
+          # Pull the exact historical V54 source from git, not V55/V56.
+          v54=subprocess.check_output(
+              ["git","show",f"{CLEAN_V54}:index.html"],
+              text=True
+          )
+
+          if "<title>Circa Impostor V54</title>" not in v54:
+              raise SystemExit("Historical clean V54 source not found")
+
+          failed=[
+              "ios27-statusbar-fix",
+              "ios27StatusBarProbe",
+              "ios27-home-screen",
+              "ios27StatusBarTint",
+              'setAttribute("content","default")'
+          ]
+          for marker in failed:
+              if marker in v54:
+                  raise SystemExit("Clean V54 unexpectedly contains failed-fix marker: "+marker)
+
+          # ---------------- index.html ----------------
+          index=v54.replace(
+              "<title>Circa Impostor V54</title>",
+              "<title>Circa Impostor V57</title>",
+              1
+          )
+
+          viewport='<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">'
+          redirect=r'''<script>
+          (function(){
+            try{
+              var ua=navigator.userAgent||"";
+              var platform=navigator.platform||"";
+              var touchMac=platform==="MacIntel"&&Number(navigator.maxTouchPoints||0)>1;
+              var classicIOS=/iPhone|iPad|iPod/.test(ua);
+              if(!classicIOS&&!touchMac)return;
+
+              var major=null;
+              var osMatch=ua.match(/OS (\\d+)[_.]/);
+              if(osMatch)major=parseInt(osMatch[1],10);
+
+              if(major===null&&touchMac){
+                var versionMatch=ua.match(/Version\\/(\\d+)(?:\\.\\d+)?/);
+                if(versionMatch)major=parseInt(versionMatch[1],10);
+              }
+
+              if(major!==27)return;
+
+              var standalone=
+                navigator.standalone===true ||
+                (window.matchMedia &&
+                  (window.matchMedia("(display-mode: standalone)").matches ||
+                   window.matchMedia("(display-mode: fullscreen)").matches));
+
+              if(standalone)return;
+
+              var target=new URL("ios27.html",window.location.href);
+              target.search=window.location.search;
+              target.hash=window.location.hash;
+              if(window.location.href!==target.href)window.location.replace(target.href);
+            }catch(e){}
+          })();
+          </script>'''
+
+          if viewport not in index:
+              raise SystemExit("Viewport meta not found")
+          index=index.replace(viewport,viewport+"\n"+redirect,1)
+
+          # ---------------- ios27.html ----------------
+          ios27=v54.replace(
+              "<title>Circa Impostor V54</title>",
+              "<title>Circa Impostor V57</title>",
+              1
+          )
+          old='<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">'
+          new='<meta name="apple-mobile-web-app-status-bar-style" content="black">'
+          if old not in ios27:
+              raise SystemExit("V54 status-bar meta not found")
+          ios27=ios27.replace(old,new,1)
+
+          # ---------------- final integrity checks ----------------
+          for name,doc in [("index.html",index),("ios27.html",ios27)]:
+              for marker in failed:
+                  if marker in doc:
+                      raise SystemExit(f"{name}: stale V55/V56 marker remains: {marker}")
+              if "191102" in doc:
+                  raise SystemExit(f"{name}: plaintext PIN detected")
+              if doc.count('"qid":') != 520:
+                  raise SystemExit(f"{name}: question bank count changed")
+
+          if old not in index:
+              raise SystemExit("index.html did not preserve black-translucent")
+          if old in ios27 or new not in ios27:
+              raise SystemExit("ios27.html status-bar mode is wrong")
+          if 'new URL("ios27.html"' not in index:
+              raise SystemExit("iOS 27 redirect missing")
+
+          Path("index.html").write_text(index,encoding="utf-8")
+          Path("ios27.html").write_text(ios27,encoding="utf-8")
+
+      - name: Commit V57
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html ios27.html
+          git commit -m "Update Circa Impostor to V57"
+          git push origin main
