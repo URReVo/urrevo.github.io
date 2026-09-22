@@ -1,0 +1,136 @@
+name: Apply V56
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-v56.yml'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Patch index.html to V56
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          p=Path("index.html")
+          s=p.read_text(encoding="utf-8")
+
+          if "<title>Circa Impostor V55</title>" not in s:
+              raise SystemExit("Expected V55 title not found")
+          s=s.replace("<title>Circa Impostor V55</title>","<title>Circa Impostor V56</title>",1)
+
+          old_script='''<script>
+          (function(){
+            try{
+              var ua=navigator.userAgent||"";
+              var platform=navigator.platform||"";
+              var touchMac=platform==="MacIntel"&&Number(navigator.maxTouchPoints||0)>1;
+              var classicIOS=/iPhone|iPad|iPod/.test(ua);
+              if(!classicIOS&&!touchMac)return;
+              var major=null;
+              var osMatch=ua.match(/OS (\\d+)[_.]/);
+              if(osMatch)major=parseInt(osMatch[1],10);
+              if(major===null&&touchMac){
+                var versionMatch=ua.match(/Version\\/(\\d+)(?:\\.\\d+)?/);
+                if(versionMatch)major=parseInt(versionMatch[1],10);
+              }
+              if(major!==27)return;
+              document.documentElement.classList.add("ios27-statusbar-fix");
+              var meta=document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+              if(meta)meta.setAttribute("content","default");
+            }catch(e){}
+          })();
+          </script>'''
+
+          new_script='''<script>
+          (function(){
+            try{
+              var ua=navigator.userAgent||"";
+              var platform=navigator.platform||"";
+              var touchMac=platform==="MacIntel"&&Number(navigator.maxTouchPoints||0)>1;
+              var classicIOS=/iPhone|iPad|iPod/.test(ua);
+              if(!classicIOS&&!touchMac)return;
+              var major=null;
+              var osMatch=ua.match(/OS (\\d+)[_.]/);
+              if(osMatch)major=parseInt(osMatch[1],10);
+              if(major===null&&touchMac){
+                var versionMatch=ua.match(/Version\\/(\\d+)(?:\\.\\d+)?/);
+                if(versionMatch)major=parseInt(versionMatch[1],10);
+              }
+              if(major!==27)return;
+              var standalone=
+                navigator.standalone===true ||
+                (window.matchMedia &&
+                  (window.matchMedia("(display-mode: standalone)").matches ||
+                   window.matchMedia("(display-mode: fullscreen)").matches));
+              if(!standalone)return;
+              document.documentElement.classList.add("ios27-home-screen");
+            }catch(e){}
+          })();
+          </script>'''
+
+          if old_script not in s:
+              raise SystemExit("Expected V55 iOS script not found")
+          s=s.replace(old_script,new_script,1)
+
+          old_css='''#ios27StatusBarProbe{display:none}
+          html.ios27-statusbar-fix #ios27StatusBarProbe{
+            display:block;position:fixed;top:0;left:0;right:0;width:100%;
+            height:1px;min-height:1px;background:#292929;pointer-events:none;z-index:2147483647;
+          }'''
+          new_css='''#ios27StatusBarTint{display:none}
+          @media (orientation:portrait){
+            html.ios27-home-screen #ios27StatusBarTint{
+              display:block;
+              position:fixed;
+              top:0;
+              left:0;
+              right:0;
+              width:100%;
+              height:16px;
+              min-height:16px;
+              background:#292929;
+              pointer-events:none;
+              z-index:2147483647;
+            }
+          }'''
+          if old_css not in s:
+              raise SystemExit("Expected V55 status-bar CSS not found")
+          s=s.replace(old_css,new_css,1)
+
+          old_probe='<div id="ios27StatusBarProbe" aria-hidden="true"></div>'
+          new_probe='<div id="ios27StatusBarTint" aria-hidden="true"></div>'
+          if old_probe not in s:
+              raise SystemExit("Expected V55 probe not found")
+          s=s.replace(old_probe,new_probe,1)
+
+          checks=[
+            "<title>Circa Impostor V56</title>",
+            'name="apple-mobile-web-app-status-bar-style" content="black-translucent"',
+            'navigator.standalone===true',
+            'ios27-home-screen',
+            'id="ios27StatusBarTint"',
+            'height:16px',
+          ]
+          for x in checks:
+              if x not in s:
+                  raise SystemExit("Missing expected V56 marker: "+x)
+          if 'setAttribute("content","default")' in s:
+              raise SystemExit("Old V55 runtime meta mutation still present")
+          if "ios27-statusbar-fix" in s or "ios27StatusBarProbe" in s:
+              raise SystemExit("Old V55 status-bar workaround still present")
+
+          p.write_text(s,encoding="utf-8")
+      - name: Commit V56
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Update Circa Impostor to V56"
+          git push origin main
