@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#292929">
 <link rel="apple-touch-icon" sizes="180x180" href="circa_impostor_detective_icon_180.png">
 <link rel="icon" type="image/png" sizes="180x180" href="circa_impostor_detective_icon_180.png">
-<title>Circa Impostor V54</title>
+<title>Circa Impostor V58</title>
 <style>
 :root{
   --bg:#292929;
@@ -2280,7 +2280,9 @@ var STORAGE_DIFFICULTY="circaImpostor.difficulty.v1";
 var STORAGE_CATEGORIES="circaImpostor.categories.v1";
 var STORAGE_STATS="circaImpostor.playerStats.v1";
 var STORAGE_DEVICE_STATS="circaImpostor.deviceStats.v1";
+var STORAGE_COMPLETED_QUESTIONS="circaImpostor.completedQuestions.v1";
 var deckProgress={};
+var completedQuestionIds=[];
 var savedPlayerNames=[];
 var selectedDifficulty="mittel";
 
@@ -2384,6 +2386,51 @@ function rememberQuestion(item){
   if(!deckProgress[key])deckProgress[key]=[];
   if(deckProgress[key].indexOf(item.qid)===-1)deckProgress[key].push(item.qid);
   storageSet(STORAGE_DECK,deckProgress);
+}
+
+/* V58: unique, successfully completed question pairs.
+   Deck progress is still used separately for repeat prevention. */
+function validQuestionId(qid){
+  if(!qid)return false;
+  for(var i=0;i<bank.length;i++){
+    if(bank[i].qid===qid)return true;
+  }
+  return false;
+}
+function loadCompletedQuestionIds(){
+  var saved=storageGet(STORAGE_COMPLETED_QUESTIONS,null);
+  var clean=[];
+
+  if(Array.isArray(saved)){
+    for(var i=0;i<saved.length;i++){
+      var qid=String(saved[i]||"");
+      if(validQuestionId(qid)&&clean.indexOf(qid)===-1)clean.push(qid);
+    }
+  }else{
+    try{
+      for(var key in deckProgress){
+        if(!Object.prototype.hasOwnProperty.call(deckProgress,key))continue;
+        var arr=deckProgress[key];
+        if(!Array.isArray(arr))continue;
+        for(var j=0;j<arr.length;j++){
+          var legacyQid=String(arr[j]||"");
+          if(validQuestionId(legacyQid)&&clean.indexOf(legacyQid)===-1)clean.push(legacyQid);
+        }
+      }
+    }catch(e){}
+  }
+
+  completedQuestionIds=clean;
+  storageSet(STORAGE_COMPLETED_QUESTIONS,completedQuestionIds);
+}
+function markQuestionCompleted(item){
+  if(!item||!item.qid||!validQuestionId(item.qid))return;
+  if(completedQuestionIds.indexOf(item.qid)!==-1)return;
+  completedQuestionIds.push(item.qid);
+  storageSet(STORAGE_COMPLETED_QUESTIONS,completedQuestionIds);
+}
+function completedQuestionCount(){
+  return completedQuestionIds.length;
 }
 function cleanPlayerName(value){
   return String(value==null?"":value).replace(/^\s+|\s+$/g,"").slice(0,24);
@@ -2499,6 +2546,7 @@ function recordRoundBaseStats(){
   ensurePlayerStat(players[perf[perf.length-1].index]).farthest++;
   ensurePlayerStat(players[impIndex]).impostor++;
   deviceStats.roundsPlayed++;
+  markQuestionCompleted(current);
 
   roundStatsRecorded=true;
   savePlayerStats();
@@ -3920,7 +3968,7 @@ function diagEsc(value){
 function diagSessionHtml(){
   var activePlayers=players.length?players.length:count;
   return [
-    '<div class="k">Version</div><div class="v">V53</div>',
+    '<div class="k">Version</div><div class="v">V58</div>',
     '<div class="k">Ansicht</div><div class="v">'+diagEsc(diagVisibleSection())+'</div>',
     '<div class="k">Spieler</div><div class="v">'+activePlayers+'</div>',
     '<div class="k">Runde</div><div class="v">'+(round||0)+'</div>',
@@ -3979,6 +4027,7 @@ function diagStorageHtml(){
   try{deckKeys=Object.keys(deckProgress||{}).length;}catch(e){}
   return [
     '<div class="k">Statistik-Spieler</div><div class="v">'+statPlayers+'</div>',
+    '<div class="k">Erfolgreich gespielte Fragepaare</div><div class="v">'+completedQuestionCount()+' / '+bank.length+'</div>',
     '<div class="k">Deck-Fortschritte</div><div class="v">'+deckKeys+'</div>',
     '<div class="k">Schwierigkeit</div><div class="v">'+diagEsc(difficultyName(selectedDifficulty))+'</div>',
     '<div class="k">Kategorien</div><div class="v">'+diagEsc(selectedCategories.join(", "))+'</div>'
@@ -4491,7 +4540,7 @@ if(!window.PointerEvent){
   },{passive:false});
 }
 
-loadSavedDifficulty();loadDeckProgress();loadSavedPlayers();loadPlayerStats();initCategories();syncDifficultyUI();renderNames();updateToolbar();show("setup");
+loadSavedDifficulty();loadDeckProgress();loadCompletedQuestionIds();loadSavedPlayers();loadPlayerStats();initCategories();syncDifficultyUI();renderNames();updateToolbar();show("setup");
 })();
 </script>
 </body>
