@@ -3,48 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<script>
-(function(){
-  try{
-    var ua=navigator.userAgent||"";
-    var platform=navigator.platform||"";
-    var touchMac=platform==="MacIntel"&&Number(navigator.maxTouchPoints||0)>1;
-    var classicIOS=/iPhone|iPad|iPod/.test(ua);
-    if(!classicIOS&&!touchMac)return;
-
-    var major=null;
-    var osMatch=ua.match(/OS (\\d+)[_.]/);
-    if(osMatch)major=parseInt(osMatch[1],10);
-
-    if(major===null&&touchMac){
-      var versionMatch=ua.match(/Version\\/(\\d+)(?:\\.\\d+)?/);
-      if(versionMatch)major=parseInt(versionMatch[1],10);
-    }
-
-    if(major!==27)return;
-
-    var standalone=
-      navigator.standalone===true ||
-      (window.matchMedia &&
-        (window.matchMedia("(display-mode: standalone)").matches ||
-         window.matchMedia("(display-mode: fullscreen)").matches));
-
-    if(standalone)return;
-
-    var target=new URL("ios27.html",window.location.href);
-    target.search=window.location.search;
-    target.hash=window.location.hash;
-    if(window.location.href!==target.href)window.location.replace(target.href);
-  }catch(e){}
-})();
-</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Circa Impostor">
 <meta name="theme-color" content="#292929">
 <link rel="apple-touch-icon" sizes="180x180" href="circa_impostor_detective_icon_180.png">
 <link rel="icon" type="image/png" sizes="180x180" href="circa_impostor_detective_icon_180.png">
-<title>Circa Impostor V57</title>
+<title>Circa Impostor V54</title>
 <style>
 :root{
   --bg:#292929;
