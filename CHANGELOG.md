@@ -2,6 +2,19 @@
 
 Die Versionshistorie dokumentiert die aus den Projektchats und der GitHub-Historie eindeutig rekonstruierbaren Änderungen. Frühere Zwischenstände mit generischen Upload-Commits werden nicht künstlich versioniert oder mit erfundenen Details ergänzt.
 
+## V63 — Spielnamen und getrennte Speicherstände
+
+- **Faker Imposter** in **Circa Imposter** umbenannt.
+- Spielpfad auf `games/circa-imposter/` umgestellt.
+- Fragenbank auf `data/circa-questions.json` umbenannt.
+- Spieler und Kategorien pro Spiel in getrennte `localStorage`-Namespaces aufgeteilt.
+- Klassisches Imposter verwendet nun eigene `classicImpostor.*`-Schlüssel.
+- Circa behält seine bisherigen `circaImpostor.*`-Schlüssel, damit bestehende Circa-Statistiken und Fortschritte erhalten bleiben.
+- Classic-spezifische Altwerte für Wortdeck, Hinweis und Timer werden einmalig migriert.
+- Gemeinsam gespeicherte Spieler und Kategorien werden bewusst nicht in Classic übernommen.
+- Initialisierung getrennt: Jede Spielseite lädt nur noch den für sie relevanten Fortschritt und die relevanten Einstellungen.
+- Launcher, README und direkte Spielpfade auf die korrekten Namen aktualisiert.
+
 ## V62 — Plattform- und Skalierbarkeitsumbau
 
 - Root-`index.html` zu einem eigenständigen Spiele-Launcher umgebaut.
