@@ -27,6 +27,9 @@ function uid(prefix){
   return prefix+"_"+Date.now().toString(36)+Math.random().toString(36).slice(2,8);
 }
 function cleanName(v){return String(v==null?"":v).trim().slice(0,24);}
+function isGenericPlayerName(v){
+  return /^spieler(?:\s+\d+)?$/i.test(cleanName(v));
+}
 function clone(v){return JSON.parse(JSON.stringify(v));}
 function now(){return new Date().toISOString();}
 function baseProfileStats(){
@@ -208,7 +211,12 @@ function load(){
   }
 
   if(!Array.isArray(data.profiles))data.profiles=[];
-  data.profiles.forEach(function(p){if(!Array.isArray(p.aliases))p.aliases=[];});
+  data.profiles.forEach(function(p){
+    if(!Array.isArray(p.aliases))p.aliases=[];
+    p.aliases=p.aliases.map(cleanName).filter(function(alias,index,arr){
+      return alias&&!isGenericPlayerName(alias)&&arr.findIndex(function(x){return x.toLocaleLowerCase("de-DE")===alias.toLocaleLowerCase("de-DE");})===index;
+    }).slice(-8);
+  });
   if(!data.profiles.length){
     var p=defaults().profiles[0];data.profiles=[p];data.selectedProfileId=p.id;data.primaryProfileId=p.id;
   }
@@ -289,7 +297,7 @@ function updateProfile(id,input){
   if(duplicate)return false;
   if(p.name.toLocaleLowerCase("de-DE")!==n.name.toLocaleLowerCase("de-DE")){
     if(!Array.isArray(p.aliases))p.aliases=[];
-    if(!p.aliases.some(function(alias){return alias.toLocaleLowerCase("de-DE")===p.name.toLocaleLowerCase("de-DE");})){
+    if(!isGenericPlayerName(p.name)&&!p.aliases.some(function(alias){return alias.toLocaleLowerCase("de-DE")===p.name.toLocaleLowerCase("de-DE");})){
       p.aliases.push(p.name);
       if(p.aliases.length>8)p.aliases=p.aliases.slice(-8);
     }
@@ -694,7 +702,7 @@ function sanitizeImportedProfile(p){
     id:id.slice(0,80),
     name:name,
     avatar:String(p.avatar||"😎").slice(0,8),
-    aliases:Array.isArray(p.aliases)?p.aliases.map(cleanName).filter(Boolean).slice(-8):[],
+    aliases:Array.isArray(p.aliases)?p.aliases.map(cleanName).filter(function(alias){return alias&&!isGenericPlayerName(alias);}).slice(-8):[],
     createdAt:p.createdAt||now()
   };
 }
