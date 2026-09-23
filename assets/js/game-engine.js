@@ -229,6 +229,10 @@ function experimentApplyLaunchPreset(){
   if(gameMode==="classic")syncClassicOptionsUI();
   else syncDifficultyUI();
 }
+function motionEnabled(){
+  return !experimentAppState||experimentPreferences.animations!==false;
+}
+function motionDelay(ms){return motionEnabled()?ms:0;}
 function experimentSyncPreferences(){
   if(!experimentAppState)return;
   experimentPreferences=experimentAppState.getPreferences();
@@ -1232,7 +1236,7 @@ function updateToolbar(){
   categoryPulseTimer=setTimeout(function(){
     document.body.classList.remove("categoryPulse");
     categoryPulseTimer=null;
-  },550);
+  },motionDelay(550));
 }
 function syncCategoryUI(){
   var deck=byId("categoryDeck"),cards=deck.querySelectorAll(".categoryCard");
@@ -1757,7 +1761,7 @@ function classicNewRound(confirmFirst){
     intro.classList.remove("showIntro");
     roundIntroTimer=null;
     animateHandoff();
-  },1700);
+  },motionDelay(1700));
 }
 function classicOpenRole(){
   ensureAudio();
@@ -1867,7 +1871,7 @@ function newRound(confirmFirst){
     intro.classList.remove("showIntro");
     roundIntroTimer=null;
     animateHandoff();
-  },1700);
+  },motionDelay(1700));
 }
 function handoff(){
   prepareHandoff();
@@ -2073,6 +2077,7 @@ function softHaptic(pattern){
   }catch(e){}
 }
 function pulseScreen(){
+  if(!motionEnabled())return;
   document.body.classList.remove("revealPulse");
   void document.body.offsetWidth;
   document.body.classList.add("revealPulse");
@@ -2124,6 +2129,16 @@ function reveal(){
     byId("reveal").disabled=true;
     byId("reveal").textContent="Wer ist es…?";
     var grid=byId("answerList"),tiles=grid.querySelectorAll(".answerTile");
+    if(!motionEnabled()){
+      for(var directIndex=0;directIndex<tiles.length;directIndex++)tiles[directIndex].classList.add("dimmed");
+      var directTile=grid.querySelector('[data-player-index="'+impIndex+'"]');
+      if(directTile){directTile.classList.remove("dimmed");directTile.classList.add("focused","impostorCaught");}
+      soundImpact();softHaptic([45,35,90]);
+      byId("reveal").disabled=false;
+      byId("reveal").textContent="Auflösung";
+      diagLog("Reveal","Impostor: "+(players[impIndex]?players[impIndex].name:"–"));
+      return;
+    }
     grid.classList.add("tension");
 
     for(var i=0;i<tiles.length;i++) tiles[i].classList.add("dimmed");
@@ -2190,6 +2205,14 @@ function animateNumber(el,value,duration,onDone){
   var end=Number(value),start=roundedStart(end),begin=null;
   var whole=Math.abs(end-Math.round(end))<0.000001;
   el.classList.remove("locked");
+  if(!motionEnabled()){
+    el.textContent=numberString(end,whole);
+    el.classList.add("locked");
+    softHaptic([30,25,55]);
+    soundCorrect();
+    if(onDone)onDone();
+    return;
+  }
   function frame(ts){
     if(token!==revealRunToken)return;
     if(begin===null) begin=ts;
@@ -2291,12 +2314,12 @@ function startResolution(){
               recordRoundBaseStats();
               byId("roundAwards").classList.remove("hidden");
               byId("impostorOutcome").classList.remove("hidden");
-            },300));
+            },motionDelay(300)));
           });
-        },320));
-      },700));
+        },motionDelay(320)));
+      },motionDelay(700)));
     });
-  },350));
+  },motionDelay(350)));
 }
 function leaveGame(){
   if(!window.confirm("Spiel verlassen und zurück zum Start?"))return;
