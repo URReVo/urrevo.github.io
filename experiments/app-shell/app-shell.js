@@ -7,6 +7,7 @@ if(!store)return;
 var selectedAvatar="😎";
 var selectedPreset=null;
 var selectedSession=null;
+var statsScope="profile";
 
 function byId(id){return document.getElementById(id);}
 function fmtDate(iso){
@@ -18,6 +19,32 @@ function fmtTime(iso){
 function fmtDateTime(iso){
   if(!iso)return "–";
   return fmtDate(iso)+" · "+fmtTime(iso);
+}
+function fmtDuration(start,end){
+  var a=new Date(start).getTime(),b=end?new Date(end).getTime():Date.now();
+  if(!isFinite(a)||!isFinite(b)||b<a)return "–";
+  var min=Math.max(0,Math.round((b-a)/60000));
+  if(min<60)return min+" Min.";
+  var h=Math.floor(min/60),m=min%60;
+  return h+" Std."+(m?" "+m+" Min.":"");
+}
+function sessionGame(session){
+  if(session&&session.lastGame)return session.lastGame;
+  var rounds=session&&Array.isArray(session.rounds)?session.rounds:[];
+  return rounds.length&&rounds[rounds.length-1].game==="classic"?"classic":"circa";
+}
+function activeProfilesInSession(session){
+  var ids=session&&Array.isArray(session.profileIds)?session.profileIds:[];
+  return ids.filter(function(id){var p=store.getProfileById?store.getProfileById(id):null;return p&&!p.deletedAt;});
+}
+function launchSessionGroup(session){
+  if(!session||!store.setLaunchGroup)return false;
+  var ids=activeProfilesInSession(session);
+  if(ids.length<3)return false;
+  store.setLaunchGroup(ids);
+  var game=sessionGame(session);
+  window.location.href=game==="classic"?"games/classic-imposter/":"games/circa-imposter/";
+  return true;
 }
 function updateGreeting(){
   var hour=new Date().getHours();
@@ -140,6 +167,21 @@ function renderSessionSheet(session){
   if(!session)return;
   selectedSession=session;
   byId("sessionSheetTitle").textContent=(session.endedAt?"Session · ":"Aktuelle Session · ")+fmtDateTime(session.startedAt);
+
+  var c=(session.rounds||[]).filter(function(r){return r.game==="circa";}).length;
+  var k=(session.rounds||[]).length-c;
+  var meta=byId("sessionMeta");meta.textContent="";
+  [
+    {value:fmtDuration(session.startedAt,session.endedAt),label:"Dauer"},
+    {value:(session.rounds||[]).length,label:(session.rounds||[]).length===1?"Runde":"Runden"},
+    {value:c&&k?c+" / "+k:c?c+" Circa":k?k+" Classic":"–",label:c&&k?"Circa / Classic":"Spielmix"}
+  ].forEach(function(item){
+    var card=document.createElement("div");card.className="sessionMetaItem";
+    var strong=document.createElement("strong");strong.textContent=item.value;
+    var span=document.createElement("span");span.textContent=item.label;
+    card.appendChild(strong);card.appendChild(span);meta.appendChild(card);
+  });
+
   var playersBox=byId("sessionPlayers");playersBox.textContent="";
   (session.profileIds||[]).forEach(function(id){
     var p=store.getProfileById?store.getProfileById(id):null;
@@ -151,6 +193,7 @@ function renderSessionSheet(session){
   if(!(session.profileIds||[]).length){
     var emptyPlayers=document.createElement("div");emptyPlayers.className="emptyState";emptyPlayers.textContent="Für diese Session sind keine Spielerprofile gespeichert.";playersBox.appendChild(emptyPlayers);
   }
+
   var awards=byId("sessionAwards");awards.textContent="";
   var list=session.awards||[];
   if(!list.length){
@@ -164,6 +207,7 @@ function renderSessionSheet(session){
       card.appendChild(icon);card.appendChild(name);card.appendChild(detail);awards.appendChild(card);
     });
   }
+
   var rounds=byId("roundHistory");rounds.textContent="";
   (session.rounds||[]).forEach(function(r,i){
     var row=document.createElement("div");
@@ -175,7 +219,14 @@ function renderSessionSheet(session){
   if(!(session.rounds||[]).length){
     var emptyRound=document.createElement("div");emptyRound.innerHTML="<span>–</span><strong>Noch keine Runde</strong><small>Starte ein Testspiel</small>";rounds.appendChild(emptyRound);
   }
-  byId("sessionNote").textContent=session.endedAt?"Diese Zusammenfassung stammt aus echten Runden innerhalb des App-Shell-Tests.":"Diese Session läuft noch. Beim Beenden werden die Awards berechnet.";
+
+  var replay=byId("replaySession");
+  var replayable=!!session.endedAt&&activeProfilesInSession(session).length>=3;
+  replay.classList.toggle("hidden",!replayable);
+  replay.textContent="Noch einmal mit dieser Gruppe · "+(sessionGame(session)==="classic"?"Classic":"Circa");
+  replay.onclick=function(){launchSessionGroup(session);};
+
+  byId("sessionNote").textContent=session.endedAt?"Abgeschlossene Session · Awards und Runden bleiben lokal gespeichert.":"Diese Session läuft noch. Beim Beenden werden die Awards berechnet.";
   openSheet("sessionSheet");
 }
 function renderSessionHistory(sessions){
@@ -206,12 +257,15 @@ function renderSessions(){
   byId("activeSessionBlock").classList.toggle("hidden",!active);
   byId("sessionStatusPill").textContent=active?"Session läuft · "+active.rounds.length+" Runden":"Keine Session aktiv";
   if(active){
-    byId("activeSessionTitle").textContent="Seit "+fmtTime(active.startedAt);
+    byId("activeSessionTitle").textContent="Seit "+fmtTime(active.startedAt)+" · "+fmtDuration(active.startedAt,null);
     byId("activeSessionMain").textContent=active.rounds.length+" "+(active.rounds.length===1?"Runde":"Runden");
-    byId("activeSessionSub").textContent=active.profileIds.length+" Spieler · "+(active.rounds.length?"Statistik wird live geführt":"noch keine Runde abgeschlossen");
+    var names=(active.profileIds||[]).map(profileName).slice(0,3);
+    byId("activeSessionSub").textContent=(names.length?names.join(", "):active.profileIds.length+" Spieler")+(active.profileIds.length>3?" +"+(active.profileIds.length-3):"");
+    var cont=byId("continueSession");
+    cont.textContent="Session fortsetzen · "+(sessionGame(active)==="classic"?"Classic":"Circa");
+    cont.disabled=activeProfilesInSession(active).length<3;
   }
   var sessions=store.getSessions().filter(function(s){return !!s.endedAt;});
-  renderSessionHistory(sessions);
   var last=sessions[0]||null;
   byId("lastSessionBlock").classList.toggle("hidden",!last);
   if(last){
@@ -219,26 +273,47 @@ function renderSessions(){
     byId("lastSessionMain").textContent=last.rounds.length+" "+(last.rounds.length===1?"Runde":"Runden")+" · "+last.profileIds.length+" Spieler";
     var c=last.rounds.filter(function(r){return r.game==="circa";}).length;
     var k=last.rounds.length-c;
-    byId("lastSessionSub").textContent=c+"× Circa · "+k+"× Classic";
+    byId("lastSessionSub").textContent=fmtDuration(last.startedAt,last.endedAt)+" · "+c+"× Circa · "+k+"× Classic";
     byId("openLastSession").onclick=function(){renderSessionSheet(last);};
     byId("lastSessionCard").onclick=function(){renderSessionSheet(last);};
   }
 }
 function renderStats(){
-  var st=store.getStats();
-  byId("totalRounds").textContent=st.rounds;
-  byId("circaRounds").textContent=st.circaRounds;
-  byId("classicRounds").textContent=st.classicRounds;
-  byId("perfectCount").textContent=st.perfectEstimates;
-  byId("categoryCount").textContent=st.categories.length+" / 10";
-  var cq=st.circaQids.length,cw=st.classicWids.length;
+  var selected=store.getSelectedProfile?store.getSelectedProfile():store.getPrimaryProfile();
+  var personal=statsScope==="profile";
+  var st=personal?store.getProfileStats(selected.id):store.getStats();
+
+  byId("statsScopeProfile").textContent=selected.name;
+  byId("statsScopeProfile").classList.toggle("active",personal);
+  byId("statsScopeGlobal").classList.toggle("active",!personal);
+  byId("statsScopeLabel").textContent=personal?selected.name+" gespielt":"Gesamt gespielt";
+  byId("statsScopeSub").textContent=personal?"Runden dieses lokalen Profils":"Runden in diesem App-Shell-Test";
+
+  byId("totalRounds").textContent=st.rounds||0;
+  byId("circaRounds").textContent=st.circaRounds||0;
+  byId("classicRounds").textContent=st.classicRounds||0;
+  byId("perfectCount").textContent=personal?(st.perfect||0):(st.perfectEstimates||0);
+  var cats=Array.isArray(st.categories)?st.categories:[];
+  byId("categoryCount").textContent=cats.length+" / 10";
+  var cq=Array.isArray(st.circaQids)?st.circaQids.length:0;
+  var cw=Array.isArray(st.classicWids)?st.classicWids.length:0;
   byId("circaProgress").textContent=Math.round(cq/520*100)+"%";
   byId("classicProgress").textContent=Math.round(cw/250*100)+"%";
   byId("circaProgressSub").textContent=cq+" / 520 Circa";
   byId("classicProgressSub").textContent=cw+" / 250 Classic";
 
+  var sessions=store.getSessions().filter(function(session){
+    if(!session.endedAt)return false;
+    return !personal||(session.profileIds||[]).indexOf(selected.id)!==-1;
+  });
+  byId("sessionHistoryTitle").textContent=personal?"Sessions mit "+selected.name:"Letzte Sessions";
+  byId("sessionHistoryHint").textContent=sessions.length+" gespeichert";
+  renderSessionHistory(sessions);
+
+  byId("achievementHeading").textContent=personal?"Persönliche Sammlung":"Gesamte Sammlung";
+  var achievementData=personal&&store.getProfileAchievements?store.getProfileAchievements(selected.id):store.getAchievements();
   var box=byId("achievementList");box.textContent="";
-  store.getAchievements().forEach(function(a){
+  achievementData.forEach(function(a){
     var card=document.createElement("article");card.className="achievement"+(a.unlocked?" unlocked":"");
     var icon=document.createElement("span");icon.className="achievementIcon";icon.textContent=a.icon;
     var text=document.createElement("div");
@@ -313,6 +388,11 @@ byId("deletePreset").addEventListener("click",function(){
 });
 
 byId("activeSessionCard").addEventListener("click",function(){var s=store.getActiveSession();if(s)renderSessionSheet(s);});
+byId("continueSession").addEventListener("click",function(){var s=store.getActiveSession();if(s)launchSessionGroup(s);});
+byId("replaySession").addEventListener("click",function(){if(selectedSession)launchSessionGroup(selectedSession);});
+document.querySelectorAll("[data-stats-scope]").forEach(function(button){
+  button.addEventListener("click",function(){statsScope=this.getAttribute("data-stats-scope")==="global"?"global":"profile";renderStats();});
+});
 byId("endSession").addEventListener("click",function(){
   var s=store.getActiveSession();if(!s)return;
   if(!s.rounds.length&&!window.confirm("Die Session enthält noch keine abgeschlossene Runde. Trotzdem beenden?"))return;
@@ -340,7 +420,8 @@ byId("importLegacy").addEventListener("click",function(){
 });
 byId("exportData").addEventListener("click",function(){
   try{
-    var blob=new Blob([JSON.stringify(store.snapshot(),null,2)],{type:"application/json"});
+    var backup=store.createBackup?store.createBackup():store.snapshot();
+    var blob=new Blob([JSON.stringify(backup,null,2)],{type:"application/json"});
     var url=URL.createObjectURL(blob);
     var a=document.createElement("a");a.href=url;a.download="imposter-app-shell-test.json";document.body.appendChild(a);a.click();a.remove();
     setTimeout(function(){URL.revokeObjectURL(url);},1000);
@@ -368,7 +449,7 @@ byId("importDataFile").addEventListener("change",function(){
     if(!window.confirm("Dieses Backup ersetzt die aktuellen App-Shell-Testdaten. Produktive V72-Daten bleiben unangetastet. Fortfahren?")){input.value="";return;}
     var result=store.importSnapshot?store.importSnapshot(parsed):{ok:false,reason:"unsupported"};
     if(!result.ok){
-      var reason=result.reason==="profiles"?"Keine gültigen Profile im Backup gefunden.":result.reason==="storage"?"Die importierten Daten konnten nicht lokal gespeichert werden.":"Das Backup passt nicht zum App-Shell-Test.";
+      var reason=result.reason==="profiles"?"Keine gültigen Profile im Backup gefunden.":result.reason==="storage"?"Die importierten Daten konnten nicht lokal gespeichert werden.":result.reason==="version"?"Das Backup stammt aus einer neueren, hier noch nicht unterstützten Backup-Version.":result.reason==="format"?"Die Datei ist kein Imposter-App-Backup.":"Das Backup passt nicht zum App-Shell-Test.";
       byId("dataStatus").textContent="Import abgebrochen: "+reason;
       input.value="";return;
     }
