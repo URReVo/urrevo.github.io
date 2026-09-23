@@ -506,7 +506,7 @@ byId("importDataFile").addEventListener("change",function(){
     if(!window.confirm("Dieses Backup ersetzt die aktuellen lokalen V73-App-Daten. Fortfahren?")){input.value="";return;}
     var result=store.importSnapshot?store.importSnapshot(parsed):{ok:false,reason:"unsupported"};
     if(!result.ok){
-      var reason=result.reason==="profiles"?"Keine gültigen Profile im Backup gefunden.":result.reason==="storage"?"Die importierten Daten konnten nicht lokal gespeichert werden.":result.reason==="version"?"Das Backup stammt aus einer neueren, hier noch nicht unterstützten Backup-Version.":result.reason==="format"?"Die Datei ist kein Imposter-App-Backup.":"Das Backup passt nicht zu dieser App-Version.";
+      var reason=result.reason==="profiles"?"Keine gültigen Profile im Backup gefunden.":result.reason==="duplicate-profiles"?"Das Backup enthält doppelte Profilnamen und wurde aus Sicherheitsgründen nicht übernommen.":result.reason==="storage"?"Die importierten Daten konnten nicht lokal gespeichert werden.":result.reason==="version"?"Das Backup stammt aus einer neueren, hier noch nicht unterstützten Backup-Version.":result.reason==="format"?"Die Datei ist kein Imposter-App-Backup.":"Das Backup passt nicht zu dieser App-Version.";
       byId("dataStatus").textContent="Import abgebrochen: "+reason;
       input.value="";return;
     }
