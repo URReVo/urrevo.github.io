@@ -17,10 +17,41 @@ async function loadConfiguredData(){
   else bank=items;
 }
 
+function renderLoadError(error){
+  while(document.body.firstChild)document.body.removeChild(document.body.firstChild);
+
+  var main=document.createElement("main");
+  main.style.cssText="min-height:100vh;display:grid;place-items:center;padding:24px;background:#292929;color:#f8f8fa;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;text-align:center";
+
+  var box=document.createElement("div");
+  var icon=document.createElement("div");
+  icon.style.fontSize="42px";
+  icon.textContent="⚠️";
+
+  var title=document.createElement("h1");
+  title.style.fontSize="24px";
+  title.textContent="Spiel konnte nicht geladen werden";
+
+  var message=document.createElement("p");
+  message.style.cssText="color:#aaa;line-height:1.45";
+  message.textContent=String(error&&error.message||error||"Unbekannter Fehler");
+
+  var back=document.createElement("a");
+  back.href="../../";
+  back.style.cssText="color:#f39a32;font-weight:800";
+  back.textContent="Zur Spieleauswahl";
+
+  box.appendChild(icon);
+  box.appendChild(title);
+  box.appendChild(message);
+  box.appendChild(back);
+  main.appendChild(box);
+  document.body.appendChild(main);
+}
 try{
   await loadConfiguredData();
 }catch(loadError){
-  document.body.innerHTML='<main style="min-height:100vh;display:grid;place-items:center;padding:24px;background:#292929;color:#f8f8fa;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;text-align:center"><div><div style="font-size:42px">⚠️</div><h1 style="font-size:24px">Spiel konnte nicht geladen werden</h1><p style="color:#aaa;line-height:1.45">'+String(loadError&&loadError.message||loadError)+'</p><a href="../../" style="color:#f39a32;font-weight:800">Zur Spieleauswahl</a></div></main>';
+  renderLoadError(loadError);
   return;
 }
 /* Classic word bank for the classic word-based Impostor mode.
@@ -797,17 +828,14 @@ function syncSetupScrollFit(){
 window.addEventListener("resize",syncSetupScrollFit,{passive:true});
 window.addEventListener("orientationchange",function(){setTimeout(syncSetupScrollFit,80);},{passive:true});
 
-var audioCtx=null,audioResumePromise=null,soundEnabled=true,lastSliderSoundAt=0,lastSliderSoundValue=null;
+var audioCtx=null,soundEnabled=true,lastSliderSoundAt=0,lastSliderSoundValue=null;
 
 function getAudioContext(){
   if(!soundEnabled)return null;
   try{
     var AC=window.AudioContext||window.webkitAudioContext;
     if(!AC)return null;
-    if(!audioCtx||audioCtx.state==="closed"){
-      audioCtx=new AC();
-      audioResumePromise=null;
-    }
+    if(!audioCtx||audioCtx.state==="closed")audioCtx=new AC();
     return audioCtx;
   }catch(e){return null;}
 }
@@ -821,43 +849,19 @@ function primeAudio(ctx){
     source.start(0);
   }catch(e){}
 }
-function resumeAudioContext(ctx){
-  if(!ctx||!soundEnabled)return null;
-  if(ctx.state==="running"){
-    primeAudio(ctx);
-    return null;
-  }
-  if(audioResumePromise)return audioResumePromise;
-
-  try{
-    var resumed=ctx.resume();
-    if(resumed&&typeof resumed.then==="function"){
-      audioResumePromise=resumed.then(function(){
-        audioResumePromise=null;
-        if(soundEnabled&&ctx.state==="running"){
-          primeAudio(ctx);
-          return ctx;
-        }
-        return null;
-      }).catch(function(){
-        /* iOS may reject resume outside a user gesture.
-           Clear the promise so the next real tap can retry immediately. */
-        audioResumePromise=null;
-        return null;
-      });
-      return audioResumePromise;
-    }
-    if(ctx.state==="running")primeAudio(ctx);
-  }catch(e){
-    audioResumePromise=null;
-  }
-  return null;
-}
 function unlockAudio(){
   var ctx=getAudioContext();
   if(!ctx)return null;
-  if(ctx.state!=="running")resumeAudioContext(ctx);
-  return ctx;
+  try{
+    if(ctx.state==="running")return ctx;
+    var resumed=ctx.resume();
+    if(resumed&&typeof resumed.then==="function"){
+      resumed.then(function(){primeAudio(ctx);}).catch(function(){});
+    }else if(ctx.state==="running"){
+      primeAudio(ctx);
+    }
+    return ctx;
+  }catch(e){return ctx;}
 }
 function ensureAudio(){
   return unlockAudio();
@@ -866,27 +870,27 @@ function withAudio(fn){
   if(!soundEnabled)return;
   var ctx=getAudioContext();
   if(!ctx)return;
-
   if(ctx.state==="running"){
     fn(ctx);
     return;
   }
-
-  /* All sounds requested while iOS is resuming share one promise.
-     This avoids competing resume() calls and prevents the first tap sound
-     from disappearing between "suspended" and "running". */
-  var requestedAt=Date.now();
-  var pending=resumeAudioContext(ctx);
-  if(pending&&typeof pending.then==="function"){
-    pending.then(function(resumedCtx){
-      if(!soundEnabled||!resumedCtx||resumedCtx.state!=="running")return;
-      /* Do not replay stale UI sounds after a long background/screen lock. */
-      if(Date.now()-requestedAt>1200)return;
-      fn(resumedCtx);
-    });
-  }else if(ctx.state==="running"){
-    fn(ctx);
-  }
+  try{
+    /* Do not serialize resume() behind a previous pointer event. On iOS the
+       sound-producing click itself is the strongest user activation, so each
+       requested sound gets its own chance to resume during that gesture. */
+    var resumed=ctx.resume();
+    if(resumed&&typeof resumed.then==="function"){
+      resumed.then(function(){
+        if(soundEnabled&&ctx.state==="running"){
+          primeAudio(ctx);
+          fn(ctx);
+        }
+      }).catch(function(){});
+    }else if(ctx.state==="running"){
+      primeAudio(ctx);
+      fn(ctx);
+    }
+  }catch(e){}
 }
 function tone(freq,duration,volume,type,delay){
   if(!soundEnabled)return;
@@ -2197,7 +2201,8 @@ function diagSessionHtml(){
     '<div class="k">Ansicht</div><div class="v">'+diagEsc(diagVisibleSection())+'</div>',
     '<div class="k">Spieler</div><div class="v">'+activePlayers+'</div>',
     '<div class="k">Runde</div><div class="v">'+(round||0)+'</div>',
-    '<div class="k">DEV manipuliert</div><div class="v">'+(diagRoundDirty?"Ja":"Nein")+'</div>'
+    '<div class="k">DEV manipuliert</div><div class="v">'+(diagRoundDirty?"Ja":"Nein")+'</div>',
+    '<div class="k">Sound</div><div class="v">'+(soundEnabled?"An":"Aus")+' · '+diagEsc(audioCtx?audioCtx.state:"nicht initialisiert")+'</div>'
   ];
   if(gameMode==="classic"){
     rows.push('<div class="k">Hinweis</div><div class="v">'+(classicHintEnabled?"An":"Aus")+'</div>');
@@ -2920,7 +2925,7 @@ byId("soundToggle").addEventListener("click",function(){setSoundEnabled(!soundEn
    already-created context so they cannot accidentally create a locked one. */
 function restoreExistingAudio(){
   if(!soundEnabled||!audioCtx||audioCtx.state==="closed")return;
-  if(audioCtx.state!=="running")resumeAudioContext(audioCtx);
+  if(audioCtx.state!=="running")unlockAudio();
 }
 document.addEventListener("pointerdown",function(){if(soundEnabled)unlockAudio();},{passive:true,capture:true});
 document.addEventListener("touchstart",function(){if(soundEnabled)unlockAudio();},{passive:true,capture:true});
