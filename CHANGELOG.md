@@ -2,6 +2,18 @@
 
 Die Versionshistorie dokumentiert die aus den Projektchats und der GitHub-Historie eindeutig rekonstruierbaren Änderungen. Frühere Zwischenstände mit generischen Upload-Commits werden nicht künstlich versioniert oder mit erfundenen Details ergänzt.
 
+## V70 — Offline/PWA
+
+- Root-Service-Worker für Launcher, beide Spiele, gemeinsame Assets, Datenbanken und Icons ergänzt.
+- App-Shell wird beim ersten erfolgreichen Online-Start vollständig vorab gecacht; schlägt das Pre-Caching fehl, wird die neue Worker-Version nicht installiert.
+- Navigationen und JSON-Daten verwenden online eine Network-First-Strategie mit Offline-Fallback; versionierte statische Assets werden aus dem aktuellen App-Cache bedient.
+- Updates werden bei Online-Starts automatisch geprüft. Neue Worker werden nicht per `skipWaiting()` über eine laufende Runde erzwungen.
+- Aktivierung einer neuen Version löscht ältere `imposter-games-*`-Caches automatisch; persönliche `localStorage`-Daten bleiben unberührt.
+- Caching ist auf definierte App-Ressourcen begrenzt, damit sich keine unbegrenzten Runtime-Caches ansammeln.
+- Web-App-Manifest für Standalone-Start, Theme, Portrait-Ausrichtung und App-Icons ergänzt.
+- Bestehende Home-Screen-Verknüpfungen können weiterverwendet werden; ein Neu-Anlegen ist für V70 nicht erforderlich.
+- Plattform-/Asset-Version auf V70 angehoben.
+
 ## V69 — iOS-Safe-Area wie Launcher
 
 - Launcher als funktionierende Referenz für den iOS-Status-/Safe-Area-Bereich verwendet.
