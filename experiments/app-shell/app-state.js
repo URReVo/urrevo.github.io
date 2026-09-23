@@ -194,12 +194,9 @@ function contribution(round,dir){
     if(round.category)addUnique(data.stats.categories,round.category);
   }
 }
-function hasPlayedSession(){
-  return data.sessions.some(function(s){return Array.isArray(s.rounds)&&s.rounds.length>0;});
-}
 function achievementDefs(){
   return [
-    {id:"first-session",icon:"🎬",title:"Erster Abend",text:"Die erste Session spielen",done:hasPlayedSession,progress:function(){return hasPlayedSession()?"1/1":"0/1";}},
+    {id:"first-session",icon:"🎬",title:"Erster Abend",text:"Eine Session abgeschlossen",done:function(){return data.sessions.some(function(s){return !!s.endedAt;});},progress:function(){return data.sessions.some(function(s){return !!s.endedAt;})?"1/1":"0/1";}},
     {id:"perfect",icon:"🎯",title:"Punktlandung",text:"Eine Circa-Schätzung exakt treffen",done:function(){return data.stats.perfectEstimates>=1;},progress:function(){return Math.min(1,data.stats.perfectEstimates)+"/1";}},
     {id:"escape-3",icon:"🕵️",title:"Unentdeckt",text:"3× als Imposter davonkommen",done:function(){return Object.values(data.profileStats).some(function(s){return s.impostorEscapes>=3;});},progress:function(){var m=0;Object.values(data.profileStats).forEach(function(s){m=Math.max(m,s.impostorEscapes||0);});return Math.min(3,m)+"/3";}},
     {id:"all-categories",icon:"🗺️",title:"Alles gesehen",text:"Alle 10 Kategorien mindestens einmal",done:function(){return data.stats.categories.length>=10;},progress:function(){return Math.min(10,data.stats.categories.length)+"/10";}},
@@ -243,7 +240,6 @@ function recordRound(input){
     if(session.profileIds.indexOf(p.profileId)===-1)session.profileIds.push(p.profileId);
   });
 
-  session.awards=computeAwards(session);
   evaluateAchievements();save();return true;
 }
 function computeAwards(session){
@@ -286,14 +282,8 @@ function getAchievements(){
 }
 function getStats(){return clone(data.stats);}
 function getProfileStats(id){return clone(data.profileStats[id]||baseProfileStats());}
-function refreshSessionAwards(){
-  data.sessions.forEach(function(s){
-    if(!Array.isArray(s.rounds))s.rounds=[];
-    s.awards=s.rounds.length?computeAwards(s):[];
-  });
-}
-function getSessions(){refreshSessionAwards();save();return clone(data.sessions.slice().reverse());}
-function getActiveSession(){var s=data.activeSessionId&&sessionById(data.activeSessionId);if(s){s.awards=s.rounds&&s.rounds.length?computeAwards(s):[];save();}return s?clone(s):null;}
+function getSessions(){return clone(data.sessions.slice().reverse());}
+function getActiveSession(){var s=data.activeSessionId&&sessionById(data.activeSessionId);return s?clone(s):null;}
 function getPreferences(){return clone(data.preferences);}
 function setPreference(key,value){
   if(["sound","haptics","animations"].indexOf(key)===-1)return false;
@@ -391,7 +381,7 @@ function rebuildAggregates(){
   data.stats=baseStats();
   data.sessions.forEach(function(session){
     (session.rounds||[]).forEach(function(round){contribution(round,1);});
-    session.awards=(session.rounds||[]).length?computeAwards(session):[];
+    session.awards=session.endedAt&&(session.rounds||[]).length?computeAwards(session):[];
   });
   var imported=data.imports&&data.imports.legacyCircaData;
   if(imported){
