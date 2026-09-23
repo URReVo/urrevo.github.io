@@ -27,7 +27,7 @@ try{
    WIDs are independent from Circa QIDs so both deck systems can evolve safely. */
 
 function byId(id){return document.getElementById(id);}
-var sections=["setup","stats","handoff","classicRole","classicDiscussion","classicResult","question","normalReveal","answers","result"];
+var sections=gameMode==="classic"?["setup","handoff","classicRole","classicDiscussion","classicResult"]:["setup","stats","handoff","question","normalReveal","answers","result"];
 var count=3,players=[],active=0,impIndex=0,round=0,current=null,scrubbing=false;
 var guessLocked=false,guessSaveTimer=null;
 
@@ -161,22 +161,15 @@ function setClassicTimer(seconds){
   tone(seconds?500:350,0.04,0.012,"sine",0);
 }
 function syncGameModeUI(){
-  var classic=gameMode==="classic";
-  byId("difficultyEyebrow").classList.toggle("hidden",classic);
-  byId("difficultyControl").classList.toggle("hidden",classic);
-  byId("difficultyHint").classList.toggle("hidden",classic);
-  byId("classicOptions").classList.toggle("hidden",!classic);
-  if(classic){
+  if(gameMode==="classic"){
     byId("setupSubtitle").textContent="Alle kennen das geheime Wort – außer einer Person.";
     byId("start").textContent="Imposter starten";
     byId("poolCount").textContent=classicWords.length+" geheime Wörter";
-    byId("openStats").classList.add("hidden");
     syncClassicOptionsUI();
   }else{
     byId("setupSubtitle").textContent="Alle bekommen dieselbe Schätzfrage – außer einer Person.";
     byId("start").textContent="Spiel starten";
     byId("poolCount").textContent=bank.length+" Fragepaare";
-    byId("openStats").classList.remove("hidden");
   }
   syncSetupScrollFit();
 }
@@ -940,9 +933,13 @@ byId("soundOffIcon").classList.toggle("hidden",soundEnabled);
 
 
 function show(id){
-  for(var i=0;i<sections.length;i++) byId(sections[i]).classList.toggle("hidden",sections[i]!==id);
+  for(var i=0;i<sections.length;i++){
+    var section=byId(sections[i]);
+    if(section)section.classList.toggle("hidden",sections[i]!==id);
+  }
   var isGame=id!=="setup"&&id!=="stats";
-  byId("gameTopbar").classList.toggle("hidden",!isGame);
+  var topbar=byId("gameTopbar");
+  if(topbar)topbar.classList.toggle("hidden",!isGame);
   document.body.classList.toggle("game-active",isGame);
   if(id!=="setup")document.body.classList.remove("setup-fits");
   try{window.scrollTo(0,0);}catch(e){}
@@ -1961,7 +1958,8 @@ function leaveGame(){
   guessLocked=false;
   roundStatsRecorded=false;
   roundOutcomeChoice=null;
-  byId("saveGuess").disabled=false;
+  var saveGuessButton=byId("saveGuess");
+  if(saveGuessButton)saveGuessButton.disabled=false;
   players=[];active=0;round=0;current=null;
   classicCurrent=null;classicResolved=false;
   impostorSessionCounts=[];impostorRecent=[];
@@ -2746,58 +2744,66 @@ renderDiagLog();
 byId("plus").addEventListener("click",function(){if(count<12){count++;if(!avatarSelections[count-1])avatarSelections[count-1]=avatarPool[(count-1)%avatarPool.length];renderNames();savePlayers();}});
 byId("minus").addEventListener("click",function(){if(count>3){count--;avatarSelections=avatarSelections.slice(0,count);renderNames();savePlayers();}});
 byId("start").addEventListener("click",function(){ensureAudio();tone(300,0.05,0.012,"sine",0);start();});
-byId("openStats").addEventListener("click",openStatistics);
-byId("closeStats").addEventListener("click",closeStatistics);
-byId("resetStats").addEventListener("click",resetStatistics);
 
-var statsTabs=byId("statsTabs").querySelectorAll(".statsTab");
-for(var st=0;st<statsTabs.length;st++){
-  statsTabs[st].addEventListener("click",function(){
-    selectedStatsMetric=this.getAttribute("data-stat")||"closest";
-    renderStatistics();
-    tone(430,0.04,0.010,"sine",0);
-  });
-}
-
-var classicHintButtons=byId("classicHintControl").querySelectorAll("[data-classic-hint]");
-for(var ch=0;ch<classicHintButtons.length;ch++){
-  classicHintButtons[ch].addEventListener("click",function(){
+if(gameMode==="classic"){
+  var classicHintButtons=byId("classicHintControl").querySelectorAll("[data-classic-hint]");
+  for(var ch=0;ch<classicHintButtons.length;ch++){
+    classicHintButtons[ch].addEventListener("click",function(){
+      ensureAudio();
+      setClassicHint(this.getAttribute("data-classic-hint")==="1");
+    });
+  }
+  byId("classicTimerSelect").addEventListener("change",function(){
     ensureAudio();
-    setClassicHint(this.getAttribute("data-classic-hint")==="1");
+    setClassicTimer(Number(this.value));
   });
-}
-byId("classicTimerSelect").addEventListener("change",function(){
-  ensureAudio();
-  setClassicTimer(Number(this.value));
-});
-byId("classicTimerPause").addEventListener("click",function(){
-  ensureAudio();
-  toggleClassicTimerPause();
-});
-
-var difficultyButtons=byId("difficultyControl").querySelectorAll(".difficultyButton");
-for(var db=0;db<difficultyButtons.length;db++){
-  difficultyButtons[db].addEventListener("click",function(){
+  byId("classicTimerPause").addEventListener("click",function(){
     ensureAudio();
-    setDifficulty(this.getAttribute("data-difficulty"));
+    toggleClassicTimerPause();
   });
+}else{
+  byId("openStats").addEventListener("click",openStatistics);
+  byId("closeStats").addEventListener("click",closeStatistics);
+  byId("resetStats").addEventListener("click",resetStatistics);
+
+  var statsTabs=byId("statsTabs").querySelectorAll(".statsTab");
+  for(var st=0;st<statsTabs.length;st++){
+    statsTabs[st].addEventListener("click",function(){
+      selectedStatsMetric=this.getAttribute("data-stat")||"closest";
+      renderStatistics();
+      tone(430,0.04,0.010,"sine",0);
+    });
+  }
+
+  var difficultyButtons=byId("difficultyControl").querySelectorAll(".difficultyButton");
+  for(var db=0;db<difficultyButtons.length;db++){
+    difficultyButtons[db].addEventListener("click",function(){
+      ensureAudio();
+      setDifficulty(this.getAttribute("data-difficulty"));
+    });
+  }
 }
 
 /* Game */
 byId("showQuestion").addEventListener("click",function(){if(gameMode==="classic")classicOpenRole();else openQuestion();});
-byId("classicRoleDone").addEventListener("click",classicRoleDone);
-byId("classicReveal").addEventListener("click",classicReveal);
-byId("classicNext").addEventListener("click",function(){ensureAudio();classicNewRound(false);});
-byId("classicRestart").addEventListener("click",leaveGame);
-byId("saveGuess").addEventListener("click",saveGuess);
-byId("revealNormalQuestion").addEventListener("click",revealNormalQuestion);
-byId("reveal").addEventListener("click",reveal);
-byId("impostorWonYes").addEventListener("click",function(){setImpostorOutcome(true);});
-byId("impostorWonNo").addEventListener("click",function(){setImpostorOutcome(false);});
-byId("next").addEventListener("click",function(){ensureAudio();newRound(false);});
+
+if(gameMode==="classic"){
+  byId("classicRoleDone").addEventListener("click",classicRoleDone);
+  byId("classicReveal").addEventListener("click",classicReveal);
+  byId("classicNext").addEventListener("click",function(){ensureAudio();classicNewRound(false);});
+  byId("classicRestart").addEventListener("click",leaveGame);
+}else{
+  byId("saveGuess").addEventListener("click",saveGuess);
+  byId("revealNormalQuestion").addEventListener("click",revealNormalQuestion);
+  byId("reveal").addEventListener("click",reveal);
+  byId("impostorWonYes").addEventListener("click",function(){setImpostorOutcome(true);});
+  byId("impostorWonNo").addEventListener("click",function(){setImpostorOutcome(false);});
+  byId("next").addEventListener("click",function(){ensureAudio();newRound(false);});
+  byId("restart").addEventListener("click",leaveGame);
+}
+
 byId("freshRound").addEventListener("click",function(){ensureAudio();if(gameMode==="classic")classicNewRound(true);else newRound(true);});
 byId("leaveGame").addEventListener("click",leaveGame);
-byId("restart").addEventListener("click",leaveGame);
 byId("soundToggle").addEventListener("click",function(){setSoundEnabled(!soundEnabled);});
 
 
@@ -2841,6 +2847,7 @@ document.addEventListener("cut",function(e){
 });
 
 /* Huge thumb-friendly slider: touch anywhere in the field and drag. */
+if(gameMode!=="classic"){
 var scrubber=byId("scrubber");
 scrubber.addEventListener("pointerdown",function(e){
   scrubbing=true;
@@ -2873,6 +2880,7 @@ if(!window.PointerEvent){
     if(!e.touches.length)return;
     setEstimateFromClientX(e.touches[0].clientX);e.preventDefault();
   },{passive:false});
+}
 }
 
 loadSavedGameMode();
