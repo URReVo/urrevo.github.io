@@ -82,7 +82,7 @@ function migrateV72(){
       st.errorSum=Math.max(st.errorSum,Math.max(0,Number(legacyStat.errorSum)||0));
       st.errorSamples=Math.max(st.errorSamples,Math.max(0,Number(legacyStat.errorSamples)||0));
       if(st.rounds>0){
-        if(st.errorSamples>0&&st.errorSum===0)st.perfect=Math.max(st.perfect,1);
+        if(st.errorSamples>0&&st.errorSum===0)st.perfect=Math.max(st.perfect,st.errorSamples);
         else st.legacyPerfectUnknown=true;
       }
     }
@@ -163,7 +163,7 @@ function backfillV72Details(data){
       var errorSamples=Math.max(0,Number(item.errorSamples)||0);
       var errorSum=Math.max(0,Number(item.errorSum)||0);
       if(legacyRounds>0){
-        if(errorSamples>0&&errorSum===0)st.perfect=Math.max(Number(st.perfect)||0,1);
+        if(errorSamples>0&&errorSum===0)st.perfect=Math.max(Number(st.perfect)||0,errorSamples);
         else st.legacyPerfectUnknown=true;
       }
       if(oldRounds>0&&legacyRounds===oldRounds&&Array.isArray(oldCompleted)){
@@ -773,7 +773,8 @@ function getMigrationStatus(){
     completed:!!(data.imports&&data.imports.v72MigrationCompleted),
     profileChoicePending:!!(data.imports&&data.imports.v72ProfileChoicePending),
     profilesFound:Math.max(0,Number(data.imports&&data.imports.v72ProfilesFound)||0),
-    migratedAt:data.imports&&data.imports.v72MigratedAt||null
+    migratedAt:data.imports&&data.imports.v72MigratedAt||null,
+    perfectUnknown:!!(data.imports&&data.imports.v72PerfectUnknown)
   };
 }
 function completeMigrationProfileChoice(id){
