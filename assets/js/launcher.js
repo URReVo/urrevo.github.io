@@ -35,13 +35,27 @@ function sessionGame(session){
   var rounds=session&&Array.isArray(session.rounds)?session.rounds:[];
   return rounds.length&&rounds[rounds.length-1].game==="classic"?"classic":"circa";
 }
-function activeProfilesInSession(session){
-  var ids=session&&Array.isArray(session.profileIds)?session.profileIds:[];
-  return ids.filter(function(id){var p=store.getProfileById?store.getProfileById(id):null;return p&&!p.deletedAt;});
+function sessionLaunchProfileIds(session){
+  if(!session)return [];
+  var ids=Array.isArray(session.lastProfileIds)?session.lastProfileIds.slice():[];
+  if(!ids.length&&Array.isArray(session.rounds)&&session.rounds.length){
+    var last=session.rounds[session.rounds.length-1];
+    (last.players||[]).forEach(function(p){
+      if(p&&p.profileId&&ids.indexOf(p.profileId)===-1)ids.push(p.profileId);
+    });
+  }
+  if(!ids.length&&Array.isArray(session.profileIds))ids=session.profileIds.slice();
+  return ids;
+}
+function activeProfilesForLaunch(session){
+  return sessionLaunchProfileIds(session).filter(function(id){
+    var p=store.getProfileById?store.getProfileById(id):null;
+    return p&&!p.deletedAt;
+  });
 }
 function launchSessionGroup(session){
   if(!session||!store.setLaunchGroup)return false;
-  var ids=activeProfilesInSession(session);
+  var ids=activeProfilesForLaunch(session);
   if(ids.length<3)return false;
   store.setLaunchGroup(ids);
   var game=sessionGame(session);
@@ -223,7 +237,7 @@ function renderSessionSheet(session){
   }
 
   var replay=byId("replaySession");
-  var replayable=!!session.endedAt&&activeProfilesInSession(session).length>=3;
+  var replayable=!!session.endedAt&&activeProfilesForLaunch(session).length>=3;
   replay.classList.toggle("hidden",!replayable);
   replay.textContent="Noch einmal mit dieser Gruppe · "+(sessionGame(session)==="classic"?"Classic":"Circa");
   replay.onclick=function(){launchSessionGroup(session);};
@@ -265,7 +279,7 @@ function renderSessions(){
     byId("activeSessionSub").textContent=(names.length?names.join(", "):active.profileIds.length+" Spieler")+(active.profileIds.length>3?" +"+(active.profileIds.length-3):"");
     var cont=byId("continueSession");
     cont.textContent="Session fortsetzen · "+(sessionGame(active)==="classic"?"Classic":"Circa");
-    cont.disabled=activeProfilesInSession(active).length<3;
+    cont.disabled=activeProfilesForLaunch(active).length<3;
   }
   var sessions=store.getSessions().filter(function(s){return !!s.endedAt;});
   var last=sessions[0]||null;
