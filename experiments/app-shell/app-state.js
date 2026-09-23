@@ -71,6 +71,18 @@ function load(){
   ["circaQids","classicWids","categories"].forEach(function(k){if(!Array.isArray(data.stats[k]))data.stats[k]=[];});
   ["rounds","circaRounds","classicRounds","perfectEstimates"].forEach(function(k){data.stats[k]=Math.max(0,Number(data.stats[k])||0);});
   if(!Array.isArray(data.sessions))data.sessions=[];
+  /* Backfill per-profile unique progress from already stored experiment rounds. */
+  data.sessions.forEach(function(session){
+    (session&&Array.isArray(session.rounds)?session.rounds:[]).forEach(function(round){
+      (round&&Array.isArray(round.players)?round.players:[]).forEach(function(rp){
+        if(!rp||!rp.profileId)return;
+        var st=ensureStat(rp.profileId);
+        if(round.game==="circa"&&round.qid)addUnique(st.circaQids,round.qid);
+        if(round.game==="classic"&&round.wid)addUnique(st.classicWids,round.wid);
+        if(round.category)addUnique(st.categories,round.category);
+      });
+    });
+  });
   if(!data.achievements||typeof data.achievements!=="object")data.achievements={};
   if(!Array.isArray(data.presets))data.presets=[];
   if(!data.preferences||typeof data.preferences!=="object")data.preferences={sound:true,haptics:true,animations:true};
