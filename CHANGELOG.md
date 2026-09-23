@@ -6,7 +6,7 @@ Die Versionshistorie dokumentiert die aus den Projektchats und der GitHub-Histor
 
 - Root-Service-Worker für Launcher, beide Spiele, gemeinsame Assets, Datenbanken und Icons ergänzt.
 - App-Shell wird beim ersten erfolgreichen Online-Start vollständig vorab gecacht; schlägt das Pre-Caching fehl, wird die neue Worker-Version nicht installiert.
-- Navigationen und JSON-Daten verwenden online eine Network-First-Strategie mit Offline-Fallback; versionierte statische Assets werden aus dem aktuellen App-Cache bedient.
+- Navigationen, JSON-Daten und versionierte Assets werden release-konsistent aus dem aktiven App-Cache bedient. Eine neue Version wird parallel vollständig vorbereitet und erst nach Aktivierung als Ganzes verwendet.
 - Updates werden bei Online-Starts automatisch geprüft. Neue Worker werden nicht per `skipWaiting()` über eine laufende Runde erzwungen.
 - Aktivierung einer neuen Version löscht ältere `imposter-games-*`-Caches automatisch; persönliche `localStorage`-Daten bleiben unberührt.
 - Caching ist auf definierte App-Ressourcen begrenzt, damit sich keine unbegrenzten Runtime-Caches ansammeln.
