@@ -335,26 +335,32 @@ function classicEligibleCategories(){
   return out.length?out:all;
 }
 function classicPickWord(){
-  var cats=classicEligibleCategories();
-  if(!cats.length)return false;
-  var cat=cats[Math.floor(randomUnit()*cats.length)];
-  var eligible=[];
-  for(var i=0;i<classicWords.length;i++)if(classicWords[i].cat===cat)eligible.push(classicWords[i]);
-  if(!eligible.length)return false;
+  if(diagClassicPinnedWord){
+    classicCurrent=diagClassicPinnedWord;
+    diagClassicPinnedWord=null;
+    diagMarkRoundDirty("Vorgemerktes DEV-Wort verwendet: "+classicCurrent.wid);
+  }else{
+    var cats=classicEligibleCategories();
+    if(!cats.length)return false;
+    var cat=cats[Math.floor(randomUnit()*cats.length)];
+    var eligible=[];
+    for(var i=0;i<classicWords.length;i++)if(classicWords[i].cat===cat)eligible.push(classicWords[i]);
+    if(!eligible.length)return false;
 
-  var key="classic::"+cat;
-  if(!Array.isArray(classicDeckProgress[key]))classicDeckProgress[key]=[];
-  var pool=[];
-  for(var j=0;j<eligible.length;j++){
-    if(classicDeckProgress[key].indexOf(eligible[j].wid)===-1)pool.push(eligible[j]);
+    var key="classic::"+cat;
+    if(!Array.isArray(classicDeckProgress[key]))classicDeckProgress[key]=[];
+    var pool=[];
+    for(var j=0;j<eligible.length;j++){
+      if(classicDeckProgress[key].indexOf(eligible[j].wid)===-1)pool.push(eligible[j]);
+    }
+    if(!pool.length){
+      classicDeckProgress[key]=[];
+      pool=eligible.slice();
+    }
+    classicCurrent=pool[Math.floor(randomUnit()*pool.length)];
+    classicDeckProgress[key].push(classicCurrent.wid);
+    storageSet(STORAGE_CLASSIC_DECK,classicDeckProgress);
   }
-  if(!pool.length){
-    classicDeckProgress[key]=[];
-    pool=eligible.slice();
-  }
-  classicCurrent=pool[Math.floor(randomUnit()*pool.length)];
-  classicDeckProgress[key].push(classicCurrent.wid);
-  storageSet(STORAGE_CLASSIC_DECK,classicDeckProgress);
 
   impIndex=selectImpostor();
   active=0;
@@ -1964,7 +1970,7 @@ function setDiagUnlocked(value){
   syncDiagVisibility();
 }
 function syncDiagVisibility(){
-  var unlocked=diagUnlocked()&&gameMode!=="classic";
+  var unlocked=diagUnlocked();
   var items=document.querySelectorAll(".devOnly");
   for(var i=0;i<items.length;i++)items[i].classList.toggle("hidden",!unlocked);
 }
@@ -2061,14 +2067,21 @@ function diagEsc(value){
 }
 function diagSessionHtml(){
   var activePlayers=players.length?players.length:count;
-  return [
-    '<div class="k">Version</div><div class="v">V58</div>',
+  var rows=[
+    '<div class="k">Version</div><div class="v">V'+diagEsc(config.version||"–")+'</div>',
+    '<div class="k">Spiel</div><div class="v">'+(gameMode==="classic"?"Klassisches Imposter":"Circa Imposter")+'</div>',
     '<div class="k">Ansicht</div><div class="v">'+diagEsc(diagVisibleSection())+'</div>',
     '<div class="k">Spieler</div><div class="v">'+activePlayers+'</div>',
     '<div class="k">Runde</div><div class="v">'+(round||0)+'</div>',
-    '<div class="k">DEV manipuliert</div><div class="v">'+(diagRoundDirty?"Ja · keine Statistik":"Nein")+'</div>',
-    '<div class="k">Geräterunden</div><div class="v">'+(deviceStats&&deviceStats.roundsPlayed||0)+'</div>'
-  ].join("");
+    '<div class="k">DEV manipuliert</div><div class="v">'+(diagRoundDirty?"Ja":"Nein")+'</div>'
+  ];
+  if(gameMode==="classic"){
+    rows.push('<div class="k">Hinweis</div><div class="v">'+(classicHintEnabled?"An":"Aus")+'</div>');
+    rows.push('<div class="k">Timer</div><div class="v">'+diagEsc(classicTimerLabel(classicTimerSeconds))+'</div>');
+  }else{
+    rows.push('<div class="k">Geräterunden</div><div class="v">'+(deviceStats&&deviceStats.roundsPlayed||0)+'</div>');
+  }
+  return rows.join("");
 }
 function diagImpostorHtml(){
   if(!players.length){
@@ -2115,7 +2128,42 @@ function diagQuestionHtml(){
     '<div class="devQuestionMeta">'+diagEsc(current.impValue)+' '+diagEsc(current.impUnit||"")+' · '+diagEsc(current.impAnswer||"")+'</div>'
   ].join("");
 }
+function diagClassicWordHtml(){
+  var item=classicCurrent||diagClassicPinnedWord;
+  if(!item){
+    return '<div class="devQuestionMeta">Noch kein geheimes Wort aktiv.</div>';
+  }
+  return [
+    '<div class="devKv">',
+      '<div class="k">WID</div><div class="v">'+diagEsc(item.wid)+'</div>',
+      '<div class="k">Kategorie</div><div class="v">'+diagEsc(item.cat)+'</div>',
+      '<div class="k">Wort</div><div class="v">'+diagEsc(item.word)+'</div>',
+      '<div class="k">Hinweis</div><div class="v">'+diagEsc(item.hint||"–")+'</div>',
+    '</div>',
+    '<div class="devQuestionMeta" style="margin-top:7px">Die Kategorie bleibt im normalen Spiel verborgen und ist nur hier im DEV sichtbar.</div>'
+  ].join("");
+}
+function diagClassicStorageHtml(){
+  var deckUsed=0,deckKeys=0;
+  try{
+    var keys=Object.keys(classicDeckProgress||{});
+    deckKeys=keys.length;
+    for(var i=0;i<keys.length;i++){
+      if(Array.isArray(classicDeckProgress[keys[i]]))deckUsed+=classicDeckProgress[keys[i]].length;
+    }
+  }catch(e){}
+  return [
+    '<div class="k">Wortbank</div><div class="v">'+classicWords.length+' Wörter</div>',
+    '<div class="k">Im Deck markiert</div><div class="v">'+deckUsed+'</div>',
+    '<div class="k">Deck-Kategorien</div><div class="v">'+deckKeys+'</div>',
+    '<div class="k">Auswahl</div><div class="v">'+diagEsc(selectedCategories.join(", "))+'</div>',
+    '<div class="k">Hinweis</div><div class="v">'+(classicHintEnabled?"An":"Aus")+'</div>',
+    '<div class="k">Timer</div><div class="v">'+diagEsc(classicTimerLabel(classicTimerSeconds))+'</div>'
+  ].join("");
+}
+
 function diagStorageHtml(){
+  if(gameMode==="classic")return diagClassicStorageHtml();
   var statPlayers=0,deckKeys=0;
   try{statPlayers=Object.keys(playerStats||{}).length;}catch(e){}
   try{deckKeys=Object.keys(deckProgress||{}).length;}catch(e){}
@@ -2171,6 +2219,94 @@ function diagMarkRoundDirty(reason){
   diagRoundDirty=true;
   if(reason)diagLog("DEV",reason);
 }
+var diagClassicPinnedWord=null;
+
+function populateDiagClassicWordFilters(){
+  var select=byId("devClassicWordCategory");
+  if(!select||select.options.length)return;
+  var cats=[],seen={};
+  for(var i=0;i<classicWords.length;i++){
+    if(!seen[classicWords[i].cat]){seen[classicWords[i].cat]=true;cats.push(classicWords[i].cat);}
+  }
+  cats.sort(function(a,b){return a.localeCompare(b,"de");});
+  var all=document.createElement("option");
+  all.value="Alle";all.textContent="Alle Kategorien";
+  select.appendChild(all);
+  for(var c=0;c<cats.length;c++){
+    var opt=document.createElement("option");
+    opt.value=cats[c];opt.textContent=cats[c];
+    select.appendChild(opt);
+  }
+}
+function findDiagClassicWordByWid(wid){
+  var needle=String(wid||"").trim().toLowerCase();
+  if(!needle)return null;
+  for(var i=0;i<classicWords.length;i++){
+    if(String(classicWords[i].wid).toLowerCase()===needle)return classicWords[i];
+  }
+  return null;
+}
+function diagRenderClassicResultInstant(){
+  if(!players.length||!classicCurrent||!players[impIndex])return;
+  clearClassicTimer();
+  classicResolved=true;
+  var imp=players[impIndex];
+  byId("classicResultIcon").textContent=imp.avatar||"🎭";
+  byId("classicResultTitle").textContent=imp.name+" war der Impostor";
+  byId("classicSecretWord").textContent=classicCurrent.word;
+  show("classicResult");
+}
+function applyDiagClassicWord(item){
+  if(!item)return false;
+  classicCurrent=item;
+  classicResolved=false;
+
+  if(players.length){
+    diagClassicPinnedWord=null;
+    diagMarkRoundDirty("Classic-Wort geladen: "+item.wid);
+    var visible=diagVisibleSection();
+    if(visible==="classicRole")classicOpenRole();
+    else if(visible==="classicResult")diagRenderClassicResultInstant();
+  }else{
+    diagClassicPinnedWord=item;
+    diagLog("DEV","Classic-Wort für nächste Runde vorgemerkt: "+item.wid);
+  }
+
+  diagSetStatus(
+    "devClassicWordPickerStatus",
+    (players.length?"Geladen: ":"Für nächste Runde: ")+item.wid+" · "+item.cat+" · "+item.word,
+    false
+  );
+  refreshDiagPanel();
+  return true;
+}
+function loadDiagWid(){
+  var input=byId("devWidInput");
+  var item=findDiagClassicWordByWid(input?input.value:"");
+  if(!item){
+    diagSetStatus("devClassicWordPickerStatus","WID nicht gefunden.",true);
+    return;
+  }
+  applyDiagClassicWord(item);
+}
+function loadDiagRandomClassicWord(){
+  var select=byId("devClassicWordCategory");
+  var cat=select?(select.value||"Alle"):"Alle";
+  var pool=[];
+  for(var i=0;i<classicWords.length;i++){
+    if(cat!=="Alle"&&classicWords[i].cat!==cat)continue;
+    pool.push(classicWords[i]);
+  }
+  if(!pool.length){
+    diagSetStatus("devClassicWordPickerStatus","Für diese Kategorie gibt es kein Wort.",true);
+    return;
+  }
+  var item=pool[Math.floor(randomUnit()*pool.length)];
+  var input=byId("devWidInput");
+  if(input)input.value=item.wid;
+  applyDiagClassicWord(item);
+}
+
 function populateDiagQuestionFilters(){
   var select=byId("devQuestionCategory");
   if(!select||select.options.length)return;
@@ -2209,12 +2345,13 @@ function renderDiagForceButtons(){
   }
 }
 function forceDiagImpostor(index){
-  if(!players.length||!current){
+  var activeItem=gameMode==="classic"?classicCurrent:current;
+  if(!players.length||!activeItem){
     diagSetStatus("devActionStatus","Erst eine Partie starten.",true);
     return;
   }
   if(index<0||index>=players.length)return;
-  if(roundStatsRecorded&&!diagRoundDirty){
+  if(gameMode!=="classic"&&roundStatsRecorded&&!diagRoundDirty){
     diagSetStatus("devActionStatus","Diese Runde ist bereits dauerhaft ausgewertet. Bitte neue Runde starten.",true);
     return;
   }
@@ -2230,9 +2367,14 @@ function forceDiagImpostor(index){
   diagSetStatus("devActionStatus","Impostor auf "+players[index].name+" gesetzt.",false);
 
   var visible=diagVisibleSection();
-  if(visible==="question")openQuestion();
-  else if(visible==="answers"){diagEnsureGuesses();renderAnswers();show("answers");}
-  else if(visible==="result")diagRenderResultInstant();
+  if(gameMode==="classic"){
+    if(visible==="classicRole")classicOpenRole();
+    else if(visible==="classicResult")diagRenderClassicResultInstant();
+  }else{
+    if(visible==="question")openQuestion();
+    else if(visible==="answers"){diagEnsureGuesses();renderAnswers();show("answers");}
+    else if(visible==="result")diagRenderResultInstant();
+  }
 
   refreshDiagPanel();
 }
@@ -2363,6 +2505,36 @@ function diagRenderResultInstant(){
   show("result");
 }
 function jumpDiagScreen(stage){
+  if(gameMode==="classic"){
+    if(!players.length||!classicCurrent){
+      diagSetStatus("devActionStatus","Erst eine Partie starten.",true);
+      return;
+    }
+    if(roundIntroTimer){clearTimeout(roundIntroTimer);roundIntroTimer=null;}
+    if(guessSaveTimer){clearTimeout(guessSaveTimer);guessSaveTimer=null;}
+    clearClassicTimer();
+    var classicIntro=byId("roundIntro");
+    if(classicIntro){classicIntro.classList.add("hidden");classicIntro.classList.remove("showIntro");}
+    diagMarkRoundDirty("Classic Screen-Jump: "+stage);
+
+    if(stage==="classicHandoff"){
+      active=Math.max(0,Math.min(active,players.length-1));
+      prepareHandoff();
+    }else if(stage==="classicRole"){
+      active=Math.max(0,Math.min(active,players.length-1));
+      classicOpenRole();
+    }else if(stage==="classicDiscussion"){
+      classicPrepareDiscussion();
+    }else if(stage==="classicResult"){
+      diagRenderClassicResultInstant();
+    }else{
+      diagSetStatus("devActionStatus","Unbekanntes Classic-Ziel.",true);
+      return;
+    }
+    closeDiagPanel();
+    return;
+  }
+
   if(!players.length||!current){
     diagSetStatus("devActionStatus","Erst eine Partie starten.",true);
     return;
@@ -2405,9 +2577,18 @@ function jumpDiagScreen(stage){
 function refreshDiagPanel(){
   byId("devSessionInfo").innerHTML=diagSessionHtml();
   byId("devImpostorInfo").innerHTML=diagImpostorHtml();
-  byId("devQuestionInfo").innerHTML=diagQuestionHtml();
   byId("devStorageInfo").innerHTML=diagStorageHtml();
-  populateDiagQuestionFilters();
+
+  if(gameMode==="classic"){
+    var wordInfo=byId("devClassicWordInfo");
+    if(wordInfo)wordInfo.innerHTML=diagClassicWordHtml();
+    populateDiagClassicWordFilters();
+  }else{
+    var questionInfo=byId("devQuestionInfo");
+    if(questionInfo)questionInfo.innerHTML=diagQuestionHtml();
+    populateDiagQuestionFilters();
+  }
+
   renderDiagForceButtons();
   renderDiagLog();
 }
@@ -2502,16 +2683,37 @@ byId("devCloseBottom").addEventListener("click",closeDiagPanel);
 byId("devRefresh").addEventListener("click",refreshDiagPanel);
 byId("devSimulate").addEventListener("click",function(){runDiagSimulation(1000);});
 byId("devLock").addEventListener("click",lockDiag);
-byId("devLoadQid").addEventListener("click",loadDiagQid);
-byId("devLoadRandomQuestion").addEventListener("click",loadDiagRandomQuestion);
-byId("devQidInput").addEventListener("keydown",function(e){
+var devLoadQid=byId("devLoadQid");
+if(devLoadQid)devLoadQid.addEventListener("click",loadDiagQid);
+var devLoadRandomQuestion=byId("devLoadRandomQuestion");
+if(devLoadRandomQuestion)devLoadRandomQuestion.addEventListener("click",loadDiagRandomQuestion);
+var devQidInput=byId("devQidInput");
+if(devQidInput)devQidInput.addEventListener("keydown",function(e){
   if(e.key==="Enter"){loadDiagQid();e.preventDefault();}
 });
+
+var devLoadWid=byId("devLoadWid");
+if(devLoadWid)devLoadWid.addEventListener("click",loadDiagWid);
+var devLoadRandomWord=byId("devLoadRandomWord");
+if(devLoadRandomWord)devLoadRandomWord.addEventListener("click",loadDiagRandomClassicWord);
+var devWidInput=byId("devWidInput");
+if(devWidInput)devWidInput.addEventListener("keydown",function(e){
+  if(e.key==="Enter"){loadDiagWid();e.preventDefault();}
+});
+
 byId("devClearLog").addEventListener("click",clearDiagLog);
 
-var diagJumpButtons=byId("devJumpButtons").querySelectorAll("[data-dev-jump]");
+var diagJumpRoot=byId("devJumpButtons");
+var diagJumpButtons=diagJumpRoot?diagJumpRoot.querySelectorAll("[data-dev-jump]"):[];
 for(var dj=0;dj<diagJumpButtons.length;dj++){
   diagJumpButtons[dj].addEventListener("click",function(){
+    jumpDiagScreen(this.getAttribute("data-dev-jump"));
+  });
+}
+var diagClassicJumpRoot=byId("devClassicJumpButtons");
+var diagClassicJumpButtons=diagClassicJumpRoot?diagClassicJumpRoot.querySelectorAll("[data-dev-jump]"):[];
+for(var dcj=0;dcj<diagClassicJumpButtons.length;dcj++){
+  diagClassicJumpButtons[dcj].addEventListener("click",function(){
     jumpDiagScreen(this.getAttribute("data-dev-jump"));
   });
 }
