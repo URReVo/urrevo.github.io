@@ -1,6 +1,6 @@
 # 🎭 Imposter Games
 
-Dieses Repository ist ab **V64** nicht mehr nur eine einzelne `index.html`, sondern eine kleine, statische **Partyspiel-Plattform**.
+Dieses Repository ist seit **V62** nicht mehr nur eine einzelne `index.html`, sondern eine kleine, statische **Partyspiel-Plattform**.
 
 👉 **Live:** https://urrevo.github.io/
 
@@ -53,7 +53,7 @@ Optional kann der Imposter ein **ähnliches Hinweiswort** erhalten. Die Kategori
 │
 ├── data/
 │   ├── games.json                     # Spielekatalog des Launchers
-│   ├── circa-questions.json           # 520 Faker-Fragepaare
+│   ├── circa-questions.json           # 520 Circa-Fragepaare
 │   └── classic-words.json             # 250 Wörter + Hinweise
 │
 ├── games/
@@ -93,7 +93,7 @@ Die bisherigen Circa-Schlüssel bleiben erhalten, damit vorhandene Circa-Statist
 
 ## 🌐 Multiplayer-Perspektive
 
-V63 ist noch **kein Online-Multiplayer**. Die neue Trennung schafft aber eine bessere Basis dafür:
+Aktuell gibt es noch **keinen Online-Multiplayer**. Die neue Trennung schafft aber eine bessere Basis dafür:
 
 - Launcher und Spiele sind getrennt.
 - Spieldaten liegen unabhängig vom UI vor.
@@ -123,7 +123,7 @@ Die Web-Oberfläche bleibt Vanilla HTML/CSS/JavaScript und ist weiterhin für iP
 
 Die neue Trennung in Daten, Plattform und Spielbereiche erleichtert eine spätere native Umsetzung, weil Wort-/Frage-Daten und Spielkonzepte nicht mehr untrennbar in einer einzigen HTML-Datei stecken.
 
-Eine native iOS-App würde trotzdem eine eigene Swift/SwiftUI-Oberfläche und native Zustandslogik erhalten; V63 ist dafür eine bessere Ausgangsbasis, aber kein automatischer Web-zu-Native-Wrapper.
+Eine native iOS-App würde trotzdem eine eigene Swift/SwiftUI-Oberfläche und native Zustandslogik erhalten; Die aktuelle Architektur ist dafür eine bessere Ausgangsbasis, aber kein automatischer Web-zu-Native-Wrapper.
 
 ## 🛠 Technik
 
