@@ -42,14 +42,21 @@ Optional kann der Imposter ein **ähnliches Hinweiswort** erhalten. Die Kategori
 /
 ├── index.html                         # Spiele-Launcher
 ├── README.md
-├── CHANGELOG.md\n├── manifest.webmanifest                # PWA-Metadaten\n├── service-worker.js                  # Offline-Cache & Versionswechsel
+├── CHANGELOG.md
+├── manifest.webmanifest                # PWA-Metadaten
+├── service-worker.js                  # Offline-Cache & Versionswechsel
+├── scripts/
+│   └── validate-release.mjs            # automatischer Release-Validator
+├── .github/workflows/
+│   └── validate.yml                    # führt den Validator bei Push/PR aus
 │
 ├── assets/
 │   ├── css/
 │   │   ├── launcher.css               # Startbildschirm
 │   │   └── game.css                   # gemeinsames Game-Design
 │   └── js/
-│       ├── launcher.js                # rendert den Spielekatalog\n│       ├── pwa.js                     # registriert Offline-/Update-Unterstützung
+│       ├── launcher.js                # rendert den Spielekatalog
+│       ├── pwa.js                     # registriert Offline-/Update-Unterstützung
 │       └── game-engine.js             # gemeinsame bestehende Spiel-Engine
 │
 ├── data/
@@ -121,7 +128,7 @@ Ab V70 kann **Imposter Games nach einem erfolgreichen Online-Start auch offline 
 - Spieler, Einstellungen, Statistiken und Fortschritte bleiben davon getrennt in `localStorage` und werden durch den Cache-Cleanup nicht gelöscht.
 - Es werden keine beliebigen besuchten URLs dauerhaft gesammelt; der Offline-Cache ist auf die definierten App-Dateien begrenzt.
 - Der allererste Start muss online erfolgen, damit die Offline-Dateien installiert werden können.
-- Bei jedem Plattform-Release müssen `CACHE_NAME` und die versionierten Asset-URLs in `service-worker.js` auf die neue Version angehoben werden. Dadurch bleiben HTML, CSS, JavaScript und Datenbanken immer als zusammengehöriges Release gecacht.
+- Die Release-Version wird im Service Worker zentral über `RELEASE` geführt; ein automatischer Release-Validator prüft bei Pushes und Pull Requests zusätzlich Versionen, Cache-Struktur, HTML, Datenbanken, Sliderwerte und Classic-Duplikate.
 
 ## 📲 Beste Spielerfahrung auf iPhone und iPad
 
