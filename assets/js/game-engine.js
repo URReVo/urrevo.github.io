@@ -3202,6 +3202,9 @@ if(!window.PointerEvent){
 }
 
 migrateV72GameStorageOnce();
+if(gameMode==="circa"&&experimentAppState&&experimentAppState.applyCircaQuestionMetadata){
+  experimentAppState.applyCircaQuestionMetadata(bank);
+}
 loadSavedGameMode();
 if(gameMode==="classic"){
   loadClassicSettings();
