@@ -167,7 +167,7 @@ function renderPlayers(){
     card.addEventListener("click",selectProfile);
     card.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();selectProfile();}});
     var edit=document.createElement("button");edit.type="button";edit.className="playerEdit";edit.textContent="•••";edit.setAttribute("aria-label",p.name+" bearbeiten");
-    edit.addEventListener("click",function(e){e.stopPropagation();openProfileEditor(p.id);});
+    edit.addEventListener("click",function(e){e.stopPropagation();uiSound("tap");openProfileEditor(p.id);});
     card.appendChild(av);card.appendChild(info);card.appendChild(edit);box.appendChild(card);
   });
 }
@@ -317,7 +317,7 @@ function renderSessionHistory(sessions){
     var awards=document.createElement("small");awards.textContent=(session.awards||[]).length+" Awards";
     meta.appendChild(rounds);meta.appendChild(awards);
     b.appendChild(icon);b.appendChild(main);b.appendChild(meta);
-    b.addEventListener("click",function(){renderSessionSheet(session);});
+    b.addEventListener("click",function(){uiSound("tap");renderSessionSheet(session);});
     box.appendChild(b);
   });
 }
