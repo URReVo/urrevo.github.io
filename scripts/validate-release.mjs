@@ -84,6 +84,7 @@ assert(!readme.includes("\\n"),"README contains literal \\n text");
 
 const appStateSource=read("assets/js/app-state.js");
 const launcherSource=read("assets/js/launcher.js");
+const launcherCss=read("assets/css/launcher.css");
 const engineSource=read("assets/js/game-engine.js");
 for(const [name,source] of [["app-state",appStateSource],["launcher",launcherSource],["game-engine",engineSource]]){
   try{new Function(source);}catch(error){fail(name+" syntax error: "+error.message);}
@@ -92,6 +93,8 @@ assert(appStateSource.includes('var KEY="imposterGames.appState.v1"'),"productio
 assert(appStateSource.includes('BACKUP_FORMAT="imposter-games-backup"'),"production backup format missing");
 assert(engineSource.includes('EXP_STORAGE="imposterGames.v73.game."'),"V73 isolated game storage missing");
 assert(!html["index.html"].includes("APP-SHELL TEST"),"production launcher still contains experiment badge");
+assert(launcherCss.includes("padding:calc(18px + var(--safeTop)) 16px 26px"),"launcher safe-area top padding missing");
+assert(sw.includes('const CACHE_REVISION="r2"'),"V73 hotfix cache revision mismatch");
 
 /* Simulate the first V72 -> V73 profile migration. */
 const legacySeed=new Map();
@@ -101,7 +104,8 @@ put("circaImpostor.playerStats.v1",{
   leon:{name:"Leon",avatar:"🦊",rounds:5,closest:1,farthest:2,impostor:1,impostorWins:0,errorSum:31,errorSamples:5}
 });
 put("circaImpostor.deviceStats.v1",{roundsPlayed:8});
-put("circaImpostor.completedQuestions.v1",["q1","q2"]);
+const legacyQids=[questions.items[0].qid,questions.items[1].qid];
+put("circaImpostor.completedQuestions.v1",legacyQids);
 put("circaImpostor.players.v1",{players:[{name:"Marlon",avatar:"😎"},{name:"Leon",avatar:"🦊"},{name:"Alex",avatar:"🐼"}]});
 put("classicImpostor.players.v1",{players:[{name:"LEON",avatar:"🦊"},{name:"Chris",avatar:"🤠"}]});
 const legacyBefore=new Map(legacySeed);
@@ -122,11 +126,56 @@ const marlonStats=migratedStore.getProfileStats(byName.marlon.id);
 assert(marlonStats.rounds===8&&marlonStats.circaRounds===8,"Marlon V72 rounds not migrated");
 assert(marlonStats.impostor===2&&marlonStats.impostorEscapes===1,"Marlon Impostor stats not migrated");
 assert(marlonStats.closest===3&&marlonStats.farthest===1,"Marlon estimate stats not migrated");
+assert(marlonStats.circaQids.length===legacyQids.length,"full-participation V72 QIDs not attributed to Marlon");
+const leonStats=migratedStore.getProfileStats(byName.leon.id);
+assert(leonStats.circaQids.length===0&&leonStats.legacyCategoryUnknown===true,"partial V72 player must not receive unverifiable QIDs");
+migratedStore.applyCircaQuestionMetadata(questions.items);
+const marlonHydrated=migratedStore.getProfileStats(byName.marlon.id);
+assert(marlonHydrated.categories.includes(questions.items[0].cat),"legacy personal Circa category metadata not restored");
+assert(migratedStore.getStats().categories.includes(questions.items[0].cat),"legacy global Circa category metadata not restored");
 const migrationStatus=migratedStore.getMigrationStatus();
 assert(migrationStatus.completed&&migrationStatus.profileChoicePending&&migrationStatus.profilesFound===4,"V72 migration status invalid");
 for(const [key,value] of legacyBefore){
   assert(legacySeed.get(key)===value,"V72 key was modified during migration: "+key);
 }
 assert(legacySeed.has("imposterGames.appState.v1"),"V73 app-state was not persisted");
+
+/* Simulate a device that already completed the original V73 migration before the metadata hotfix. */
+const retroSeed=new Map();
+const retroProfileId="player_existing";
+retroSeed.set("imposterGames.appState.v1",JSON.stringify({
+  schemaVersion:1,
+  selectedProfileId:retroProfileId,
+  primaryProfileId:retroProfileId,
+  profiles:[{id:retroProfileId,name:"Marlon",avatar:"😎",createdAt:"2026-09-23T20:00:00.000Z"}],
+  profileStats:{[retroProfileId]:{rounds:8,circaRounds:8,classicRounds:0,impostor:2,impostorEscapes:1,closest:3,farthest:1,perfect:0,errorSum:44,errorSamples:8,circaQids:[],classicWids:[],categories:[]}},
+  profileArchive:{},
+  stats:{rounds:8,circaRounds:8,classicRounds:0,perfectEstimates:0,circaQids:legacyQids.slice(),classicWids:[],categories:[]},
+  sessions:[],
+  activeSessionId:null,
+  achievements:{},
+  presets:[],
+  launchPreset:null,
+  launchGroup:null,
+  preferences:{sound:true,haptics:true,animations:true},
+  imports:{v72MigrationCompleted:true,v72ProfileChoicePending:false,v72ProfilesFound:1}
+}));
+retroSeed.set("circaImpostor.playerStats.v1",legacySeed.get("circaImpostor.playerStats.v1"));
+retroSeed.set("circaImpostor.deviceStats.v1",legacySeed.get("circaImpostor.deviceStats.v1"));
+retroSeed.set("circaImpostor.completedQuestions.v1",legacySeed.get("circaImpostor.completedQuestions.v1"));
+const retroStorage={
+  getItem:key=>retroSeed.has(key)?retroSeed.get(key):null,
+  setItem:(key,value)=>retroSeed.set(key,String(value)),
+  removeItem:key=>retroSeed.delete(key)
+};
+let retroTick=0;
+const retroCrypto={getRandomValues(arr){retroTick++;for(let i=0;i<arr.length;i++)arr[i]=retroTick*200+i;return arr;}};
+const retroWindow={crypto:retroCrypto};
+const retroStore=new Function("window","localStorage","crypto",appStateSource+";return window.CIAppState;")(retroWindow,retroStorage,retroCrypto);
+const retroStats=retroStore.getProfileStats(retroProfileId);
+assert(retroStats.circaQids.length===legacyQids.length,"already-migrated V73 profile did not receive legacy QID backfill");
+assert(retroStats.legacyPerfectUnknown===true,"already-migrated V73 profile did not receive perfect-stat uncertainty");
+retroStore.applyCircaQuestionMetadata(questions.items);
+assert(retroStore.getProfileStats(retroProfileId).categories.includes(questions.items[0].cat),"already-migrated V73 profile category backfill failed");
 
 console.log("Release validation OK · V"+release+" · "+questions.items.length+" Circa pairs · "+words.items.length+" Classic words");
