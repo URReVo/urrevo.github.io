@@ -9,8 +9,8 @@
 <meta name="theme-color" content="#292929">
 <link rel="apple-touch-icon" sizes="180x180" href="../../circa_impostor_detective_icon_180.png">
 <link rel="icon" type="image/png" sizes="180x180" href="../../circa_impostor_detective_icon_180.png">
-<link rel="stylesheet" href="../../assets/css/game.css?v=65">
-<title>Klassisches Imposter · V65</title>
+<link rel="stylesheet" href="../../assets/css/game.css?v=66">
+<title>Klassisches Imposter · V66</title>
 </head>
 <body data-game="classic">
 
@@ -51,23 +51,6 @@
 
   <div class="sectionEyebrow">KATEGORIE</div>
   <div id="categoryDeck" class="categoryDeck" role="group" aria-label="Kategorie auswählen"></div>
-<div id="difficultyEyebrow" class="sectionEyebrow difficultyEyebrow">IMPOSTOR-SCHWIERIGKEIT</div>
-  <div id="difficultyControl" class="difficultyControl" role="group" aria-label="Impostor-Schwierigkeit auswählen">
-    <button type="button" class="difficultyButton" data-difficulty="leicht">
-      <span class="difficultyIcon">🟢</span><span>Leicht</span>
-    </button>
-    <button type="button" class="difficultyButton selected" data-difficulty="mittel">
-      <span class="difficultyIcon">🟠</span><span>Mittel</span>
-    </button>
-    <button type="button" class="difficultyButton" data-difficulty="schwer">
-      <span class="difficultyIcon">🔴</span><span>Schwer</span>
-    </button>
-    <button type="button" class="difficultyButton" data-difficulty="zufaellig">
-      <span class="difficultyIcon">🎲</span><span>Zufällig</span>
-    </button>
-  </div>
-  <div id="difficultyHint" class="difficultyHint">Spürbarer Abstand zwischen den beiden Zielwerten</div>
-
   <div id="classicOptions" class="classicOptions hidden">
     <div class="sectionEyebrow classicOptionsEyebrow">IMPOSTOR-OPTIONEN</div>
     <div class="classicOptionCard">
@@ -108,52 +91,11 @@
 
   <div id="names"></div>
   <button id="start" type="button" class="full">Spiel starten</button>
-  <button id="openStats" type="button" class="full secondary statsHomeButton">📊 Statistiken</button>
   <button id="devOpenSetup" type="button" class="full secondary devOnly hidden devHomeButton">🔧 DEV Tools</button>
   <div id="error" class="notice" aria-live="polite"></div>
   <div id="poolCount" class="count">250 geheime Wörter</div><div class="savedHint">Spieler, Kategorien, Einstellungen &amp; Wortfortschritt bleiben auf diesem Gerät gespeichert</div>
 </section>
 
-<section id="stats" class="hidden statsScreen">
-  <div class="statsHeader">
-    <button id="closeStats" type="button" class="statsBackButton" aria-label="Zurück zum Start">‹</button>
-    <div>
-      <div class="sectionEyebrow statsEyebrow">LOKALE AUSWERTUNG</div>
-      <h2>Statistiken</h2>
-    </div>
-  </div>
-
-  <p class="sub statsIntro">Die Ranglisten werden nur auf diesem Gerät gespeichert.</p>
-
-  <div id="statsTabs" class="statsTabs" role="tablist" aria-label="Statistik auswählen">
-    <button type="button" class="statsTab selected" data-stat="closest" role="tab" aria-selected="true">
-      <span>🎯</span><span>Nah dran</span>
-    </button>
-    <button type="button" class="statsTab" data-stat="farthest" role="tab" aria-selected="false">
-      <span>😵</span><span>Weit weg</span>
-    </button>
-    <button type="button" class="statsTab" data-stat="impostor" role="tab" aria-selected="false">
-      <span>🎭</span><span>Impostor</span>
-    </button>
-    <button type="button" class="statsTab" data-stat="impostorWins" role="tab" aria-selected="false">
-      <span>🥷</span><span>Impostor-Siege</span>
-    </button>
-  </div>
-
-  <div class="statsMetricCard">
-    <div id="statsMetricIcon" class="statsMetricIcon">🎯</div>
-    <div>
-      <div id="statsMetricTitle" class="statsMetricTitle">Am meisten nah dran</div>
-      <div id="statsMetricHint" class="statsMetricHint">Wer lag über die gespielten Runden am häufigsten am nächsten?</div>
-    </div>
-  </div>
-
-  <div id="statsLeaderboard" class="statsLeaderboard"></div>
-  <div id="statsEmpty" class="statsEmpty hidden">Noch keine abgeschlossenen Runden gespeichert.</div>
-
-  <div id="statsDeviceRounds" class="statsDeviceRounds">Auf diesem Gerät gespielt: 0 Runden</div>
-  <button id="resetStats" type="button" class="ghost full statsResetButton">Statistiken zurücksetzen</button>
-</section>
 
 <section id="handoff" class="hidden gameScreen">
   <div id="handoffInner" class="handoffInner">
@@ -216,110 +158,9 @@
   </div>
 </section>
 
-<section id="question" class="hidden gameScreen">
-  <div class="playerMeta">
-    <div class="playerMetaIdentity"><span id="currentAvatar" class="miniAvatar">😎</span><strong id="currentName"></strong></div>
-    <span id="progress"></span>
-  </div>
-  <div id="progressDots" class="progressDots" aria-hidden="true"></div>
 
-  <div id="questionCard" class="questionCard">
-    <div id="questionText" class="questionText"></div>
-  </div>
-  <div id="questionUnitBadge" class="questionUnitBadge">Einheit: –</div>
 
-  <div class="estimateCompact">
-    <div class="estimateLabel">Deine Schätzung</div>
-    <div class="estimateLine">
-      <span id="estimateValue" class="estimateValue">0</span>
-      <span id="estimateUnit" class="estimateUnit"></span>
-    </div>
-  </div>
 
-  <div id="scrubber" class="scrubber" role="slider" tabindex="0"
-       aria-label="Schätzung einstellen" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-    <div class="dragHint">Irgendwo antippen oder mit dem Daumen ziehen</div>
-    <div id="sliderRail" class="sliderRail">
-      <div id="sliderFill" class="sliderFill"></div>
-      <div id="sliderThumb" class="sliderThumb"></div>
-    </div>
-    <div class="rangeLabels"><span>0</span><span id="rangeMax">100</span></div>
-  </div>
-  <input id="guessSlider" class="srRange" type="range" min="0" max="100" step="1" value="0" tabindex="-1">
-
-  <button id="saveGuess" type="button" class="full confirmButton">Schätzung übernehmen</button>
-</section>
-
-<section id="normalReveal" class="hidden gameScreen normalRevealScreen">
-  <div class="stageHeader center">
-    <h2 id="normalRevealTitle">Welche Frage hatten die meisten?</h2>
-    <p id="normalRevealHint" class="sub">Die gemeinsame Frage bleibt noch einen Moment verdeckt.</p>
-  </div>
-
-  <div id="normalRevealCard" class="questionCard normalRevealCard">
-    <div id="normalRevealQuestion" class="questionText normalRevealQuestion concealedQuestion">?</div>
-  </div>
-  <div id="normalRevealUnit" class="questionUnitBadge normalRevealUnitReserved">Einheit: –</div>
-
-  <button id="revealNormalQuestion" type="button" class="full stageButton">Richtige Frage aufdecken</button>
-</section>
-
-<section id="answers" class="hidden gameScreen">
-  <div class="stageHeader">
-    <h2>Richtige Frage &amp; Schätzungen</h2>
-    <p class="sub">Vergleicht jetzt alle Antworten und diskutiert, wer eine andere Frage hatte.</p>
-  </div>
-
-  <div class="answersQuestionSummary">
-    <div class="answersQuestionEyebrow">RICHTIGE FRAGE</div>
-    <div id="answersNormalQuestion" class="answersQuestionText"></div>
-    <div id="answersNormalUnit" class="answersQuestionUnit"></div>
-  </div>
-
-  <div id="answerList" class="answerGrid"></div>
-  <button id="reveal" type="button" class="full stageButton">Impostor aufdecken</button>
-</section>
-
-<section id="result" class="hidden gameScreen resolutionScreen">
-  <div class="resolutionMain">
-    <div class="resolutionQuestion" id="normalQ"></div>
-    <div class="resolutionLabel">Richtige Antwort</div>
-    <div id="normalCounter" class="resolutionNumber">0</div>
-    <div id="normalAnswer" class="resolutionAnswerText"></div>
-
-    <div id="impResolution" class="impResolution hidden">
-      <div class="impDivider"></div>
-      <div class="resolutionMiniLabel">IMPOSTOR-FRAGE</div>
-      <div id="impostorQ" class="impQuestion"></div>
-      <div class="resolutionMiniLabel">RICHTIGE ANTWORT</div>
-      <div id="impCounter" class="impNumber">0</div>
-      <div id="impAnswer" class="impAnswerText"></div>
-    </div>
-
-    <div id="spicyNote" class="spicyNote hidden">Spicy-Fragen haben teilweise keinen objektiv messbaren Durchschnitt. Dafür nutzt das Spiel einen festen Spiel-Richtwert.</div>
-  </div>
-
-  <div id="roundAwards" class="roundAwards hidden">
-    <div id="closestAward" class="awardCard"></div>
-    <div id="wildAward" class="awardCard"></div>
-  </div>
-
-  <div id="impostorOutcome" class="impostorOutcome hidden">
-    <div class="impostorOutcomeText">
-      <span id="impostorOutcomeAvatar">🎭</span>
-      <span>Konnte sich <strong id="impostorOutcomeName">der Impostor</strong> verstecken?</span>
-    </div>
-    <div class="impostorOutcomeButtons">
-      <button id="impostorWonYes" type="button" class="secondary outcomeButton" data-outcome="yes">Ja</button>
-      <button id="impostorWonNo" type="button" class="secondary outcomeButton" data-outcome="no">Nein</button>
-    </div>
-  </div>
-
-  <div id="resultActions" class="grid2 resultActions hidden">
-    <button id="restart" type="button" class="ghost">Zum Start</button>
-    <button id="next" type="button">Nächste Runde</button>
-  </div>
-</section>
 
 </div>
 
@@ -417,8 +258,8 @@
 </div>
 
 <script>
-window.CI_GAME_CONFIG={mode:"classic",dataUrl:"../../data/classic-words.json",version:"65"};
+window.CI_GAME_CONFIG={mode:"classic",dataUrl:"../../data/classic-words.json",version:"66"};
 </script>
-<script src="../../assets/js/game-engine.js?v=65"></script>
+<script src="../../assets/js/game-engine.js?v=66"></script>
 </body>
 </html>
