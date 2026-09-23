@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#292929">
 <link rel="apple-touch-icon" sizes="180x180" href="circa_impostor_detective_icon_180.png">
 <link rel="icon" type="image/png" sizes="180x180" href="circa_impostor_detective_icon_180.png">
-<title>Circa Impostor V58</title>
+<title>Circa Impostor V59</title>
 <style>
 :root{
   --bg:#292929;
@@ -998,7 +998,7 @@ body.cat-alle #topCategory{
 .statsRank{
   font-size:14px;
   font-weight:950;
-  color:var(--muted);
+color:var(--muted);
   text-align:center
 }
 .statsRank.medal{font-size:23px}
@@ -1402,6 +1402,135 @@ body.setup-fits:not(.game-active){
   }
 }
 
+
+/* V59: game-mode selector. It deliberately reuses the existing visual language. */
+.modeEyebrow{margin-top:8px!important;margin-bottom:7px!important}
+.modeControl{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px
+}
+.modeButton{
+  min-height:72px;padding:10px 12px;border-radius:17px;
+  background:linear-gradient(145deg,#2d2f35,#222329);
+  color:#ececef;border:1px solid rgba(255,255,255,.09);
+  display:grid;grid-template-columns:42px minmax(0,1fr);gap:9px;align-items:center;
+  text-align:left;box-shadow:0 8px 22px rgba(0,0,0,.13);
+  transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease,background .16s ease
+}
+.modeButton:active{transform:scale(.97)}
+.modeButton.selected{
+  border-color:var(--accent);
+  background:linear-gradient(145deg,rgba(243,154,50,.18),#25262b);
+  box-shadow:0 8px 25px rgba(0,0,0,.22),0 0 0 1px rgba(243,154,50,.14) inset
+}
+.modeIcon{
+  width:42px;height:42px;border-radius:14px;display:grid;place-items:center;
+  background:rgba(255,255,255,.055);font-size:24px;border:1px solid rgba(255,255,255,.06)
+}
+.modeText{min-width:0}
+.modeTitle{display:block;font-size:13px;font-weight:950;letter-spacing:.15px}
+.modeDesc{display:block;margin-top:3px;color:#95979e;font-size:10px;line-height:1.25;font-weight:700}
+.modeButton.selected .modeDesc{color:#bfc0c5}
+@media(max-width:390px){
+  .modeButton{padding:9px 9px;grid-template-columns:37px minmax(0,1fr);gap:7px}
+  .modeIcon{width:37px;height:37px;font-size:21px}
+  .modeTitle{font-size:12px}.modeDesc{font-size:9px}
+}
+
+/* V59: classic Impostor screens. Same cards, radii and neutral/orange palette. */
+.classicRoleScreen,.classicDiscussionScreen,.classicVoteScreen,.classicResultScreen{justify-content:flex-start}
+.classicRoleMeta{
+  flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;
+  min-height:31px;color:var(--muted);font-size:12px;font-weight:800;margin-bottom:7px
+}
+.classicRoleIdentity{display:flex;align-items:center;gap:8px;min-width:0}
+.classicRoleCard{
+  flex:1 1 auto;min-height:245px;max-height:420px;
+  margin:5px 0 10px;padding:22px 18px;border-radius:28px;
+  background:var(--white);color:var(--black);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  overflow:hidden;position:relative;
+  box-shadow:0 20px 60px rgba(0,0,0,.32),0 2px 0 rgba(255,255,255,.7) inset
+}
+.classicRoleCard:before{
+  content:"";position:absolute;inset:1px;border-radius:27px;pointer-events:none;
+  border:1px solid rgba(255,255,255,.75)
+}
+.classicRoleCard.revealFlip{animation:questionFlip .42s cubic-bezier(.2,.8,.2,1)}
+.classicRoleEyebrow{
+  color:#e78b21;font-size:10px;letter-spacing:1.05px;font-weight:950;margin-bottom:12px
+}
+.classicRoleWord{
+  max-width:100%;font-size:clamp(34px,10vw,58px);line-height:1.04;font-weight:950;
+  letter-spacing:-1.5px;overflow-wrap:anywhere
+}
+.classicRoleWord.impostorWord{font-size:clamp(29px,8vw,45px);letter-spacing:-1px}
+.classicRoleHint{
+  max-width:92%;margin-top:16px;color:#65666b;font-size:13px;line-height:1.4;font-weight:750
+}
+.classicRoleButton{flex:0 0 48px}
+.classicDiscussionHero{
+  margin:auto 0;text-align:center;padding:10px 4px
+}
+.classicDiscussionAvatar{
+  width:100px;height:100px;margin:0 auto 17px;border-radius:34px;display:grid;place-items:center;
+  font-size:52px;background:linear-gradient(145deg,rgba(255,255,255,.14),rgba(255,255,255,.045));
+  border:1px solid rgba(255,255,255,.13);box-shadow:0 24px 65px rgba(0,0,0,.32)
+}
+.classicDiscussionKicker{color:var(--accent);font-size:10px;letter-spacing:1.15px;font-weight:950;margin-bottom:8px}
+.classicDiscussionName{font-size:30px;line-height:1.08;font-weight:950;margin-bottom:10px}
+.classicDiscussionText{max-width:520px;margin:0 auto;color:#aaaeb5;font-size:14px;line-height:1.5}
+.classicVoteIntro{margin-bottom:8px}
+.classicVoteGrid{
+  flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-content:start;margin:4px 0 10px
+}
+.classicVoteButton{
+  min-height:78px;padding:10px 11px;border-radius:16px;
+  background:linear-gradient(145deg,#303138,#24252a);color:#f4f4f6;
+  border:1px solid rgba(255,255,255,.08);
+  display:grid;grid-template-columns:40px minmax(0,1fr);align-items:center;gap:9px;text-align:left
+}
+.classicVoteButton:active{transform:scale(.97)}
+.classicVoteButton.selected{
+  border-color:var(--accent);
+  background:linear-gradient(145deg,var(--accent-soft),#28292f);
+  box-shadow:0 0 0 1px rgba(243,154,50,.10) inset
+}
+.classicVoteAvatar{
+  width:40px;height:40px;border-radius:13px;background:rgba(255,255,255,.075);
+  display:grid;place-items:center;font-size:23px
+}
+.classicVoteName{font-size:13px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.classicResultMain{
+  flex:1 1 auto;min-height:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;padding:8px 6px 14px
+}
+.classicResultIcon{font-size:64px;line-height:1;margin-bottom:12px}
+.classicResultKicker{color:var(--accent);font-size:10px;letter-spacing:1.1px;font-weight:950;margin-bottom:8px}
+.classicResultTitle{font-size:30px;line-height:1.08;font-weight:950;margin-bottom:10px}
+.classicResultText{max-width:530px;color:#aeb0b6;font-size:14px;line-height:1.45}
+.classicSecretBox{
+  width:100%;max-width:520px;margin-top:18px;padding:15px 16px;border-radius:18px;
+  background:#f6f6f7;color:#090909;box-shadow:0 16px 40px rgba(0,0,0,.2)
+}
+.classicSecretLabel{color:#e78b21;font-size:9px;letter-spacing:1px;font-weight:950;margin-bottom:6px}
+.classicSecretWord{font-size:31px;line-height:1.08;font-weight:950;overflow-wrap:anywhere}
+.classicLastChance{
+  width:100%;max-width:520px;margin-top:14px;padding:12px;border-radius:16px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.075)
+}
+.classicLastChanceTitle{font-size:13px;font-weight:950;margin-bottom:5px}
+.classicLastChanceText{color:#9b9da4;font-size:11px;line-height:1.4;margin-bottom:9px}
+.classicGuessButtons{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.classicResultActions{width:100%;margin-top:auto}
+@media(max-height:760px){
+  .classicRoleCard{min-height:190px;max-height:320px;padding:17px 15px}
+  .classicRoleHint{margin-top:11px;font-size:11px}
+  .classicDiscussionAvatar{width:86px;height:86px;font-size:45px}
+  .classicDiscussionName{font-size:26px}
+  .classicResultIcon{font-size:52px}.classicResultTitle{font-size:26px}
+}
+
 </style>
 </head>
 <body>
@@ -1436,7 +1565,19 @@ body.setup-fits:not(.game-active){
   <div class="hero center">
     <div id="devGateTrigger" class="logo"><div class="logoInnerD" aria-hidden="true"><span class="logoGlowA"></span><span class="logoGlowB"></span><span class="logoPlate"></span><span class="logoHatBrim"></span><span class="logoHatTop"></span><span class="logoHatBand"></span><span class="logoC"></span><span class="logoI"></span><span class="logoMagnifierRing"></span><span class="logoMagnifierHandle"></span><span class="logoSpark"></span></div></div>
     <h1>Circa Impostor</h1>
-    <p class="sub">Alle bekommen dieselbe Schätzfrage – außer einer Person.</p>
+    <p id="setupSubtitle" class="sub">Alle bekommen dieselbe Schätzfrage – außer einer Person.</p>
+  </div>
+
+  <div class="sectionEyebrow modeEyebrow">SPIELMODUS</div>
+  <div id="modeControl" class="modeControl" role="group" aria-label="Spielmodus auswählen">
+    <button type="button" class="modeButton selected" data-mode="circa" aria-pressed="true">
+      <span class="modeIcon">🎯</span>
+      <span class="modeText"><span class="modeTitle">CIRCA</span><span class="modeDesc">Schätzfragen &amp; Täuschung</span></span>
+    </button>
+    <button type="button" class="modeButton" data-mode="classic" aria-pressed="false">
+      <span class="modeIcon">🎭</span>
+      <span class="modeText"><span class="modeTitle">IMPOSTOR</span><span class="modeDesc">Geheimes Wort</span></span>
+    </button>
   </div>
 
   <div class="sectionEyebrow">KATEGORIE</div>
@@ -1471,7 +1612,7 @@ body.setup-fits:not(.game-active){
   <button id="openStats" type="button" class="full secondary statsHomeButton">📊 Statistiken</button>
   <button id="devOpenSetup" type="button" class="full secondary devOnly hidden devHomeButton">🔧 DEV Tools</button>
   <div id="error" class="notice" aria-live="polite"></div>
-  <div class="count">520 Fragepaare</div><div class="savedHint">Spieler, Kategorien, Statistiken &amp; Fragenfortschritt bleiben auf diesem Gerät gespeichert</div>
+  <div id="poolCount" class="count">520 Fragepaare</div><div class="savedHint">Spieler, Kategorien, Statistiken &amp; Fragenfortschritt bleiben auf diesem Gerät gespeichert</div>
 </section>
 
 <section id="stats" class="hidden statsScreen">
@@ -1522,6 +1663,68 @@ body.setup-fits:not(.game-active){
     <p class="sub">Nur diese Person darf jetzt auf den Bildschirm schauen.</p>
   </div>
   <button id="showQuestion" type="button" class="full handoffButton">Ich bin bereit</button>
+</section>
+
+<section id="classicRole" class="hidden gameScreen classicRoleScreen">
+  <div class="classicRoleMeta">
+    <div class="classicRoleIdentity"><span id="classicRoleAvatar" class="miniAvatar">😎</span><strong id="classicRoleName"></strong></div>
+    <span id="classicRoleProgress">1/3</span>
+  </div>
+
+  <div id="classicRoleCard" class="classicRoleCard">
+    <div id="classicRoleEyebrow" class="classicRoleEyebrow">GEHEIMES WORT</div>
+    <div id="classicRoleWord" class="classicRoleWord">–</div>
+    <div id="classicRoleHint" class="classicRoleHint"></div>
+  </div>
+
+  <button id="classicRoleDone" type="button" class="full classicRoleButton">Verstanden</button>
+</section>
+
+<section id="classicDiscussion" class="hidden gameScreen classicDiscussionScreen">
+  <div class="classicDiscussionHero">
+    <div id="classicDiscussionAvatar" class="classicDiscussionAvatar">😎</div>
+    <div class="classicDiscussionKicker">DISKUSSIONSRUNDE</div>
+    <div id="classicDiscussionName" class="classicDiscussionName">Spieler beginnt</div>
+    <p class="classicDiscussionText">Beschreibt das geheime Wort nacheinander, ohne es direkt zu nennen. Der Impostor versucht, sich unauffällig einzufügen.</p>
+  </div>
+  <button id="classicGoVote" type="button" class="full stageButton">Zur Abstimmung</button>
+</section>
+
+<section id="classicVote" class="hidden gameScreen classicVoteScreen">
+  <div class="stageHeader classicVoteIntro">
+    <h2>Wer ist der Impostor?</h2>
+    <p class="sub">Einigt euch auf eine Person und deckt anschließend die Rolle auf.</p>
+  </div>
+  <div id="classicVoteGrid" class="classicVoteGrid"></div>
+  <button id="classicSubmitVote" type="button" class="full stageButton" disabled>Impostor aufdecken</button>
+</section>
+
+<section id="classicResult" class="hidden gameScreen classicResultScreen">
+  <div class="classicResultMain">
+    <div id="classicResultIcon" class="classicResultIcon">🎭</div>
+    <div id="classicResultKicker" class="classicResultKicker">AUFLÖSUNG</div>
+    <div id="classicResultTitle" class="classicResultTitle"></div>
+    <div id="classicResultText" class="classicResultText"></div>
+
+    <div id="classicSecretBox" class="classicSecretBox hidden">
+      <div class="classicSecretLabel">GEHEIMES WORT</div>
+      <div id="classicSecretWord" class="classicSecretWord"></div>
+    </div>
+
+    <div id="classicLastChance" class="classicLastChance hidden">
+      <div class="classicLastChanceTitle">Letzte Chance für den Impostor</div>
+      <div class="classicLastChanceText">Der Impostor sagt jetzt laut seine Vermutung. War das geheime Wort richtig?</div>
+      <div class="classicGuessButtons">
+        <button id="classicGuessWrong" type="button" class="secondary">❌ Falsch</button>
+        <button id="classicGuessCorrect" type="button">✅ Richtig</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="classicResultActions" class="grid2 classicResultActions hidden">
+    <button id="classicRestart" type="button" class="ghost">Zum Start</button>
+    <button id="classicNext" type="button">Nächste Runde</button>
+  </div>
 </section>
 
 <section id="question" class="hidden gameScreen">
@@ -1998,7 +2201,7 @@ var bank=[
   {"cat":"Spicy 🌶️","normal":"Wie viele Dates braucht es ungefähr, bis man gemeinsam kocht?","imp":"Nach wie vielen Wochen Dating wird es durchschnittlich exklusiv – ohne nachzuschlagen?","normalValue":4,"normalAnswer":"Spiel-Richtwert: ca. 4 Dates","impValue":6,"impAnswer":"Spiel-Richtwert: ca. 6 Wochen","max":20.0,"step":1,"qid":"base-0259","normalUnit":"Dates","impUnit":"Wochen"},
   {"cat":"Spicy 🌶️","normal":"Wie viele Minuten dauert ein typischer Flirt im Club ungefähr?","imp":"Wie viel Prozent der Singles würden jemanden aus dem Freundeskreis daten – grob geschätzt?","normalValue":20,"normalAnswer":"Spiel-Richtwert: ca. 20 Minuten","impValue":35,"impAnswer":"Spiel-Richtwert: ca. 35 %","max":60.0,"step":1,"qid":"base-0260","normalUnit":"Minuten","impUnit":"Prozent"},
   {"cat":"Spicy 🌶️","normal":"Wie viele Wochen dauert es ungefähr, bis man einen Schlüssel zur Wohnung des Partners bekommt?","imp":"Wie viel Prozent der Menschen würden beim ersten Date küssen – grob geschätzt?","normalValue":20,"normalAnswer":"Spiel-Richtwert: ca. 20 Wochen","impValue":50,"impAnswer":"Spiel-Richtwert: ca. 50 %","max":60.0,"step":1,"qid":"base-0261","normalUnit":"Wochen","impUnit":"Prozent"},
-  {"cat":"Spicy 🌶️","normal":"Wie viele Dates braucht es ungefähr, bis man über Ex-Partner spricht?","imp":"Wie viele Stunden dauert ein sehr gutes erstes Date etwa?","normalValue":3,"normalAnswer":"Spiel-Richtwert: ca. 3 Dates","impValue":4,"impAnswer":"Spiel-Richtwert: ca. 4 Stunden","max":20.0,"step":1,"qid":"base-0262","normalUnit":"Dates","impUnit":"Stunden"},
+{"cat":"Spicy 🌶️","normal":"Wie viele Dates braucht es ungefähr, bis man über Ex-Partner spricht?","imp":"Wie viele Stunden dauert ein sehr gutes erstes Date etwa?","normalValue":3,"normalAnswer":"Spiel-Richtwert: ca. 3 Dates","impValue":4,"impAnswer":"Spiel-Richtwert: ca. 4 Stunden","max":20.0,"step":1,"qid":"base-0262","normalUnit":"Dates","impUnit":"Stunden"},
   {"cat":"Spicy 🌶️","normal":"Wie viele Personen hat jemand ungefähr in seiner Close-Friends-Story?","imp":"Nach wie vielen Minuten merkt man bei einem guten ersten Date etwa, ob die Chemie stimmt?","normalValue":25,"normalAnswer":"Spiel-Richtwert: ca. 25 Personen","impValue":30,"impAnswer":"Spiel-Richtwert: ca. 30 Minuten","max":75.0,"step":1,"qid":"base-0263","normalUnit":"Personen","impUnit":"Minuten"},
   {"cat":"Spicy 🌶️","normal":"Wie viel Prozent würden auf einer Party jemanden küssen, den sie gerade erst kennengelernt haben?","imp":"Wie viele Wochen dauert es etwa, bis man ein gemeinsames Foto postet?","normalValue":20,"normalAnswer":"Spiel-Richtwert: ca. 20 %","impValue":10,"impAnswer":"Spiel-Richtwert: ca. 10 Wochen","max":100.0,"step":1,"qid":"base-0264","normalUnit":"Prozent","impUnit":"Wochen"},
   {"cat":"Spicy 🌶️","normal":"Wie viele Minuten dauert ein durchschnittlicher Flirt-Chat am Abend ungefähr?","imp":"Wie viele Menschen lernt man in einem Jahr beim Feiern flirtend kennen – grob geschätzt?","normalValue":30,"normalAnswer":"Spiel-Richtwert: ca. 30 Minuten","impValue":20,"impAnswer":"Spiel-Richtwert: ca. 20 Personen/Jahr","max":150.0,"step":1,"qid":"base-0265","normalUnit":"Minuten","impUnit":"Personen"},
@@ -2258,8 +2461,11 @@ var bank=[
   {"cat":"Popkultur","normal":"Wie viele Seiten umfasst ein typisches Fan-Magazin ungefähr?","imp":"Wie viele Kostüme werden für eine große Musicalproduktion ungefähr bereitgehalten?","normalValue":100,"normalAnswer":"Richtwert: ca. 100 Seiten","impValue":250,"impAnswer":"Spiel-Richtwert: ca. 250 Kostüme","max":300.0,"step":2,"qid":"v22-0199","normalUnit":"Seiten","impUnit":"Kostüme"},
   {"cat":"Popkultur","normal":"Wie viele Minuten dauert ein typischer Animationsfilm ungefähr?","imp":"Wie viele Zuschauer hat ein kleiner etablierter Twitch-Kanal etwa gleichzeitig?","normalValue":95,"normalAnswer":"Richtwert: ca. 95 Minuten","impValue":200,"impAnswer":"Richtwert: ca. 200 Zuschauer","max":300.0,"step":2,"qid":"v22-0200","normalUnit":"Minuten","impUnit":"Zuschauer"}
 ];
+/* V59: starter bank for the classic word-based Impostor mode.
+   WIDs are independent from Circa QIDs so both deck systems can evolve safely. */
+var classicWords=[{"cat":"Allgemein","word":"Schlüssel","wid":"imp-0001"},{"cat":"Allgemein","word":"Koffer","wid":"imp-0002"},{"cat":"Allgemein","word":"Kerze","wid":"imp-0003"},{"cat":"Allgemein","word":"Brücke","wid":"imp-0004"},{"cat":"Allgemein","word":"Regenschirm","wid":"imp-0005"},{"cat":"Allgemein","word":"Kamera","wid":"imp-0006"},{"cat":"Allgemein","word":"Kalender","wid":"imp-0007"},{"cat":"Allgemein","word":"Batterie","wid":"imp-0008"},{"cat":"Allgemein","word":"Aufzug","wid":"imp-0009"},{"cat":"Allgemein","word":"Briefkasten","wid":"imp-0010"},{"cat":"Allgemein","word":"Rucksack","wid":"imp-0011"},{"cat":"Allgemein","word":"Spiegel","wid":"imp-0012"},{"cat":"Allgemein","word":"Leiter","wid":"imp-0013"},{"cat":"Allgemein","word":"Kopfhörer","wid":"imp-0014"},{"cat":"Allgemein","word":"Taschenlampe","wid":"imp-0015"},{"cat":"Allgemein","word":"Schere","wid":"imp-0016"},{"cat":"Allgemein","word":"Uhr","wid":"imp-0017"},{"cat":"Allgemein","word":"Münze","wid":"imp-0018"},{"cat":"Allgemein","word":"Balkon","wid":"imp-0019"},{"cat":"Allgemein","word":"Kissen","wid":"imp-0020"},{"cat":"Allgemein","word":"Fernbedienung","wid":"imp-0021"},{"cat":"Allgemein","word":"Schraube","wid":"imp-0022"},{"cat":"Allgemein","word":"Glas","wid":"imp-0023"},{"cat":"Allgemein","word":"Steckdose","wid":"imp-0024"},{"cat":"Allgemein","word":"Fahrstuhl","wid":"imp-0025"},{"cat":"Alltag","word":"Zahnbürste","wid":"imp-0026"},{"cat":"Alltag","word":"Wecker","wid":"imp-0027"},{"cat":"Alltag","word":"Waschmaschine","wid":"imp-0028"},{"cat":"Alltag","word":"Einkaufswagen","wid":"imp-0029"},{"cat":"Alltag","word":"Mülleimer","wid":"imp-0030"},{"cat":"Alltag","word":"Staubsauger","wid":"imp-0031"},{"cat":"Alltag","word":"Handtuch","wid":"imp-0032"},{"cat":"Alltag","word":"Kühlschrank","wid":"imp-0033"},{"cat":"Alltag","word":"Türklingel","wid":"imp-0034"},{"cat":"Alltag","word":"Wäschekorb","wid":"imp-0035"},{"cat":"Alltag","word":"Kaffeetasse","wid":"imp-0036"},{"cat":"Alltag","word":"Hausschlüssel","wid":"imp-0037"},{"cat":"Alltag","word":"Duschgel","wid":"imp-0038"},{"cat":"Alltag","word":"Toilettenpapier","wid":"imp-0039"},{"cat":"Alltag","word":"Pfandflasche","wid":"imp-0040"},{"cat":"Alltag","word":"Kassenbon","wid":"imp-0041"},{"cat":"Alltag","word":"Bettdecke","wid":"imp-0042"},{"cat":"Alltag","word":"Seife","wid":"imp-0043"},{"cat":"Alltag","word":"Rasierapparat","wid":"imp-0044"},{"cat":"Alltag","word":"Brotdose","wid":"imp-0045"},{"cat":"Alltag","word":"Wasserkocher","wid":"imp-0046"},{"cat":"Alltag","word":"Paket","wid":"imp-0047"},{"cat":"Alltag","word":"Socken","wid":"imp-0048"},{"cat":"Alltag","word":"Schuhregal","wid":"imp-0049"},{"cat":"Alltag","word":"Spülmaschine","wid":"imp-0050"},{"cat":"Auto","word":"Lenkrad","wid":"imp-0051"},{"cat":"Auto","word":"Turbolader","wid":"imp-0052"},{"cat":"Auto","word":"Autobahn","wid":"imp-0053"},{"cat":"Auto","word":"Kennzeichen","wid":"imp-0054"},{"cat":"Auto","word":"Scheibenwischer","wid":"imp-0055"},{"cat":"Auto","word":"Tempomat","wid":"imp-0056"},{"cat":"Auto","word":"Tankstelle","wid":"imp-0057"},{"cat":"Auto","word":"Kupplung","wid":"imp-0058"},{"cat":"Auto","word":"Bremsscheibe","wid":"imp-0059"},{"cat":"Auto","word":"Airbag","wid":"imp-0060"},{"cat":"Auto","word":"Kofferraum","wid":"imp-0061"},{"cat":"Auto","word":"Blinker","wid":"imp-0062"},{"cat":"Auto","word":"Tacho","wid":"imp-0063"},{"cat":"Auto","word":"Winterreifen","wid":"imp-0064"},{"cat":"Auto","word":"Felge","wid":"imp-0065"},{"cat":"Auto","word":"Motoröl","wid":"imp-0066"},{"cat":"Auto","word":"Auspuff","wid":"imp-0067"},{"cat":"Auto","word":"Parkhaus","wid":"imp-0068"},{"cat":"Auto","word":"Rückspiegel","wid":"imp-0069"},{"cat":"Auto","word":"Zündkerze","wid":"imp-0070"},{"cat":"Auto","word":"Sicherheitsgurt","wid":"imp-0071"},{"cat":"Auto","word":"Stoßstange","wid":"imp-0072"},{"cat":"Auto","word":"Handbremse","wid":"imp-0073"},{"cat":"Auto","word":"Dachbox","wid":"imp-0074"},{"cat":"Auto","word":"Werkstatt","wid":"imp-0075"},{"cat":"Essen","word":"Pizza","wid":"imp-0076"},{"cat":"Essen","word":"Lasagne","wid":"imp-0077"},{"cat":"Essen","word":"Döner","wid":"imp-0078"},{"cat":"Essen","word":"Schnitzel","wid":"imp-0079"},{"cat":"Essen","word":"Erdbeere","wid":"imp-0080"},{"cat":"Essen","word":"Knoblauch","wid":"imp-0081"},{"cat":"Essen","word":"Nutella","wid":"imp-0082"},{"cat":"Essen","word":"Pommes","wid":"imp-0083"},{"cat":"Essen","word":"Sushi","wid":"imp-0084"},{"cat":"Essen","word":"Spaghetti","wid":"imp-0085"},{"cat":"Essen","word":"Pfannkuchen","wid":"imp-0086"},{"cat":"Essen","word":"Käsekuchen","wid":"imp-0087"},{"cat":"Essen","word":"Bratwurst","wid":"imp-0088"},{"cat":"Essen","word":"Avocado","wid":"imp-0089"},{"cat":"Essen","word":"Croissant","wid":"imp-0090"},{"cat":"Essen","word":"Gulasch","wid":"imp-0091"},{"cat":"Essen","word":"Popcorn","wid":"imp-0092"},{"cat":"Essen","word":"Marmelade","wid":"imp-0093"},{"cat":"Essen","word":"Kartoffelsalat","wid":"imp-0094"},{"cat":"Essen","word":"Brezel","wid":"imp-0095"},{"cat":"Essen","word":"Tiramisu","wid":"imp-0096"},{"cat":"Essen","word":"Currywurst","wid":"imp-0097"},{"cat":"Essen","word":"Honig","wid":"imp-0098"},{"cat":"Essen","word":"Rührei","wid":"imp-0099"},{"cat":"Essen","word":"Müsli","wid":"imp-0100"},{"cat":"Geografie","word":"Wüste","wid":"imp-0101"},{"cat":"Geografie","word":"Vulkan","wid":"imp-0102"},{"cat":"Geografie","word":"Insel","wid":"imp-0103"},{"cat":"Geografie","word":"Gletscher","wid":"imp-0104"},{"cat":"Geografie","word":"Wasserfall","wid":"imp-0105"},{"cat":"Geografie","word":"Ozean","wid":"imp-0106"},{"cat":"Geografie","word":"Gebirge","wid":"imp-0107"},{"cat":"Geografie","word":"Hauptstadt","wid":"imp-0108"},{"cat":"Geografie","word":"Grenze","wid":"imp-0109"},{"cat":"Geografie","word":"Leuchtturm","wid":"imp-0110"},{"cat":"Geografie","word":"Fluss","wid":"imp-0111"},{"cat":"Geografie","word":"Dschungel","wid":"imp-0112"},{"cat":"Geografie","word":"Steppe","wid":"imp-0113"},{"cat":"Geografie","word":"Küste","wid":"imp-0114"},{"cat":"Geografie","word":"Hafen","wid":"imp-0115"},{"cat":"Geografie","word":"Halbinsel","wid":"imp-0116"},{"cat":"Geografie","word":"Tal","wid":"imp-0117"},{"cat":"Geografie","word":"Kontinent","wid":"imp-0118"},{"cat":"Geografie","word":"Nordpol","wid":"imp-0119"},{"cat":"Geografie","word":"Äquator","wid":"imp-0120"},{"cat":"Geografie","word":"Fjord","wid":"imp-0121"},{"cat":"Geografie","word":"See","wid":"imp-0122"},{"cat":"Geografie","word":"Höhle","wid":"imp-0123"},{"cat":"Geografie","word":"Nationalpark","wid":"imp-0124"},{"cat":"Geografie","word":"Delta","wid":"imp-0125"},{"cat":"Natur","word":"Giraffe","wid":"imp-0126"},{"cat":"Natur","word":"Pinguin","wid":"imp-0127"},{"cat":"Natur","word":"Eichhörnchen","wid":"imp-0128"},{"cat":"Natur","word":"Wal","wid":"imp-0129"},{"cat":"Natur","word":"Kaktus","wid":"imp-0130"},{"cat":"Natur","word":"Ameise","wid":"imp-0131"},{"cat":"Natur","word":"Delfin","wid":"imp-0132"},{"cat":"Natur","word":"Eule","wid":"imp-0133"},{"cat":"Natur","word":"Pilz","wid":"imp-0134"},{"cat":"Natur","word":"Bambus","wid":"imp-0135"},{"cat":"Natur","word":"Krokodil","wid":"imp-0136"},{"cat":"Natur","word":"Schmetterling","wid":"imp-0137"},{"cat":"Natur","word":"Fuchs","wid":"imp-0138"},{"cat":"Natur","word":"Koralle","wid":"imp-0139"},{"cat":"Natur","word":"Biene","wid":"imp-0140"},{"cat":"Natur","word":"Wolf","wid":"imp-0141"},{"cat":"Natur","word":"Schildkröte","wid":"imp-0142"},{"cat":"Natur","word":"Frosch","wid":"imp-0143"},{"cat":"Natur","word":"Adler","wid":"imp-0144"},{"cat":"Natur","word":"Qualle","wid":"imp-0145"},{"cat":"Natur","word":"Igel","wid":"imp-0146"},{"cat":"Natur","word":"Otter","wid":"imp-0147"},{"cat":"Natur","word":"Seestern","wid":"imp-0148"},{"cat":"Natur","word":"Löwe","wid":"imp-0149"},{"cat":"Natur","word":"Papagei","wid":"imp-0150"},{"cat":"Popkultur","word":"Superheld","wid":"imp-0151"},{"cat":"Popkultur","word":"Kino","wid":"imp-0152"},{"cat":"Popkultur","word":"Netflix","wid":"imp-0153"},{"cat":"Popkultur","word":"Podcast","wid":"imp-0154"},{"cat":"Popkultur","word":"Konzert","wid":"imp-0155"},{"cat":"Popkultur","word":"Tätowierung","wid":"imp-0156"},{"cat":"Popkultur","word":"Influencer","wid":"imp-0157"},{"cat":"Popkultur","word":"Reality-TV","wid":"imp-0158"},{"cat":"Popkultur","word":"Festival","wid":"imp-0159"},{"cat":"Popkultur","word":"Meme","wid":"imp-0160"},{"cat":"Popkultur","word":"Streaming","wid":"imp-0161"},{"cat":"Popkultur","word":"Videospiel","wid":"imp-0162"},{"cat":"Popkultur","word":"DJ","wid":"imp-0163"},{"cat":"Popkultur","word":"Oscar","wid":"imp-0164"},{"cat":"Popkultur","word":"Anime","wid":"imp-0165"},{"cat":"Popkultur","word":"Comic","wid":"imp-0166"},{"cat":"Popkultur","word":"Boyband","wid":"imp-0167"},{"cat":"Popkultur","word":"Karaoke","wid":"imp-0168"},{"cat":"Popkultur","word":"YouTube","wid":"imp-0169"},{"cat":"Popkultur","word":"Fanclub","wid":"imp-0170"},{"cat":"Popkultur","word":"Musical","wid":"imp-0171"},{"cat":"Popkultur","word":"Blockbuster","wid":"imp-0172"},{"cat":"Popkultur","word":"Cosplay","wid":"imp-0173"},{"cat":"Popkultur","word":"Playlist","wid":"imp-0174"},{"cat":"Popkultur","word":"Promi","wid":"imp-0175"},{"cat":"Spicy 🌶️","word":"Kuss","wid":"imp-0176"},{"cat":"Spicy 🌶️","word":"Dating-App","wid":"imp-0177"},{"cat":"Spicy 🌶️","word":"One-Night-Stand","wid":"imp-0178"},{"cat":"Spicy 🌶️","word":"Stripclub","wid":"imp-0179"},{"cat":"Spicy 🌶️","word":"Sexting","wid":"imp-0180"},{"cat":"Spicy 🌶️","word":"Kondom","wid":"imp-0181"},{"cat":"Spicy 🌶️","word":"Liebesbrief","wid":"imp-0182"},{"cat":"Spicy 🌶️","word":"Ex-Partner","wid":"imp-0183"},{"cat":"Spicy 🌶️","word":"Blind Date","wid":"imp-0184"},{"cat":"Spicy 🌶️","word":"Flirt","wid":"imp-0185"},{"cat":"Spicy 🌶️","word":"Nacktbild","wid":"imp-0186"},{"cat":"Spicy 🌶️","word":"Handschellen","wid":"imp-0187"},{"cat":"Spicy 🌶️","word":"Kuschelpartner","wid":"imp-0188"},{"cat":"Spicy 🌶️","word":"Affäre","wid":"imp-0189"},{"cat":"Spicy 🌶️","word":"Liebeskummer","wid":"imp-0190"},{"cat":"Spicy 🌶️","word":"Eifersucht","wid":"imp-0191"},{"cat":"Spicy 🌶️","word":"Date Night","wid":"imp-0192"},{"cat":"Spicy 🌶️","word":"Hotelzimmer","wid":"imp-0193"},{"cat":"Spicy 🌶️","word":"Kussmund","wid":"imp-0194"},{"cat":"Spicy 🌶️","word":"Dessous","wid":"imp-0195"},{"cat":"Spicy 🌶️","word":"Love Story","wid":"imp-0196"},{"cat":"Spicy 🌶️","word":"Match","wid":"imp-0197"},{"cat":"Spicy 🌶️","word":"Crush","wid":"imp-0198"},{"cat":"Spicy 🌶️","word":"Anmachspruch","wid":"imp-0199"},{"cat":"Spicy 🌶️","word":"Morgen danach","wid":"imp-0200"},{"cat":"Sport","word":"Fußball","wid":"imp-0201"},{"cat":"Sport","word":"Tennis","wid":"imp-0202"},{"cat":"Sport","word":"Boxen","wid":"imp-0203"},{"cat":"Sport","word":"Formel 1","wid":"imp-0204"},{"cat":"Sport","word":"Basketball","wid":"imp-0205"},{"cat":"Sport","word":"Skifahren","wid":"imp-0206"},{"cat":"Sport","word":"Marathon","wid":"imp-0207"},{"cat":"Sport","word":"Volleyball","wid":"imp-0208"},{"cat":"Sport","word":"Golf","wid":"imp-0209"},{"cat":"Sport","word":"Darts","wid":"imp-0210"},{"cat":"Sport","word":"Handball","wid":"imp-0211"},{"cat":"Sport","word":"Surfen","wid":"imp-0212"},{"cat":"Sport","word":"Radsport","wid":"imp-0213"},{"cat":"Sport","word":"Schwimmen","wid":"imp-0214"},{"cat":"Sport","word":"Eishockey","wid":"imp-0215"},{"cat":"Sport","word":"Yoga","wid":"imp-0216"},{"cat":"Sport","word":"Klettern","wid":"imp-0217"},{"cat":"Sport","word":"Tischtennis","wid":"imp-0218"},{"cat":"Sport","word":"Badminton","wid":"imp-0219"},{"cat":"Sport","word":"Bowling","wid":"imp-0220"},{"cat":"Sport","word":"Rugby","wid":"imp-0221"},{"cat":"Sport","word":"Reiten","wid":"imp-0222"},{"cat":"Sport","word":"Triathlon","wid":"imp-0223"},{"cat":"Sport","word":"Snowboard","wid":"imp-0224"},{"cat":"Sport","word":"Motocross","wid":"imp-0225"},{"cat":"Technik","word":"Smartphone","wid":"imp-0226"},{"cat":"Technik","word":"Router","wid":"imp-0227"},{"cat":"Technik","word":"Bluetooth","wid":"imp-0228"},{"cat":"Technik","word":"USB-Stick","wid":"imp-0229"},{"cat":"Technik","word":"Drucker","wid":"imp-0230"},{"cat":"Technik","word":"Server","wid":"imp-0231"},{"cat":"Technik","word":"Passwort","wid":"imp-0232"},{"cat":"Technik","word":"Cloud","wid":"imp-0233"},{"cat":"Technik","word":"Grafikkarte","wid":"imp-0234"},{"cat":"Technik","word":"Tastatur","wid":"imp-0235"},{"cat":"Technik","word":"QR-Code","wid":"imp-0236"},{"cat":"Technik","word":"WLAN","wid":"imp-0237"},{"cat":"Technik","word":"Festplatte","wid":"imp-0238"},{"cat":"Technik","word":"Mikrofon","wid":"imp-0239"},{"cat":"Technik","word":"Monitor","wid":"imp-0240"},{"cat":"Technik","word":"Powerbank","wid":"imp-0241"},{"cat":"Technik","word":"Kopierer","wid":"imp-0242"},{"cat":"Technik","word":"Webcam","wid":"imp-0243"},{"cat":"Technik","word":"Prozessor","wid":"imp-0244"},{"cat":"Technik","word":"Smartwatch","wid":"imp-0245"},{"cat":"Technik","word":"Drohne","wid":"imp-0246"},{"cat":"Technik","word":"3D-Drucker","wid":"imp-0247"},{"cat":"Technik","word":"Ladekabel","wid":"imp-0248"},{"cat":"Technik","word":"Touchscreen","wid":"imp-0249"},{"cat":"Technik","word":"Firewall","wid":"imp-0250"}];
 function byId(id){return document.getElementById(id);}
-var sections=["setup","stats","handoff","question","normalReveal","answers","result"];
+var sections=["setup","stats","handoff","classicRole","classicDiscussion","classicVote","classicResult","question","normalReveal","answers","result"];
 var count=3,players=[],active=0,impIndex=0,round=0,current=null,scrubbing=false;
 var guessLocked=false,guessSaveTimer=null;
 
@@ -2281,10 +2487,20 @@ var STORAGE_CATEGORIES="circaImpostor.categories.v1";
 var STORAGE_STATS="circaImpostor.playerStats.v1";
 var STORAGE_DEVICE_STATS="circaImpostor.deviceStats.v1";
 var STORAGE_COMPLETED_QUESTIONS="circaImpostor.completedQuestions.v1";
+var STORAGE_MODE="circaImpostor.gameMode.v1";
+var STORAGE_CLASSIC_DIFFICULTY="circaImpostor.classicDifficulty.v1";
+var STORAGE_CLASSIC_DECK="circaImpostor.classicDeck.v1";
 var deckProgress={};
 var completedQuestionIds=[];
 var savedPlayerNames=[];
 var selectedDifficulty="mittel";
+var gameMode="circa";
+var classicDeckProgress={};
+var classicCurrent=null;
+var classicRoundDifficulty="mittel";
+var classicVoteIndex=-1;
+var classicDiscussionStarter=0;
+var classicOutcome=null;
 
 function storageGet(key,fallback){
   try{
@@ -2320,11 +2536,51 @@ function difficultyName(difficulty){
   return "Mittel";
 }
 function difficultyHintText(difficulty){
+  if(gameMode==="classic"){
+    if(difficulty==="leicht")return "Der Impostor sieht Kategorie und Anfangsbuchstaben";
+    if(difficulty==="schwer")return "Der Impostor bekommt keinerlei Hinweis";
+    if(difficulty==="zufaellig")return "Der Hinweisgrad wird für jede Runde neu ausgelost";
+    return "Der Impostor sieht nur die Kategorie";
+  }
   if(difficulty==="leicht")return "Ähnliche Zielwerte – der Impostor kann sich leichter verstecken";
   if(difficulty==="schwer")return "Deutlich größerer Abstand – schwieriger für den Impostor";
   if(difficulty==="zufaellig")return "Alles kann drankommen – von sehr nah bis deutlich auseinander";
   return "Spürbarer Abstand zwischen den beiden Zielwerten";
 }
+
+function setGameMode(mode){
+  if(mode!=="circa"&&mode!=="classic")return;
+  gameMode=mode;
+  storageSet(STORAGE_MODE,gameMode);
+  loadSavedDifficulty();
+  syncDifficultyUI();
+  syncGameModeUI();
+  updateToolbar();
+  syncDiagVisibility();
+  tone(mode==="classic"?510:410,0.05,0.014,"sine",0);
+}
+function syncGameModeUI(){
+  var buttons=byId("modeControl").querySelectorAll(".modeButton");
+  for(var i=0;i<buttons.length;i++){
+    var selected=buttons[i].getAttribute("data-mode")===gameMode;
+    buttons[i].classList.toggle("selected",selected);
+    buttons[i].setAttribute("aria-pressed",selected?"true":"false");
+  }
+  if(gameMode==="classic"){
+    byId("setupSubtitle").textContent="Alle kennen das geheime Wort – außer einer Person.";
+    byId("start").textContent="Impostor starten";
+    byId("poolCount").textContent=classicWords.length+" geheime Wörter";
+    byId("openStats").classList.add("hidden");
+  }else{
+    byId("setupSubtitle").textContent="Alle bekommen dieselbe Schätzfrage – außer einer Person.";
+    byId("start").textContent="Spiel starten";
+    byId("poolCount").textContent=bank.length+" Fragepaare";
+    byId("openStats").classList.remove("hidden");
+  }
+  byId("difficultyHint").textContent=difficultyHintText(selectedDifficulty);
+  syncSetupScrollFit();
+}
+
 function deckKey(cat,difficulty){
   return cat+"::"+difficulty;
 }
@@ -2335,8 +2591,15 @@ function validIdsForDeck(cat,difficulty){
   }
   return ids;
 }
+function difficultyStorageKey(){
+  return gameMode==="classic"?STORAGE_CLASSIC_DIFFICULTY:STORAGE_DIFFICULTY;
+}
+function loadSavedGameMode(){
+  var saved=storageGet(STORAGE_MODE,"circa");
+  gameMode=saved==="classic"?"classic":"circa";
+}
 function loadSavedDifficulty(){
-  var saved=storageGet(STORAGE_DIFFICULTY,"mittel");
+  var saved=storageGet(difficultyStorageKey(),"mittel");
   if(saved!=="leicht"&&saved!=="mittel"&&saved!=="schwer"&&saved!=="zufaellig")saved="mittel";
   selectedDifficulty=saved;
 }
@@ -2352,7 +2615,7 @@ function syncDifficultyUI(){
 function setDifficulty(difficulty){
   if(difficulty!=="leicht"&&difficulty!=="mittel"&&difficulty!=="schwer"&&difficulty!=="zufaellig")return;
   selectedDifficulty=difficulty;
-  storageSet(STORAGE_DIFFICULTY,selectedDifficulty);
+  storageSet(difficultyStorageKey(),selectedDifficulty);
   syncDifficultyUI();
   tone(difficulty==="leicht"?390:(difficulty==="schwer"?520:(difficulty==="zufaellig"?590:450)),0.045,0.012,"sine",0);
 }
@@ -2407,6 +2670,8 @@ function loadCompletedQuestionIds(){
       if(validQuestionId(qid)&&clean.indexOf(qid)===-1)clean.push(qid);
     }
   }else{
+    /* First-run migration: preserve as much pre-V58 history as the current
+       deck-progress storage can still provide. */
     try{
       for(var key in deckProgress){
         if(!Object.prototype.hasOwnProperty.call(deckProgress,key))continue;
@@ -2432,6 +2697,77 @@ function markQuestionCompleted(item){
 function completedQuestionCount(){
   return completedQuestionIds.length;
 }
+
+function loadClassicDeckProgress(){
+  var data=storageGet(STORAGE_CLASSIC_DECK,{});
+  if(!data||typeof data!=="object"||Array.isArray(data))data={};
+  var valid={};
+  for(var key in data){
+    if(!Object.prototype.hasOwnProperty.call(data,key)||!Array.isArray(data[key]))continue;
+    var seen={},clean=[];
+    for(var i=0;i<data[key].length;i++){
+      var id=String(data[key][i]||"");
+      if(!id||seen[id])continue;
+      for(var w=0;w<classicWords.length;w++){
+        if(classicWords[w].wid===id){seen[id]=true;clean.push(id);break;}
+      }
+    }
+    valid[key]=clean;
+  }
+  classicDeckProgress=valid;
+  storageSet(STORAGE_CLASSIC_DECK,classicDeckProgress);
+}
+function classicResolveDifficulty(){
+  if(selectedDifficulty!=="zufaellig")return selectedDifficulty;
+  var levels=["leicht","mittel","schwer"];
+  return levels[Math.floor(randomUnit()*levels.length)];
+}
+function classicEligibleCategories(){
+  var all=[],seen={};
+  for(var i=0;i<classicWords.length;i++){
+    if(!seen[classicWords[i].cat]){seen[classicWords[i].cat]=true;all.push(classicWords[i].cat);}
+  }
+  if(selectedCategories.indexOf("Alle")!==-1)return all;
+  var out=[];
+  for(var j=0;j<selectedCategories.length;j++){
+    if(seen[selectedCategories[j]])out.push(selectedCategories[j]);
+  }
+  return out.length?out:all;
+}
+function classicPickWord(){
+  var cats=classicEligibleCategories();
+  if(!cats.length)return false;
+  var cat=cats[Math.floor(randomUnit()*cats.length)];
+  var eligible=[];
+  for(var i=0;i<classicWords.length;i++)if(classicWords[i].cat===cat)eligible.push(classicWords[i]);
+  if(!eligible.length)return false;
+
+  var key="classic::"+cat;
+  if(!Array.isArray(classicDeckProgress[key]))classicDeckProgress[key]=[];
+  var pool=[];
+  for(var j=0;j<eligible.length;j++){
+    if(classicDeckProgress[key].indexOf(eligible[j].wid)===-1)pool.push(eligible[j]);
+  }
+  if(!pool.length){
+    classicDeckProgress[key]=[];
+    pool=eligible.slice();
+  }
+  classicCurrent=pool[Math.floor(randomUnit()*pool.length)];
+  classicDeckProgress[key].push(classicCurrent.wid);
+  storageSet(STORAGE_CLASSIC_DECK,classicDeckProgress);
+
+  classicRoundDifficulty=classicResolveDifficulty();
+  impIndex=selectImpostor();
+  active=0;
+  round++;
+  classicVoteIndex=-1;
+  classicOutcome=null;
+  classicDiscussionStarter=Math.floor(randomUnit()*players.length);
+  updateToolbar();
+  diagLog("Classic","R"+round+" · "+classicCurrent.wid+" · "+classicCurrent.cat+" · "+difficultyName(classicRoundDifficulty));
+  return true;
+}
+
 function cleanPlayerName(value){
   return String(value==null?"":value).replace(/^\s+|\s+$/g,"").slice(0,24);
 }
@@ -2996,7 +3332,7 @@ function soundNextRound(){
 function setSoundEnabled(on){
   soundEnabled=!!on;
   byId("soundOnIcon").classList.toggle("hidden",!soundEnabled);
-  byId("soundOffIcon").classList.toggle("hidden",soundEnabled);
+byId("soundOffIcon").classList.toggle("hidden",soundEnabled);
   byId("soundToggle").setAttribute("aria-pressed",soundEnabled?"true":"false");
   byId("soundToggle").setAttribute("aria-label",soundEnabled?"Sound ausschalten":"Sound einschalten");
   if(soundEnabled){ensureAudio();tone(560,0.06,0.02,"sine",0);}
@@ -3013,11 +3349,11 @@ function show(id){
   if(id==="setup")syncSetupScrollFit();
 }
 function updateToolbar(){
-  byId("topCategory").textContent=current ? current.cat : selectedCategoryLabel();
+  byId("topCategory").textContent=gameMode==="classic"?"Impostor":(current ? current.cat : selectedCategoryLabel());
   byId("topRound").textContent="R"+round;
 
   document.body.classList.remove("cat-spicy","cat-auto","cat-sport","cat-tech","cat-food","cat-geo","cat-pop","cat-allgemein","cat-natur","cat-alltag","cat-alle","categoryPulse");
-  var cat=current ? current.cat : (selectedCategories.length===1 ? selectedCategories[0] : "Alle");
+  var cat=gameMode==="classic"?"Alle":(current ? current.cat : (selectedCategories.length===1 ? selectedCategories[0] : "Alle"));
   if(cat==="Spicy 🌶️") document.body.classList.add("cat-spicy");
   if(cat==="Auto") document.body.classList.add("cat-auto");
   if(cat==="Sport") document.body.classList.add("cat-sport");
@@ -3150,8 +3486,9 @@ function start(){
   savePlayers();
   round=0;
   resetImpostorFairness();
-  diagLog("Partie","Gestartet mit "+players.length+" Spielern");
-  newRound(false);
+  diagLog("Partie","Gestartet mit "+players.length+" Spielern · "+(gameMode==="classic"?"Impostor":"Circa"));
+  if(gameMode==="classic")classicNewRound(false);
+  else newRound(false);
 }
 
 function randomUnit(){
@@ -3352,6 +3689,7 @@ function pickRound(){
 function prepareHandoff(){
   byId("handoffName").textContent="Handy an "+players[active].name;
   byId("handoffAvatar").textContent=players[active].avatar||"😎";
+  byId("showQuestion").textContent=gameMode==="classic"?"Meine Rolle anzeigen":"Ich bin bereit";
   show("handoff");
 }
 function animateHandoff(){
@@ -3359,6 +3697,172 @@ function animateHandoff(){
   hi.classList.remove("handoffPop");void hi.offsetWidth;hi.classList.add("handoffPop");
   soundHandoff();
 }
+
+function classicNewRound(confirmFirst){
+  if(confirmFirst && !window.confirm("Aktuelle Runde abbrechen und eine neue Runde starten?"))return;
+  if(confirmFirst&&round>0&&classicOutcome===null)rollbackCurrentImpostorSelection();
+  if(typeof clearRevealTimers==="function")clearRevealTimers();
+  if(roundIntroTimer){clearTimeout(roundIntroTimer);roundIntroTimer=null;}
+  if(guessSaveTimer){clearTimeout(guessSaveTimer);guessSaveTimer=null;}
+
+  if(!classicPickWord()){
+    byId("error").textContent="Für diese Auswahl sind keine Wörter verfügbar.";
+    show("setup");
+    return;
+  }
+
+  var intro=byId("roundIntro");
+  byId("roundIntroText").textContent="Runde "+round;
+  byId("roundIntroCategory").textContent="Impostor · "+difficultyName(classicRoundDifficulty);
+  byId("roundIntroIcon").textContent="🎭";
+  intro.classList.remove("hidden","showIntro");
+  void intro.offsetWidth;
+  intro.classList.add("showIntro");
+
+  prepareHandoff();
+  soundNextRound();
+  roundIntroTimer=setTimeout(function(){
+    intro.classList.add("hidden");
+    intro.classList.remove("showIntro");
+    roundIntroTimer=null;
+    animateHandoff();
+  },1700);
+}
+function classicOpenRole(){
+  ensureAudio();
+  if(!classicCurrent||!players.length)return;
+  var player=players[active],isImp=active===impIndex;
+  byId("classicRoleName").textContent=player.name;
+  byId("classicRoleAvatar").textContent=player.avatar||"😎";
+  byId("classicRoleProgress").textContent=(active+1)+"/"+players.length;
+
+  var word=byId("classicRoleWord"),hint=byId("classicRoleHint"),eyebrow=byId("classicRoleEyebrow");
+  word.classList.toggle("impostorWord",isImp);
+
+  if(isImp){
+    eyebrow.textContent="DEINE ROLLE";
+    word.textContent="DU BIST DER IMPOSTOR";
+    if(classicRoundDifficulty==="leicht"){
+      hint.textContent="Kategorie: "+classicCurrent.cat+" · Anfangsbuchstabe: "+classicCurrent.word.charAt(0).toLocaleUpperCase("de-DE");
+    }else if(classicRoundDifficulty==="mittel"){
+      hint.textContent="Kategorie: "+classicCurrent.cat;
+    }else{
+      hint.textContent="Du kennst das geheime Wort nicht. Hör gut zu und füge dich unauffällig ein.";
+    }
+  }else{
+    eyebrow.textContent="GEHEIMES WORT";
+    word.textContent=classicCurrent.word;
+    hint.textContent="Kategorie: "+classicCurrent.cat+" · Beschreibe das Wort später, ohne es direkt zu nennen.";
+  }
+
+  byId("classicRoleDone").textContent=active<players.length-1?"Verstanden · weitergeben":"Verstanden · Runde starten";
+  show("classicRole");
+  var card=byId("classicRoleCard");
+  card.classList.remove("revealFlip");void card.offsetWidth;card.classList.add("revealFlip");
+  tone(isImp?260:420,0.06,0.016,"sine",0);
+}
+function classicRoleDone(){
+  ensureAudio();
+  if(active<players.length-1){
+    active++;
+    handoff();
+    return;
+  }
+  classicPrepareDiscussion();
+}
+function classicPrepareDiscussion(){
+  var starter=players[classicDiscussionStarter]||players[0];
+  byId("classicDiscussionAvatar").textContent=starter.avatar||"😎";
+  byId("classicDiscussionName").textContent=starter.name+" beginnt";
+  show("classicDiscussion");
+  tone(360,0.06,0.015,"sine",0);
+}
+function classicRenderVote(){
+  classicVoteIndex=-1;
+  var box=byId("classicVoteGrid");box.innerHTML="";
+  for(var i=0;i<players.length;i++){
+    var btn=document.createElement("button");
+    btn.type="button";
+    btn.className="classicVoteButton";
+    btn.setAttribute("data-vote-index",String(i));
+
+    var avatar=document.createElement("span");
+    avatar.className="classicVoteAvatar";
+    avatar.textContent=players[i].avatar||"😎";
+    var name=document.createElement("span");
+    name.className="classicVoteName";
+    name.textContent=players[i].name;
+
+    btn.appendChild(avatar);btn.appendChild(name);
+    btn.addEventListener("click",function(){
+      classicVoteIndex=Number(this.getAttribute("data-vote-index"));
+      var all=box.querySelectorAll(".classicVoteButton");
+      for(var j=0;j<all.length;j++)all[j].classList.toggle("selected",all[j]===this);
+      byId("classicSubmitVote").disabled=false;
+      tone(430,0.04,0.012,"sine",0);
+    });
+    box.appendChild(btn);
+  }
+  byId("classicSubmitVote").disabled=true;
+  show("classicVote");
+}
+function classicSubmitVote(){
+  if(classicVoteIndex<0||classicVoteIndex>=players.length)return;
+  var caught=classicVoteIndex===impIndex;
+  var voted=players[classicVoteIndex],imp=players[impIndex];
+  byId("classicSecretWord").textContent=classicCurrent.word;
+  byId("classicSecretBox").classList.add("hidden");
+  byId("classicLastChance").classList.add("hidden");
+  byId("classicResultActions").classList.add("hidden");
+
+  if(caught){
+    byId("classicResultIcon").textContent="🕵️";
+    byId("classicResultKicker").textContent="IMPOSTOR ERWISCHT";
+    byId("classicResultTitle").textContent=imp.name+" wurde entlarvt";
+    byId("classicResultText").textContent="Noch ist die Runde nicht entschieden: Der Impostor darf das geheime Wort einmal erraten.";
+    byId("classicLastChance").classList.remove("hidden");
+    classicOutcome=null;
+    soundImpact();softHaptic([45,35,70]);
+  }else{
+    byId("classicResultIcon").textContent="🎭";
+    byId("classicResultKicker").textContent="IMPOSTOR-SIEG";
+    byId("classicResultTitle").textContent=imp.name+" ist entkommen";
+    byId("classicResultText").textContent=voted.name+" wurde verdächtigt – der echte Impostor blieb unentdeckt.";
+    byId("classicSecretBox").classList.remove("hidden");
+    byId("classicResultActions").classList.remove("hidden");
+    classicOutcome="impostor";
+    tone(260,0.10,0.025,"sine",0);tone(190,0.14,0.022,"sine",0.09);
+  }
+  diagLog("Classic Vote","Verdacht: "+voted.name+" · Impostor: "+imp.name+" · "+(caught?"erwischt":"entkommen"));
+  show("classicResult");
+  pulseScreen();
+}
+function classicFinishGuess(correct){
+  if(classicOutcome!==null)return;
+  byId("classicLastChance").classList.add("hidden");
+  byId("classicSecretBox").classList.remove("hidden");
+  byId("classicResultActions").classList.remove("hidden");
+  var imp=players[impIndex];
+
+  if(correct){
+    classicOutcome="impostor";
+    byId("classicResultIcon").textContent="🥷";
+    byId("classicResultKicker").textContent="IMPOSTOR-SIEG";
+    byId("classicResultTitle").textContent=imp.name+" rettet die Runde";
+    byId("classicResultText").textContent="Der Impostor wurde zwar erwischt, hat das geheime Wort aber richtig erraten.";
+    tone(520,0.08,0.025,"sine",0);tone(700,0.11,0.025,"sine",0.08);
+  }else{
+    classicOutcome="team";
+    byId("classicResultIcon").textContent="🏆";
+    byId("classicResultKicker").textContent="TEAM-SIEG";
+    byId("classicResultTitle").textContent="Der Impostor ist entlarvt";
+    byId("classicResultText").textContent=imp.name+" konnte das geheime Wort nicht richtig erraten.";
+    soundCorrect();
+  }
+  diagLog("Classic Ergebnis",classicOutcome==="team"?"Team gewinnt":"Impostor gewinnt");
+  pulseScreen();
+}
+
 function newRound(confirmFirst){
   if(confirmFirst && !window.confirm("Aktuelle Runde abbrechen und eine neue Runde starten?"))return;
   var previousRoundCompleted=roundStatsRecorded;
@@ -3845,6 +4349,7 @@ function leaveGame(){
   roundOutcomeChoice=null;
   byId("saveGuess").disabled=false;
   players=[];active=0;round=0;current=null;
+  classicCurrent=null;classicVoteIndex=-1;classicOutcome=null;
   impostorSessionCounts=[];impostorRecent=[];
   byId("error").textContent="";
   updateToolbar();
@@ -3870,7 +4375,7 @@ function setDiagUnlocked(value){
   syncDiagVisibility();
 }
 function syncDiagVisibility(){
-  var unlocked=diagUnlocked();
+  var unlocked=diagUnlocked()&&gameMode!=="classic";
   var items=document.querySelectorAll(".devOnly");
   for(var i=0;i<items.length;i++)items[i].classList.toggle("hidden",!unlocked);
 }
@@ -3996,7 +4501,7 @@ function diagImpostorHtml(){
   var recent="–";
   if(impostorRecent.length){
     var recentNames=[];
-    for(var r=0;r<impostorRecent.length;r++){
+for(var r=0;r<impostorRecent.length;r++){
       var rp=players[impostorRecent[r]];
       if(rp)recentNames.push(diagEsc(rp.name));
     }
@@ -4444,6 +4949,14 @@ for(var st=0;st<statsTabs.length;st++){
   });
 }
 
+var modeButtons=byId("modeControl").querySelectorAll(".modeButton");
+for(var mb=0;mb<modeButtons.length;mb++){
+  modeButtons[mb].addEventListener("click",function(){
+    ensureAudio();
+    setGameMode(this.getAttribute("data-mode"));
+  });
+}
+
 var difficultyButtons=byId("difficultyControl").querySelectorAll(".difficultyButton");
 for(var db=0;db<difficultyButtons.length;db++){
   difficultyButtons[db].addEventListener("click",function(){
@@ -4453,14 +4966,21 @@ for(var db=0;db<difficultyButtons.length;db++){
 }
 
 /* Game */
-byId("showQuestion").addEventListener("click",openQuestion);
+byId("showQuestion").addEventListener("click",function(){if(gameMode==="classic")classicOpenRole();else openQuestion();});
+byId("classicRoleDone").addEventListener("click",classicRoleDone);
+byId("classicGoVote").addEventListener("click",classicRenderVote);
+byId("classicSubmitVote").addEventListener("click",classicSubmitVote);
+byId("classicGuessCorrect").addEventListener("click",function(){classicFinishGuess(true);});
+byId("classicGuessWrong").addEventListener("click",function(){classicFinishGuess(false);});
+byId("classicNext").addEventListener("click",function(){ensureAudio();classicNewRound(false);});
+byId("classicRestart").addEventListener("click",leaveGame);
 byId("saveGuess").addEventListener("click",saveGuess);
 byId("revealNormalQuestion").addEventListener("click",revealNormalQuestion);
 byId("reveal").addEventListener("click",reveal);
 byId("impostorWonYes").addEventListener("click",function(){setImpostorOutcome(true);});
 byId("impostorWonNo").addEventListener("click",function(){setImpostorOutcome(false);});
 byId("next").addEventListener("click",function(){ensureAudio();newRound(false);});
-byId("freshRound").addEventListener("click",function(){ensureAudio();newRound(true);});
+byId("freshRound").addEventListener("click",function(){ensureAudio();if(gameMode==="classic")classicNewRound(true);else newRound(true);});
 byId("leaveGame").addEventListener("click",leaveGame);
 byId("restart").addEventListener("click",leaveGame);
 byId("soundToggle").addEventListener("click",function(){setSoundEnabled(!soundEnabled);});
@@ -4540,7 +5060,7 @@ if(!window.PointerEvent){
   },{passive:false});
 }
 
-loadSavedDifficulty();loadDeckProgress();loadCompletedQuestionIds();loadSavedPlayers();loadPlayerStats();initCategories();syncDifficultyUI();renderNames();updateToolbar();show("setup");
+loadSavedGameMode();loadSavedDifficulty();loadDeckProgress();loadClassicDeckProgress();loadCompletedQuestionIds();loadSavedPlayers();loadPlayerStats();initCategories();syncDifficultyUI();renderNames();syncGameModeUI();updateToolbar();show("setup");
 })();
 </script>
 </body>
