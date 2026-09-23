@@ -506,8 +506,8 @@ byId("importData").addEventListener("click",function(){
 byId("importDataFile").addEventListener("change",function(){
   var input=this,file=input.files&&input.files[0];
   if(!file)return;
-  if(file.size>2*1024*1024){
-    byId("dataStatus").textContent="Import abgebrochen: Die JSON-Datei ist größer als 2 MB.";
+  if(file.size>8*1024*1024){
+    byId("dataStatus").textContent="Import abgebrochen: Die JSON-Datei ist größer als 8 MB.";
     input.value="";return;
   }
   var reader=new FileReader();
