@@ -28,6 +28,7 @@ function defaults(){
     primaryProfileId:id,
     profiles:[{id:id,name:"Spieler",avatar:"😎",createdAt:now()}],
     profileStats:{},
+    profileArchive:{},
     stats:{rounds:0,circaRounds:0,classicRounds:0,perfectEstimates:0,circaQids:[],classicWids:[],categories:[]},
     sessions:[],
     activeSessionId:null,
@@ -48,6 +49,7 @@ function load(){
     var p=defaults().profiles[0];data.profiles=[p];data.primaryProfileId=p.id;
   }
   if(!data.profileStats||typeof data.profileStats!=="object")data.profileStats={};
+  if(!data.profileArchive||typeof data.profileArchive!=="object"||Array.isArray(data.profileArchive))data.profileArchive={};
   if(!data.stats||typeof data.stats!=="object")data.stats=defaults().stats;
   ["circaQids","classicWids","categories"].forEach(function(k){if(!Array.isArray(data.stats[k]))data.stats[k]=[];});
   ["rounds","circaRounds","classicRounds","perfectEstimates"].forEach(function(k){data.stats[k]=Math.max(0,Number(data.stats[k])||0);});
@@ -105,9 +107,16 @@ function deleteProfile(id){
   if(data.profiles.length<=1)return false;
   var idx=data.profiles.findIndex(function(p){return p.id===id;});
   if(idx<0)return false;
+  var removed=data.profiles[idx];
+  data.profileArchive[id]={id:removed.id,name:removed.name,avatar:removed.avatar,createdAt:removed.createdAt||null,deletedAt:now()};
   data.profiles.splice(idx,1);
   if(data.primaryProfileId===id)data.primaryProfileId=data.profiles[0].id;
   save();return true;
+}
+function getProfileById(id){
+  var active=profileById(id);
+  if(active)return clone(active);
+  return data.profileArchive[id]?clone(data.profileArchive[id]):null;
 }
 function setPrimary(id){
   if(!profileById(id))return false;
@@ -327,21 +336,22 @@ function importLegacyCirca(){
     var item=legacyStats[key];if(!item||!item.name)return;
     var pid=ensureProfileForPlayer({name:item.name,avatar:item.avatar||"😎"});
     var st=ensureStat(pid);
-    st.rounds=Math.max(st.rounds,Number(item.rounds)||0);
-    st.circaRounds=Math.max(st.circaRounds,Number(item.rounds)||0);
-    st.impostor=Math.max(st.impostor,Number(item.impostor)||0);
-    st.impostorEscapes=Math.max(st.impostorEscapes,Number(item.impostorWins)||0);
-    st.closest=Math.max(st.closest,Number(item.closest)||0);
-    st.farthest=Math.max(st.farthest,Number(item.farthest)||0);
-    st.errorSum=Math.max(st.errorSum,Number(item.errorSum)||0);
-    st.errorSamples=Math.max(st.errorSamples,Number(item.errorSamples)||0);
+    st.rounds+=Math.max(0,Number(item.rounds)||0);
+    st.circaRounds+=Math.max(0,Number(item.rounds)||0);
+    st.impostor+=Math.max(0,Number(item.impostor)||0);
+    st.impostorEscapes+=Math.max(0,Number(item.impostorWins)||0);
+    st.closest+=Math.max(0,Number(item.closest)||0);
+    st.farthest+=Math.max(0,Number(item.farthest)||0);
+    st.errorSum+=Math.max(0,Number(item.errorSum)||0);
+    st.errorSamples+=Math.max(0,Number(item.errorSamples)||0);
     importedPlayers++;
   });
-  data.stats.circaRounds=Math.max(data.stats.circaRounds,Number(legacyDevice.roundsPlayed)||0);
-  data.stats.rounds=Math.max(data.stats.rounds,data.stats.circaRounds+data.stats.classicRounds);
+  var importedRounds=Math.max(0,Number(legacyDevice.roundsPlayed)||0);
+  data.stats.circaRounds+=importedRounds;
+  data.stats.rounds+=importedRounds;
   if(Array.isArray(legacyCompleted))legacyCompleted.forEach(function(qid){addUnique(data.stats.circaQids,qid);});
   data.imports.legacyCirca=true;evaluateAchievements();save();
-  return {ok:true,players:importedPlayers,rounds:Number(legacyDevice.roundsPlayed)||0,questions:Array.isArray(legacyCompleted)?legacyCompleted.length:0};
+  return {ok:true,players:importedPlayers,rounds:importedRounds,questions:Array.isArray(legacyCompleted)?legacyCompleted.length:0};
 }
 function reset(){
   try{localStorage.removeItem(KEY);localStorage.removeItem(LEGACY_KEY);}catch(e){}
@@ -355,6 +365,7 @@ window.CIAppState={
   avatars:DEFAULT_AVATARS.slice(),
   snapshot:snapshot,
   getProfiles:function(){return clone(data.profiles);},
+  getProfileById:getProfileById,
   getPrimaryProfile:function(){return clone(profileById(data.primaryProfileId)||data.profiles[0]);},
   getPreferredPlayers:getPreferredPlayers,
   addProfile:addProfile,
