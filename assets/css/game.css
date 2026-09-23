@@ -1514,3 +1514,4 @@ body.setup-fits:not(.game-active){
 }
 .gameHubBack:active{background:var(--card2);transform:scale(.98)}
 .gameHubBack span{font-size:19px;line-height:1}
+.experimentReduceMotion *{scroll-behavior:auto!important;transition:none!important;animation:none!important}
