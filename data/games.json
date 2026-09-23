@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "platformVersion": "62",
+  "platformVersion": "63",
   "games": [
     {
-      "id": "faker-imposter",
-      "title": "Faker Imposter",
+      "id": "circa-imposter",
+      "title": "Circa Imposter",
       "icon": "🎯",
       "description": "Alle schätzen – aber eine Person bekommt eine andere Frage.",
       "meta": "3–12 Spieler · Schätzen & täuschen",
-      "path": "games/faker-imposter/"
+      "path": "games/circa-imposter/"
     },
     {
       "id": "classic-imposter",
