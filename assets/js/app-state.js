@@ -81,8 +81,10 @@ function migrateV72(){
       st.farthest=Math.max(st.farthest,Math.max(0,Number(legacyStat.farthest)||0));
       st.errorSum=Math.max(st.errorSum,Math.max(0,Number(legacyStat.errorSum)||0));
       st.errorSamples=Math.max(st.errorSamples,Math.max(0,Number(legacyStat.errorSamples)||0));
-      st.legacyPerfectUnknown=st.errorSamples>0&&st.errorSum>0;
-      if(st.errorSamples>0&&st.errorSum===0)st.perfect=Math.max(st.perfect,1);
+      if(st.rounds>0){
+        if(st.errorSamples>0&&st.errorSum===0)st.perfect=Math.max(st.perfect,1);
+        else st.legacyPerfectUnknown=true;
+      }
     }
     return existing;
   }
@@ -131,9 +133,44 @@ function migrateV72(){
     v72MigrationCompleted:true,
     v72MigratedAt:now(),
     v72ProfilesFound:profiles.length,
-    v72ProfileChoicePending:profiles.length>1
+    v72ProfileChoicePending:profiles.length>1,
+    v72PerfectUnknown:oldRounds>0
   };
   return migrated;
+}
+function backfillV72Details(data){
+  if(!data||!data.imports||!data.imports.v72MigrationCompleted||data.imports.v72DetailBackfillV1)return;
+  var oldStats=readLegacyJson("circaImpostor.playerStats.v1",{});
+  var oldDevice=readLegacyJson("circaImpostor.deviceStats.v1",{});
+  var oldCompleted=readLegacyJson("circaImpostor.completedQuestions.v1",[]);
+  var oldRounds=Math.max(0,Number(oldDevice&&oldDevice.roundsPlayed)||0);
+  var byName={};
+  (data.profiles||[]).forEach(function(p){
+    if(p&&p.name)byName[cleanName(p.name).toLocaleLowerCase("de-DE")]=p;
+  });
+  if(oldStats&&typeof oldStats==="object"&&!Array.isArray(oldStats)){
+    Object.keys(oldStats).forEach(function(key){
+      var item=oldStats[key];
+      if(!item||typeof item!=="object")return;
+      var profile=byName[cleanName(item.name).toLocaleLowerCase("de-DE")];
+      if(!profile)return;
+      var st=data.profileStats[profile.id]||baseProfileStats();
+      data.profileStats[profile.id]=st;
+      var legacyRounds=Math.max(0,Number(item.rounds)||0);
+      var errorSamples=Math.max(0,Number(item.errorSamples)||0);
+      var errorSum=Math.max(0,Number(item.errorSum)||0);
+      if(legacyRounds>0){
+        if(errorSamples>0&&errorSum===0)st.perfect=Math.max(Number(st.perfect)||0,1);
+        else st.legacyPerfectUnknown=true;
+      }
+      if(oldRounds>0&&legacyRounds===oldRounds&&Array.isArray(oldCompleted)){
+        if(!Array.isArray(st.circaQids))st.circaQids=[];
+        oldCompleted.forEach(function(qid){addUnique(st.circaQids,qid);});
+      }
+    });
+  }
+  if(oldRounds>0)data.imports.v72PerfectUnknown=true;
+  data.imports.v72DetailBackfillV1=true;
 }
 function load(){
   var data=null,hadStoredState=false;
@@ -188,6 +225,7 @@ function load(){
   if(!data.imports||typeof data.imports!=="object")data.imports={v72MigrationCompleted:true,v72ProfileChoicePending:false};
   if(typeof data.imports.v72MigrationCompleted!=="boolean")data.imports.v72MigrationCompleted=true;
   if(typeof data.imports.v72ProfileChoicePending!=="boolean")data.imports.v72ProfileChoicePending=false;
+  backfillV72Details(data);
 
   return data;
 }
@@ -328,7 +366,7 @@ function contribution(round,dir){
 function achievementDefs(){
   return [
     {id:"first-session",icon:"🎬",title:"Erster Abend",text:"Eine Session abgeschlossen",done:function(){return data.sessions.some(function(s){return !!s.endedAt;});},progress:function(){return data.sessions.some(function(s){return !!s.endedAt;})?"1/1":"0/1";}},
-    {id:"perfect",icon:"🎯",title:"Punktlandung",text:"Eine Circa-Schätzung exakt treffen",done:function(){return data.stats.perfectEstimates>=1;},progress:function(){return Math.min(1,data.stats.perfectEstimates)+"/1";}},
+    {id:"perfect",icon:"🎯",title:"Punktlandung",text:"Eine Circa-Schätzung exakt treffen",done:function(){return data.stats.perfectEstimates>=1;},progress:function(){return data.stats.perfectEstimates>=1?"1/1":data.imports&&data.imports.v72PerfectUnknown?"V72: nicht erfasst":"0/1";}},
     {id:"escape-3",icon:"🕵️",title:"Unentdeckt",text:"3× als Imposter davonkommen",done:function(){return Object.values(data.profileStats).some(function(s){return s.impostorEscapes>=3;});},progress:function(){var m=0;Object.values(data.profileStats).forEach(function(s){m=Math.max(m,s.impostorEscapes||0);});return Math.min(3,m)+"/3";}},
     {id:"all-categories",icon:"🗺️",title:"Alles gesehen",text:"Alle 10 Kategorien mindestens einmal",done:function(){return data.stats.categories.length>=10;},progress:function(){return Math.min(10,data.stats.categories.length)+"/10";}},
     {id:"hundred-rounds",icon:"💯",title:"Veteran",text:"100 Runden insgesamt spielen",done:function(){return data.stats.rounds>=100;},progress:function(){return Math.min(100,data.stats.rounds)+"/100";}},
@@ -345,7 +383,7 @@ function profileAchievementDefs(id){
   function endedSession(){return data.sessions.some(function(s){return !!s.endedAt&&Array.isArray(s.profileIds)&&s.profileIds.indexOf(id)!==-1;});}
   return [
     {id:"first-session",icon:"🎬",title:"Erster Abend",text:"Eine Session abgeschlossen",done:endedSession,progress:function(){return endedSession()?"1/1":"0/1";}},
-    {id:"perfect",icon:"🎯",title:"Punktlandung",text:"Eine Circa-Schätzung exakt treffen",done:function(){return st.perfect>=1;},progress:function(){return st.perfect>=1?"1/1":st.legacyPerfectUnknown?"V72 nicht erfasst":"0/1";}},
+    {id:"perfect",icon:"🎯",title:"Punktlandung",text:"Eine Circa-Schätzung exakt treffen",done:function(){return st.perfect>=1;},progress:function(){return st.perfect>=1?"1/1":st.legacyPerfectUnknown?"V72: nicht erfasst":"0/1";}},
     {id:"escape-3",icon:"🕵️",title:"Unentdeckt",text:"3× als Imposter davonkommen",done:function(){return st.impostorEscapes>=3;},progress:function(){return Math.min(3,st.impostorEscapes)+"/3";}},
     {id:"all-categories",icon:"🗺️",title:"Alles gesehen",text:"Alle 10 Kategorien mindestens einmal",done:function(){return st.categories.length>=10;},progress:function(){return Math.min(10,st.categories.length)+"/10";}},
     {id:"hundred-rounds",icon:"💯",title:"Veteran",text:"100 Runden insgesamt spielen",done:function(){return st.rounds>=100;},progress:function(){return Math.min(100,st.rounds)+"/100";}},
