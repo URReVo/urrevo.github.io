@@ -149,9 +149,9 @@
     },
     {
       "cat": "Allgemein",
-      "word": "Fahrstuhl",
+      "word": "Rolltreppe",
       "wid": "imp-0025",
-      "hint": "Gebäude"
+      "hint": "Stufen"
     },
     {
       "cat": "Alltag",
@@ -235,13 +235,13 @@
       "cat": "Alltag",
       "word": "Toilettenpapier",
       "wid": "imp-0039",
-      "hint": "Badezimmer"
+      "hint": "WC"
     },
     {
       "cat": "Alltag",
       "word": "Pfandflasche",
       "wid": "imp-0040",
-      "hint": "Supermarkt"
+      "hint": "Leergut"
     },
     {
       "cat": "Alltag",
@@ -253,7 +253,7 @@
       "cat": "Alltag",
       "word": "Bettdecke",
       "wid": "imp-0042",
-      "hint": "Schlaf"
+      "hint": "Zudecken"
     },
     {
       "cat": "Alltag",
@@ -445,7 +445,7 @@
       "cat": "Auto",
       "word": "Dachbox",
       "wid": "imp-0074",
-      "hint": "Urlaub"
+      "hint": "Autoreise"
     },
     {
       "cat": "Auto",
@@ -493,7 +493,7 @@
       "cat": "Essen",
       "word": "Nutella",
       "wid": "imp-0082",
-      "hint": "Frühstück"
+      "hint": "Brotaufstrich"
     },
     {
       "cat": "Essen",
@@ -559,7 +559,7 @@
       "cat": "Essen",
       "word": "Marmelade",
       "wid": "imp-0093",
-      "hint": "Toast"
+      "hint": "Brot"
     },
     {
       "cat": "Essen",
@@ -577,7 +577,7 @@
       "cat": "Essen",
       "word": "Tiramisu",
       "wid": "imp-0096",
-      "hint": "Kaffee"
+      "hint": "Dessert"
     },
     {
       "cat": "Essen",
@@ -595,7 +595,7 @@
       "cat": "Essen",
       "word": "Rührei",
       "wid": "imp-0099",
-      "hint": "Frühstück"
+      "hint": "Pfanne"
     },
     {
       "cat": "Essen",
@@ -685,7 +685,7 @@
       "cat": "Geografie",
       "word": "Küste",
       "wid": "imp-0114",
-      "hint": "Meer"
+      "hint": "Uferlinie"
     },
     {
       "cat": "Geografie",
@@ -697,7 +697,7 @@
       "cat": "Geografie",
       "word": "Halbinsel",
       "wid": "imp-0116",
-      "hint": "Küste"
+      "hint": "Landzunge"
     },
     {
       "cat": "Geografie",
@@ -715,7 +715,7 @@
       "cat": "Geografie",
       "word": "Nordpol",
       "wid": "imp-0119",
-      "hint": "Eis"
+      "hint": "Arktis"
     },
     {
       "cat": "Geografie",
@@ -739,7 +739,7 @@
       "cat": "Geografie",
       "word": "Höhle",
       "wid": "imp-0123",
-      "hint": "Felsen"
+      "hint": "Unterirdisch"
     },
     {
       "cat": "Geografie",
@@ -793,7 +793,7 @@
       "cat": "Natur",
       "word": "Delfin",
       "wid": "imp-0132",
-      "hint": "Meer"
+      "hint": "Sonar"
     },
     {
       "cat": "Natur",
@@ -829,7 +829,7 @@
       "cat": "Natur",
       "word": "Fuchs",
       "wid": "imp-0138",
-      "hint": "Wald"
+      "hint": "Bau"
     },
     {
       "cat": "Natur",
@@ -871,7 +871,7 @@
       "cat": "Natur",
       "word": "Qualle",
       "wid": "imp-0145",
-      "hint": "Meer"
+      "hint": "Tentakel"
     },
     {
       "cat": "Natur",
@@ -883,7 +883,7 @@
       "cat": "Natur",
       "word": "Otter",
       "wid": "imp-0147",
-      "hint": "Fluss"
+      "hint": "Gewässer"
     },
     {
       "cat": "Natur",
@@ -895,13 +895,13 @@
       "cat": "Natur",
       "word": "Löwe",
       "wid": "imp-0149",
-      "hint": "Savanne"
+      "hint": "Raubkatze"
     },
     {
       "cat": "Natur",
       "word": "Papagei",
       "wid": "imp-0150",
-      "hint": "Tropen"
+      "hint": "Federn"
     },
     {
       "cat": "Popkultur",
@@ -1009,7 +1009,7 @@
       "cat": "Popkultur",
       "word": "Karaoke",
       "wid": "imp-0168",
-      "hint": "Mikrofon"
+      "hint": "Singen"
     },
     {
       "cat": "Popkultur",
@@ -1027,13 +1027,13 @@
       "cat": "Popkultur",
       "word": "Musical",
       "wid": "imp-0171",
-      "hint": "Bühne"
+      "hint": "Gesang"
     },
     {
       "cat": "Popkultur",
       "word": "Blockbuster",
       "wid": "imp-0172",
-      "hint": "Hollywood"
+      "hint": "Kinohit"
     },
     {
       "cat": "Popkultur",
@@ -1045,7 +1045,7 @@
       "cat": "Popkultur",
       "word": "Playlist",
       "wid": "imp-0174",
-      "hint": "Musik"
+      "hint": "Songs"
     },
     {
       "cat": "Popkultur",
@@ -1075,7 +1075,7 @@
       "cat": "Spicy 🌶️",
       "word": "Stripclub",
       "wid": "imp-0179",
-      "hint": "Bühne"
+      "hint": "Nachtleben"
     },
     {
       "cat": "Spicy 🌶️",
@@ -1141,7 +1141,7 @@
       "cat": "Spicy 🌶️",
       "word": "Liebeskummer",
       "wid": "imp-0190",
-      "hint": "Trennung"
+      "hint": "Herzschmerz"
     },
     {
       "cat": "Spicy 🌶️",
@@ -1177,7 +1177,7 @@
       "cat": "Spicy 🌶️",
       "word": "Love Story",
       "wid": "imp-0196",
-      "hint": "Kino"
+      "hint": "Romantik"
     },
     {
       "cat": "Spicy 🌶️",
@@ -1339,13 +1339,13 @@
       "cat": "Sport",
       "word": "Triathlon",
       "wid": "imp-0223",
-      "hint": "Ausdauer"
+      "hint": "Mehrkampf"
     },
     {
       "cat": "Sport",
       "word": "Snowboard",
       "wid": "imp-0224",
-      "hint": "Piste"
+      "hint": "Brett"
     },
     {
       "cat": "Sport",
@@ -1363,7 +1363,7 @@
       "cat": "Technik",
       "word": "Router",
       "wid": "imp-0227",
-      "hint": "Internet"
+      "hint": "WLAN"
     },
     {
       "cat": "Technik",
@@ -1381,7 +1381,7 @@
       "cat": "Technik",
       "word": "Drucker",
       "wid": "imp-0230",
-      "hint": "Papier"
+      "hint": "Toner"
     },
     {
       "cat": "Technik",
@@ -1453,7 +1453,7 @@
       "cat": "Technik",
       "word": "Kopierer",
       "wid": "imp-0242",
-      "hint": "Papier"
+      "hint": "Duplikat"
     },
     {
       "cat": "Technik",
