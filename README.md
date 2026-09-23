@@ -42,14 +42,14 @@ Optional kann der Imposter ein **ähnliches Hinweiswort** erhalten. Die Kategori
 /
 ├── index.html                         # Spiele-Launcher
 ├── README.md
-├── CHANGELOG.md
+├── CHANGELOG.md\n├── manifest.webmanifest                # PWA-Metadaten\n├── service-worker.js                  # Offline-Cache & Versionswechsel
 │
 ├── assets/
 │   ├── css/
 │   │   ├── launcher.css               # Startbildschirm
 │   │   └── game.css                   # gemeinsames Game-Design
 │   └── js/
-│       ├── launcher.js                # rendert den Spielekatalog
+│       ├── launcher.js                # rendert den Spielekatalog\n│       ├── pwa.js                     # registriert Offline-/Update-Unterstützung
 │       └── game-engine.js             # gemeinsame bestehende Spiel-Engine
 │
 ├── data/
@@ -109,6 +109,18 @@ Aktuell gibt es noch **keinen Online-Multiplayer**. Die neue Trennung schafft ab
 - Multiplayer-spezifischer Zustand muss nicht in den Launcher eingebaut werden.
 
 Für echten Multiplayer werden später weiterhin ein gemeinsamer Serverzustand bzw. ein Realtime-Dienst benötigt.
+
+## 📴 Offline / PWA ab V70
+
+Ab V70 kann **Imposter Games nach einem erfolgreichen Online-Start auch offline verwendet werden**. Ein Service Worker speichert ausschließlich die definierten App-Dateien wie Launcher, Spielseiten, CSS, JavaScript, Icons sowie die Circa- und Classic-Datenbanken.
+
+- Die bestehende Home-Screen-Verknüpfung muss für Updates nicht gelöscht oder neu angelegt werden.
+- Neue Versionen werden bei einem späteren Online-Start automatisch geprüft und im Hintergrund vorbereitet.
+- Eine laufende Runde wird nicht durch einen erzwungenen Reload unterbrochen.
+- Alte App-Caches mit dem Präfix `imposter-games-` werden beim Aktivieren einer neuen Version automatisch gelöscht.
+- Spieler, Einstellungen, Statistiken und Fortschritte bleiben davon getrennt in `localStorage` und werden durch den Cache-Cleanup nicht gelöscht.
+- Es werden keine beliebigen besuchten URLs dauerhaft gesammelt; der Offline-Cache ist auf die definierten App-Dateien begrenzt.
+- Der allererste Start muss online erfolgen, damit die Offline-Dateien installiert werden können.
 
 ## 📲 Beste Spielerfahrung auf iPhone und iPad
 
