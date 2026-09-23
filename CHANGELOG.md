@@ -2,6 +2,17 @@
 
 Die Versionshistorie dokumentiert die aus den Projektchats und der GitHub-Historie eindeutig rekonstruierbaren Änderungen. Frühere Zwischenstände mit generischen Upload-Commits werden nicht künstlich versioniert oder mit erfundenen Details ergänzt.
 
+## V67 — First-Paint und iOS-Sound stabilisiert
+
+- Kritische `.hidden`-Regel direkt in beide Spielseiten aufgenommen, damit versteckte Overlays bereits vor dem Laden der externen CSS-Datei unsichtbar bleiben.
+- Dadurch kann beim Öffnen von Klassisches Imposter kein Circa-/Runden-Overlay mehr für einen kurzen First-Paint-Frame aufblitzen.
+- Web-Audio-Resume für Safari und Home-Screen-App serialisiert: parallele `AudioContext.resume()`-Aufrufe teilen jetzt einen gemeinsamen Resume-Vorgang.
+- Sounds, die während des Resume-Vorgangs ausgelöst werden, warten kurz auf den laufenden AudioContext statt verloren zu gehen.
+- Fehlgeschlagene iOS-Resume-Versuche werden nicht festgehalten; der nächste echte Touch kann sofort erneut entsperren.
+- `pageshow` und `visibilitychange` erzeugen keinen neuen AudioContext mehr außerhalb eines Benutzer-Tipps, sondern versuchen nur einen bereits existierenden Context wiederherzustellen.
+- Veraltete wartende UI-Sounds werden nach längerem Hintergrundbetrieb nicht verspätet nachgespielt.
+- Asset-/Plattformversion auf V67 angehoben.
+
 ## V66 — Spielseiten entkoppelt
 
 - Hotfix: Classic-Hinweis-/Timeroptionen nach der DOM-Trennung wieder sichtbar gemacht; die Optionen gehören jetzt direkt zur Classic-Seite und hängen nicht mehr von der alten Modus-Umschaltung ab.
