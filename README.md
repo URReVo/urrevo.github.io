@@ -1,26 +1,40 @@
 # 🎭 Imposter Games
 
-**Imposter Games** ist eine statische, für iPhone und iPad optimierte Partyspiel-Plattform mit zwei lokalen Imposter-Spielen.
+**Imposter Games** ist eine für iPhone und iPad optimierte Partyspiel-App mit zwei lokalen Imposter-Spielen.
 
-**Aktuelle Plattformversion:** V73  
+**Aktuelle Version:** V73  
 **Live:** https://urrevo.github.io/
 
-Die App läuft vollständig im Browser bzw. als installierbare Home-Screen-Web-App. Es gibt aktuell kein Backend und keinen Online-Multiplayer.
+Die App läuft direkt im Browser und kann auf iPhone oder iPad wie eine normale App zum Home-Bildschirm hinzugefügt werden. Alle Profile, Statistiken und Spielstände bleiben lokal auf dem Gerät.
+
+## 📲 Am besten als App auf iPhone oder iPad nutzen
+
+Für die beste Darstellung und das app-ähnlichste Gefühl sollte Imposter Games über **Safari zum Home-Bildschirm** hinzugefügt werden.
+
+1. **https://urrevo.github.io/** in Safari öffnen.
+2. Auf **Teilen** tippen.
+3. **Zum Home-Bildschirm** auswählen.
+4. Mit **Hinzufügen** bestätigen.
+5. Imposter Games anschließend über das neue Symbol auf dem Home-Bildschirm starten.
+
+Die Oberfläche ist für die Nutzung im **Hochformat** optimiert.
+
+Nach dem ersten erfolgreichen Online-Start funktioniert die App auch offline. Neue Versionen werden im Hintergrund vorbereitet und beim nächsten Start übernommen, ohne eine laufende Runde zwangsweise neu zu laden.
 
 ## 🎮 Spiele
 
 ### 🎯 Circa Imposter
 
-Alle Spieler bekommen eine numerische Schätzfrage. Eine Person ist der Imposter und erhält eine andere Frage aus derselben Kategorie. Die Antworten können dadurch plausibel zusammenpassen, obwohl nicht alle dieselbe Frage gesehen haben.
+Alle Spieler bekommen eine numerische Schätzfrage. Eine Person ist der Imposter und erhält eine andere Frage aus derselben Kategorie. Dadurch können die Antworten plausibel zusammenpassen, obwohl nicht alle dieselbe Frage gesehen haben.
 
 - 3–12 Spieler
 - 520 Fragepaare / 1.040 Fragetexte
 - 10 Kategorien
 - Leicht, Mittel, Schwer und Zufall
-- lokaler Deck- und Fragenfortschritt
-- Wiederholungsschutz für bereits gespielte bzw. sehr ähnliche Fragen
-- faire Imposter-Auswahl bei kleinen Gruppen
-- Circa-interne Rangliste sowie gemeinsame V73-Profilstatistik
+- Wiederholungsschutz für bereits gespielte oder sehr ähnliche Fragen
+- fairere Imposter-Auswahl bei kleinen Gruppen
+- persönliche Statistik und Circa-Rangliste
+- lokaler Fragen- und Deck-Fortschritt
 
 ### 🎭 Klassisches Imposter
 
@@ -29,68 +43,54 @@ Alle normalen Spieler sehen dasselbe geheime Wort. Der Imposter kennt das Wort n
 - 3–12 Spieler
 - 250 eindeutige Wörter
 - 25 Wörter pro Kategorie
-- Hinweis für den Imposter: an / aus
+- optionaler Hinweis für den Imposter
 - optionaler Timer von 1:00 bis 5:00 Minuten
 - Timer pausierbar
-- eigener Wort-Deck-Fortschritt
-- gemeinsame V73-Profil- und Sessionstatistik
+- eigener Wiederholungsschutz
+- persönliche Profil- und Sessionstatistik
 
-## 🏠 V73 App-Shell
+## 🏠 Launcher und Profile
 
-Der Launcher ist mehr als eine Spieleauswahl. Er verwaltet die gemeinsame lokale Plattformlogik:
+Der Launcher verbindet beide Spiele zu einer gemeinsamen App.
+
+Enthalten sind:
 
 - lokale Spielerprofile mit stabilen IDs
-- auswählbares eigenes Profil
-- persönliche und globale Statistik
-- Sessions über Circa und Classic hinweg
+- Auswahl des eigenen Profils
+- persönliche und gesamte Statistik
+- gemeinsame Sessions über Circa und Classic
 - Achievements / persönliche Sammlung
 - Schnellstart-Presets
-- Sound, Haptik und Animationen als gemeinsame Einstellungen
-- dezente Web-Audio-UI-Töne im Launcher
-- JSON-Backup und Wiederherstellung
+- Sound, Haptik und Animationen
+- dezente UI-Sounds im Launcher
+- Backup und Wiederherstellung
 - Offline- und Update-Status
 
-Eine Session bleibt aktiv, bis sie im Launcher ausdrücklich beendet wird. Erst dann wird sie als abgeschlossene Session in der Historie geführt und für Session-Awards bzw. entsprechende Achievements ausgewertet.
+Eine Session bleibt aktiv, bis sie im Launcher ausdrücklich beendet wird. Erst dann wird sie als abgeschlossene Session gespeichert und für Session-Awards und entsprechende Achievements ausgewertet.
 
-## 💾 Lokale Daten und Profile
+## 📊 Statistik
 
-Alle persönlichen Daten liegen lokal im Browser über `localStorage`.
+V73 speichert neue Runden direkt auf den jeweiligen Profil-IDs. Dadurch bleiben Statistiken auch erhalten, wenn ein Profil später umbenannt oder der Avatar geändert wird.
 
-Der gemeinsame V73-App-State verwendet:
+Getrackt werden je nach Spiel unter anderem:
 
-```text
-imposterGames.appState.v1
-```
+- gespielte Runden
+- Circa- und Classic-Runden
+- Imposter-Einsätze
+- unentdeckte Imposter-Runden
+- Closest / Farthest bei Circa
+- Punktlandungen
+- gespielte Fragen und Wörter
+- Kategorien
+- Sessions und Awards
 
-Spielbezogene V73-Daten liegen unter:
+Ältere V72-Daten werden soweit eindeutig möglich übernommen. Historische Werte, die V72 nicht separat gespeichert hat, werden nicht erfunden. Deshalb kann beispielsweise bei alten Punktlandungen **„V72: nicht erfasst“** erscheinen.
 
-```text
-imposterGames.v73.game.*
-```
+## 💾 Backup
 
-Dazu gehören unter anderem Spielerlisten, Kategorien, Deck-Fortschritt, Circa-Fragenfortschritt, Schwierigkeit, Classic-Timer und die Circa-interne Rangliste.
+Unter Einstellungen können die lokalen Daten als JSON-Backup exportiert und später wieder importiert werden.
 
-### Migration von V72
-
-Beim ersten V73-Start werden vorhandene V72-Daten soweit eindeutig möglich übernommen:
-
-- Spielername und Avatar
-- vorhandene Circa-Spielerstatistik
-- gespeicherte Circa-/Classic-Spielerlisten
-- globale Circa-Fragenfortschritte
-- relevante Spieloptionen und Deckstände
-
-Aus den alten Spielern entstehen V73-Profile mit stabilen IDs. Sind mehrere Spieler vorhanden, wird einmalig gefragt, welches Profil dem Benutzer des Geräts gehört.
-
-Die alten `circaImpostor.*`- und `classicImpostor.*`-Schlüssel werden dabei nicht verändert und bleiben als Rückfallebene bestehen.
-
-Nicht eindeutig rekonstruierbare historische Daten werden nicht erfunden. Beispielsweise wurde die Anzahl persönlicher „Punktlandungen“ unter V72 nicht separat gespeichert; solche Altwerte werden entsprechend als unbekannt gekennzeichnet.
-
-## 📦 Backup
-
-V73 verwendet das Backup-Format `imposter-games-backup`, aktuell in **Formatversion 2**.
-
-Ein Export enthält:
+Das aktuelle Backup enthält unter anderem:
 
 - Profile und Profilstatistik
 - Sessions und Awards
@@ -102,32 +102,35 @@ Ein Export enthält:
 
 Ältere V1-Backups bleiben importierbar.
 
-## 📴 Offline / PWA
+## 📴 Offline und Updates
 
-Imposter Games kann nach einem erfolgreichen Online-Start auch offline verwendet werden.
+Nach dem ersten vollständigen Online-Start werden die benötigten App-Dateien lokal zwischengespeichert. Danach können Launcher sowie Circa und Classic auch ohne Internetverbindung geöffnet werden.
 
-Der Service Worker cached nur die definierten App-Ressourcen:
+Bei einem Update wird die neue Version zunächst vorbereitet. Eine laufende Partie wird dabei nicht unterbrochen. Nach einem späteren Neustart der App wird die neue Version aktiv.
 
-- Launcher
-- beide Spielseiten
-- CSS und JavaScript
-- Manifest und Icons
-- Circa- und Classic-Datenbanken
+Profile, Statistiken und Spielstände liegen getrennt vom App-Cache und werden durch ein normales Update nicht gelöscht.
 
-Updates werden bei einem späteren Online-Start vorbereitet, ohne eine laufende Runde zwangsweise neu zu laden. Die neue Version wird beim folgenden App-Start aktiv. Alte App-Caches werden anschließend automatisch entfernt.
+## 🔄 Übernahme von V72
 
-`localStorage`-Daten sind vom Cache getrennt und werden durch ein App-Update nicht gelöscht.
+Beim ersten V73-Start werden vorhandene V72-Daten soweit möglich übernommen.
 
-Für die app-ähnlichste Nutzung auf iPhone oder iPad:
+Dazu gehören unter anderem:
 
-1. https://urrevo.github.io/ in Safari öffnen.
-2. **Teilen** wählen.
-3. **Zum Home-Bildschirm** auswählen.
-4. Imposter Games über das neue App-Symbol starten.
+- Spielernamen und Avatare
+- vorhandene Circa-Spielerstatistik
+- gespeicherte Circa-/Classic-Spielerlisten
+- gespielte Circa-Fragen
+- relevante Spieloptionen und Deckstände
 
-Die Oberfläche ist für Hochformat optimiert.
+Aus den alten Spielern entstehen lokale V73-Profile mit stabilen IDs. Sind mehrere Spieler vorhanden, fragt die App einmalig, welches Profil dem Benutzer des Geräts gehört.
 
-## 🧱 Projektstruktur
+Die alten V72-Daten bleiben dabei unverändert als Rückfallebene auf dem Gerät bestehen.
+
+---
+
+## 🧱 Technischer Aufbau
+
+Imposter Games ist vollständig clientseitig aufgebaut und benötigt kein Backend.
 
 ```text
 /
@@ -152,52 +155,30 @@ Die Oberfläche ist für Hochformat optimiert.
 │   ├── circa-questions.json
 │   └── classic-words.json
 │
-├── games/
-│   ├── circa-imposter/
-│   │   └── index.html
-│   └── classic-imposter/
-│       └── index.html
-│
-├── scripts/
-│   └── validate-release.mjs
-│
-└── .github/workflows/
-    └── validate.yml
+└── games/
+    ├── circa-imposter/
+    │   └── index.html
+    └── classic-imposter/
+        └── index.html
 ```
 
-### Zentrale Dateien
+### Lokale Speicherbereiche
 
-- `assets/js/app-state.js` – Profile, Sessions, Statistik, Migration, Backup und gemeinsame Einstellungen
-- `assets/js/game-engine.js` – gemeinsame Runtime für Circa und Classic
-- `assets/js/launcher.js` – App-Shell und Launcher-Interaktionen
-- `data/circa-questions.json` – Circa-Fragenbank
-- `data/classic-words.json` – Classic-Wortbank
-- `service-worker.js` – Offline-Cache und atomare Updates
-- `scripts/validate-release.mjs` – Release- und Regressionstests
+Der gemeinsame App-State liegt unter:
 
-Die beiden Spielseiten besitzen getrennte DOMs und laden nur die Ansichten, die der jeweilige Modus benötigt. Gemeinsame Logik bleibt in der zentralen Game-Engine.
-
-## ✅ Validierung
-
-Bei Pushes auf `main` und bei Pull Requests führt GitHub Actions den Release-Validator aus:
-
-```bash
-node scripts/validate-release.mjs
+```text
+imposterGames.appState.v1
 ```
 
-Der Validator prüft unter anderem:
+Spielbezogene V73-Daten liegen unter:
 
-- konsistente Release-Versionen und Service-Worker-Cache
-- JavaScript-Syntax
-- doppelte HTML-IDs
-- Circa-Fragenbank und Slider-Grenzen
-- Classic-Wörter und Duplikate
-- getrennte Spiel-DOMs
-- V72→V73-Migration
-- Profil- und Sessionzuordnung
-- Rundenzähler und Outcome-Korrekturen
-- Reset und Backup-Wiederherstellung
-- zentrale Sound-/Animationslogik
+```text
+imposterGames.v73.game.*
+```
+
+Darin befinden sich unter anderem Spielerlisten, Kategorien, Deck-Fortschritte, Circa-Fragenfortschritt, Schwierigkeit, Classic-Timer und die Circa-Rangliste.
+
+Die alten `circaImpostor.*`- und `classicImpostor.*`-Schlüssel werden bei der Migration nicht überschrieben.
 
 ## 🛠 Technik
 
