@@ -42,17 +42,22 @@ var roundStatsRecorded=false;
 var roundOutcomeChoice=null;
 var diagRoundDirty=false;
 
-var STORAGE_PLAYERS="circaImpostor.players.v1";
+/* V63: per-game local state. Circa keeps its historic keys so existing
+   Circa progress/statistics remain available after the platform split. */
+var STORAGE_PLAYERS=gameMode==="classic"?"classicImpostor.players.v1":"circaImpostor.players.v1";
+var STORAGE_CATEGORIES=gameMode==="classic"?"classicImpostor.categories.v1":"circaImpostor.categories.v1";
 var STORAGE_DECK="circaImpostor.deckProgress.v5";
 var STORAGE_DIFFICULTY="circaImpostor.difficulty.v1";
-var STORAGE_CATEGORIES="circaImpostor.categories.v1";
 var STORAGE_STATS="circaImpostor.playerStats.v1";
 var STORAGE_DEVICE_STATS="circaImpostor.deviceStats.v1";
 var STORAGE_COMPLETED_QUESTIONS="circaImpostor.completedQuestions.v1";
 var STORAGE_MODE="circaImpostor.gameMode.v1";
-var STORAGE_CLASSIC_DECK="circaImpostor.classicDeck.v1";
-var STORAGE_CLASSIC_HINT="circaImpostor.classicHint.v1";
-var STORAGE_CLASSIC_TIMER="circaImpostor.classicTimer.v1";
+var STORAGE_CLASSIC_DECK="classicImpostor.deck.v1";
+var STORAGE_CLASSIC_HINT="classicImpostor.hint.v1";
+var STORAGE_CLASSIC_TIMER="classicImpostor.timer.v1";
+var LEGACY_CLASSIC_DECK="circaImpostor.classicDeck.v1";
+var LEGACY_CLASSIC_HINT="circaImpostor.classicHint.v1";
+var LEGACY_CLASSIC_TIMER="circaImpostor.classicTimer.v1";
 var deckProgress={};
 var completedQuestionIds=[];
 var savedPlayerNames=[];
@@ -108,8 +113,19 @@ function difficultyHintText(difficulty){
 }
 
 function loadClassicSettings(){
-  classicHintEnabled=storageGet(STORAGE_CLASSIC_HINT,true)!==false;
-  var timer=Number(storageGet(STORAGE_CLASSIC_TIMER,0));
+  var storedHint=storageGet(STORAGE_CLASSIC_HINT,null);
+  if(storedHint===null){
+    storedHint=storageGet(LEGACY_CLASSIC_HINT,true);
+    storageSet(STORAGE_CLASSIC_HINT,storedHint!==false);
+  }
+  classicHintEnabled=storedHint!==false;
+
+  var storedTimer=storageGet(STORAGE_CLASSIC_TIMER,null);
+  if(storedTimer===null){
+    storedTimer=storageGet(LEGACY_CLASSIC_TIMER,0);
+    storageSet(STORAGE_CLASSIC_TIMER,Number(storedTimer)||0);
+  }
+  var timer=Number(storedTimer);
   if([0,60,90,120,150,180,210,240,270,300].indexOf(timer)===-1)timer=0;
   classicTimerSeconds=timer;
 }
@@ -284,7 +300,11 @@ function completedQuestionCount(){
 }
 
 function loadClassicDeckProgress(){
-  var data=storageGet(STORAGE_CLASSIC_DECK,{});
+  var data=storageGet(STORAGE_CLASSIC_DECK,null);
+  if(data===null){
+    data=storageGet(LEGACY_CLASSIC_DECK,{});
+    storageSet(STORAGE_CLASSIC_DECK,data&&typeof data==="object"&&!Array.isArray(data)?data:{});
+  }
   if(!data||typeof data!=="object"||Array.isArray(data))data={};
   var valid={};
   for(var key in data){
@@ -2634,5 +2654,27 @@ if(!window.PointerEvent){
   },{passive:false});
 }
 
-loadSavedGameMode();loadSavedDifficulty();loadClassicSettings();loadDeckProgress();loadClassicDeckProgress();loadCompletedQuestionIds();loadSavedPlayers();loadPlayerStats();initCategories();syncDifficultyUI();renderNames();syncGameModeUI();updateToolbar();show("setup");
+loadSavedGameMode();
+if(gameMode==="classic"){
+  loadClassicSettings();
+  loadClassicDeckProgress();
+  loadSavedPlayers();
+  initCategories();
+  renderNames();
+  syncGameModeUI();
+  updateToolbar();
+  show("setup");
+}else{
+  loadSavedDifficulty();
+  loadDeckProgress();
+  loadCompletedQuestionIds();
+  loadSavedPlayers();
+  loadPlayerStats();
+  initCategories();
+  syncDifficultyUI();
+  renderNames();
+  syncGameModeUI();
+  updateToolbar();
+  show("setup");
+}
 })();
