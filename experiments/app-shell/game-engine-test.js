@@ -128,6 +128,7 @@ function experimentBeginSession(){
   experimentSessionId=experimentAppState.beginSession(players.map(function(p){
     return {profileId:experimentPlayerId(p),name:p.name,avatar:p.avatar};
   }));
+  if(experimentAppState.setActiveSessionGame)experimentAppState.setActiveSessionGame(gameMode);
   return experimentSessionId;
 }
 function experimentCircaPayload(outcome){
@@ -203,7 +204,9 @@ function experimentApplyLaunchPreset(){
     storageSet(STORAGE_CATEGORIES,selectedCategories.slice());
   }
 
-  var preferred=experimentAppState.getPreferredPlayers(count);
+  var launchGroup=experimentAppState.consumeLaunchGroup?experimentAppState.consumeLaunchGroup():null;
+  var preferred=launchGroup&&launchGroup.length?launchGroup:experimentAppState.getPreferredPlayers(count);
+  if(launchGroup&&launchGroup.length)count=Math.max(3,Math.min(12,launchGroup.length));
   if(preferred.length){
     savedPlayerNames=[];savedPlayerProfileIds=[];avatarSelections=[];
     for(var i=0;i<count;i++){
