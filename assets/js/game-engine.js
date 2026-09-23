@@ -73,24 +73,26 @@ var roundStatsRecorded=false;
 var roundOutcomeChoice=null;
 var diagRoundDirty=false;
 
-/* Per-game local state. Circa keeps its historic keys so existing
-   Circa progress/statistics remain available after the platform split. */
-var STORAGE_PLAYERS=gameMode==="classic"?"classicImpostor.players.v1":"circaImpostor.players.v1";
-var STORAGE_CATEGORIES=gameMode==="classic"?"classicImpostor.categories.v1":"circaImpostor.categories.v1";
-var STORAGE_DECK="circaImpostor.deckProgress.v5";
-var STORAGE_DIFFICULTY="circaImpostor.difficulty.v1";
-var STORAGE_STATS="circaImpostor.playerStats.v1";
-var STORAGE_DEVICE_STATS="circaImpostor.deviceStats.v1";
-var STORAGE_COMPLETED_QUESTIONS="circaImpostor.completedQuestions.v1";
-var STORAGE_CLASSIC_DECK="classicImpostor.deck.v1";
-var STORAGE_CLASSIC_HINT="classicImpostor.hint.v1";
-var STORAGE_CLASSIC_TIMER="classicImpostor.timer.v1";
-var LEGACY_CLASSIC_DECK="circaImpostor.classicDeck.v1";
-var LEGACY_CLASSIC_HINT="circaImpostor.classicHint.v1";
-var LEGACY_CLASSIC_TIMER="circaImpostor.classicTimer.v1";
+/* V73 uses its own game-local keys. V72 keys are copied once and then
+   left untouched as a rollback-safe snapshot. */
+var EXP_STORAGE="imposterGames.v73.game.";
+var STORAGE_PLAYERS=EXP_STORAGE+(gameMode==="classic"?"classic.players.v1":"circa.players.v1");
+var STORAGE_CATEGORIES=EXP_STORAGE+(gameMode==="classic"?"classic.categories.v1":"circa.categories.v1");
+var STORAGE_DECK=EXP_STORAGE+"circa.deckProgress.v1";
+var STORAGE_DIFFICULTY=EXP_STORAGE+"circa.difficulty.v1";
+var STORAGE_STATS=EXP_STORAGE+"circa.playerStats.v1";
+var STORAGE_DEVICE_STATS=EXP_STORAGE+"circa.deviceStats.v1";
+var STORAGE_COMPLETED_QUESTIONS=EXP_STORAGE+"circa.completedQuestions.v1";
+var STORAGE_CLASSIC_DECK=EXP_STORAGE+"classic.deck.v1";
+var STORAGE_CLASSIC_HINT=EXP_STORAGE+"classic.hint.v1";
+var STORAGE_CLASSIC_TIMER=EXP_STORAGE+"classic.timer.v1";
+var LEGACY_CLASSIC_DECK=EXP_STORAGE+"legacy.classicDeck.v1";
+var LEGACY_CLASSIC_HINT=EXP_STORAGE+"legacy.classicHint.v1";
+var LEGACY_CLASSIC_TIMER=EXP_STORAGE+"legacy.classicTimer.v1";
 var deckProgress={};
 var completedQuestionIds=[];
 var savedPlayerNames=[];
+var savedPlayerProfileIds=[];
 var selectedDifficulty="mittel";
 var classicDeckProgress={};
 var classicCurrent=null;
@@ -103,6 +105,135 @@ var classicTimerPaused=false;
 var classicTimerDeadline=0;
 var classicTimerExpiredSignaled=false;
 var classicResolved=false;
+
+var experimentAppState=window.CIAppState||null;
+var experimentGameRunId="run_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,7);
+var experimentSessionId=null;
+var experimentPreferences=experimentAppState?experimentAppState.getPreferences():{sound:true,haptics:true,animations:true};
+
+function experimentValidProfileId(profileId,name){
+  if(!experimentAppState||!profileId||!experimentAppState.getProfileById)return null;
+  var profile=experimentAppState.getProfileById(profileId);
+  if(!profile)return null;
+  return cleanPlayerName(profile.name).toLocaleLowerCase("de-DE")===cleanPlayerName(name).toLocaleLowerCase("de-DE")?profile.id:null;
+}
+function experimentPlayerId(player){
+  if(!experimentAppState)return null;
+  var direct=experimentValidProfileId(player&&player.profileId,player&&player.name);
+  if(direct)return direct;
+  return experimentAppState.ensureProfileForPlayer({name:player.name,avatar:player.avatar});
+}
+function experimentBeginSession(){
+  if(!experimentAppState||!players.length)return null;
+  experimentSessionId=experimentAppState.beginSession(players.map(function(p){
+    return {profileId:experimentPlayerId(p),name:p.name,avatar:p.avatar};
+  }));
+  if(experimentAppState.setActiveSessionGame)experimentAppState.setActiveSessionGame(gameMode);
+  return experimentSessionId;
+}
+function experimentCircaPayload(outcome){
+  if(!experimentAppState||diagRoundDirty||!current||!players.length)return null;
+  var perf=roundPerformance(),byIndex={};
+  for(var p=0;p<perf.length;p++)byIndex[perf[p].index]=perf[p];
+  var rows=[];
+  for(var i=0;i<players.length;i++){
+    var info=byIndex[i],target=playerTargetValue(i),guess=Number(players[i].guess);
+    rows.push({
+      profileId:experimentPlayerId(players[i]),
+      role:i===impIndex?"impostor":"normal",
+      guess:guess,
+      target:target,
+      error:info&&isFinite(info.err)?info.err:errorPercent(guess,target),
+      closest:!!(perf[0]&&perf[0].index===i),
+      farthest:!!(perf[perf.length-1]&&perf[perf.length-1].index===i),
+      perfect:Math.abs(guess-target)<0.000001
+    });
+  }
+  return {
+    roundKey:experimentGameRunId+"::circa::"+round,
+    game:"circa",
+    category:current.cat,
+    difficulty:selectedDifficulty,
+    qid:current.qid,
+    impostorId:rows[impIndex]&&rows[impIndex].profileId,
+    impostorEscaped:!!outcome,
+    players:rows
+  };
+}
+function experimentRecordCirca(outcome){
+  if(!experimentAppState)return;
+  if(!experimentSessionId)experimentBeginSession();
+  var payload=experimentCircaPayload(outcome);
+  if(payload)experimentAppState.recordRound(payload);
+}
+function experimentRecordClassic(){
+  if(!experimentAppState||diagRoundDirty||!classicCurrent||!players.length)return;
+  if(!experimentSessionId)experimentBeginSession();
+  var rows=[];
+  for(var i=0;i<players.length;i++){
+    rows.push({profileId:experimentPlayerId(players[i]),role:i===impIndex?"impostor":"normal"});
+  }
+  experimentAppState.recordRound({
+    roundKey:experimentGameRunId+"::classic::"+round,
+    game:"classic",
+    category:classicCurrent.cat,
+    wid:classicCurrent.wid,
+    word:classicCurrent.word,
+    hintEnabled:classicHintEnabled,
+    timer:classicTimerSeconds,
+    impostorId:rows[impIndex]&&rows[impIndex].profileId,
+    impostorEscaped:null,
+    players:rows
+  });
+}
+function experimentApplyLaunchPreset(){
+  if(!experimentAppState)return;
+  var preset=experimentAppState.consumeLaunchPreset(gameMode);
+  if(preset){
+    count=Math.max(3,Math.min(12,Number(preset.playerCount)||count));
+    if(Array.isArray(preset.categories)&&preset.categories.length)selectedCategories=preset.categories.slice();
+    if(gameMode==="classic"){
+      classicHintEnabled=preset.hint!==false;
+      classicTimerSeconds=[0,60,90,120,150,180,210,240,270,300].indexOf(Number(preset.timer))!==-1?Number(preset.timer):classicTimerSeconds;
+      storageSet(STORAGE_CLASSIC_HINT,classicHintEnabled);
+      storageSet(STORAGE_CLASSIC_TIMER,classicTimerSeconds);
+    }else{
+      if(["leicht","mittel","schwer","zufaellig"].indexOf(preset.difficulty)!==-1)selectedDifficulty=preset.difficulty;
+      storageSet(STORAGE_DIFFICULTY,selectedDifficulty);
+    }
+    storageSet(STORAGE_CATEGORIES,selectedCategories.slice());
+  }
+
+  var launchGroup=experimentAppState.consumeLaunchGroup?experimentAppState.consumeLaunchGroup():null;
+  var preferred=launchGroup&&launchGroup.length?launchGroup:experimentAppState.getPreferredPlayers(count);
+  if(launchGroup&&launchGroup.length)count=Math.max(3,Math.min(12,launchGroup.length));
+  if(preferred.length){
+    savedPlayerNames=[];savedPlayerProfileIds=[];avatarSelections=[];
+    for(var i=0;i<count;i++){
+      var p=preferred[i]||{id:null,name:"Spieler "+(i+1),avatar:avatarPool[i%avatarPool.length]};
+      savedPlayerNames.push(p.name);
+      savedPlayerProfileIds.push(p.id||null);
+      avatarSelections.push(avatarPool.indexOf(p.avatar)!==-1?p.avatar:avatarPool[i%avatarPool.length]);
+    }
+  }
+
+  if(byId("categoryDeck"))syncCategoryUI();
+  if(gameMode==="classic")syncClassicOptionsUI();
+  else syncDifficultyUI();
+}
+function experimentSyncPreferences(){
+  if(!experimentAppState)return;
+  experimentPreferences=experimentAppState.getPreferences();
+  soundEnabled=experimentPreferences.sound!==false;
+  var on=byId("soundOnIcon"),off=byId("soundOffIcon"),toggle=byId("soundToggle");
+  if(on)on.classList.toggle("hidden",!soundEnabled);
+  if(off)off.classList.toggle("hidden",soundEnabled);
+  if(toggle){
+    toggle.setAttribute("aria-pressed",soundEnabled?"true":"false");
+    toggle.setAttribute("aria-label",soundEnabled?"Sound ausschalten":"Sound einschalten");
+  }
+  document.body.classList.toggle("experimentReduceMotion",experimentPreferences.animations===false);
+}
 
 function storageGet(key,fallback){
   try{
@@ -120,6 +251,33 @@ function storageSet(key,value){
 }
 function storageRemove(key){
   try{localStorage.removeItem(key);return true;}catch(e){return false;}
+}
+function copyV72Storage(target,sources){
+  try{
+    if(localStorage.getItem(target)!==null)return false;
+    for(var i=0;i<sources.length;i++){
+      var raw=localStorage.getItem(sources[i]);
+      if(raw!==null){localStorage.setItem(target,raw);return true;}
+    }
+  }catch(e){}
+  return false;
+}
+function migrateV72GameStorageOnce(){
+  var marker=EXP_STORAGE+"v72Migration.v1";
+  if(storageGet(marker,null))return;
+  copyV72Storage(EXP_STORAGE+"circa.players.v1",["circaImpostor.players.v1"]);
+  copyV72Storage(EXP_STORAGE+"classic.players.v1",["classicImpostor.players.v1"]);
+  copyV72Storage(EXP_STORAGE+"circa.categories.v1",["circaImpostor.categories.v1"]);
+  copyV72Storage(EXP_STORAGE+"classic.categories.v1",["classicImpostor.categories.v1"]);
+  copyV72Storage(EXP_STORAGE+"circa.deckProgress.v1",["circaImpostor.deckProgress.v5"]);
+  copyV72Storage(EXP_STORAGE+"circa.difficulty.v1",["circaImpostor.difficulty.v1"]);
+  copyV72Storage(EXP_STORAGE+"circa.playerStats.v1",["circaImpostor.playerStats.v1"]);
+  copyV72Storage(EXP_STORAGE+"circa.deviceStats.v1",["circaImpostor.deviceStats.v1"]);
+  copyV72Storage(EXP_STORAGE+"circa.completedQuestions.v1",["circaImpostor.completedQuestions.v1"]);
+  copyV72Storage(EXP_STORAGE+"classic.deck.v1",["classicImpostor.deck.v1","circaImpostor.classicDeck.v1"]);
+  copyV72Storage(EXP_STORAGE+"classic.hint.v1",["classicImpostor.hint.v1","circaImpostor.classicHint.v1"]);
+  copyV72Storage(EXP_STORAGE+"classic.timer.v1",["classicImpostor.timer.v1","circaImpostor.classicTimer.v1"]);
+  storageSet(marker,{completed:true,at:new Date().toISOString(),from:"V72"});
 }
 function difficultyRatio(item){
   var a=Math.abs(Number(item.normalValue)),b=Math.abs(Number(item.impValue));
@@ -553,6 +711,7 @@ function setImpostorOutcome(won){
   if(roundOutcomeChoice)stat.impostorWins++;
 
   savePlayerStats();
+  experimentRecordCirca(roundOutcomeChoice);
 
   byId("impostorWonYes").classList.toggle("selected",roundOutcomeChoice===true);
   byId("impostorWonNo").classList.toggle("selected",roundOutcomeChoice===false);
@@ -739,6 +898,7 @@ function loadSavedPlayers(){
   var list=data.players.slice(0,12);
   count=Math.max(3,Math.min(12,list.length));
   savedPlayerNames=[];
+  savedPlayerProfileIds=[];
   avatarSelections=[];
   for(var i=0;i<count;i++){
     var item=list[i]&&typeof list[i]==="object"?list[i]:{};
@@ -746,6 +906,7 @@ function loadSavedPlayers(){
     var avatar=String(item.avatar||"");
     if(avatarPool.indexOf(avatar)===-1)avatar=avatarPool[i%avatarPool.length];
     savedPlayerNames.push(name);
+    savedPlayerProfileIds.push(experimentValidProfileId(item.profileId,name));
     avatarSelections.push(avatar);
   }
 }
@@ -754,7 +915,9 @@ function savePlayers(){
   for(var i=0;i<count;i++){
     var name=cleanPlayerName(nodes[i]&&nodes[i].value?nodes[i].value:"");
     if(!name)name="Spieler "+(i+1);
-    list.push({name:name,avatar:avatarSelections[i]||avatarPool[i%avatarPool.length]});
+    var profileId=experimentValidProfileId(savedPlayerProfileIds[i],name);
+    savedPlayerProfileIds[i]=profileId;
+    list.push({name:name,avatar:avatarSelections[i]||avatarPool[i%avatarPool.length],profileId:profileId});
   }
   savedPlayerNames=list.map(function(p){return p.name;});
   storageSet(STORAGE_PLAYERS,{players:list});
@@ -1110,7 +1273,10 @@ function renderNames(){
       var inp=document.createElement("input");
       inp.type="text";inp.className="playerInput";inp.autocomplete="off";inp.maxLength=24;
       inp.value=old[index]||("Spieler "+(index+1));inp.placeholder="Spieler "+(index+1);
-      inp.addEventListener("input",savePlayers);
+      inp.addEventListener("input",function(){
+        savedPlayerProfileIds[index]=experimentValidProfileId(savedPlayerProfileIds[index],inp.value);
+        savePlayers();
+      });
       inp.addEventListener("blur",savePlayers);
 
       row.appendChild(av);row.appendChild(inp);box.appendChild(row);
@@ -1132,8 +1298,14 @@ function start(){
   }
   byId("error").textContent="";
   players=[];
-  for(var k=0;k<names.length;k++) players.push({name:names[k],avatar:avatarSelections[k]||avatarPool[k%avatarPool.length],guess:null});
+  for(var k=0;k<names.length;k++){
+    var player={name:names[k],avatar:avatarSelections[k]||avatarPool[k%avatarPool.length],profileId:experimentValidProfileId(savedPlayerProfileIds[k],names[k]),guess:null};
+    player.profileId=experimentPlayerId(player);
+    savedPlayerProfileIds[k]=player.profileId;
+    players.push(player);
+  }
   savePlayers();
+  experimentBeginSession();
   round=0;
   diagRoundDirty=false;
   resetImpostorFairness();
@@ -1590,6 +1762,7 @@ function classicReveal(){
   if(!classicCurrent||!players[impIndex])return;
   resetClassicTimerRuntime();
   classicResolved=true;
+  experimentRecordClassic();
   var imp=players[impIndex];
   byId("classicResultIcon").textContent=imp.avatar||"🎭";
   byId("classicResultTitle").textContent=imp.name+" war der Impostor";
@@ -1846,6 +2019,7 @@ function clearRevealTimers(){
 }
 function softHaptic(pattern){
   try{
+    if(experimentAppState&&experimentPreferences.haptics===false)return;
     if(navigator.vibrate) navigator.vibrate(pattern);
   }catch(e){}
 }
@@ -2870,8 +3044,8 @@ renderDiagLog();
 
 
 /* Setup controls */
-byId("plus").addEventListener("click",function(){if(count<12){count++;if(!avatarSelections[count-1])avatarSelections[count-1]=avatarPool[(count-1)%avatarPool.length];renderNames();savePlayers();}});
-byId("minus").addEventListener("click",function(){if(count>3){count--;avatarSelections=avatarSelections.slice(0,count);renderNames();savePlayers();}});
+byId("plus").addEventListener("click",function(){if(count<12){count++;if(!avatarSelections[count-1])avatarSelections[count-1]=avatarPool[(count-1)%avatarPool.length];if(savedPlayerProfileIds.length<count)savedPlayerProfileIds.push(null);renderNames();savePlayers();}});
+byId("minus").addEventListener("click",function(){if(count>3){count--;avatarSelections=avatarSelections.slice(0,count);savedPlayerProfileIds=savedPlayerProfileIds.slice(0,count);renderNames();savePlayers();}});
 byId("start").addEventListener("click",function(){ensureAudio();tone(300,0.05,0.012,"sine",0);start();});
 
 if(gameMode==="classic"){
@@ -3027,12 +3201,14 @@ if(!window.PointerEvent){
 }
 }
 
+migrateV72GameStorageOnce();
 loadSavedGameMode();
 if(gameMode==="classic"){
   loadClassicSettings();
   loadClassicDeckProgress();
   loadSavedPlayers();
   initCategories();
+  experimentApplyLaunchPreset();
   renderNames();
   syncGameModeUI();
   updateToolbar();
@@ -3044,12 +3220,14 @@ if(gameMode==="classic"){
   loadSavedPlayers();
   loadPlayerStats();
   initCategories();
+  experimentApplyLaunchPreset();
   syncDifficultyUI();
   renderNames();
   syncGameModeUI();
   updateToolbar();
   show("setup");
 }
+experimentSyncPreferences();
 document.body.classList.remove("booting");
 document.body.removeAttribute("aria-busy");
 })();
