@@ -2,6 +2,17 @@
 
 Die Versionshistorie dokumentiert die aus den Projektchats und der GitHub-Historie eindeutig rekonstruierbaren Änderungen. Frühere Zwischenstände mit generischen Upload-Commits werden nicht künstlich versioniert oder mit erfundenen Details ergänzt.
 
+## V68 — Ladezustand, Timer und Wiederholungen
+
+- Wörtliches `\\n` aus dem `<head>` beider Spielseiten entfernt. Dieser ungültige Text konnte Safari den Head vorzeitig beenden lassen und war die Ursache für das sichtbare „/N“ sowie fehlerhaftes First-Paint-Verhalten.
+- Beide Spiele starten jetzt mit einem atomaren Boot-Zustand: Die eigentliche App bleibt unsichtbar, bis Datenbank, Runtime, Event-Handler und Setup vollständig initialisiert sind.
+- Classic-Timer von sekundenweisem `setInterval --` auf echte Uhrzeit/Deadline umgestellt. Hintergrund, Displaysperre und iOS-Timer-Throttling verfälschen die verbleibende Zeit dadurch nicht mehr.
+- Timer-Pause/Fortsetzen berechnet eine neue Deadline; nach längerem Hintergrundbetrieb wird kein verspäteter Ablauf-Sound nachgespielt.
+- Circa-Auswahl um einen konzeptbasierten Wiederholungsschutz erweitert. Nahezu identische Varianten desselben Fragethemas werden innerhalb desselben Deck-Zyklus übersprungen.
+- Classic-Wortbank bereinigt: mehrfach verwendete Hinweise auf eindeutige Hinweise umgestellt; die semantische Doppelung „Aufzug/Fahrstuhl“ wurde durch „Aufzug/Rolltreppe“ ersetzt.
+- Circa-Einheiten vereinheitlicht: `GB → Gigabyte`, `MB → Megabyte`, `kcal → Kalorien`, `Stücke → Stück`.
+- Plattform- und Cache-Version auf V68 angehoben.
+
 ## V67 — First-Paint und iOS-Sound stabilisiert
 
 - Kritische `.hidden`-Regel direkt in beide Spielseiten aufgenommen, damit versteckte Overlays bereits vor dem Laden der externen CSS-Datei unsichtbar bleiben.
