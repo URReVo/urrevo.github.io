@@ -158,6 +158,3 @@ Direkte Spielpfade:
 
 Siehe [CHANGELOG.md](CHANGELOG.md).
 
-## 📱 iOS-Safe-Area
-
-Ab V69 verwenden die Spielseiten für den Root-/Statusbar-Bereich denselben festen Hintergrund wie der Launcher. Der Premium-Gradient liegt nur noch als Hintergrundbild darüber, sodass die Root-Fläche nicht transparent werden kann. Damit wird der zuvor sichtbare helle Streifen im oberen iOS-Safe-Area-Bereich gezielt vermieden.
