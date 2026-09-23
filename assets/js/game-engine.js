@@ -795,14 +795,17 @@ function syncSetupScrollFit(){
 window.addEventListener("resize",syncSetupScrollFit,{passive:true});
 window.addEventListener("orientationchange",function(){setTimeout(syncSetupScrollFit,80);},{passive:true});
 
-var audioCtx=null,soundEnabled=true,lastSliderSoundAt=0,lastSliderSoundValue=null;
+var audioCtx=null,audioResumePromise=null,soundEnabled=true,lastSliderSoundAt=0,lastSliderSoundValue=null;
 
 function getAudioContext(){
   if(!soundEnabled)return null;
   try{
     var AC=window.AudioContext||window.webkitAudioContext;
     if(!AC)return null;
-    if(!audioCtx||audioCtx.state==="closed")audioCtx=new AC();
+    if(!audioCtx||audioCtx.state==="closed"){
+      audioCtx=new AC();
+      audioResumePromise=null;
+    }
     return audioCtx;
   }catch(e){return null;}
 }
@@ -816,19 +819,43 @@ function primeAudio(ctx){
     source.start(0);
   }catch(e){}
 }
+function resumeAudioContext(ctx){
+  if(!ctx||!soundEnabled)return null;
+  if(ctx.state==="running"){
+    primeAudio(ctx);
+    return null;
+  }
+  if(audioResumePromise)return audioResumePromise;
+
+  try{
+    var resumed=ctx.resume();
+    if(resumed&&typeof resumed.then==="function"){
+      audioResumePromise=resumed.then(function(){
+        audioResumePromise=null;
+        if(soundEnabled&&ctx.state==="running"){
+          primeAudio(ctx);
+          return ctx;
+        }
+        return null;
+      }).catch(function(){
+        /* iOS may reject resume outside a user gesture.
+           Clear the promise so the next real tap can retry immediately. */
+        audioResumePromise=null;
+        return null;
+      });
+      return audioResumePromise;
+    }
+    if(ctx.state==="running")primeAudio(ctx);
+  }catch(e){
+    audioResumePromise=null;
+  }
+  return null;
+}
 function unlockAudio(){
   var ctx=getAudioContext();
   if(!ctx)return null;
-  try{
-    if(ctx.state==="running")return ctx;
-    var resumed=ctx.resume();
-    if(resumed&&typeof resumed.then==="function"){
-      resumed.then(function(){primeAudio(ctx);}).catch(function(){});
-    }else if(ctx.state==="running"){
-      primeAudio(ctx);
-    }
-    return ctx;
-  }catch(e){return ctx;}
+  if(ctx.state!=="running")resumeAudioContext(ctx);
+  return ctx;
 }
 function ensureAudio(){
   return unlockAudio();
@@ -837,24 +864,27 @@ function withAudio(fn){
   if(!soundEnabled)return;
   var ctx=getAudioContext();
   if(!ctx)return;
+
   if(ctx.state==="running"){
     fn(ctx);
     return;
   }
-  try{
-    var resumed=ctx.resume();
-    if(resumed&&typeof resumed.then==="function"){
-      resumed.then(function(){
-        if(soundEnabled&&ctx.state==="running"){
-          primeAudio(ctx);
-          fn(ctx);
-        }
-      }).catch(function(){});
-    }else if(ctx.state==="running"){
-      primeAudio(ctx);
-      fn(ctx);
-    }
-  }catch(e){}
+
+  /* All sounds requested while iOS is resuming share one promise.
+     This avoids competing resume() calls and prevents the first tap sound
+     from disappearing between "suspended" and "running". */
+  var requestedAt=Date.now();
+  var pending=resumeAudioContext(ctx);
+  if(pending&&typeof pending.then==="function"){
+    pending.then(function(resumedCtx){
+      if(!soundEnabled||!resumedCtx||resumedCtx.state!=="running")return;
+      /* Do not replay stale UI sounds after a long background/screen lock. */
+      if(Date.now()-requestedAt>1200)return;
+      fn(resumedCtx);
+    });
+  }else if(ctx.state==="running"){
+    fn(ctx);
+  }
 }
 function tone(freq,duration,volume,type,delay){
   if(!soundEnabled)return;
@@ -2809,13 +2839,19 @@ byId("leaveGame").addEventListener("click",leaveGame);
 byId("soundToggle").addEventListener("click",function(){setSoundEnabled(!soundEnabled);});
 
 
-/* iOS Safari can pause Web Audio after locking the device or switching apps.
-   Re-unlock it on the next real interaction without changing the page layout. */
+/* iOS Safari/Home-Screen apps may suspend or interrupt Web Audio after
+   locking the device, app switching or navigation. A real touch always gets
+   the first chance to resume. Passive lifecycle events only restore an
+   already-created context so they cannot accidentally create a locked one. */
+function restoreExistingAudio(){
+  if(!soundEnabled||!audioCtx||audioCtx.state==="closed")return;
+  if(audioCtx.state!=="running")resumeAudioContext(audioCtx);
+}
 document.addEventListener("pointerdown",function(){if(soundEnabled)unlockAudio();},{passive:true,capture:true});
 document.addEventListener("touchstart",function(){if(soundEnabled)unlockAudio();},{passive:true,capture:true});
-window.addEventListener("pageshow",function(){if(soundEnabled)unlockAudio();});
+window.addEventListener("pageshow",restoreExistingAudio);
 document.addEventListener("visibilitychange",function(){
-  if(!document.hidden&&soundEnabled)unlockAudio();
+  if(!document.hidden)restoreExistingAudio();
 });
 
 /* App-like Safari interaction: suppress selection/copy callouts outside inputs.
