@@ -1,5 +1,22 @@
 # Changelog
 
+## V73 — App-Shell, Profile und V72-Migration
+
+- Neuer produktiver App-Shell-Launcher mit Home, lokalen Profilen, persönlicher/Gesamt-Statistik und Einstellungen.
+- Stabile interne Profil-IDs eingeführt; Namen und Avatare können geändert werden, ohne dass zugehörige V73-Statistik verloren geht.
+- V72-Spieler werden beim ersten Start automatisch aus Circa-Spielerstatistik sowie gespeicherten Circa-/Classic-Spielerlisten übernommen und über normalisierte Namen zusammengeführt.
+- Vorhandene V72-Circa-Werte wie Runden, Closest/Farthest, Imposter-Einsätze, Imposter-Erfolge und Abweichungswerte werden dem neuen Profil zugeordnet.
+- Einmalige Auswahl „Wer bist du?“ nach Migration mehrerer V72-Spieler; das gewählte Profil wird anschließend als Launcher-Profil verwendet.
+- V72-Storage bleibt unverändert. Benötigte Spielstände und Einstellungen werden einmalig in den neuen Namespace `imposterGames.v73.game.*` kopiert.
+- Gemeinsame Sessions über Circa und Classic mit Abschluss, Awards, Mitspielern, Dauer, Spielmix, Verlauf und erneutem Start derselben Gruppe.
+- Persönliche und globale Statistikansicht sowie persönliche Achievements ergänzt.
+- Presets, Sound/Haptik/Animationen und ausgewähltes Profil werden zentral im App-State verwaltet.
+- Versionierter JSON-Export/-Import für lokale App-Daten ergänzt.
+- Launcher-Navigation mit klareren Home-, Spieler- und Statistik-Icons überarbeitet.
+- Service Worker um den neuen App-State erweitert und Offline-Release auf V73 angehoben.
+- Release-Validator prüft zusätzlich App-State-Integration und simuliert die V72→V73-Profilmigration inklusive unveränderter Legacy-Keys.
+- Plattform-/Asset-Version auf V73 angehoben.
+
 Die Versionshistorie dokumentiert die aus den Projektchats und der GitHub-Historie eindeutig rekonstruierbaren Änderungen. Frühere Zwischenstände mit generischen Upload-Commits werden nicht künstlich versioniert oder mit erfundenen Details ergänzt.
 
 ## V72 — Audit-Fixes und Release-Validator
