@@ -1,6 +1,6 @@
 # 🎭 Imposter Games
 
-Dieses Repository ist ab **V63** nicht mehr nur eine einzelne `index.html`, sondern eine kleine, statische **Partyspiel-Plattform**.
+Dieses Repository ist ab **V64** nicht mehr nur eine einzelne `index.html`, sondern eine kleine, statische **Partyspiel-Plattform**.
 
 👉 **Live:** https://urrevo.github.io/
 
@@ -33,6 +33,7 @@ Optional kann der Imposter ein **ähnliches Hinweiswort** erhalten. Die Kategori
 - Timer kann pausiert und fortgesetzt werden
 - keine In-App-Abstimmung; gemeinsame Auflösung
 - eigener Wiederholungsschutz für Wörter
+- eigene Classic-DEV-Werkzeuge für WIDs, Wortauswahl, Screen-Jumps, Fairness und Tests
 
 ## 🧱 Architektur ab V62
 
