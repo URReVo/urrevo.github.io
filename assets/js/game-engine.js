@@ -165,6 +165,8 @@ function syncGameModeUI(){
     byId("setupSubtitle").textContent="Alle kennen das geheime Wort – außer einer Person.";
     byId("start").textContent="Imposter starten";
     byId("poolCount").textContent=classicWords.length+" geheime Wörter";
+    var classicOptions=byId("classicOptions");
+    if(classicOptions)classicOptions.classList.remove("hidden");
     syncClassicOptionsUI();
   }else{
     byId("setupSubtitle").textContent="Alle bekommen dieselbe Schätzfrage – außer einer Person.";
