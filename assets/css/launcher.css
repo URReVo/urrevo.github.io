@@ -22,3 +22,10 @@ h1{font-size:34px;line-height:1.05;margin:0 0 7px;letter-spacing:-.7px}
 .platformNote{text-align:center;color:#777980;font-size:10px;line-height:1.4;margin:14px 18px 0}
 .launcherError{padding:18px;border-radius:17px;background:#202124;color:#ffb1b8;text-align:center;font-size:13px}
 @media(max-width:390px){.app{padding-left:14px;padding-right:14px}.hero{padding-top:15px}.logo{width:78px;height:78px;border-radius:25px}.logoMark{font-size:41px}h1{font-size:31px}.gameCard{min-height:104px;padding:13px;grid-template-columns:52px minmax(0,1fr) 18px}.gameIcon{width:52px;height:52px;font-size:28px}.gameTitle{font-size:17px}}
+.offlineStatus{
+  width:max-content;max-width:100%;margin:16px auto 0;padding:6px 10px;border-radius:999px;
+  color:#a8a9ad;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.06);
+  font-size:10px;font-weight:850;letter-spacing:.2px;text-align:center
+}
+.offlineStatus[data-state="ready"],.offlineStatus[data-state="offline"]{color:#c9d9c7}
+.offlineStatus[data-state="error"]{color:#d2a4a4}
