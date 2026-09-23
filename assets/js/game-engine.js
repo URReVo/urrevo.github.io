@@ -69,6 +69,8 @@ var classicTimerSeconds=0;
 var classicTimerHandle=null;
 var classicTimerRemaining=0;
 var classicTimerPaused=false;
+var classicTimerDeadline=0;
+var classicTimerExpiredSignaled=false;
 var classicResolved=false;
 
 function storageGet(key,fallback){
@@ -1283,6 +1285,19 @@ function rollbackCurrentImpostorSelection(){
   }
 }
 
+function questionConceptKey(text){
+  return String(text||"")
+    .toLocaleLowerCase("de-DE")
+    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .replace(/[–—-]/g," ")
+    .replace(/[?!.,:;()]/g," ")
+    .replace(/\b(grob|ungefahr|etwa|geschatzt|circa|ca)\b/g," ")
+    .replace(/\s+/g," ").trim();
+}
+function questionByQid(qid){
+  for(var i=0;i<bank.length;i++)if(bank[i].qid===qid)return bank[i];
+  return null;
+}
 function pickRound(){
   for(var i=0;i<players.length;i++)players[i].guess=null;
 
@@ -1316,13 +1331,29 @@ function pickRound(){
   var key=deckKey(chosenCat,selectedDifficulty);
   if(!deckProgress[key])deckProgress[key]=[];
 
-  var pool=[];
-  for(var a=0;a<eligible.length;a++){
-    var idx=eligible[a];
-    if(deckProgress[key].indexOf(bank[idx].qid)===-1)pool.push(idx);
+  /* Prevent near-identical concepts from resurfacing in the same deck cycle.
+     The database keeps every QID, but wording variants such as
+     "ungefähr / etwa / grob geschätzt" no longer feel like repeats. */
+  var usedConcepts={};
+  for(var dp=0;dp<deckProgress[key].length;dp++){
+    var usedItem=questionByQid(deckProgress[key][dp]);
+    if(!usedItem)continue;
+    usedConcepts[questionConceptKey(usedItem.normal)]=true;
+    usedConcepts[questionConceptKey(usedItem.imp)]=true;
   }
 
-  /* Complete the current category+difficulty deck before repeating it. */
+  var pool=[];
+  for(var a=0;a<eligible.length;a++){
+    var idx=eligible[a],candidate=bank[idx];
+    if(deckProgress[key].indexOf(candidate.qid)!==-1)continue;
+    var normalConcept=questionConceptKey(candidate.normal);
+    var impConcept=questionConceptKey(candidate.imp);
+    if(usedConcepts[normalConcept]||usedConcepts[impConcept])continue;
+    pool.push(idx);
+  }
+
+  /* If all remaining QIDs only repeat concepts already seen in this cycle,
+     start a fresh cycle rather than immediately serving a paraphrase. */
   if(pool.length===0){
     deckProgress[key]=[];
     storageSet(STORAGE_DECK,deckProgress);
@@ -1354,7 +1385,21 @@ function animateHandoff(){
 function clearClassicTimer(){
   if(classicTimerHandle){clearInterval(classicTimerHandle);classicTimerHandle=null;}
 }
+function resetClassicTimerRuntime(){
+  clearClassicTimer();
+  classicTimerRemaining=0;
+  classicTimerPaused=false;
+  classicTimerDeadline=0;
+  classicTimerExpiredSignaled=false;
+}
+function syncClassicTimerFromClock(){
+  if(!classicTimerPaused&&classicTimerDeadline>0){
+    classicTimerRemaining=Math.max(0,Math.ceil((classicTimerDeadline-Date.now())/1000));
+  }
+  return classicTimerRemaining;
+}
 function renderClassicTimer(){
+  syncClassicTimerFromClock();
   var value=byId("classicTimerValue"),note=byId("classicTimerNote"),pause=byId("classicTimerPause");
   if(!value||!note)return;
   if(classicTimerRemaining<=0){
@@ -1372,48 +1417,78 @@ function renderClassicTimer(){
     if(pause){pause.textContent="⏸ Pause";pause.disabled=false;}
   }
 }
+function signalClassicTimerExpired(){
+  if(classicTimerExpiredSignaled)return;
+  classicTimerExpiredSignaled=true;
+  clearClassicTimer();
+  classicTimerRemaining=0;
+  renderClassicTimer();
+
+  var expiredAgo=classicTimerDeadline?Date.now()-classicTimerDeadline:0;
+  if(expiredAgo<1500){
+    tone(620,0.12,0.03,"sine",0);
+    tone(440,0.16,0.025,"sine",0.11);
+    softHaptic([40,30,70]);
+  }
+  var boxEl=byId("classicTimerBox");
+  if(boxEl){
+    boxEl.classList.remove("timerExpired");void boxEl.offsetWidth;boxEl.classList.add("timerExpired");
+  }
+}
+function tickClassicTimer(){
+  syncClassicTimerFromClock();
+  if(classicTimerRemaining<=0){
+    signalClassicTimerExpired();
+    return;
+  }
+  renderClassicTimer();
+}
 function runClassicTimer(){
   clearClassicTimer();
   if(classicTimerPaused||classicTimerRemaining<=0)return;
-  classicTimerHandle=setInterval(function(){
-    classicTimerRemaining--;
-    renderClassicTimer();
-    if(classicTimerRemaining<=0){
-      clearClassicTimer();
-      tone(620,0.12,0.03,"sine",0);
-      tone(440,0.16,0.025,"sine",0.11);
-      softHaptic([40,30,70]);
-      var boxEl=byId("classicTimerBox");
-      boxEl.classList.remove("timerExpired");void boxEl.offsetWidth;boxEl.classList.add("timerExpired");
-    }
-  },1000);
+  if(!classicTimerDeadline)classicTimerDeadline=Date.now()+classicTimerRemaining*1000;
+  tickClassicTimer();
+  if(classicTimerRemaining>0)classicTimerHandle=setInterval(tickClassicTimer,250);
 }
 function toggleClassicTimerPause(){
-  if(!classicTimerSeconds||classicTimerRemaining<=0)return;
-  classicTimerPaused=!classicTimerPaused;
-  if(classicTimerPaused)clearClassicTimer();
-  else runClassicTimer();
-  renderClassicTimer();
+  if(!classicTimerSeconds)return;
+  syncClassicTimerFromClock();
+  if(classicTimerRemaining<=0)return;
+
+  if(classicTimerPaused){
+    classicTimerPaused=false;
+    classicTimerDeadline=Date.now()+classicTimerRemaining*1000;
+    runClassicTimer();
+  }else{
+    classicTimerPaused=true;
+    classicTimerDeadline=0;
+    clearClassicTimer();
+    renderClassicTimer();
+  }
   tone(classicTimerPaused?330:500,0.04,0.012,"sine",0);
 }
 function startClassicTimer(){
-  clearClassicTimer();
+  resetClassicTimerRuntime();
   var box=byId("classicTimerBox");
-  classicTimerPaused=false;
   if(!classicTimerSeconds){
     box.classList.add("hidden");
     return;
   }
   classicTimerRemaining=classicTimerSeconds;
+  classicTimerDeadline=Date.now()+classicTimerSeconds*1000;
   box.classList.remove("hidden");
   box.classList.remove("timerExpired");
   renderClassicTimer();
   runClassicTimer();
 }
+function refreshClassicTimerFromClock(){
+  if(gameMode!=="classic"||classicTimerPaused||!classicTimerDeadline||classicResolved)return;
+  tickClassicTimer();
+}
 function classicNewRound(confirmFirst){
   if(confirmFirst && !window.confirm("Aktuelle Runde abbrechen und eine neue Runde starten?"))return;
   if(confirmFirst&&round>0&&!classicResolved)rollbackCurrentImpostorSelection();
-  clearClassicTimer();
+  resetClassicTimerRuntime();
   if(typeof clearRevealTimers==="function")clearRevealTimers();
   if(roundIntroTimer){clearTimeout(roundIntroTimer);roundIntroTimer=null;}
   if(guessSaveTimer){clearTimeout(guessSaveTimer);guessSaveTimer=null;}
@@ -1492,7 +1567,7 @@ function classicPrepareDiscussion(){
 }
 function classicReveal(){
   if(!classicCurrent||!players[impIndex])return;
-  clearClassicTimer();
+  resetClassicTimerRuntime();
   classicResolved=true;
   var imp=players[impIndex];
   byId("classicResultIcon").textContent=imp.avatar||"🎭";
@@ -1983,7 +2058,7 @@ function leaveGame(){
   if(!window.confirm("Spiel verlassen und zurück zum Start?"))return;
   if(roundIntroTimer){clearTimeout(roundIntroTimer);roundIntroTimer=null;}
   if(guessSaveTimer){clearTimeout(guessSaveTimer);guessSaveTimer=null;}
-  clearClassicTimer();
+  resetClassicTimerRuntime();
   var intro=byId("roundIntro");
   if(intro){intro.classList.add("hidden");intro.classList.remove("showIntro");}
   if(typeof clearRevealTimers==="function")clearRevealTimers();
@@ -2849,9 +2924,15 @@ function restoreExistingAudio(){
 }
 document.addEventListener("pointerdown",function(){if(soundEnabled)unlockAudio();},{passive:true,capture:true});
 document.addEventListener("touchstart",function(){if(soundEnabled)unlockAudio();},{passive:true,capture:true});
-window.addEventListener("pageshow",restoreExistingAudio);
+window.addEventListener("pageshow",function(){
+  restoreExistingAudio();
+  refreshClassicTimerFromClock();
+});
 document.addEventListener("visibilitychange",function(){
-  if(!document.hidden)restoreExistingAudio();
+  if(!document.hidden){
+    restoreExistingAudio();
+    refreshClassicTimerFromClock();
+  }
 });
 
 /* App-like Safari interaction: suppress selection/copy callouts outside inputs.
@@ -2944,4 +3025,6 @@ if(gameMode==="classic"){
   updateToolbar();
   show("setup");
 }
+document.body.classList.remove("booting");
+document.body.removeAttribute("aria-busy");
 })();
