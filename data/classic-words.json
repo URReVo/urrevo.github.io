@@ -1,0 +1,1507 @@
+{
+  "schemaVersion": 1,
+  "game": "classic-imposter",
+  "count": 250,
+  "items": [
+    {
+      "cat": "Allgemein",
+      "word": "Schlüssel",
+      "wid": "imp-0001",
+      "hint": "Tür"
+    },
+    {
+      "cat": "Allgemein",
+      "word": "Koffer",
+      "wid": "imp-0002",
+      "hint": "Urlaub"
+    },
+    {
+      "cat": "Allgemein",
+      "word": "Kerze",
+      "wid": "imp-0003",
+      "hint": "Geburtstag"
+    },
+    {
+      "cat": "Allgemein",
+      "word": "Brücke",
+      "wid": "imp-0004",
+      "hint": "Fluss"
+    },
+    {
+      "cat": "Allgemein",
+      "word": "Regenschirm",
+      "wid": "imp-0005",
+      "hint": "Gewitter"
+    },
+    {
+      "cat": "Allgemein",
+      "word": "Kamera",
+      "wid": "imp-0006",
+      "hint": "Fotografie"
+    },
+    {
+      "cat": "Allgemein",
+      "word": "Kalender",
+      "wid": "imp-0007",
+      "hint": "Termin"
+    },
+    {
+      "cat": "Allgemein",
+      "word": "Batterie",
+      "wid": "imp-0008",
+      "hint": "Energie"
+    },
+    {
+      "cat": "Allgemein",
+      "word": "Aufzug",
+      "wid": "imp-0009",
+      "hint": "Etage"
+    },
+    {
+      "cat": "Allgemein",
+      "word": "Briefkasten",
+      "wid": "imp-0010",
+      "hint": "Post"
+    },
+    {
+      "cat": "Allgemein",
+      "word": "Rucksack",
+      "wid": "imp-0011",
+      "hint": "Wandern"
+    },
+    {
+      "cat": "Allgemein",
+      "word": "Spiegel",
+      "wid": "imp-0012",
+      "hint": "Bad"
+    },
+    {
+      "cat": "Allgemein",
+      "word": "Leiter",
+      "wid": "imp-0013",
+      "hint": "Höhe"
+    },
+    {
+      "cat": "Allgemein",
+      "word": "Kopfhörer",
+      "wid": "imp-0014",
+      "hint": "Musik"
+    },
+    {
+      "cat": "Allgemein",
+      "word": "Taschenlampe",
+      "wid": "imp-0015",
+      "hint": "Dunkelheit"
+    },
+    {
+      "cat": "Allgemein",
+      "word": "Schere",
+      "wid": "imp-0016",
+      "hint": "Papier"
+    },
+    {
+      "cat": "Allgemein",
+      "word": "Uhr",
+      "wid": "imp-0017",
+      "hint": "Zeit"
+    },
+    {
+      "cat": "Allgemein",
+      "word": "Münze",
+      "wid": "imp-0018",
+      "hint": "Portemonnaie"
+    },
+    {
+      "cat": "Allgemein",
+      "word": "Balkon",
+      "wid": "imp-0019",
+      "hint": "Wohnung"
+    },
+    {
+      "cat": "Allgemein",
+      "word": "Kissen",
+      "wid": "imp-0020",
+      "hint": "Schlaf"
+    },
+    {
+      "cat": "Allgemein",
+      "word": "Fernbedienung",
+      "wid": "imp-0021",
+      "hint": "Fernseher"
+    },
+    {
+      "cat": "Allgemein",
+      "word": "Schraube",
+      "wid": "imp-0022",
+      "hint": "Werkzeug"
+    },
+    {
+      "cat": "Allgemein",
+      "word": "Glas",
+      "wid": "imp-0023",
+      "hint": "Getränk"
+    },
+    {
+      "cat": "Allgemein",
+      "word": "Steckdose",
+      "wid": "imp-0024",
+      "hint": "Strom"
+    },
+    {
+      "cat": "Allgemein",
+      "word": "Fahrstuhl",
+      "wid": "imp-0025",
+      "hint": "Gebäude"
+    },
+    {
+      "cat": "Alltag",
+      "word": "Zahnbürste",
+      "wid": "imp-0026",
+      "hint": "Morgenroutine"
+    },
+    {
+      "cat": "Alltag",
+      "word": "Wecker",
+      "wid": "imp-0027",
+      "hint": "Aufstehen"
+    },
+    {
+      "cat": "Alltag",
+      "word": "Waschmaschine",
+      "wid": "imp-0028",
+      "hint": "Wäsche"
+    },
+    {
+      "cat": "Alltag",
+      "word": "Einkaufswagen",
+      "wid": "imp-0029",
+      "hint": "Supermarkt"
+    },
+    {
+      "cat": "Alltag",
+      "word": "Mülleimer",
+      "wid": "imp-0030",
+      "hint": "Abfall"
+    },
+    {
+      "cat": "Alltag",
+      "word": "Staubsauger",
+      "wid": "imp-0031",
+      "hint": "Teppich"
+    },
+    {
+      "cat": "Alltag",
+      "word": "Handtuch",
+      "wid": "imp-0032",
+      "hint": "Dusche"
+    },
+    {
+      "cat": "Alltag",
+      "word": "Kühlschrank",
+      "wid": "imp-0033",
+      "hint": "Küche"
+    },
+    {
+      "cat": "Alltag",
+      "word": "Türklingel",
+      "wid": "imp-0034",
+      "hint": "Besuch"
+    },
+    {
+      "cat": "Alltag",
+      "word": "Wäschekorb",
+      "wid": "imp-0035",
+      "hint": "Waschtag"
+    },
+    {
+      "cat": "Alltag",
+      "word": "Kaffeetasse",
+      "wid": "imp-0036",
+      "hint": "Frühstück"
+    },
+    {
+      "cat": "Alltag",
+      "word": "Hausschlüssel",
+      "wid": "imp-0037",
+      "hint": "Haustür"
+    },
+    {
+      "cat": "Alltag",
+      "word": "Duschgel",
+      "wid": "imp-0038",
+      "hint": "Badezimmer"
+    },
+    {
+      "cat": "Alltag",
+      "word": "Toilettenpapier",
+      "wid": "imp-0039",
+      "hint": "Badezimmer"
+    },
+    {
+      "cat": "Alltag",
+      "word": "Pfandflasche",
+      "wid": "imp-0040",
+      "hint": "Supermarkt"
+    },
+    {
+      "cat": "Alltag",
+      "word": "Kassenbon",
+      "wid": "imp-0041",
+      "hint": "Einkauf"
+    },
+    {
+      "cat": "Alltag",
+      "word": "Bettdecke",
+      "wid": "imp-0042",
+      "hint": "Schlaf"
+    },
+    {
+      "cat": "Alltag",
+      "word": "Seife",
+      "wid": "imp-0043",
+      "hint": "Hände"
+    },
+    {
+      "cat": "Alltag",
+      "word": "Rasierapparat",
+      "wid": "imp-0044",
+      "hint": "Bart"
+    },
+    {
+      "cat": "Alltag",
+      "word": "Brotdose",
+      "wid": "imp-0045",
+      "hint": "Pause"
+    },
+    {
+      "cat": "Alltag",
+      "word": "Wasserkocher",
+      "wid": "imp-0046",
+      "hint": "Tee"
+    },
+    {
+      "cat": "Alltag",
+      "word": "Paket",
+      "wid": "imp-0047",
+      "hint": "Lieferung"
+    },
+    {
+      "cat": "Alltag",
+      "word": "Socken",
+      "wid": "imp-0048",
+      "hint": "Schuhe"
+    },
+    {
+      "cat": "Alltag",
+      "word": "Schuhregal",
+      "wid": "imp-0049",
+      "hint": "Flur"
+    },
+    {
+      "cat": "Alltag",
+      "word": "Spülmaschine",
+      "wid": "imp-0050",
+      "hint": "Geschirr"
+    },
+    {
+      "cat": "Auto",
+      "word": "Lenkrad",
+      "wid": "imp-0051",
+      "hint": "Kurve"
+    },
+    {
+      "cat": "Auto",
+      "word": "Turbolader",
+      "wid": "imp-0052",
+      "hint": "Leistung"
+    },
+    {
+      "cat": "Auto",
+      "word": "Autobahn",
+      "wid": "imp-0053",
+      "hint": "Raststätte"
+    },
+    {
+      "cat": "Auto",
+      "word": "Kennzeichen",
+      "wid": "imp-0054",
+      "hint": "Zulassung"
+    },
+    {
+      "cat": "Auto",
+      "word": "Scheibenwischer",
+      "wid": "imp-0055",
+      "hint": "Regen"
+    },
+    {
+      "cat": "Auto",
+      "word": "Tempomat",
+      "wid": "imp-0056",
+      "hint": "Reise"
+    },
+    {
+      "cat": "Auto",
+      "word": "Tankstelle",
+      "wid": "imp-0057",
+      "hint": "Kraftstoff"
+    },
+    {
+      "cat": "Auto",
+      "word": "Kupplung",
+      "wid": "imp-0058",
+      "hint": "Schaltung"
+    },
+    {
+      "cat": "Auto",
+      "word": "Bremsscheibe",
+      "wid": "imp-0059",
+      "hint": "Verzögerung"
+    },
+    {
+      "cat": "Auto",
+      "word": "Airbag",
+      "wid": "imp-0060",
+      "hint": "Unfall"
+    },
+    {
+      "cat": "Auto",
+      "word": "Kofferraum",
+      "wid": "imp-0061",
+      "hint": "Gepäck"
+    },
+    {
+      "cat": "Auto",
+      "word": "Blinker",
+      "wid": "imp-0062",
+      "hint": "Abbiegen"
+    },
+    {
+      "cat": "Auto",
+      "word": "Tacho",
+      "wid": "imp-0063",
+      "hint": "Tempo"
+    },
+    {
+      "cat": "Auto",
+      "word": "Winterreifen",
+      "wid": "imp-0064",
+      "hint": "Schnee"
+    },
+    {
+      "cat": "Auto",
+      "word": "Felge",
+      "wid": "imp-0065",
+      "hint": "Reifen"
+    },
+    {
+      "cat": "Auto",
+      "word": "Motoröl",
+      "wid": "imp-0066",
+      "hint": "Werkstatt"
+    },
+    {
+      "cat": "Auto",
+      "word": "Auspuff",
+      "wid": "imp-0067",
+      "hint": "Abgas"
+    },
+    {
+      "cat": "Auto",
+      "word": "Parkhaus",
+      "wid": "imp-0068",
+      "hint": "Parkplatz"
+    },
+    {
+      "cat": "Auto",
+      "word": "Rückspiegel",
+      "wid": "imp-0069",
+      "hint": "Verkehr"
+    },
+    {
+      "cat": "Auto",
+      "word": "Zündkerze",
+      "wid": "imp-0070",
+      "hint": "Benzin"
+    },
+    {
+      "cat": "Auto",
+      "word": "Sicherheitsgurt",
+      "wid": "imp-0071",
+      "hint": "Anschnallen"
+    },
+    {
+      "cat": "Auto",
+      "word": "Stoßstange",
+      "wid": "imp-0072",
+      "hint": "Parkrempler"
+    },
+    {
+      "cat": "Auto",
+      "word": "Handbremse",
+      "wid": "imp-0073",
+      "hint": "Gefälle"
+    },
+    {
+      "cat": "Auto",
+      "word": "Dachbox",
+      "wid": "imp-0074",
+      "hint": "Urlaub"
+    },
+    {
+      "cat": "Auto",
+      "word": "Werkstatt",
+      "wid": "imp-0075",
+      "hint": "Reparatur"
+    },
+    {
+      "cat": "Essen",
+      "word": "Pizza",
+      "wid": "imp-0076",
+      "hint": "Ofen"
+    },
+    {
+      "cat": "Essen",
+      "word": "Lasagne",
+      "wid": "imp-0077",
+      "hint": "Nudelplatten"
+    },
+    {
+      "cat": "Essen",
+      "word": "Döner",
+      "wid": "imp-0078",
+      "hint": "Fladenbrot"
+    },
+    {
+      "cat": "Essen",
+      "word": "Schnitzel",
+      "wid": "imp-0079",
+      "hint": "Panade"
+    },
+    {
+      "cat": "Essen",
+      "word": "Erdbeere",
+      "wid": "imp-0080",
+      "hint": "Sommer"
+    },
+    {
+      "cat": "Essen",
+      "word": "Knoblauch",
+      "wid": "imp-0081",
+      "hint": "Geruch"
+    },
+    {
+      "cat": "Essen",
+      "word": "Nutella",
+      "wid": "imp-0082",
+      "hint": "Frühstück"
+    },
+    {
+      "cat": "Essen",
+      "word": "Pommes",
+      "wid": "imp-0083",
+      "hint": "Fritteuse"
+    },
+    {
+      "cat": "Essen",
+      "word": "Sushi",
+      "wid": "imp-0084",
+      "hint": "Wasabi"
+    },
+    {
+      "cat": "Essen",
+      "word": "Spaghetti",
+      "wid": "imp-0085",
+      "hint": "Tomatensoße"
+    },
+    {
+      "cat": "Essen",
+      "word": "Pfannkuchen",
+      "wid": "imp-0086",
+      "hint": "Sirup"
+    },
+    {
+      "cat": "Essen",
+      "word": "Käsekuchen",
+      "wid": "imp-0087",
+      "hint": "Kaffee"
+    },
+    {
+      "cat": "Essen",
+      "word": "Bratwurst",
+      "wid": "imp-0088",
+      "hint": "Grill"
+    },
+    {
+      "cat": "Essen",
+      "word": "Avocado",
+      "wid": "imp-0089",
+      "hint": "Toast"
+    },
+    {
+      "cat": "Essen",
+      "word": "Croissant",
+      "wid": "imp-0090",
+      "hint": "Bäckerei"
+    },
+    {
+      "cat": "Essen",
+      "word": "Gulasch",
+      "wid": "imp-0091",
+      "hint": "Topf"
+    },
+    {
+      "cat": "Essen",
+      "word": "Popcorn",
+      "wid": "imp-0092",
+      "hint": "Kino"
+    },
+    {
+      "cat": "Essen",
+      "word": "Marmelade",
+      "wid": "imp-0093",
+      "hint": "Toast"
+    },
+    {
+      "cat": "Essen",
+      "word": "Kartoffelsalat",
+      "wid": "imp-0094",
+      "hint": "Grillparty"
+    },
+    {
+      "cat": "Essen",
+      "word": "Brezel",
+      "wid": "imp-0095",
+      "hint": "Bayern"
+    },
+    {
+      "cat": "Essen",
+      "word": "Tiramisu",
+      "wid": "imp-0096",
+      "hint": "Kaffee"
+    },
+    {
+      "cat": "Essen",
+      "word": "Currywurst",
+      "wid": "imp-0097",
+      "hint": "Imbiss"
+    },
+    {
+      "cat": "Essen",
+      "word": "Honig",
+      "wid": "imp-0098",
+      "hint": "Biene"
+    },
+    {
+      "cat": "Essen",
+      "word": "Rührei",
+      "wid": "imp-0099",
+      "hint": "Frühstück"
+    },
+    {
+      "cat": "Essen",
+      "word": "Müsli",
+      "wid": "imp-0100",
+      "hint": "Milch"
+    },
+    {
+      "cat": "Geografie",
+      "word": "Wüste",
+      "wid": "imp-0101",
+      "hint": "Sand"
+    },
+    {
+      "cat": "Geografie",
+      "word": "Vulkan",
+      "wid": "imp-0102",
+      "hint": "Lava"
+    },
+    {
+      "cat": "Geografie",
+      "word": "Insel",
+      "wid": "imp-0103",
+      "hint": "Meer"
+    },
+    {
+      "cat": "Geografie",
+      "word": "Gletscher",
+      "wid": "imp-0104",
+      "hint": "Eis"
+    },
+    {
+      "cat": "Geografie",
+      "word": "Wasserfall",
+      "wid": "imp-0105",
+      "hint": "Felsen"
+    },
+    {
+      "cat": "Geografie",
+      "word": "Ozean",
+      "wid": "imp-0106",
+      "hint": "Wellen"
+    },
+    {
+      "cat": "Geografie",
+      "word": "Gebirge",
+      "wid": "imp-0107",
+      "hint": "Gipfel"
+    },
+    {
+      "cat": "Geografie",
+      "word": "Hauptstadt",
+      "wid": "imp-0108",
+      "hint": "Regierung"
+    },
+    {
+      "cat": "Geografie",
+      "word": "Grenze",
+      "wid": "imp-0109",
+      "hint": "Zoll"
+    },
+    {
+      "cat": "Geografie",
+      "word": "Leuchtturm",
+      "wid": "imp-0110",
+      "hint": "Küste"
+    },
+    {
+      "cat": "Geografie",
+      "word": "Fluss",
+      "wid": "imp-0111",
+      "hint": "Brücke"
+    },
+    {
+      "cat": "Geografie",
+      "word": "Dschungel",
+      "wid": "imp-0112",
+      "hint": "Tropen"
+    },
+    {
+      "cat": "Geografie",
+      "word": "Steppe",
+      "wid": "imp-0113",
+      "hint": "Grasland"
+    },
+    {
+      "cat": "Geografie",
+      "word": "Küste",
+      "wid": "imp-0114",
+      "hint": "Meer"
+    },
+    {
+      "cat": "Geografie",
+      "word": "Hafen",
+      "wid": "imp-0115",
+      "hint": "Schiffe"
+    },
+    {
+      "cat": "Geografie",
+      "word": "Halbinsel",
+      "wid": "imp-0116",
+      "hint": "Küste"
+    },
+    {
+      "cat": "Geografie",
+      "word": "Tal",
+      "wid": "imp-0117",
+      "hint": "Berge"
+    },
+    {
+      "cat": "Geografie",
+      "word": "Kontinent",
+      "wid": "imp-0118",
+      "hint": "Weltkarte"
+    },
+    {
+      "cat": "Geografie",
+      "word": "Nordpol",
+      "wid": "imp-0119",
+      "hint": "Eis"
+    },
+    {
+      "cat": "Geografie",
+      "word": "Äquator",
+      "wid": "imp-0120",
+      "hint": "Globus"
+    },
+    {
+      "cat": "Geografie",
+      "word": "Fjord",
+      "wid": "imp-0121",
+      "hint": "Norwegen"
+    },
+    {
+      "cat": "Geografie",
+      "word": "See",
+      "wid": "imp-0122",
+      "hint": "Ufer"
+    },
+    {
+      "cat": "Geografie",
+      "word": "Höhle",
+      "wid": "imp-0123",
+      "hint": "Felsen"
+    },
+    {
+      "cat": "Geografie",
+      "word": "Nationalpark",
+      "wid": "imp-0124",
+      "hint": "Wildnis"
+    },
+    {
+      "cat": "Geografie",
+      "word": "Delta",
+      "wid": "imp-0125",
+      "hint": "Mündung"
+    },
+    {
+      "cat": "Natur",
+      "word": "Giraffe",
+      "wid": "imp-0126",
+      "hint": "Savanne"
+    },
+    {
+      "cat": "Natur",
+      "word": "Pinguin",
+      "wid": "imp-0127",
+      "hint": "Antarktis"
+    },
+    {
+      "cat": "Natur",
+      "word": "Eichhörnchen",
+      "wid": "imp-0128",
+      "hint": "Nuss"
+    },
+    {
+      "cat": "Natur",
+      "word": "Wal",
+      "wid": "imp-0129",
+      "hint": "Ozean"
+    },
+    {
+      "cat": "Natur",
+      "word": "Kaktus",
+      "wid": "imp-0130",
+      "hint": "Wüste"
+    },
+    {
+      "cat": "Natur",
+      "word": "Ameise",
+      "wid": "imp-0131",
+      "hint": "Kolonie"
+    },
+    {
+      "cat": "Natur",
+      "word": "Delfin",
+      "wid": "imp-0132",
+      "hint": "Meer"
+    },
+    {
+      "cat": "Natur",
+      "word": "Eule",
+      "wid": "imp-0133",
+      "hint": "Nacht"
+    },
+    {
+      "cat": "Natur",
+      "word": "Pilz",
+      "wid": "imp-0134",
+      "hint": "Wald"
+    },
+    {
+      "cat": "Natur",
+      "word": "Bambus",
+      "wid": "imp-0135",
+      "hint": "Panda"
+    },
+    {
+      "cat": "Natur",
+      "word": "Krokodil",
+      "wid": "imp-0136",
+      "hint": "Sumpf"
+    },
+    {
+      "cat": "Natur",
+      "word": "Schmetterling",
+      "wid": "imp-0137",
+      "hint": "Blume"
+    },
+    {
+      "cat": "Natur",
+      "word": "Fuchs",
+      "wid": "imp-0138",
+      "hint": "Wald"
+    },
+    {
+      "cat": "Natur",
+      "word": "Koralle",
+      "wid": "imp-0139",
+      "hint": "Riff"
+    },
+    {
+      "cat": "Natur",
+      "word": "Biene",
+      "wid": "imp-0140",
+      "hint": "Honig"
+    },
+    {
+      "cat": "Natur",
+      "word": "Wolf",
+      "wid": "imp-0141",
+      "hint": "Rudel"
+    },
+    {
+      "cat": "Natur",
+      "word": "Schildkröte",
+      "wid": "imp-0142",
+      "hint": "Panzer"
+    },
+    {
+      "cat": "Natur",
+      "word": "Frosch",
+      "wid": "imp-0143",
+      "hint": "Teich"
+    },
+    {
+      "cat": "Natur",
+      "word": "Adler",
+      "wid": "imp-0144",
+      "hint": "Himmel"
+    },
+    {
+      "cat": "Natur",
+      "word": "Qualle",
+      "wid": "imp-0145",
+      "hint": "Meer"
+    },
+    {
+      "cat": "Natur",
+      "word": "Igel",
+      "wid": "imp-0146",
+      "hint": "Stacheln"
+    },
+    {
+      "cat": "Natur",
+      "word": "Otter",
+      "wid": "imp-0147",
+      "hint": "Fluss"
+    },
+    {
+      "cat": "Natur",
+      "word": "Seestern",
+      "wid": "imp-0148",
+      "hint": "Strand"
+    },
+    {
+      "cat": "Natur",
+      "word": "Löwe",
+      "wid": "imp-0149",
+      "hint": "Savanne"
+    },
+    {
+      "cat": "Natur",
+      "word": "Papagei",
+      "wid": "imp-0150",
+      "hint": "Tropen"
+    },
+    {
+      "cat": "Popkultur",
+      "word": "Superheld",
+      "wid": "imp-0151",
+      "hint": "Maske"
+    },
+    {
+      "cat": "Popkultur",
+      "word": "Kino",
+      "wid": "imp-0152",
+      "hint": "Popcorn"
+    },
+    {
+      "cat": "Popkultur",
+      "word": "Netflix",
+      "wid": "imp-0153",
+      "hint": "Serie"
+    },
+    {
+      "cat": "Popkultur",
+      "word": "Podcast",
+      "wid": "imp-0154",
+      "hint": "Mikrofon"
+    },
+    {
+      "cat": "Popkultur",
+      "word": "Konzert",
+      "wid": "imp-0155",
+      "hint": "Bühne"
+    },
+    {
+      "cat": "Popkultur",
+      "word": "Tätowierung",
+      "wid": "imp-0156",
+      "hint": "Tinte"
+    },
+    {
+      "cat": "Popkultur",
+      "word": "Influencer",
+      "wid": "imp-0157",
+      "hint": "Follower"
+    },
+    {
+      "cat": "Popkultur",
+      "word": "Reality-TV",
+      "wid": "imp-0158",
+      "hint": "Drama"
+    },
+    {
+      "cat": "Popkultur",
+      "word": "Festival",
+      "wid": "imp-0159",
+      "hint": "Zelt"
+    },
+    {
+      "cat": "Popkultur",
+      "word": "Meme",
+      "wid": "imp-0160",
+      "hint": "Internet"
+    },
+    {
+      "cat": "Popkultur",
+      "word": "Streaming",
+      "wid": "imp-0161",
+      "hint": "Abo"
+    },
+    {
+      "cat": "Popkultur",
+      "word": "Videospiel",
+      "wid": "imp-0162",
+      "hint": "Controller"
+    },
+    {
+      "cat": "Popkultur",
+      "word": "DJ",
+      "wid": "imp-0163",
+      "hint": "Club"
+    },
+    {
+      "cat": "Popkultur",
+      "word": "Oscar",
+      "wid": "imp-0164",
+      "hint": "Hollywood"
+    },
+    {
+      "cat": "Popkultur",
+      "word": "Anime",
+      "wid": "imp-0165",
+      "hint": "Japan"
+    },
+    {
+      "cat": "Popkultur",
+      "word": "Comic",
+      "wid": "imp-0166",
+      "hint": "Sprechblase"
+    },
+    {
+      "cat": "Popkultur",
+      "word": "Boyband",
+      "wid": "imp-0167",
+      "hint": "Fans"
+    },
+    {
+      "cat": "Popkultur",
+      "word": "Karaoke",
+      "wid": "imp-0168",
+      "hint": "Mikrofon"
+    },
+    {
+      "cat": "Popkultur",
+      "word": "YouTube",
+      "wid": "imp-0169",
+      "hint": "Video"
+    },
+    {
+      "cat": "Popkultur",
+      "word": "Fanclub",
+      "wid": "imp-0170",
+      "hint": "Idol"
+    },
+    {
+      "cat": "Popkultur",
+      "word": "Musical",
+      "wid": "imp-0171",
+      "hint": "Bühne"
+    },
+    {
+      "cat": "Popkultur",
+      "word": "Blockbuster",
+      "wid": "imp-0172",
+      "hint": "Hollywood"
+    },
+    {
+      "cat": "Popkultur",
+      "word": "Cosplay",
+      "wid": "imp-0173",
+      "hint": "Convention"
+    },
+    {
+      "cat": "Popkultur",
+      "word": "Playlist",
+      "wid": "imp-0174",
+      "hint": "Musik"
+    },
+    {
+      "cat": "Popkultur",
+      "word": "Promi",
+      "wid": "imp-0175",
+      "hint": "Paparazzi"
+    },
+    {
+      "cat": "Spicy 🌶️",
+      "word": "Kuss",
+      "wid": "imp-0176",
+      "hint": "Lippen"
+    },
+    {
+      "cat": "Spicy 🌶️",
+      "word": "Dating-App",
+      "wid": "imp-0177",
+      "hint": "Match"
+    },
+    {
+      "cat": "Spicy 🌶️",
+      "word": "One-Night-Stand",
+      "wid": "imp-0178",
+      "hint": "Morgen"
+    },
+    {
+      "cat": "Spicy 🌶️",
+      "word": "Stripclub",
+      "wid": "imp-0179",
+      "hint": "Bühne"
+    },
+    {
+      "cat": "Spicy 🌶️",
+      "word": "Sexting",
+      "wid": "imp-0180",
+      "hint": "Chat"
+    },
+    {
+      "cat": "Spicy 🌶️",
+      "word": "Kondom",
+      "wid": "imp-0181",
+      "hint": "Schutz"
+    },
+    {
+      "cat": "Spicy 🌶️",
+      "word": "Liebesbrief",
+      "wid": "imp-0182",
+      "hint": "Gefühle"
+    },
+    {
+      "cat": "Spicy 🌶️",
+      "word": "Ex-Partner",
+      "wid": "imp-0183",
+      "hint": "Trennung"
+    },
+    {
+      "cat": "Spicy 🌶️",
+      "word": "Blind Date",
+      "wid": "imp-0184",
+      "hint": "Treffen"
+    },
+    {
+      "cat": "Spicy 🌶️",
+      "word": "Flirt",
+      "wid": "imp-0185",
+      "hint": "Blickkontakt"
+    },
+    {
+      "cat": "Spicy 🌶️",
+      "word": "Nacktbild",
+      "wid": "imp-0186",
+      "hint": "Handy"
+    },
+    {
+      "cat": "Spicy 🌶️",
+      "word": "Handschellen",
+      "wid": "imp-0187",
+      "hint": "Schlüssel"
+    },
+    {
+      "cat": "Spicy 🌶️",
+      "word": "Kuschelpartner",
+      "wid": "imp-0188",
+      "hint": "Nähe"
+    },
+    {
+      "cat": "Spicy 🌶️",
+      "word": "Affäre",
+      "wid": "imp-0189",
+      "hint": "Geheimnis"
+    },
+    {
+      "cat": "Spicy 🌶️",
+      "word": "Liebeskummer",
+      "wid": "imp-0190",
+      "hint": "Trennung"
+    },
+    {
+      "cat": "Spicy 🌶️",
+      "word": "Eifersucht",
+      "wid": "imp-0191",
+      "hint": "Misstrauen"
+    },
+    {
+      "cat": "Spicy 🌶️",
+      "word": "Date Night",
+      "wid": "imp-0192",
+      "hint": "Restaurant"
+    },
+    {
+      "cat": "Spicy 🌶️",
+      "word": "Hotelzimmer",
+      "wid": "imp-0193",
+      "hint": "Übernachtung"
+    },
+    {
+      "cat": "Spicy 🌶️",
+      "word": "Kussmund",
+      "wid": "imp-0194",
+      "hint": "Lippenstift"
+    },
+    {
+      "cat": "Spicy 🌶️",
+      "word": "Dessous",
+      "wid": "imp-0195",
+      "hint": "Spitze"
+    },
+    {
+      "cat": "Spicy 🌶️",
+      "word": "Love Story",
+      "wid": "imp-0196",
+      "hint": "Kino"
+    },
+    {
+      "cat": "Spicy 🌶️",
+      "word": "Match",
+      "wid": "imp-0197",
+      "hint": "Dating"
+    },
+    {
+      "cat": "Spicy 🌶️",
+      "word": "Crush",
+      "wid": "imp-0198",
+      "hint": "Schmetterlinge"
+    },
+    {
+      "cat": "Spicy 🌶️",
+      "word": "Anmachspruch",
+      "wid": "imp-0199",
+      "hint": "Bar"
+    },
+    {
+      "cat": "Spicy 🌶️",
+      "word": "Morgen danach",
+      "wid": "imp-0200",
+      "hint": "Kater"
+    },
+    {
+      "cat": "Sport",
+      "word": "Fußball",
+      "wid": "imp-0201",
+      "hint": "Stadion"
+    },
+    {
+      "cat": "Sport",
+      "word": "Tennis",
+      "wid": "imp-0202",
+      "hint": "Netz"
+    },
+    {
+      "cat": "Sport",
+      "word": "Boxen",
+      "wid": "imp-0203",
+      "hint": "Ring"
+    },
+    {
+      "cat": "Sport",
+      "word": "Formel 1",
+      "wid": "imp-0204",
+      "hint": "Rennstrecke"
+    },
+    {
+      "cat": "Sport",
+      "word": "Basketball",
+      "wid": "imp-0205",
+      "hint": "Korb"
+    },
+    {
+      "cat": "Sport",
+      "word": "Skifahren",
+      "wid": "imp-0206",
+      "hint": "Piste"
+    },
+    {
+      "cat": "Sport",
+      "word": "Marathon",
+      "wid": "imp-0207",
+      "hint": "Ausdauer"
+    },
+    {
+      "cat": "Sport",
+      "word": "Volleyball",
+      "wid": "imp-0208",
+      "hint": "Handball"
+    },
+    {
+      "cat": "Sport",
+      "word": "Golf",
+      "wid": "imp-0209",
+      "hint": "Green"
+    },
+    {
+      "cat": "Sport",
+      "word": "Darts",
+      "wid": "imp-0210",
+      "hint": "Zielscheibe"
+    },
+    {
+      "cat": "Sport",
+      "word": "Handball",
+      "wid": "imp-0211",
+      "hint": "Basketball"
+    },
+    {
+      "cat": "Sport",
+      "word": "Surfen",
+      "wid": "imp-0212",
+      "hint": "Welle"
+    },
+    {
+      "cat": "Sport",
+      "word": "Radsport",
+      "wid": "imp-0213",
+      "hint": "Peloton"
+    },
+    {
+      "cat": "Sport",
+      "word": "Schwimmen",
+      "wid": "imp-0214",
+      "hint": "Becken"
+    },
+    {
+      "cat": "Sport",
+      "word": "Eishockey",
+      "wid": "imp-0215",
+      "hint": "Puck"
+    },
+    {
+      "cat": "Sport",
+      "word": "Yoga",
+      "wid": "imp-0216",
+      "hint": "Matte"
+    },
+    {
+      "cat": "Sport",
+      "word": "Klettern",
+      "wid": "imp-0217",
+      "hint": "Seil"
+    },
+    {
+      "cat": "Sport",
+      "word": "Tischtennis",
+      "wid": "imp-0218",
+      "hint": "Platte"
+    },
+    {
+      "cat": "Sport",
+      "word": "Badminton",
+      "wid": "imp-0219",
+      "hint": "Schläger"
+    },
+    {
+      "cat": "Sport",
+      "word": "Bowling",
+      "wid": "imp-0220",
+      "hint": "Kugel"
+    },
+    {
+      "cat": "Sport",
+      "word": "Rugby",
+      "wid": "imp-0221",
+      "hint": "Tackling"
+    },
+    {
+      "cat": "Sport",
+      "word": "Reiten",
+      "wid": "imp-0222",
+      "hint": "Sattel"
+    },
+    {
+      "cat": "Sport",
+      "word": "Triathlon",
+      "wid": "imp-0223",
+      "hint": "Ausdauer"
+    },
+    {
+      "cat": "Sport",
+      "word": "Snowboard",
+      "wid": "imp-0224",
+      "hint": "Piste"
+    },
+    {
+      "cat": "Sport",
+      "word": "Motocross",
+      "wid": "imp-0225",
+      "hint": "Sprung"
+    },
+    {
+      "cat": "Technik",
+      "word": "Smartphone",
+      "wid": "imp-0226",
+      "hint": "App"
+    },
+    {
+      "cat": "Technik",
+      "word": "Router",
+      "wid": "imp-0227",
+      "hint": "Internet"
+    },
+    {
+      "cat": "Technik",
+      "word": "Bluetooth",
+      "wid": "imp-0228",
+      "hint": "Kopfhörer"
+    },
+    {
+      "cat": "Technik",
+      "word": "USB-Stick",
+      "wid": "imp-0229",
+      "hint": "Datei"
+    },
+    {
+      "cat": "Technik",
+      "word": "Drucker",
+      "wid": "imp-0230",
+      "hint": "Papier"
+    },
+    {
+      "cat": "Technik",
+      "word": "Server",
+      "wid": "imp-0231",
+      "hint": "Rechenzentrum"
+    },
+    {
+      "cat": "Technik",
+      "word": "Passwort",
+      "wid": "imp-0232",
+      "hint": "Login"
+    },
+    {
+      "cat": "Technik",
+      "word": "Cloud",
+      "wid": "imp-0233",
+      "hint": "Backup"
+    },
+    {
+      "cat": "Technik",
+      "word": "Grafikkarte",
+      "wid": "imp-0234",
+      "hint": "Gaming"
+    },
+    {
+      "cat": "Technik",
+      "word": "Tastatur",
+      "wid": "imp-0235",
+      "hint": "Tippen"
+    },
+    {
+      "cat": "Technik",
+      "word": "QR-Code",
+      "wid": "imp-0236",
+      "hint": "Kamera"
+    },
+    {
+      "cat": "Technik",
+      "word": "WLAN",
+      "wid": "imp-0237",
+      "hint": "Router"
+    },
+    {
+      "cat": "Technik",
+      "word": "Festplatte",
+      "wid": "imp-0238",
+      "hint": "Speicher"
+    },
+    {
+      "cat": "Technik",
+      "word": "Mikrofon",
+      "wid": "imp-0239",
+      "hint": "Audio"
+    },
+    {
+      "cat": "Technik",
+      "word": "Monitor",
+      "wid": "imp-0240",
+      "hint": "Schreibtisch"
+    },
+    {
+      "cat": "Technik",
+      "word": "Powerbank",
+      "wid": "imp-0241",
+      "hint": "Akku"
+    },
+    {
+      "cat": "Technik",
+      "word": "Kopierer",
+      "wid": "imp-0242",
+      "hint": "Papier"
+    },
+    {
+      "cat": "Technik",
+      "word": "Webcam",
+      "wid": "imp-0243",
+      "hint": "Videocall"
+    },
+    {
+      "cat": "Technik",
+      "word": "Prozessor",
+      "wid": "imp-0244",
+      "hint": "Rechenleistung"
+    },
+    {
+      "cat": "Technik",
+      "word": "Smartwatch",
+      "wid": "imp-0245",
+      "hint": "Puls"
+    },
+    {
+      "cat": "Technik",
+      "word": "Drohne",
+      "wid": "imp-0246",
+      "hint": "Luftbild"
+    },
+    {
+      "cat": "Technik",
+      "word": "3D-Drucker",
+      "wid": "imp-0247",
+      "hint": "Filament"
+    },
+    {
+      "cat": "Technik",
+      "word": "Ladekabel",
+      "wid": "imp-0248",
+      "hint": "Steckdose"
+    },
+    {
+      "cat": "Technik",
+      "word": "Touchscreen",
+      "wid": "imp-0249",
+      "hint": "Finger"
+    },
+    {
+      "cat": "Technik",
+      "word": "Firewall",
+      "wid": "imp-0250",
+      "hint": "Sicherheit"
+    }
+  ]
+}

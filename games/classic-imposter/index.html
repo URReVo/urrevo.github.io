@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Klassisches Imposter">
+<meta name="theme-color" content="#292929">
+<link rel="apple-touch-icon" sizes="180x180" href="../../circa_impostor_detective_icon_180.png">
+<link rel="icon" type="image/png" sizes="180x180" href="../../circa_impostor_detective_icon_180.png">
+<link rel="stylesheet" href="../../assets/css/game.css">
+<title>Klassisches Imposter · V62</title>
+</head>
+<body data-game="classic">
+
+<div class="app" id="app">
+<div id="roundIntro" class="roundIntro hidden" aria-hidden="true">
+  <div id="roundIntroIcon" class="roundIntroIcon">✨</div>
+  <div id="roundIntroText" class="roundIntroText">Runde 1</div>
+  <div id="roundIntroCategory" class="roundIntroCategory">Alle</div>
+</div>
+
+<div id="gameTopbar" class="gameTopbar hidden">
+  <div class="toolbarLeft">
+    <div id="topCategory" class="toolbarBadge">Kategorie</div>
+    <div id="topRound" class="toolbarBadge roundBadge">R1</div>
+  </div>
+  <div class="toolbarActions">
+    <button id="devOpenGame" type="button" class="iconButton devOnly hidden devToolbarButton" aria-label="DEV Tools" title="DEV">DEV</button>
+    <button id="soundToggle" type="button" class="iconButton" aria-label="Sound ausschalten" aria-pressed="true" title="Sound">
+      <svg id="soundOnIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M16 9.5c1.4 1.4 1.4 3.6 0 5M18.5 7c2.8 2.8 2.8 7.2 0 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg id="soundOffIcon" class="hidden" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M17 9l5 6M22 9l-5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <button id="freshRound" type="button" class="iconButton" aria-label="Neue Runde" title="Neue Runde">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.34 5.66" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M20 5v6h-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button id="leaveGame" type="button" class="iconButton" aria-label="Spiel verlassen" title="Spiel verlassen">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+</div>
+
+<section id="setup">
+  <div class="gameHubNav"><a class="gameHubBack" href="../../"><span>‹</span> Spiele</a></div>
+  <div class="hero center">
+    <div id="devGateTrigger" class="logo"><div class="logoInnerD" aria-hidden="true"><span class="logoGlowA"></span><span class="logoGlowB"></span><span class="logoPlate"></span><span class="logoHatBrim"></span><span class="logoHatTop"></span><span class="logoHatBand"></span><span class="logoC"></span><span class="logoI"></span><span class="logoMagnifierRing"></span><span class="logoMagnifierHandle"></span><span class="logoSpark"></span></div></div>
+    <h1>Klassisches Imposter</h1>
+    <p id="setupSubtitle" class="sub">Alle bekommen dieselbe Schätzfrage – außer einer Person.</p>
+  </div>
+
+  <div class="sectionEyebrow">KATEGORIE</div>
+  <div id="categoryDeck" class="categoryDeck" role="group" aria-label="Kategorie auswählen"></div>
+<div id="difficultyEyebrow" class="sectionEyebrow difficultyEyebrow">IMPOSTOR-SCHWIERIGKEIT</div>
+  <div id="difficultyControl" class="difficultyControl" role="group" aria-label="Impostor-Schwierigkeit auswählen">
+    <button type="button" class="difficultyButton" data-difficulty="leicht">
+      <span class="difficultyIcon">🟢</span><span>Leicht</span>
+    </button>
+    <button type="button" class="difficultyButton selected" data-difficulty="mittel">
+      <span class="difficultyIcon">🟠</span><span>Mittel</span>
+    </button>
+    <button type="button" class="difficultyButton" data-difficulty="schwer">
+      <span class="difficultyIcon">🔴</span><span>Schwer</span>
+    </button>
+    <button type="button" class="difficultyButton" data-difficulty="zufaellig">
+      <span class="difficultyIcon">🎲</span><span>Zufällig</span>
+    </button>
+  </div>
+  <div id="difficultyHint" class="difficultyHint">Spürbarer Abstand zwischen den beiden Zielwerten</div>
+
+  <div id="classicOptions" class="classicOptions hidden">
+    <div class="sectionEyebrow classicOptionsEyebrow">IMPOSTOR-OPTIONEN</div>
+    <div class="classicOptionCard">
+      <div class="classicOptionHeader"><span>Hinweis für Impostor</span><span id="classicHintStatus" class="classicOptionValue">Ja</span></div>
+      <div id="classicHintControl" class="classicSegmented classicSegmented2" role="group" aria-label="Hinweis für Impostor">
+        <button type="button" class="classicOptionButton selected" data-classic-hint="1" aria-pressed="true">Ja</button>
+        <button type="button" class="classicOptionButton" data-classic-hint="0" aria-pressed="false">Nein</button>
+      </div>
+      <div class="classicOptionHelp">Bei „Ja“ bekommt der Impostor ein ähnliches Hinweiswort – niemals die Kategorie.</div>
+    </div>
+    <div class="classicOptionCard">
+      <div class="classicOptionHeader"><span>Timer</span><span id="classicTimerStatus" class="classicOptionValue">Aus</span></div>
+      <div class="classicTimerSelectWrap">
+        <select id="classicTimerSelect" class="classicTimerSelect" aria-label="Runden-Timer auswählen">
+          <option value="0">Aus</option>
+          <option value="60">1:00 Minute</option>
+          <option value="90">1:30 Minuten</option>
+          <option value="120">2:00 Minuten</option>
+          <option value="150">2:30 Minuten</option>
+          <option value="180">3:00 Minuten</option>
+          <option value="210">3:30 Minuten</option>
+          <option value="240">4:00 Minuten</option>
+          <option value="270">4:30 Minuten</option>
+          <option value="300">5:00 Minuten</option>
+        </select>
+      </div>
+      <div class="classicOptionHelp">Der Timer startet erst, wenn alle ihre Rolle gesehen haben. Die Auflösung bleibt jederzeit manuell.</div>
+    </div>
+  </div>
+
+  <div class="row between playerControlsRow">
+    <label style="margin:0">Spieler</label>
+    <div class="controls">
+      <button id="minus" type="button" class="secondary" aria-label="Spieler entfernen">−</button>
+      <button id="plus" type="button" class="secondary" aria-label="Spieler hinzufügen">+</button>
+    </div>
+  </div>
+
+  <div id="names"></div>
+  <button id="start" type="button" class="full">Spiel starten</button>
+  <button id="openStats" type="button" class="full secondary statsHomeButton">📊 Statistiken</button>
+  <button id="devOpenSetup" type="button" class="full secondary devOnly hidden devHomeButton">🔧 DEV Tools</button>
+  <div id="error" class="notice" aria-live="polite"></div>
+  <div id="poolCount" class="count">520 Fragepaare</div><div class="savedHint">Spieler, Kategorien, Statistiken &amp; Fragenfortschritt bleiben auf diesem Gerät gespeichert</div>
+</section>
+
+<section id="stats" class="hidden statsScreen">
+  <div class="statsHeader">
+    <button id="closeStats" type="button" class="statsBackButton" aria-label="Zurück zum Start">‹</button>
+    <div>
+      <div class="sectionEyebrow statsEyebrow">LOKALE AUSWERTUNG</div>
+      <h2>Statistiken</h2>
+    </div>
+  </div>
+
+  <p class="sub statsIntro">Die Ranglisten werden nur auf diesem Gerät gespeichert.</p>
+
+  <div id="statsTabs" class="statsTabs" role="tablist" aria-label="Statistik auswählen">
+    <button type="button" class="statsTab selected" data-stat="closest" role="tab" aria-selected="true">
+      <span>🎯</span><span>Nah dran</span>
+    </button>
+    <button type="button" class="statsTab" data-stat="farthest" role="tab" aria-selected="false">
+      <span>😵</span><span>Weit weg</span>
+    </button>
+    <button type="button" class="statsTab" data-stat="impostor" role="tab" aria-selected="false">
+      <span>🎭</span><span>Impostor</span>
+    </button>
+    <button type="button" class="statsTab" data-stat="impostorWins" role="tab" aria-selected="false">
+      <span>🥷</span><span>Impostor-Siege</span>
+    </button>
+  </div>
+
+  <div class="statsMetricCard">
+    <div id="statsMetricIcon" class="statsMetricIcon">🎯</div>
+    <div>
+      <div id="statsMetricTitle" class="statsMetricTitle">Am meisten nah dran</div>
+      <div id="statsMetricHint" class="statsMetricHint">Wer lag über die gespielten Runden am häufigsten am nächsten?</div>
+    </div>
+  </div>
+
+  <div id="statsLeaderboard" class="statsLeaderboard"></div>
+  <div id="statsEmpty" class="statsEmpty hidden">Noch keine abgeschlossenen Runden gespeichert.</div>
+
+  <div id="statsDeviceRounds" class="statsDeviceRounds">Auf diesem Gerät gespielt: 0 Runden</div>
+  <button id="resetStats" type="button" class="ghost full statsResetButton">Statistiken zurücksetzen</button>
+</section>
+
+<section id="handoff" class="hidden gameScreen">
+  <div id="handoffInner" class="handoffInner">
+    <div id="handoffAvatar" class="handoffAvatar">😎</div>
+    <div id="handoffName" class="handoffName"></div>
+    <p class="sub">Nur diese Person darf jetzt auf den Bildschirm schauen.</p>
+  </div>
+  <button id="showQuestion" type="button" class="full handoffButton">Ich bin bereit</button>
+</section>
+
+<section id="classicRole" class="hidden gameScreen classicRoleScreen">
+  <div class="classicRoleMeta">
+    <div class="classicRoleIdentity"><span id="classicRoleAvatar" class="miniAvatar">😎</span><strong id="classicRoleName"></strong></div>
+    <span id="classicRoleProgress">1/3</span>
+  </div>
+
+  <div id="classicRoleCard" class="classicRoleCard">
+    <div id="classicRoleEyebrow" class="classicRoleEyebrow">GEHEIMES WORT</div>
+    <div id="classicRoleWord" class="classicRoleWord">–</div>
+    <div id="classicRoleHint" class="classicRoleHint"></div>
+  </div>
+
+  <button id="classicRoleDone" type="button" class="full classicRoleButton">Verstanden</button>
+</section>
+
+<section id="classicDiscussion" class="hidden gameScreen classicDiscussionScreen">
+  <div class="classicDiscussionHero">
+    <div id="classicDiscussionAvatar" class="classicDiscussionAvatar">😎</div>
+    <div class="classicDiscussionKicker">DISKUSSIONSRUNDE</div>
+    <div id="classicDiscussionName" class="classicDiscussionName">Spieler beginnt</div>
+    <p class="classicDiscussionText">Beschreibt das geheime Wort nacheinander, ohne es direkt zu nennen. Der Impostor versucht, sich unauffällig einzufügen.</p>
+    <div id="classicTimerBox" class="classicTimerBox hidden">
+      <div class="classicTimerLabel">VERBLEIBENDE ZEIT</div>
+      <div id="classicTimerValue" class="classicTimerValue">1:00</div>
+      <div id="classicTimerNote" class="classicTimerNote">Diskutiert, bis ihr euch sicher seid.</div>
+      <div class="classicTimerActions">
+        <button id="classicTimerPause" type="button" class="secondary classicTimerPause">⏸ Pause</button>
+      </div>
+    </div>
+  </div>
+  <button id="classicReveal" type="button" class="full stageButton">Auflösung</button>
+</section>
+
+<section id="classicResult" class="hidden gameScreen classicResultScreen">
+  <div class="classicResultMain">
+    <div id="classicResultIcon" class="classicResultIcon">🎭</div>
+    <div class="classicResultKicker">AUFLÖSUNG</div>
+    <div id="classicResultTitle" class="classicResultTitle"></div>
+    <div class="classicResultText">Das war die geheime Rollenverteilung dieser Runde.</div>
+
+    <div class="classicSecretBox">
+      <div class="classicSecretLabel">GEHEIMES WORT</div>
+      <div id="classicSecretWord" class="classicSecretWord"></div>
+    </div>
+  </div>
+
+  <div id="classicResultActions" class="grid2 classicResultActions">
+    <button id="classicRestart" type="button" class="ghost">Zum Start</button>
+    <button id="classicNext" type="button">Nächste Runde</button>
+  </div>
+</section>
+
+<section id="question" class="hidden gameScreen">
+  <div class="playerMeta">
+    <div class="playerMetaIdentity"><span id="currentAvatar" class="miniAvatar">😎</span><strong id="currentName"></strong></div>
+    <span id="progress"></span>
+  </div>
+  <div id="progressDots" class="progressDots" aria-hidden="true"></div>
+
+  <div id="questionCard" class="questionCard">
+    <div id="questionText" class="questionText"></div>
+  </div>
+  <div id="questionUnitBadge" class="questionUnitBadge">Einheit: –</div>
+
+  <div class="estimateCompact">
+    <div class="estimateLabel">Deine Schätzung</div>
+    <div class="estimateLine">
+      <span id="estimateValue" class="estimateValue">0</span>
+      <span id="estimateUnit" class="estimateUnit"></span>
+    </div>
+  </div>
+
+  <div id="scrubber" class="scrubber" role="slider" tabindex="0"
+       aria-label="Schätzung einstellen" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+    <div class="dragHint">Irgendwo antippen oder mit dem Daumen ziehen</div>
+    <div id="sliderRail" class="sliderRail">
+      <div id="sliderFill" class="sliderFill"></div>
+      <div id="sliderThumb" class="sliderThumb"></div>
+    </div>
+    <div class="rangeLabels"><span>0</span><span id="rangeMax">100</span></div>
+  </div>
+  <input id="guessSlider" class="srRange" type="range" min="0" max="100" step="1" value="0" tabindex="-1">
+
+  <button id="saveGuess" type="button" class="full confirmButton">Schätzung übernehmen</button>
+</section>
+
+<section id="normalReveal" class="hidden gameScreen normalRevealScreen">
+  <div class="stageHeader center">
+    <h2 id="normalRevealTitle">Welche Frage hatten die meisten?</h2>
+    <p id="normalRevealHint" class="sub">Die gemeinsame Frage bleibt noch einen Moment verdeckt.</p>
+  </div>
+
+  <div id="normalRevealCard" class="questionCard normalRevealCard">
+    <div id="normalRevealQuestion" class="questionText normalRevealQuestion concealedQuestion">?</div>
+  </div>
+  <div id="normalRevealUnit" class="questionUnitBadge normalRevealUnitReserved">Einheit: –</div>
+
+  <button id="revealNormalQuestion" type="button" class="full stageButton">Richtige Frage aufdecken</button>
+</section>
+
+<section id="answers" class="hidden gameScreen">
+  <div class="stageHeader">
+    <h2>Richtige Frage &amp; Schätzungen</h2>
+    <p class="sub">Vergleicht jetzt alle Antworten und diskutiert, wer eine andere Frage hatte.</p>
+  </div>
+
+  <div class="answersQuestionSummary">
+    <div class="answersQuestionEyebrow">RICHTIGE FRAGE</div>
+    <div id="answersNormalQuestion" class="answersQuestionText"></div>
+    <div id="answersNormalUnit" class="answersQuestionUnit"></div>
+  </div>
+
+  <div id="answerList" class="answerGrid"></div>
+  <button id="reveal" type="button" class="full stageButton">Impostor aufdecken</button>
+</section>
+
+<section id="result" class="hidden gameScreen resolutionScreen">
+  <div class="resolutionMain">
+    <div class="resolutionQuestion" id="normalQ"></div>
+    <div class="resolutionLabel">Richtige Antwort</div>
+    <div id="normalCounter" class="resolutionNumber">0</div>
+    <div id="normalAnswer" class="resolutionAnswerText"></div>
+
+    <div id="impResolution" class="impResolution hidden">
+      <div class="impDivider"></div>
+      <div class="resolutionMiniLabel">IMPOSTOR-FRAGE</div>
+      <div id="impostorQ" class="impQuestion"></div>
+      <div class="resolutionMiniLabel">RICHTIGE ANTWORT</div>
+      <div id="impCounter" class="impNumber">0</div>
+      <div id="impAnswer" class="impAnswerText"></div>
+    </div>
+
+    <div id="spicyNote" class="spicyNote hidden">Spicy-Fragen haben teilweise keinen objektiv messbaren Durchschnitt. Dafür nutzt das Spiel einen festen Spiel-Richtwert.</div>
+  </div>
+
+  <div id="roundAwards" class="roundAwards hidden">
+    <div id="closestAward" class="awardCard"></div>
+    <div id="wildAward" class="awardCard"></div>
+  </div>
+
+  <div id="impostorOutcome" class="impostorOutcome hidden">
+    <div class="impostorOutcomeText">
+      <span id="impostorOutcomeAvatar">🎭</span>
+      <span>Konnte sich <strong id="impostorOutcomeName">der Impostor</strong> verstecken?</span>
+    </div>
+    <div class="impostorOutcomeButtons">
+      <button id="impostorWonYes" type="button" class="secondary outcomeButton" data-outcome="yes">Ja</button>
+      <button id="impostorWonNo" type="button" class="secondary outcomeButton" data-outcome="no">Nein</button>
+    </div>
+  </div>
+
+  <div id="resultActions" class="grid2 resultActions hidden">
+    <button id="restart" type="button" class="ghost">Zum Start</button>
+    <button id="next" type="button">Nächste Runde</button>
+  </div>
+</section>
+
+</div>
+
+
+<div id="devGateOverlay" class="devOverlay hidden" aria-hidden="true">
+  <div class="devSheet" role="dialog" aria-modal="true" aria-labelledby="devGateTitle">
+    <div class="devSheetHeader">
+      <div id="devGateTitle" class="devSheetTitle">Zugriff</div>
+      <button id="devGateClose" type="button" class="devClose" aria-label="Schließen">✕</button>
+    </div>
+    <p class="devGateText">Geschützter Bereich.</p>
+    <input id="devPinInput" class="devPin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" aria-label="PIN">
+    <div id="devGateError" class="devGateError" aria-live="polite"></div>
+    <div class="devGateActions">
+      <button id="devGateCancel" type="button" class="secondary">Abbrechen</button>
+      <button id="devGateSubmit" type="button">Entsperren</button>
+    </div>
+  </div>
+</div>
+
+<div id="devPanelOverlay" class="devOverlay hidden" aria-hidden="true">
+  <div class="devSheet" role="dialog" aria-modal="true" aria-labelledby="devPanelTitle">
+    <div class="devSheetHeader">
+      <div id="devPanelTitle" class="devSheetTitle">DEV Tools</div>
+      <button id="devPanelClose" type="button" class="devClose" aria-label="Schließen">✕</button>
+    </div>
+
+    <div class="devGrid">
+      <div class="devCard">
+        <div class="devCardTitle">SESSION</div>
+        <div id="devSessionInfo" class="devKv"></div>
+      </div>
+
+      <div class="devCard">
+        <div class="devCardTitle">IMPOSTOR</div>
+        <div id="devImpostorInfo"></div>
+      </div>
+
+      <div class="devCard devWide">
+        <div class="devCardTitle">FRAGE</div>
+        <div id="devQuestionInfo"></div>
+      </div>
+
+      <div class="devCard devWide">
+        <div class="devCardTitle">SCREEN-JUMP</div>
+        <div class="devButtonGrid" id="devJumpButtons">
+          <button type="button" class="secondary" data-dev-jump="handoff">Übergabe</button>
+          <button type="button" class="secondary" data-dev-jump="question">Frage</button>
+          <button type="button" class="secondary" data-dev-jump="normalHidden">Richtige Frage · verdeckt</button>
+          <button type="button" class="secondary" data-dev-jump="normalOpen">Richtige Frage · offen</button>
+          <button type="button" class="secondary" data-dev-jump="answers">Schätzungen</button>
+          <button type="button" class="secondary" data-dev-jump="impostor">Impostor revealed</button>
+          <button type="button" class="secondary" data-dev-jump="result">Ergebnis</button>
+        </div>
+        <div id="devActionStatus" class="devStatus"></div>
+      </div>
+
+      <div class="devCard">
+        <div class="devCardTitle">IMPOSTOR ERZWINGEN</div>
+        <div id="devForceImpostorButtons" class="devButtonStack"></div>
+        <div class="devQuestionMeta">Nur für die aktuelle Test-Runde. Diese Runde wird danach nicht in die dauerhaften Statistiken geschrieben.</div>
+      </div>
+
+      <div class="devCard">
+        <div class="devCardTitle">FRAGE LADEN</div>
+        <input id="devQidInput" class="devField" type="text" autocomplete="off" placeholder="QID, z. B. base-0001">
+        <div class="devControlRow">
+          <select id="devQuestionCategory" class="devSelect" aria-label="DEV Kategorie"></select>
+          <select id="devQuestionDifficulty" class="devSelect" aria-label="DEV Schwierigkeit">
+            <option value="zufaellig">Alle Schwierigkeiten</option>
+            <option value="leicht">Leicht</option>
+            <option value="mittel">Mittel</option>
+            <option value="schwer">Schwer</option>
+          </select>
+        </div>
+        <div class="devActions">
+          <button id="devLoadQid" type="button" class="secondary">QID laden</button>
+          <button id="devLoadRandomQuestion" type="button" class="secondary">Zufällige laden</button>
+        </div>
+        <div id="devQuestionPickerStatus" class="devStatus"></div>
+      </div>
+
+      <div class="devCard devWide">
+        <div class="devCardTitle devCardTitleRow">
+          <span>EVENTLOG</span>
+          <button id="devClearLog" type="button" class="devTinyButton secondary">Leeren</button>
+        </div>
+        <div id="devEventLog" class="devLog"></div>
+      </div>
+
+      <div class="devCard devWide">
+        <div class="devCardTitle">TEST & SPEICHER</div>
+        <div id="devStorageInfo" class="devKv"></div>
+        <div class="devActions">
+          <button id="devRefresh" type="button" class="secondary">↻ Aktualisieren</button>
+          <button id="devSimulate" type="button" class="secondary">1000 Runden simulieren</button>
+          <button id="devLock" type="button" class="secondary devDanger">DEV sperren</button>
+          <button id="devCloseBottom" type="button">Fertig</button>
+        </div>
+        <div id="devSimulationResult" class="devSimulation hidden"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+window.CI_GAME_CONFIG={mode:"classic",dataUrl:"../../data/classic-words.json",version:"62"};
+</script>
+<script src="../../assets/js/game-engine.js"></script>
+</body>
+</html>
