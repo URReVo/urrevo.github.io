@@ -1183,8 +1183,12 @@ function soundNextRound(){
 }
 function setSoundEnabled(on){
   soundEnabled=!!on;
+  experimentPreferences.sound=soundEnabled;
+  if(experimentAppState&&experimentAppState.setPreference){
+    experimentAppState.setPreference("sound",soundEnabled);
+  }
   byId("soundOnIcon").classList.toggle("hidden",!soundEnabled);
-byId("soundOffIcon").classList.toggle("hidden",soundEnabled);
+  byId("soundOffIcon").classList.toggle("hidden",soundEnabled);
   byId("soundToggle").setAttribute("aria-pressed",soundEnabled?"true":"false");
   byId("soundToggle").setAttribute("aria-label",soundEnabled?"Sound ausschalten":"Sound einschalten");
   if(soundEnabled){ensureAudio();tone(560,0.06,0.02,"sine",0);}
