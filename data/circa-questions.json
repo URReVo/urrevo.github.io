@@ -883,7 +883,7 @@
       "step": 25,
       "qid": "base-0063",
       "normalUnit": "Watt",
-      "impUnit": "GB"
+      "impUnit": "Gigabyte"
     },
     {
       "cat": "Technik",
@@ -939,7 +939,7 @@
       "step": 0.1,
       "qid": "base-0067",
       "normalUnit": "Stück",
-      "impUnit": "GB"
+      "impUnit": "Gigabyte"
     },
     {
       "cat": "Technik",
@@ -2689,7 +2689,7 @@
       "step": 2,
       "qid": "base-0192",
       "normalUnit": "Milliliter",
-      "impUnit": "kcal"
+      "impUnit": "Kalorien"
     },
     {
       "cat": "Essen",
@@ -4313,7 +4313,7 @@
       "step": 1,
       "max": 300,
       "normalUnit": "Gramm",
-      "impUnit": "kcal"
+      "impUnit": "Kalorien"
     },
     {
       "cat": "Essen",
@@ -4327,7 +4327,7 @@
       "step": 5,
       "max": 1200,
       "normalUnit": "Milliliter",
-      "impUnit": "kcal"
+      "impUnit": "Kalorien"
     },
     {
       "cat": "Essen",
@@ -5110,7 +5110,7 @@
       "max": 2500,
       "step": 10,
       "qid": "v22-0045",
-      "normalUnit": "GB",
+      "normalUnit": "Gigabyte",
       "impUnit": "km/h"
     },
     {
@@ -5208,7 +5208,7 @@
       "max": 25,
       "step": 0.1,
       "qid": "v22-0052",
-      "normalUnit": "GB",
+      "normalUnit": "Gigabyte",
       "impUnit": "Stück"
     },
     {
@@ -5223,7 +5223,7 @@
       "step": 1,
       "qid": "v22-0053",
       "normalUnit": "Kilometer",
-      "impUnit": "GB"
+      "impUnit": "Gigabyte"
     },
     {
       "cat": "Technik",
@@ -5292,7 +5292,7 @@
       "max": 110,
       "step": 2,
       "qid": "v22-0058",
-      "normalUnit": "GB",
+      "normalUnit": "Gigabyte",
       "impUnit": "Minuten"
     },
     {
@@ -5363,7 +5363,7 @@
       "step": 5,
       "qid": "v22-0063",
       "normalUnit": "Watt",
-      "impUnit": "MB"
+      "impUnit": "Megabyte"
     },
     {
       "cat": "Technik",
@@ -5377,7 +5377,7 @@
       "step": 5,
       "qid": "v22-0064",
       "normalUnit": "°C",
-      "impUnit": "GB"
+      "impUnit": "Gigabyte"
     },
     {
       "cat": "Technik",
@@ -5390,7 +5390,7 @@
       "max": 400,
       "step": 5,
       "qid": "v22-0065",
-      "normalUnit": "MB",
+      "normalUnit": "Megabyte",
       "impUnit": "Sekunden"
     },
     {
@@ -5404,7 +5404,7 @@
       "max": 400,
       "step": 5,
       "qid": "v22-0066",
-      "normalUnit": "GB",
+      "normalUnit": "Gigabyte",
       "impUnit": "Watt"
     },
     {
@@ -6636,7 +6636,7 @@
       "max": 2250,
       "step": 10,
       "qid": "v22-0154",
-      "normalUnit": "kcal",
+      "normalUnit": "Kalorien",
       "impUnit": "Milliliter"
     },
     {
@@ -6650,7 +6650,7 @@
       "max": 2250,
       "step": 10,
       "qid": "v22-0155",
-      "normalUnit": "kcal",
+      "normalUnit": "Kalorien",
       "impUnit": "Milliliter"
     },
     {
@@ -6707,7 +6707,7 @@
       "step": 0.5,
       "qid": "v22-0159",
       "normalUnit": "Gramm",
-      "impUnit": "Stücke"
+      "impUnit": "Stück"
     },
     {
       "cat": "Essen",
@@ -6720,7 +6720,7 @@
       "max": 45,
       "step": 1,
       "qid": "v22-0160",
-      "normalUnit": "Stücke",
+      "normalUnit": "Stück",
       "impUnit": "Gramm"
     },
     {
@@ -6846,7 +6846,7 @@
       "max": 400,
       "step": 5,
       "qid": "v22-0169",
-      "normalUnit": "kcal",
+      "normalUnit": "Kalorien",
       "impUnit": "Gramm"
     },
     {
@@ -6860,7 +6860,7 @@
       "max": 1250,
       "step": 10,
       "qid": "v22-0170",
-      "normalUnit": "kcal",
+      "normalUnit": "Kalorien",
       "impUnit": "Gramm"
     },
     {
@@ -6874,7 +6874,7 @@
       "max": 1000,
       "step": 10,
       "qid": "v22-0171",
-      "normalUnit": "kcal",
+      "normalUnit": "Kalorien",
       "impUnit": "Milliliter"
     },
     {
@@ -6888,7 +6888,7 @@
       "max": 1250,
       "step": 10,
       "qid": "v22-0172",
-      "normalUnit": "kcal",
+      "normalUnit": "Kalorien",
       "impUnit": "Milliliter"
     },
     {
