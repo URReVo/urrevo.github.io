@@ -41,7 +41,7 @@ function defaults(){
     schemaVersion:1,
     selectedProfileId:id,
     primaryProfileId:id,
-    profiles:[{id:id,name:"Spieler",avatar:"😎",createdAt:now()}],
+    profiles:[{id:id,name:"Spieler",avatar:"😎",aliases:[],createdAt:now()}],
     profileStats:{},
     profileArchive:{},
     stats:baseStats(),
@@ -73,7 +73,7 @@ function migrateV72(){
     var key=name.toLocaleLowerCase("de-DE");
     var existing=byName[key];
     if(!existing){
-      existing={id:uid("player"),name:name,avatar:String(avatar||"😎").slice(0,8),createdAt:now()};
+      existing={id:uid("player"),name:name,avatar:String(avatar||"😎").slice(0,8),aliases:[],createdAt:now()};
       byName[key]=existing;
       profiles.push(existing);
       profileStats[existing.id]=baseProfileStats();
@@ -208,6 +208,7 @@ function load(){
   }
 
   if(!Array.isArray(data.profiles))data.profiles=[];
+  data.profiles.forEach(function(p){if(!Array.isArray(p.aliases))p.aliases=[];});
   if(!data.profiles.length){
     var p=defaults().profiles[0];data.profiles=[p];data.selectedProfileId=p.id;data.primaryProfileId=p.id;
   }
@@ -277,7 +278,7 @@ function addProfile(input){
   var duplicate=data.profiles.find(function(x){return x.name.toLocaleLowerCase("de-DE")===p.name.toLocaleLowerCase("de-DE");});
   if(duplicate)return duplicate.id;
   var id=uid("player");
-  data.profiles.push({id:id,name:p.name,avatar:p.avatar,createdAt:now()});
+  data.profiles.push({id:id,name:p.name,avatar:p.avatar,aliases:[],createdAt:now()});
   ensureStat(id);save();return id;
 }
 function updateProfile(id,input){
@@ -286,6 +287,13 @@ function updateProfile(id,input){
   var lower=n.name.toLocaleLowerCase("de-DE");
   var duplicate=data.profiles.some(function(x){return x.id!==id&&x.name.toLocaleLowerCase("de-DE")===lower;});
   if(duplicate)return false;
+  if(p.name.toLocaleLowerCase("de-DE")!==n.name.toLocaleLowerCase("de-DE")){
+    if(!Array.isArray(p.aliases))p.aliases=[];
+    if(!p.aliases.some(function(alias){return alias.toLocaleLowerCase("de-DE")===p.name.toLocaleLowerCase("de-DE");})){
+      p.aliases.push(p.name);
+      if(p.aliases.length>8)p.aliases=p.aliases.slice(-8);
+    }
+  }
   p.name=n.name;p.avatar=n.avatar;save();return true;
 }
 function deleteProfile(id){
@@ -293,7 +301,7 @@ function deleteProfile(id){
   var idx=data.profiles.findIndex(function(p){return p.id===id;});
   if(idx<0)return false;
   var removed=data.profiles[idx];
-  data.profileArchive[id]={id:removed.id,name:removed.name,avatar:removed.avatar,createdAt:removed.createdAt||null,deletedAt:now()};
+  data.profileArchive[id]={id:removed.id,name:removed.name,avatar:removed.avatar,aliases:Array.isArray(removed.aliases)?removed.aliases.slice():[],createdAt:removed.createdAt||null,deletedAt:now()};
   data.profiles.splice(idx,1);
   if(data.selectedProfileId===id||data.primaryProfileId===id){
     data.selectedProfileId=data.profiles[0].id;
@@ -682,7 +690,13 @@ function sanitizeImportedProfile(p){
   var id=String(p.id||"").trim();
   var name=cleanName(p.name);
   if(!id||!name)return null;
-  return {id:id.slice(0,80),name:name,avatar:String(p.avatar||"😎").slice(0,8),createdAt:p.createdAt||now()};
+  return {
+    id:id.slice(0,80),
+    name:name,
+    avatar:String(p.avatar||"😎").slice(0,8),
+    aliases:Array.isArray(p.aliases)?p.aliases.map(cleanName).filter(Boolean).slice(-8):[],
+    createdAt:p.createdAt||now()
+  };
 }
 function sanitizeImportedStats(src){
   src=src&&typeof src==="object"?src:{};
