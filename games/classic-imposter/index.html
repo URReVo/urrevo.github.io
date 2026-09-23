@@ -6,13 +6,14 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Klassisches Imposter">
-<meta name="theme-color" content="#292929">\n<style>.hidden{display:none!important}</style>
+<meta name="theme-color" content="#292929">
+<style>.hidden{display:none!important}body.booting #app{visibility:hidden}</style>
 <link rel="apple-touch-icon" sizes="180x180" href="../../circa_impostor_detective_icon_180.png">
 <link rel="icon" type="image/png" sizes="180x180" href="../../circa_impostor_detective_icon_180.png">
-<link rel="stylesheet" href="../../assets/css/game.css?v=67">
-<title>Klassisches Imposter · V67</title>
+<link rel="stylesheet" href="../../assets/css/game.css?v=68">
+<title>Klassisches Imposter · V68</title>
 </head>
-<body data-game="classic">
+<body data-game="classic" class="booting" aria-busy="true">
 
 <div class="app" id="app">
 <div id="roundIntro" class="roundIntro hidden" aria-hidden="true">
@@ -258,8 +259,8 @@
 </div>
 
 <script>
-window.CI_GAME_CONFIG={mode:"classic",dataUrl:"../../data/classic-words.json",version:"67"};
+window.CI_GAME_CONFIG={mode:"classic",dataUrl:"../../data/classic-words.json",version:"68"};
 </script>
-<script src="../../assets/js/game-engine.js?v=67"></script>
+<script src="../../assets/js/game-engine.js?v=68"></script>
 </body>
 </html>
