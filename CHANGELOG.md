@@ -20,6 +20,9 @@
 - V73-Hotfix: alte Circa-QIDs werden nachträglich in Kategorien aufgelöst; Spielern, die nachweislich an allen V72-Circa-Runden teilgenommen haben, können diese QIDs/Kategorien exakt persönlich zugeordnet werden.
 - V73-Hotfix: unvollständig rekonstruierbare V72-Fortschritte werden sichtbar als teilweise/unbekannt gekennzeichnet; insbesondere wurde „Punktlandung“ in V72 nicht separat gezählt.
 - Offline-Cache für die V73-Hotfixes auf Revision r2 angehoben.
+- V73-Audit: Statistik-/Session-Zählung, Profilidentität, Reset, Backup V2 und zentrale Einstellungen gehärtet; geprüfter Laufzeitstand als Cache-Revision r3 veröffentlicht.
+- V73-Hotfix: dezente Web-Audio-UI-Töne im Launcher für Navigation, Profilwahl, Spielstart, Session-Aktionen und Bestätigungen ergänzt. Die Töne respektieren den globalen Sound-Schalter und benötigen keine Audiodateien.
+- Offline-Cache für die Launcher-Audio-Erweiterung auf Revision r4 angehoben.
 
 Die Versionshistorie dokumentiert die aus den Projektchats und der GitHub-Historie eindeutig rekonstruierbaren Änderungen. Frühere Zwischenstände mit generischen Upload-Commits werden nicht künstlich versioniert oder mit erfundenen Details ergänzt.
 
