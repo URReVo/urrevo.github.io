@@ -140,6 +140,17 @@ function renderSessionSheet(session){
   if(!session)return;
   selectedSession=session;
   byId("sessionSheetTitle").textContent=(session.endedAt?"Session · ":"Aktuelle Session · ")+fmtDateTime(session.startedAt);
+  var playersBox=byId("sessionPlayers");playersBox.textContent="";
+  (session.profileIds||[]).forEach(function(id){
+    var p=store.getProfileById?store.getProfileById(id):null;
+    var chip=document.createElement("div");chip.className="sessionPlayerChip";
+    var avatar=document.createElement("span");avatar.textContent=p&&p.avatar?p.avatar:"👤";
+    var name=document.createElement("strong");name.textContent=p&&p.name?p.name:"Ehemaliger Spieler";
+    chip.appendChild(avatar);chip.appendChild(name);playersBox.appendChild(chip);
+  });
+  if(!(session.profileIds||[]).length){
+    var emptyPlayers=document.createElement("div");emptyPlayers.className="emptyState";emptyPlayers.textContent="Für diese Session sind keine Spielerprofile gespeichert.";playersBox.appendChild(emptyPlayers);
+  }
   var awards=byId("sessionAwards");awards.textContent="";
   var list=session.awards||[];
   if(!list.length){
@@ -333,8 +344,39 @@ byId("exportData").addEventListener("click",function(){
     var url=URL.createObjectURL(blob);
     var a=document.createElement("a");a.href=url;a.download="imposter-app-shell-test.json";document.body.appendChild(a);a.click();a.remove();
     setTimeout(function(){URL.revokeObjectURL(url);},1000);
-    byId("dataStatus").textContent="Teststatistik wurde als JSON vorbereitet.";
+    byId("dataStatus").textContent="Testdaten wurden als JSON-Backup vorbereitet.";
   }catch(e){byId("dataStatus").textContent="Export ist auf diesem Gerät gerade nicht verfügbar.";}
+});
+byId("importData").addEventListener("click",function(){
+  byId("importDataFile").value="";
+  byId("importDataFile").click();
+});
+byId("importDataFile").addEventListener("change",function(){
+  var input=this,file=input.files&&input.files[0];
+  if(!file)return;
+  if(file.size>2*1024*1024){
+    byId("dataStatus").textContent="Import abgebrochen: Die JSON-Datei ist größer als 2 MB.";
+    input.value="";return;
+  }
+  var reader=new FileReader();
+  reader.onerror=function(){byId("dataStatus").textContent="Die Datei konnte nicht gelesen werden.";input.value="";};
+  reader.onload=function(){
+    var parsed=null;
+    try{parsed=JSON.parse(String(reader.result||""));}catch(e){
+      byId("dataStatus").textContent="Import abgebrochen: Keine gültige JSON-Datei.";input.value="";return;
+    }
+    if(!window.confirm("Dieses Backup ersetzt die aktuellen App-Shell-Testdaten. Produktive V72-Daten bleiben unangetastet. Fortfahren?")){input.value="";return;}
+    var result=store.importSnapshot?store.importSnapshot(parsed):{ok:false,reason:"unsupported"};
+    if(!result.ok){
+      var reason=result.reason==="profiles"?"Keine gültigen Profile im Backup gefunden.":result.reason==="storage"?"Die importierten Daten konnten nicht lokal gespeichert werden.":"Das Backup passt nicht zum App-Shell-Test.";
+      byId("dataStatus").textContent="Import abgebrochen: "+reason;
+      input.value="";return;
+    }
+    closeSheets();renderAll();
+    byId("dataStatus").textContent="Backup importiert: "+result.profiles+" Profile · "+result.sessions+" Sessions · "+result.rounds+" Runden.";
+    input.value="";
+  };
+  reader.readAsText(file);
 });
 byId("resetExperiment").addEventListener("click",function(){
   if(!window.confirm("Wirklich alle App-Shell-Testdaten löschen? Die produktive V72 bleibt vollständig unangetastet."))return;
