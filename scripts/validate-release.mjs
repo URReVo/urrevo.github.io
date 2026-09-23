@@ -110,7 +110,8 @@ const fakeStorage={
   setItem:(key,value)=>legacySeed.set(key,String(value)),
   removeItem:key=>legacySeed.delete(key)
 };
-const fakeCrypto={getRandomValues(arr){for(let i=0;i<arr.length;i++)arr[i]=100+i;return arr;}};
+let fakeCryptoTick=0;
+const fakeCrypto={getRandomValues(arr){fakeCryptoTick++;for(let i=0;i<arr.length;i++)arr[i]=fakeCryptoTick*100+i;return arr;}};
 const fakeWindow={crypto:fakeCrypto};
 const migratedStore=new Function("window","localStorage","crypto",appStateSource+";return window.CIAppState;")(fakeWindow,fakeStorage,fakeCrypto);
 const migratedProfiles=migratedStore.getProfiles();
