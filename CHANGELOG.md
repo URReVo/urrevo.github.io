@@ -2,6 +2,19 @@
 
 Die Versionshistorie dokumentiert die aus den Projektchats und der GitHub-Historie eindeutig rekonstruierbaren Änderungen. Frühere Zwischenstände mit generischen Upload-Commits werden nicht künstlich versioniert oder mit erfundenen Details ergänzt.
 
+## V72 — Audit-Fixes und Release-Validator
+
+- Circa-Konzeptschutz korrigiert: ähnliche Konzepte werden weiterhin bevorzugt auseinandergehalten, aber ungespielte QIDs werden nie mehr wegen Konzeptähnlichkeit verworfen. Ein Deck wird erst zurückgesetzt, wenn alle geeigneten QIDs tatsächlich gespielt wurden.
+- 18 Circa-Slider mit zu wenig Spielraum nach oben erweitert; jeder betroffene Slider besitzt nun mindestens rund 50 % Luft über dem höheren Zielwert.
+- Alte Classic-Migrationskeys werden nach erfolgreicher Übernahme bzw. bei bereits vorhandenen aktuellen Keys aus `localStorage` entfernt.
+- Audio-Unlock auf modernen Browsern nur noch über `pointerdown`; `touchstart` bleibt ausschließlich als Fallback für ältere WebKit-Versionen ohne Pointer Events.
+- Offline-Cache speichert Launcher und Spielseiten nur noch unter ihren kanonischen Ordner-URLs; `index.html`-Navigationen werden auf diese Cache-Einträge abgebildet.
+- Service Worker verwendet eine zentrale `RELEASE`-Konstante für Cache- und Asset-Versionen.
+- Launcher zeigt dezent `Offline bereit`, `Offline-Modus`, Update-Status oder einen Offline-Fehler an.
+- Automatischer Release-Validator und GitHub-Actions-Workflow ergänzt. Geprüft werden u. a. Versionsgleichheit, Cache-Version, wörtliche `\\n`-Reste, doppelte IDs, JSON-Struktur, Circa-Slider, Classic-Wörter/Hinweise und getrennte Spiel-DOMs.
+- Versehentliche wörtliche `\\n`-Reste im README-Architekturbaum bereinigt.
+- Plattform-/Asset-Version auf V72 angehoben.
+
 ## V71 — iOS-Sound und Security-Härtung
 
 - V67-Audio-Resume-Serialisierung zurückgebaut und auf die zuvor bewährte V65/V66-Web-Audio-Logik zurückgeführt.
