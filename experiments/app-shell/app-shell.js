@@ -389,7 +389,6 @@ byId("deletePreset").addEventListener("click",function(){
 
 byId("activeSessionCard").addEventListener("click",function(){var s=store.getActiveSession();if(s)renderSessionSheet(s);});
 byId("continueSession").addEventListener("click",function(){var s=store.getActiveSession();if(s)launchSessionGroup(s);});
-byId("replaySession").addEventListener("click",function(){if(selectedSession)launchSessionGroup(selectedSession);});
 document.querySelectorAll("[data-stats-scope]").forEach(function(button){
   button.addEventListener("click",function(){statsScope=this.getAttribute("data-stats-scope")==="global"?"global":"profile";renderStats();});
 });
