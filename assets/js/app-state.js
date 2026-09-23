@@ -543,7 +543,9 @@ function deletePreset(id){
   save();return data.presets.length<before;
 }
 function setLaunchPreset(preset){
-  data.launchPreset=preset?clone(preset):null;save();
+  data.launchPreset=preset?clone(preset):null;
+  if(preset)data.launchGroup=null;
+  save();
 }
 function consumeLaunchPreset(game){
   var p=data.launchPreset;
@@ -553,7 +555,9 @@ function consumeLaunchPreset(game){
 function setLaunchGroup(profileIds){
   var ids=[];
   (profileIds||[]).forEach(function(id){if(profileById(id)&&ids.indexOf(id)===-1)ids.push(id);});
-  data.launchGroup=ids.length?ids:null;save();return ids.length;
+  data.launchGroup=ids.length?ids:null;
+  if(ids.length)data.launchPreset=null;
+  save();return ids.length;
 }
 function consumeLaunchGroup(){
   var ids=Array.isArray(data.launchGroup)?data.launchGroup.slice():null;
