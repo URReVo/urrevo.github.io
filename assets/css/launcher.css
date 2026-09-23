@@ -59,3 +59,23 @@ button{color:inherit}
 
 /* V73 production additions */
 .migrationText{margin:0 0 13px;color:#aaa;font-size:11px;line-height:1.5}.migrationProfiles{display:grid;gap:8px}.migrationProfileButton{width:100%;min-height:58px;padding:10px 12px;border:1px solid var(--border);border-radius:16px;background:#232428;color:var(--text);display:grid;grid-template-columns:40px 1fr 18px;gap:10px;align-items:center;text-align:left}.migrationProfileButton .migrationAvatar{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;background:#36373c;font-size:22px}.migrationProfileButton strong{font-size:13px}.migrationProfileButton small{display:block;margin-top:3px;color:#7f8187;font-size:9px}.migrationProfileButton .migrationArrow{color:var(--accent);font-size:20px;text-align:right}.statusPill[data-state="ready"],.statusPill[data-state="offline"]{color:#c9d9c7}.statusPill[data-state="error"]{color:#d2a4a4}
+
+
+/* Launcher behaves like an app: UI text is not selectable/copyable. */
+body,
+.appShell,
+.bottomNav,
+.bottomSheet{
+  -webkit-user-select:none;
+  user-select:none;
+  -webkit-touch-callout:none;
+}
+
+input,
+textarea,
+select,
+[contenteditable="true"]{
+  -webkit-user-select:text;
+  user-select:text;
+  -webkit-touch-callout:default;
+}
