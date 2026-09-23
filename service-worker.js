@@ -1,36 +1,36 @@
 "use strict";
 
+const RELEASE="72";
+const CACHE_REVISION="r1";
 const CACHE_PREFIX="imposter-games-";
-const CACHE_NAME=CACHE_PREFIX+"v71-r1";
+const CACHE_NAME=CACHE_PREFIX+"v"+RELEASE+"-"+CACHE_REVISION;
+const versioned=path=>path+"?v="+RELEASE;
 
 const CORE_URLS=[
   "/",
-  "/index.html",
   "/manifest.webmanifest",
-  "/assets/css/launcher.css?v=71",
-  "/assets/js/launcher.js?v=71",
-  "/assets/js/pwa.js?v=71",
-  "/assets/css/game.css?v=71",
-  "/assets/js/game-engine.js?v=71",
+  versioned("/assets/css/launcher.css"),
+  versioned("/assets/js/launcher.js"),
+  versioned("/assets/js/pwa.js"),
+  versioned("/assets/css/game.css"),
+  versioned("/assets/js/game-engine.js"),
   "/data/games.json",
   "/data/circa-questions.json",
   "/data/classic-words.json",
   "/games/circa-imposter/",
-  "/games/circa-imposter/index.html",
   "/games/classic-imposter/",
-  "/games/classic-imposter/index.html",
   "/circa_impostor_detective_icon_180.png",
   "/circa_impostor_detective_icon_512.png"
 ];
 
-const NAV_PATHS=new Set([
-  "/",
-  "/index.html",
-  "/games/circa-imposter/",
-  "/games/circa-imposter/index.html",
-  "/games/classic-imposter/",
-  "/games/classic-imposter/index.html"
-]);
+const NAV_FALLBACKS={
+  "/":"/",
+  "/index.html":"/",
+  "/games/circa-imposter/":"/games/circa-imposter/",
+  "/games/circa-imposter/index.html":"/games/circa-imposter/",
+  "/games/classic-imposter/":"/games/classic-imposter/",
+  "/games/classic-imposter/index.html":"/games/classic-imposter/"
+};
 
 const DATA_PATHS=new Set([
   "/data/games.json",
@@ -42,13 +42,10 @@ self.addEventListener("install",event=>{
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache=>{
-        /* A release is installable only when every required app file was
-           fetched successfully. The currently active cache is not touched. */
         const requests=CORE_URLS.map(url=>new Request(url,{cache:"reload"}));
         return cache.addAll(requests);
       })
       .catch(async error=>{
-        /* Do not leave a half-filled cache behind after a failed release. */
         try{await caches.delete(CACHE_NAME);}catch(cleanupError){}
         throw error;
       })
@@ -83,20 +80,16 @@ self.addEventListener("fetch",event=>{
   if(url.origin!==self.location.origin)return;
 
   if(request.mode==="navigate"){
-    if(!NAV_PATHS.has(url.pathname))return;
-    /* Navigation stays on one complete release. A newer release is installed
-       by the browser in parallel and becomes active after the old client ends. */
-    event.respondWith(cacheFirst(request,url.pathname));
+    const fallback=NAV_FALLBACKS[url.pathname];
+    if(!fallback)return;
+    event.respondWith(cacheFirst(request,fallback));
     return;
   }
 
   if(DATA_PATHS.has(url.pathname)){
-    /* Data and runtime must belong to the same release as the page. */
     event.respondWith(cacheFirst(request,url.pathname));
     return;
   }
 
-  /* Only pre-cached requests are retained. Cache misses go to the network
-     without being added, preventing an ever-growing runtime cache. */
   event.respondWith(cacheFirst(request,null));
 });
