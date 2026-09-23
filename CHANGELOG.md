@@ -2,6 +2,20 @@
 
 Die Versionshistorie dokumentiert die aus den Projektchats und der GitHub-Historie eindeutig rekonstruierbaren Änderungen. Frühere Zwischenstände mit generischen Upload-Commits werden nicht künstlich versioniert oder mit erfundenen Details ergänzt.
 
+## V64 — Classic-DEV und Fairnessprüfung
+
+- DEV-Tools des klassischen Imposter-Spiels vollständig auf den Classic-Ablauf umgestellt.
+- Circa-spezifische QID-, Schätzfragen- und Ergebniswerkzeuge aus dem Classic-DEV entfernt.
+- Aktuelles geheimes Wort mit WID, Kategorie und Hinweis im DEV sichtbar gemacht.
+- Gezieltes Laden einer WID und zufälliges Laden eines Wortes nach Kategorie ergänzt.
+- DEV-Wort kann bereits vor dem Spiel für die nächste Runde vorgemerkt werden, ohne den normalen Wort-Deckfortschritt zu verbrauchen.
+- Classic-Screen-Jumps für Übergabe, Rollenkarte, Diskussion und Auflösung ergänzt.
+- Impostor erzwingen für Classic repariert.
+- Classic-Speicherstatus und Eventlog angepasst.
+- 1000-Runden-Fairnesssimulation auch im Classic-DEV verfügbar.
+- Fairnesslogik verifiziert: 3 Spieler 25–45 %, 4 Spieler 20–35 %, letzter Impostor mit Malus statt Sperre; ab 5 Spielern Gleichverteilung.
+- DEV-Schaltflächen nach erfolgreicher Freischaltung nun auch im klassischen Spiel sichtbar.
+
 ## V63 — Spielnamen und getrennte Speicherstände
 
 - **Faker Imposter** in **Circa Imposter** umbenannt.
