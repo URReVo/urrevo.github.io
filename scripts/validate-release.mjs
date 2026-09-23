@@ -108,7 +108,7 @@ assert(appStateSource.includes('BACKUP_FORMAT="imposter-games-backup"'),"product
 assert(engineSource.includes('EXP_STORAGE="imposterGames.v73.game."'),"V73 isolated game storage missing");
 assert(!html["index.html"].includes("APP-SHELL TEST"),"production launcher still contains experiment badge");
 assert(launcherCss.includes("padding:calc(18px + var(--safeTop)) 16px 26px"),"launcher safe-area top padding missing");
-assert(sw.includes('const CACHE_REVISION="r3"'),"V73 audited cache revision mismatch");
+assert(sw.includes('const CACHE_REVISION="r4"'),"V73 launcher-audio cache revision mismatch");
 assert(appStateSource.includes("var BACKUP_VERSION=2"),"backup format v2 missing");
 assert(engineSource.includes("experimentRecordCirca(null);"),"Circa shared base-round recording missing");
 assert(engineSource.includes("impostorEscaped:outcome===true?true:outcome===false?false:null"),"Circa unresolved outcome state missing");
@@ -117,6 +117,12 @@ assert(engineSource.includes("function experimentActiveProfile"),"active-profile
 assert(engineSource.includes('setPreference("sound",soundEnabled)'),"in-game sound preference persistence missing");
 assert(engineSource.includes("function motionEnabled()"),"game animation preference helper missing");
 assert(gameCss.includes(".experimentReduceMotion *"),"game reduced-motion CSS missing");
+assert(launcherSource.includes("function launcherSoundEnabled()"),"launcher sound preference guard missing");
+assert(launcherSource.includes("function uiSound(kind)"),"launcher UI sound generator missing");
+assert(launcherSource.includes("function navigateWithSound(href)"),"launcher start-sound navigation missing");
+assert(launcherSource.includes("store.getPreferences().sound!==false"),"launcher sound is not tied to global preference");
+assert(launcherSource.includes('querySelectorAll("a.gameCard[href]")'),"game-card sound/navigation binding missing");
+assert(!/\.(mp3|wav|m4a|aac|ogg)["']/i.test(launcherSource),"launcher should not depend on external audio files");
 
 /* Simulate the first V72 -> V73 profile migration. */
 const legacySeed=new Map();
