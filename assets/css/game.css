@@ -14,7 +14,7 @@
 *{box-sizing:border-box}
 html,body{margin:0;width:100%;min-height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;overscroll-behavior-y:none}
 html{background-color:var(--bg)}
-body{min-height:100%;background-color:var(--bg)}
+body{min-height:100dvh;background-color:var(--bg)}
 button,input{font:inherit}
 button{touch-action:manipulation}
 .hidden{display:none!important}
@@ -558,9 +558,16 @@ body.categoryPulse #topCategory{animation:categoryPulse .5s ease}
 }
 
 
-/* Premium dark visual theme. */
-html,body{
-  background:
+/* Premium dark visual theme.
+   Keep the root canvas itself on a real solid color just like the launcher.
+   iOS can expose the root canvas in the status/safe-area region; using the
+   background shorthand here used to reset background-color to transparent. */
+html{
+  background:#292929;
+}
+body{
+  background-color:#292929;
+  background-image:
     radial-gradient(circle at 18% 4%, rgba(116,92,255,.11), transparent 28%),
     radial-gradient(circle at 88% 15%, rgba(243,154,50,.08), transparent 25%),
     linear-gradient(180deg,#15171c 0%,#25262b 42%,#1d1e22 100%);
