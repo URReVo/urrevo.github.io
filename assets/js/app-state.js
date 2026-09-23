@@ -711,12 +711,15 @@ function importSnapshot(input){
   if(!src||typeof src!=="object"||Array.isArray(src))return {ok:false,reason:"shape"};
   if(!Array.isArray(src.profiles)||!src.profiles.length)return {ok:false,reason:"profiles"};
 
-  var profiles=[],seen={};
+  var profiles=[],seen={},seenNames={},duplicateProfileName=false;
   src.profiles.forEach(function(item){
     var p=sanitizeImportedProfile(item);
     if(!p||seen[p.id])return;
-    seen[p.id]=true;profiles.push(p);
+    var nameKey=p.name.toLocaleLowerCase("de-DE");
+    if(seenNames[nameKey]){duplicateProfileName=true;return;}
+    seen[p.id]=true;seenNames[nameKey]=true;profiles.push(p);
   });
+  if(duplicateProfileName)return {ok:false,reason:"duplicate-profiles"};
   if(!profiles.length)return {ok:false,reason:"profiles"};
 
   var archive={};
@@ -749,8 +752,10 @@ function importSnapshot(input){
       haptics:!src.preferences||src.preferences.haptics!==false,
       animations:!src.preferences||src.preferences.animations!==false
     },
-    imports:src.imports&&typeof src.imports==="object"&&!Array.isArray(src.imports)?clone(src.imports):{legacyCirca:false}
+    imports:src.imports&&typeof src.imports==="object"&&!Array.isArray(src.imports)?clone(src.imports):{}
   };
+  imported.imports.restoredFromBackupAt=now();
+  imported.imports.v72DetailBackfillV1=true;
 
   var activeId=String(src.activeSessionId||"");
   if(activeId&&imported.sessions.some(function(x){return x.id===activeId&&!x.endedAt;}))imported.activeSessionId=activeId;
@@ -802,7 +807,18 @@ function completeMigrationProfileChoice(id){
   save();return true;
 }
 function reset(){
-  try{localStorage.removeItem(KEY);localStorage.removeItem(LEGACY_KEY);}catch(e){}
+  try{
+    localStorage.removeItem(KEY);
+    localStorage.removeItem(LEGACY_KEY);
+    var prefix="imposterGames.v73.game.";
+    var keys=[];
+    for(var i=0;i<localStorage.length;i++){
+      var key=localStorage.key(i);
+      if(key&&key.indexOf(prefix)===0)keys.push(key);
+    }
+    keys.forEach(function(key){localStorage.removeItem(key);});
+    localStorage.setItem(prefix+"v72Migration.v1",JSON.stringify({completed:true,reset:true,at:now()}));
+  }catch(e){}
   data=defaults();
   data.imports={v72MigrationCompleted:true,v72ProfileChoicePending:false,v72ProfilesFound:0,resetAt:now()};
   save();
