@@ -5,7 +5,16 @@ var KEY="imposterGames.appState.v1";
 var LEGACY_KEY="imposterGames.appState.legacy";
 var MAX_SESSIONS=50;
 var BACKUP_FORMAT="imposter-games-backup";
-var BACKUP_VERSION=1;
+var BACKUP_VERSION=2;
+var GAME_STORAGE_PREFIX="imposterGames.v73.game.";
+var GAME_STORAGE_KEYS=[
+  "circa.players.v1","classic.players.v1",
+  "circa.categories.v1","classic.categories.v1",
+  "circa.deckProgress.v1","circa.difficulty.v1",
+  "circa.playerStats.v1","circa.deviceStats.v1","circa.completedQuestions.v1",
+  "classic.deck.v1","classic.hint.v1","classic.timer.v1",
+  "v72Migration.v1"
+];
 var DEFAULT_AVATARS=["😎","🕵️","🥷","🤠","👻","🤖","🦊","🐼","🐸","🦁","🐙","🦄"];
 
 function uid(prefix){
@@ -716,13 +725,52 @@ function sanitizeImportedSessions(src){
     };
   });
 }
+function snapshotGameStorage(){
+  var out={};
+  GAME_STORAGE_KEYS.forEach(function(suffix){
+    try{
+      var raw=localStorage.getItem(GAME_STORAGE_PREFIX+suffix);
+      if(raw===null)return;
+      var value=JSON.parse(raw);
+      out[suffix]=value;
+    }catch(e){}
+  });
+  return out;
+}
+function clearV73GameStorage(){
+  try{
+    var keys=[];
+    for(var i=0;i<localStorage.length;i++){
+      var key=localStorage.key(i);
+      if(key&&key.indexOf(GAME_STORAGE_PREFIX)===0)keys.push(key);
+    }
+    keys.forEach(function(key){localStorage.removeItem(key);});
+    return true;
+  }catch(e){return false;}
+}
+function restoreGameStorage(snapshot){
+  clearV73GameStorage();
+  if(snapshot&&typeof snapshot==="object"&&!Array.isArray(snapshot)){
+    GAME_STORAGE_KEYS.forEach(function(suffix){
+      if(!Object.prototype.hasOwnProperty.call(snapshot,suffix))return;
+      try{localStorage.setItem(GAME_STORAGE_PREFIX+suffix,JSON.stringify(snapshot[suffix]));}catch(e){}
+    });
+  }
+  try{
+    if(localStorage.getItem(GAME_STORAGE_PREFIX+"v72Migration.v1")===null){
+      localStorage.setItem(GAME_STORAGE_PREFIX+"v72Migration.v1",JSON.stringify({completed:true,restored:true,at:now()}));
+    }
+  }catch(e){}
+}
 function importSnapshot(input){
-  var src=input;
+  var src=input,gameStorage=null;
   if(typeof src==="string"){try{src=JSON.parse(src);}catch(e){return {ok:false,reason:"json"};}}
   if(!src||typeof src!=="object"||Array.isArray(src))return {ok:false,reason:"shape"};
   if(src.format){
     if(src.format!==BACKUP_FORMAT)return {ok:false,reason:"format"};
-    if(Number(src.formatVersion)>BACKUP_VERSION)return {ok:false,reason:"version"};
+    var version=Number(src.formatVersion);
+    if(!Number.isFinite(version)||version<1||version>BACKUP_VERSION)return {ok:false,reason:"version"};
+    gameStorage=src.gameStorage&&typeof src.gameStorage==="object"&&!Array.isArray(src.gameStorage)?src.gameStorage:null;
     src=src.data;
   }
   if(!src||typeof src!=="object"||Array.isArray(src))return {ok:false,reason:"shape"};
@@ -780,7 +828,8 @@ function importSnapshot(input){
   data=imported;
   evaluateAchievements();
   if(!save())return {ok:false,reason:"storage"};
-  return {ok:true,profiles:data.profiles.length,sessions:data.sessions.length,rounds:data.stats.rounds};
+  restoreGameStorage(gameStorage);
+  return {ok:true,profiles:data.profiles.length,sessions:data.sessions.length,rounds:data.stats.rounds,gameStorage:!!gameStorage};
 }
 function applyCircaQuestionMetadata(items){
   if(!Array.isArray(items)||!items.length)return false;
@@ -827,14 +876,8 @@ function reset(){
   try{
     localStorage.removeItem(KEY);
     localStorage.removeItem(LEGACY_KEY);
-    var prefix="imposterGames.v73.game.";
-    var keys=[];
-    for(var i=0;i<localStorage.length;i++){
-      var key=localStorage.key(i);
-      if(key&&key.indexOf(prefix)===0)keys.push(key);
-    }
-    keys.forEach(function(key){localStorage.removeItem(key);});
-    localStorage.setItem(prefix+"v72Migration.v1",JSON.stringify({completed:true,reset:true,at:now()}));
+    clearV73GameStorage();
+    localStorage.setItem(GAME_STORAGE_PREFIX+"v72Migration.v1",JSON.stringify({completed:true,reset:true,at:now()}));
   }catch(e){}
   data=defaults();
   data.imports={
@@ -849,7 +892,13 @@ function reset(){
 }
 function snapshot(){return clone(data);}
 function createBackup(){
-  return {format:BACKUP_FORMAT,formatVersion:BACKUP_VERSION,exportedAt:now(),data:snapshot()};
+  return {
+    format:BACKUP_FORMAT,
+    formatVersion:BACKUP_VERSION,
+    exportedAt:now(),
+    data:snapshot(),
+    gameStorage:snapshotGameStorage()
+  };
 }
 
 save();
