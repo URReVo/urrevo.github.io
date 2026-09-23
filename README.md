@@ -158,6 +158,6 @@ Direkte Spielpfade:
 
 Siehe [CHANGELOG.md](CHANGELOG.md).
 
-## ⚠️ Bekannter iOS-Hinweis
+## 📱 iOS-Safe-Area
 
-Der bereits bekannte helle Streifen bei bestimmten als Home-Screen-Web-App installierten iOS-27-Konfigurationen ist weiterhin nicht durch einen belastbaren Fix gelöst. Die verworfenen experimentellen V55–V57-Workarounds wurden nicht wieder eingeführt.
+Ab V69 verwenden die Spielseiten für den Root-/Statusbar-Bereich denselben festen Hintergrund wie der Launcher. Der Premium-Gradient liegt nur noch als Hintergrundbild darüber, sodass die Root-Fläche nicht transparent werden kann. Damit wird der zuvor sichtbare helle Streifen im oberen iOS-Safe-Area-Bereich gezielt vermieden.
