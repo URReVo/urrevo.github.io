@@ -16,6 +16,7 @@ Das Schätzspiel: Alle Spieler beantworten eine numerische Schätzfrage. Eine Pe
 - 520 Fragepaare / 1.040 Fragetexte
 - Kategorien und drei Schwierigkeitsbereiche plus Zufall
 - lokaler Deck-Fortschritt
+- Konzeptbasierter Wiederholungsschutz gegen nahezu identische Fragevarianten
 - lokale Spielerstatistiken
 - faire Imposter-Auswahl bei kleinen Gruppen
 - versteckte DEV-Werkzeuge
