@@ -81,6 +81,7 @@
         <div class="sessionMain"><strong id="activeSessionMain">0 Runden</strong><span id="activeSessionSub">Noch keine Runde abgeschlossen</span></div>
         <div class="sessionArrow">›</div>
       </button>
+      <button id="continueSession" class="sessionContinueButton" type="button">Session fortsetzen</button>
     </section>
 
     <section id="lastSessionBlock" class="sectionBlock hidden">
@@ -108,10 +109,15 @@
   <section id="view-stats" class="view" aria-labelledby="statsTitle">
     <header class="pageHeader"><div><div class="eyebrow">STATISTIK</div><h1 id="statsTitle">Deine Spielwelt</h1></div></header>
 
+    <div class="statsScopeControl" role="group" aria-label="Statistikansicht">
+      <button id="statsScopeProfile" class="statsScopeButton active" type="button" data-stats-scope="profile">Spieler</button>
+      <button id="statsScopeGlobal" class="statsScopeButton" type="button" data-stats-scope="global">Gesamt</button>
+    </div>
+
     <section class="bigStat">
-      <span>Gesamt gespielt</span>
+      <span id="statsScopeLabel">Gespielt</span>
       <strong id="totalRounds">0</strong>
-      <small>Runden in diesem Test-App-Layer</small>
+      <small id="statsScopeSub">Runden des ausgewählten Profils</small>
     </section>
 
     <div class="statGrid twoCol">
@@ -131,14 +137,14 @@
 
     <section class="sectionBlock">
       <div class="sectionHeading">
-        <div><div class="eyebrow">VERLAUF</div><h2>Letzte Sessions</h2></div>
-        <span class="sectionHint">max. 50 lokal</span>
+        <div><div class="eyebrow">VERLAUF</div><h2 id="sessionHistoryTitle">Letzte Sessions</h2></div>
+        <span id="sessionHistoryHint" class="sectionHint">max. 50 lokal</span>
       </div>
       <div id="sessionHistoryList" class="sessionHistoryList"></div>
     </section>
 
     <section class="sectionBlock">
-      <div class="sectionHeading"><div><div class="eyebrow">ACHIEVEMENTS</div><h2>Sammlung</h2></div></div>
+      <div class="sectionHeading"><div><div class="eyebrow">ACHIEVEMENTS</div><h2 id="achievementHeading">Sammlung</h2></div></div>
       <div id="achievementList" class="achievementList"></div>
     </section>
   </section>
@@ -266,12 +272,14 @@
     <div><div class="eyebrow">SESSION-ZUSAMMENFASSUNG</div><h2 id="sessionSheetTitle">Session</h2></div>
     <button class="closeSheet" type="button" aria-label="Schließen">×</button>
   </div>
+  <div id="sessionMeta" class="sessionMeta"></div>
   <div class="fieldLabel sessionSectionLabel">Mitgespielt</div>
   <div id="sessionPlayers" class="sessionPlayers"></div>
   <div class="fieldLabel sessionSectionLabel">Awards</div>
   <div id="sessionAwards" class="sessionAwards"></div>
   <div class="fieldLabel sessionSectionLabel">Runden</div>
   <div id="roundHistory" class="roundHistory"></div>
+  <button id="replaySession" class="primaryButton hidden" type="button">Noch einmal mit dieser Gruppe</button>
   <p id="sessionNote" class="prototypeNote"></p>
 </section>
 
