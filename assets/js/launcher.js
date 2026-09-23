@@ -8,10 +8,61 @@ var selectedAvatar="😎";
 var selectedPreset=null;
 var selectedSession=null;
 var statsScope="profile";
+var launcherAudioCtx=null;
 var circaMetadataItems=null;
 var circaMetadataPromise=null;
 
 function byId(id){return document.getElementById(id);}
+function launcherSoundEnabled(){
+  return !store.getPreferences||store.getPreferences().sound!==false;
+}
+function launcherAudio(){
+  if(!launcherSoundEnabled())return null;
+  try{
+    var Ctx=window.AudioContext||window.webkitAudioContext;
+    if(!Ctx)return null;
+    if(!launcherAudioCtx||launcherAudioCtx.state==="closed")launcherAudioCtx=new Ctx();
+    if(launcherAudioCtx.state==="suspended")launcherAudioCtx.resume().catch(function(){});
+    return launcherAudioCtx;
+  }catch(e){return null;}
+}
+function launcherTone(freq,duration,gain,type,delay){
+  var ctx=launcherAudio();if(!ctx)return;
+  try{
+    var osc=ctx.createOscillator(),amp=ctx.createGain(),start=ctx.currentTime+(delay||0),end=start+(duration||0.04);
+    osc.type=type||"sine";osc.frequency.setValueAtTime(freq,start);
+    amp.gain.setValueAtTime(0.0001,start);
+    amp.gain.exponentialRampToValueAtTime(Math.max(0.0002,gain||0.012),start+0.006);
+    amp.gain.exponentialRampToValueAtTime(0.0001,end);
+    osc.connect(amp);amp.connect(ctx.destination);osc.start(start);osc.stop(end+0.01);
+  }catch(e){}
+}
+function uiSound(kind){
+  if(!launcherSoundEnabled())return;
+  if(kind==="start"){
+    launcherTone(330,0.055,0.014,"sine",0);
+    launcherTone(510,0.07,0.016,"sine",0.045);
+  }else if(kind==="confirm"){
+    launcherTone(500,0.045,0.011,"sine",0);
+    launcherTone(690,0.065,0.013,"sine",0.035);
+  }else if(kind==="success"){
+    launcherTone(520,0.04,0.010,"sine",0);
+    launcherTone(680,0.05,0.011,"sine",0.035);
+    launcherTone(840,0.07,0.012,"sine",0.075);
+  }else if(kind==="end"){
+    launcherTone(620,0.045,0.010,"sine",0);
+    launcherTone(430,0.07,0.012,"sine",0.04);
+  }else if(kind==="select"){
+    launcherTone(540,0.04,0.010,"sine",0);
+    launcherTone(650,0.045,0.010,"sine",0.025);
+  }else{
+    launcherTone(430,0.032,0.008,"sine",0);
+  }
+}
+function navigateWithSound(href){
+  uiSound("start");
+  setTimeout(function(){window.location.href=href;},55);
+}
 function fmtDate(iso){
   try{return new Date(iso).toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit",year:"2-digit"});}catch(e){return "–";}
 }
@@ -59,7 +110,7 @@ function launchSessionGroup(session){
   if(ids.length<3)return false;
   store.setLaunchGroup(ids);
   var game=sessionGame(session);
-  window.location.href=game==="classic"?"games/classic-imposter/":"games/circa-imposter/";
+  navigateWithSound(game==="classic"?"games/classic-imposter/":"games/circa-imposter/");
   return true;
 }
 function updateGreeting(){
@@ -108,8 +159,10 @@ function renderPlayers(){
     info.appendChild(name);info.appendChild(meta);
     if(p.id===selected.id){var tag=document.createElement("span");tag.className="primaryTag";tag.textContent="AUSGEWÄHLT";info.appendChild(tag);}
     function selectProfile(){
+      var selectedNow=store.getSelectedProfile?store.getSelectedProfile():store.getPrimaryProfile();
+      if(selectedNow&&selectedNow.id===p.id)return;
       if(store.setSelectedProfile)store.setSelectedProfile(p.id);else store.setPrimaryProfile(p.id);
-      renderAll();
+      uiSound("select");renderAll();
     }
     card.addEventListener("click",selectProfile);
     card.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();selectProfile();}});
@@ -122,7 +175,7 @@ function renderAvatars(){
   var grid=byId("avatarGrid");grid.textContent="";
   store.avatars.forEach(function(avatar){
     var b=document.createElement("button");b.type="button";b.className="avatarChoice"+(avatar===selectedAvatar?" selected":"");b.textContent=avatar;
-    b.addEventListener("click",function(){selectedAvatar=avatar;renderAvatars();});
+    b.addEventListener("click",function(){selectedAvatar=avatar;uiSound("tap");renderAvatars();});
     grid.appendChild(b);
   });
 }
@@ -397,7 +450,7 @@ function renderMigrationChoice(){
     b.appendChild(avatar);b.appendChild(text);b.appendChild(arrow);
     b.addEventListener("click",function(){
       if(store.completeMigrationProfileChoice(p.id)){
-        closeSheets();renderAll();
+        uiSound("confirm");closeSheets();renderAll();
         byId("dataStatus").textContent="V72-Daten wurden übernommen. "+p.name+" ist jetzt dein ausgewähltes Profil.";
       }
     });
@@ -410,11 +463,15 @@ for(var i=3;i<=12;i++){
   var opt=document.createElement("option");opt.value=String(i);opt.textContent=String(i);byId("presetPlayersInput").appendChild(opt);
 }
 
-document.querySelectorAll(".tab").forEach(function(tab){tab.addEventListener("click",function(){setView(tab.getAttribute("data-view"));});});
-byId("profileButton").addEventListener("click",function(){setView("profile");});
-byId("settingsShortcut").addEventListener("click",function(){setView("settings");});
-byId("addPlayer").addEventListener("click",function(){openProfileEditor(null);});
-byId("addPreset").addEventListener("click",openPresetEditor);
+document.querySelectorAll(".tab").forEach(function(tab){tab.addEventListener("click",function(){
+  var target=tab.getAttribute("data-view");
+  if(!tab.classList.contains("active"))uiSound("tap");
+  setView(target);
+});});
+byId("profileButton").addEventListener("click",function(){uiSound("tap");setView("profile");});
+byId("settingsShortcut").addEventListener("click",function(){uiSound("tap");setView("settings");});
+byId("addPlayer").addEventListener("click",function(){uiSound("tap");openProfileEditor(null);});
+byId("addPreset").addEventListener("click",function(){uiSound("tap");openPresetEditor();});
 byId("presetGameInput").addEventListener("change",renderPresetEditorMode);
 
 byId("saveProfile").addEventListener("click",function(){
@@ -439,13 +496,13 @@ byId("saveProfile").addEventListener("click",function(){
     id=store.addProfile({name:name,avatar:selectedAvatar});
     if(store.setSelectedProfile)store.setSelectedProfile(id);else store.setPrimaryProfile(id);
   }
-  closeSheets();renderAll();
+  uiSound("confirm");closeSheets();renderAll();
 });
 byId("profileName").addEventListener("input",function(){this.setCustomValidity("");});
 byId("deleteProfile").addEventListener("click",function(){
   var id=byId("profileId").value;if(!id)return;
   if(!window.confirm("Dieses Profil löschen? Bereits gespeicherte Session-Historie bleibt erhalten."))return;
-  store.deleteProfile(id);closeSheets();renderAll();
+  store.deleteProfile(id);uiSound("end");closeSheets();renderAll();
 });
 
 byId("savePreset").addEventListener("click",function(){
@@ -460,32 +517,34 @@ byId("savePreset").addEventListener("click",function(){
     hint:byId("presetHintInput").checked,
     timer:Number(byId("presetTimerInput").value)
   });
-  closeSheets();renderAll();
+  uiSound("confirm");closeSheets();renderAll();
 });
 byId("presetOpenGame").addEventListener("click",function(){
   if(!selectedPreset)return;
   store.setLaunchPreset(selectedPreset);
-  window.location.href=selectedPreset.game==="classic"?"games/classic-imposter/":"games/circa-imposter/";
+  navigateWithSound(selectedPreset.game==="classic"?"games/classic-imposter/":"games/circa-imposter/");
 });
 byId("deletePreset").addEventListener("click",function(){
   if(!selectedPreset||selectedPreset.builtIn)return;
-  store.deletePreset(selectedPreset.id);closeSheets();renderAll();
+  store.deletePreset(selectedPreset.id);uiSound("end");closeSheets();renderAll();
 });
 
-byId("activeSessionCard").addEventListener("click",function(){var s=store.getActiveSession();if(s)renderSessionSheet(s);});
+byId("activeSessionCard").addEventListener("click",function(){var s=store.getActiveSession();if(s){uiSound("tap");renderSessionSheet(s);}});
 byId("continueSession").addEventListener("click",function(){var s=store.getActiveSession();if(s)launchSessionGroup(s);});
 document.querySelectorAll("[data-stats-scope]").forEach(function(button){
-  button.addEventListener("click",function(){statsScope=this.getAttribute("data-stats-scope")==="global"?"global":"profile";renderStats();});
+  button.addEventListener("click",function(){var next=this.getAttribute("data-stats-scope")==="global"?"global":"profile";if(next!==statsScope)uiSound("tap");statsScope=next;renderStats();});
 });
 byId("endSession").addEventListener("click",function(){
   var s=store.getActiveSession();if(!s)return;
   if(!s.rounds.length&&!window.confirm("Die Session enthält noch keine abgeschlossene Runde. Trotzdem beenden?"))return;
-  var ended=store.endSession();renderAll();if(ended)renderSessionSheet(ended);
+  var ended=store.endSession();if(ended)uiSound("end");renderAll();if(ended)renderSessionSheet(ended);
 });
 
 ["Sound","Haptics","Animations"].forEach(function(name){
   byId("setting"+name).addEventListener("change",function(){
-    store.setPreference(name.toLowerCase(),byId("setting"+name).checked);renderSettings();
+    store.setPreference(name.toLowerCase(),byId("setting"+name).checked);
+    if(name!=="Sound"||byId("settingSound").checked)uiSound(name==="Sound"?"confirm":"tap");
+    renderSettings();
   });
 });
 
@@ -496,7 +555,7 @@ byId("exportData").addEventListener("click",function(){
     var url=URL.createObjectURL(blob);
     var a=document.createElement("a");a.href=url;a.download="imposter-games-v73-backup.json";document.body.appendChild(a);a.click();a.remove();
     setTimeout(function(){URL.revokeObjectURL(url);},1000);
-    byId("dataStatus").textContent="Backup wurde vorbereitet.";
+    uiSound("success");byId("dataStatus").textContent="Backup wurde vorbereitet.";
   }catch(e){byId("dataStatus").textContent="Export ist auf diesem Gerät gerade nicht verfügbar.";}
 });
 byId("importData").addEventListener("click",function(){
@@ -524,7 +583,7 @@ byId("importDataFile").addEventListener("change",function(){
       byId("dataStatus").textContent="Import abgebrochen: "+reason;
       input.value="";return;
     }
-    closeSheets();renderAll();hydrateCircaMetadata();
+    uiSound("success");closeSheets();renderAll();hydrateCircaMetadata();
     byId("dataStatus").textContent="Backup importiert: "+result.profiles+" Profile · "+result.sessions+" Sessions · "+result.rounds+" Runden.";
     input.value="";
   };
@@ -532,7 +591,7 @@ byId("importDataFile").addEventListener("change",function(){
 });
 byId("resetAppData").addEventListener("click",function(){
   if(!window.confirm("Wirklich alle lokalen V73-App-Daten löschen? Die alten V72-Daten bleiben als Rückfallebene unangetastet."))return;
-  store.reset();byId("dataStatus").textContent="Lokale V73-App-Daten wurden zurückgesetzt.";closeSheets();setView("home");renderAll();
+  store.reset();uiSound("end");byId("dataStatus").textContent="Lokale V73-App-Daten wurden zurückgesetzt.";closeSheets();setView("home");renderAll();
 });
 
 document.querySelectorAll(".closeSheet").forEach(function(b){b.addEventListener("click",closeSheets);});
@@ -540,6 +599,13 @@ byId("sheetBackdrop").addEventListener("click",function(){
   var status=store.getMigrationStatus?store.getMigrationStatus():null;
   if(status&&status.profileChoicePending)return;
   closeSheets();
+});
+document.querySelectorAll("a.gameCard[href]").forEach(function(card){
+  card.addEventListener("click",function(event){
+    if(event.defaultPrevented||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey||event.button>0)return;
+    event.preventDefault();
+    navigateWithSound(card.getAttribute("href"));
+  });
 });
 window.addEventListener("pageshow",function(){renderAll();renderMigrationChoice();});
 document.addEventListener("visibilitychange",function(){if(!document.hidden){renderAll();renderMigrationChoice();}});
