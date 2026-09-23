@@ -92,6 +92,7 @@ var LEGACY_CLASSIC_TIMER=EXP_STORAGE+"legacy.classicTimer.v1";
 var deckProgress={};
 var completedQuestionIds=[];
 var savedPlayerNames=[];
+var savedPlayerProfileIds=[];
 var selectedDifficulty="mittel";
 var classicDeckProgress={};
 var classicCurrent=null;
@@ -110,12 +111,23 @@ var experimentGameRunId="run_"+Date.now().toString(36)+"_"+Math.random().toStrin
 var experimentSessionId=null;
 var experimentPreferences=experimentAppState?experimentAppState.getPreferences():{sound:true,haptics:true,animations:true};
 
+function experimentValidProfileId(profileId,name){
+  if(!experimentAppState||!profileId||!experimentAppState.getProfileById)return null;
+  var profile=experimentAppState.getProfileById(profileId);
+  if(!profile)return null;
+  return cleanPlayerName(profile.name).toLocaleLowerCase("de-DE")===cleanPlayerName(name).toLocaleLowerCase("de-DE")?profile.id:null;
+}
 function experimentPlayerId(player){
-  return experimentAppState?experimentAppState.ensureProfileForPlayer({name:player.name,avatar:player.avatar}):null;
+  if(!experimentAppState)return null;
+  var direct=experimentValidProfileId(player&&player.profileId,player&&player.name);
+  if(direct)return direct;
+  return experimentAppState.ensureProfileForPlayer({name:player.name,avatar:player.avatar});
 }
 function experimentBeginSession(){
   if(!experimentAppState||!players.length)return null;
-  experimentSessionId=experimentAppState.beginSession(players.map(function(p){return {name:p.name,avatar:p.avatar};}));
+  experimentSessionId=experimentAppState.beginSession(players.map(function(p){
+    return {profileId:experimentPlayerId(p),name:p.name,avatar:p.avatar};
+  }));
   return experimentSessionId;
 }
 function experimentCircaPayload(outcome){
@@ -193,10 +205,11 @@ function experimentApplyLaunchPreset(){
 
   var preferred=experimentAppState.getPreferredPlayers(count);
   if(preferred.length){
-    savedPlayerNames=[];avatarSelections=[];
+    savedPlayerNames=[];savedPlayerProfileIds=[];avatarSelections=[];
     for(var i=0;i<count;i++){
-      var p=preferred[i]||{name:"Spieler "+(i+1),avatar:avatarPool[i%avatarPool.length]};
+      var p=preferred[i]||{id:null,name:"Spieler "+(i+1),avatar:avatarPool[i%avatarPool.length]};
       savedPlayerNames.push(p.name);
+      savedPlayerProfileIds.push(p.id||null);
       avatarSelections.push(avatarPool.indexOf(p.avatar)!==-1?p.avatar:avatarPool[i%avatarPool.length]);
     }
   }
@@ -855,6 +868,7 @@ function loadSavedPlayers(){
   var list=data.players.slice(0,12);
   count=Math.max(3,Math.min(12,list.length));
   savedPlayerNames=[];
+  savedPlayerProfileIds=[];
   avatarSelections=[];
   for(var i=0;i<count;i++){
     var item=list[i]&&typeof list[i]==="object"?list[i]:{};
@@ -862,6 +876,7 @@ function loadSavedPlayers(){
     var avatar=String(item.avatar||"");
     if(avatarPool.indexOf(avatar)===-1)avatar=avatarPool[i%avatarPool.length];
     savedPlayerNames.push(name);
+    savedPlayerProfileIds.push(experimentValidProfileId(item.profileId,name));
     avatarSelections.push(avatar);
   }
 }
@@ -870,7 +885,9 @@ function savePlayers(){
   for(var i=0;i<count;i++){
     var name=cleanPlayerName(nodes[i]&&nodes[i].value?nodes[i].value:"");
     if(!name)name="Spieler "+(i+1);
-    list.push({name:name,avatar:avatarSelections[i]||avatarPool[i%avatarPool.length]});
+    var profileId=experimentValidProfileId(savedPlayerProfileIds[i],name);
+    savedPlayerProfileIds[i]=profileId;
+    list.push({name:name,avatar:avatarSelections[i]||avatarPool[i%avatarPool.length],profileId:profileId});
   }
   savedPlayerNames=list.map(function(p){return p.name;});
   storageSet(STORAGE_PLAYERS,{players:list});
@@ -1226,7 +1243,10 @@ function renderNames(){
       var inp=document.createElement("input");
       inp.type="text";inp.className="playerInput";inp.autocomplete="off";inp.maxLength=24;
       inp.value=old[index]||("Spieler "+(index+1));inp.placeholder="Spieler "+(index+1);
-      inp.addEventListener("input",savePlayers);
+      inp.addEventListener("input",function(){
+        savedPlayerProfileIds[index]=experimentValidProfileId(savedPlayerProfileIds[index],inp.value);
+        savePlayers();
+      });
       inp.addEventListener("blur",savePlayers);
 
       row.appendChild(av);row.appendChild(inp);box.appendChild(row);
@@ -1248,7 +1268,12 @@ function start(){
   }
   byId("error").textContent="";
   players=[];
-  for(var k=0;k<names.length;k++) players.push({name:names[k],avatar:avatarSelections[k]||avatarPool[k%avatarPool.length],guess:null});
+  for(var k=0;k<names.length;k++){
+    var player={name:names[k],avatar:avatarSelections[k]||avatarPool[k%avatarPool.length],profileId:experimentValidProfileId(savedPlayerProfileIds[k],names[k]),guess:null};
+    player.profileId=experimentPlayerId(player);
+    savedPlayerProfileIds[k]=player.profileId;
+    players.push(player);
+  }
   savePlayers();
   experimentBeginSession();
   round=0;
@@ -2989,8 +3014,8 @@ renderDiagLog();
 
 
 /* Setup controls */
-byId("plus").addEventListener("click",function(){if(count<12){count++;if(!avatarSelections[count-1])avatarSelections[count-1]=avatarPool[(count-1)%avatarPool.length];renderNames();savePlayers();}});
-byId("minus").addEventListener("click",function(){if(count>3){count--;avatarSelections=avatarSelections.slice(0,count);renderNames();savePlayers();}});
+byId("plus").addEventListener("click",function(){if(count<12){count++;if(!avatarSelections[count-1])avatarSelections[count-1]=avatarPool[(count-1)%avatarPool.length];if(savedPlayerProfileIds.length<count)savedPlayerProfileIds.push(null);renderNames();savePlayers();}});
+byId("minus").addEventListener("click",function(){if(count>3){count--;avatarSelections=avatarSelections.slice(0,count);savedPlayerProfileIds=savedPlayerProfileIds.slice(0,count);renderNames();savePlayers();}});
 byId("start").addEventListener("click",function(){ensureAudio();tone(300,0.05,0.012,"sine",0);start();});
 
 if(gameMode==="classic"){
