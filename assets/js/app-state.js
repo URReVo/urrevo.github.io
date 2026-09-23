@@ -332,7 +332,13 @@ function sessionById(id){
 }
 function beginSession(players){
   var current=data.activeSessionId&&sessionById(data.activeSessionId);
-  if(current&&!current.endedAt)return current.id;
+  if(current&&!current.endedAt){
+    (players||[]).forEach(function(p){
+      var id=ensureProfileForPlayer(p);
+      if(current.profileIds.indexOf(id)===-1)current.profileIds.push(id);
+    });
+    save();return current.id;
+  }
   var profileIds=[];
   (players||[]).forEach(function(p){
     var id=ensureProfileForPlayer(p);
