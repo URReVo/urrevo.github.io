@@ -1,7 +1,7 @@
 "use strict";
 
 const CACHE_PREFIX="imposter-games-";
-const CACHE_NAME=CACHE_PREFIX+"v70-r2";
+const CACHE_NAME=CACHE_PREFIX+"v70-r3";
 
 const CORE_URLS=[
   "/",
