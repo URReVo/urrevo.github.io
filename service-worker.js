@@ -1,7 +1,7 @@
 "use strict";
 
 const CACHE_PREFIX="imposter-games-";
-const CACHE_NAME=CACHE_PREFIX+"v70";
+const CACHE_NAME=CACHE_PREFIX+"v70-r2";
 
 const CORE_URLS=[
   "/",
@@ -41,6 +41,8 @@ const DATA_PATHS=new Set([
 self.addEventListener("install",event=>{
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache=>{
+      /* A release is installable only when every required app file was
+         fetched successfully. The currently active cache is not touched. */
       const requests=CORE_URLS.map(url=>new Request(url,{cache:"reload"}));
       return cache.addAll(requests);
     })
@@ -59,41 +61,12 @@ self.addEventListener("activate",event=>{
   );
 });
 
-async function networkFirst(request){
+async function cacheFirst(request,fallbackKey){
   const cache=await caches.open(CACHE_NAME);
-  try{
-    const response=await fetch(request);
-    if(response&&response.ok)await cache.put(request,response.clone());
-    return response;
-  }catch(error){
-    const cached=await cache.match(request);
-    if(cached)return cached;
-    throw error;
-  }
-}
-
-async function navigationFallback(request,url){
-  const cache=await caches.open(CACHE_NAME);
-  try{
-    const response=await fetch(request);
-    if(response&&response.ok)await cache.put(request,response.clone());
-    return response;
-  }catch(error){
-    const direct=await cache.match(request);
-    if(direct)return direct;
-
-    if(url.pathname==="/")return cache.match("/");
-    if(url.pathname==="/index.html")return cache.match("/index.html");
-    if(url.pathname.startsWith("/games/circa-imposter/")){
-      return (await cache.match("/games/circa-imposter/"))||
-             (await cache.match("/games/circa-imposter/index.html"));
-    }
-    if(url.pathname.startsWith("/games/classic-imposter/")){
-      return (await cache.match("/games/classic-imposter/"))||
-             (await cache.match("/games/classic-imposter/index.html"));
-    }
-    throw error;
-  }
+  const cached=(await cache.match(request))||
+               (fallbackKey?await cache.match(fallbackKey):null);
+  if(cached)return cached;
+  return fetch(request);
 }
 
 self.addEventListener("fetch",event=>{
@@ -104,20 +77,20 @@ self.addEventListener("fetch",event=>{
   if(url.origin!==self.location.origin)return;
 
   if(request.mode==="navigate"){
-    if(NAV_PATHS.has(url.pathname)){
-      event.respondWith(navigationFallback(request,url));
-    }
+    if(!NAV_PATHS.has(url.pathname))return;
+    /* Navigation stays on one complete release. A newer release is installed
+       by the browser in parallel and becomes active after the old client ends. */
+    event.respondWith(cacheFirst(request,url.pathname));
     return;
   }
 
   if(DATA_PATHS.has(url.pathname)){
-    event.respondWith(networkFirst(request));
+    /* Data and runtime must belong to the same release as the page. */
+    event.respondWith(cacheFirst(request,url.pathname));
     return;
   }
 
-  event.respondWith(
-    caches.open(CACHE_NAME).then(cache=>
-      cache.match(request).then(cached=>cached||fetch(request))
-    )
-  );
+  /* Only pre-cached requests are retained. Cache misses go to the network
+     without being added, preventing an ever-growing runtime cache. */
+  event.respondWith(cacheFirst(request,null));
 });
