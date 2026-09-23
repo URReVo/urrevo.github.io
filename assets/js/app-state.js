@@ -820,7 +820,14 @@ function reset(){
     localStorage.setItem(prefix+"v72Migration.v1",JSON.stringify({completed:true,reset:true,at:now()}));
   }catch(e){}
   data=defaults();
-  data.imports={v72MigrationCompleted:true,v72ProfileChoicePending:false,v72ProfilesFound:0,resetAt:now()};
+  data.imports={
+    v72MigrationCompleted:true,
+    v72ProfileChoicePending:false,
+    v72ProfilesFound:0,
+    v72PerfectUnknown:false,
+    v72DetailBackfillV1:true,
+    resetAt:now()
+  };
   save();
 }
 function snapshot(){return clone(data);}
