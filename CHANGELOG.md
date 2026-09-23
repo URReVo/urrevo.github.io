@@ -2,6 +2,18 @@
 
 Die Versionshistorie dokumentiert die aus den Projektchats und der GitHub-Historie eindeutig rekonstruierbaren Änderungen. Frühere Zwischenstände mit generischen Upload-Commits werden nicht künstlich versioniert oder mit erfundenen Details ergänzt.
 
+## V66 — Spielseiten entkoppelt
+
+- Circa- und Classic-Spielseiten funktional entkoppelt, ohne Gameplay oder Designregeln zu verändern.
+- Circa enthält keine Classic-Rollenkarte, Diskussion, Timer, Auflösung oder Classic-Optionen mehr.
+- Klassisches Imposter enthält keine Circa-Statistik, Schwierigkeit, Schätzfrage, Frage-Reveal, Schätzungen oder Circa-Ergebnisansicht mehr.
+- Gemeinsame Übergabe, Spieler-/Avatarlogik, Fairness, Audio, Storage, Navigation und DEV-Zugang bleiben zentral in der gemeinsamen Runtime.
+- Section-Steuerung der Runtime auf tatsächlich vorhandene Screens pro Spiel umgestellt.
+- Event-Registrierung nach Spieltyp getrennt, damit keine versteckten DOM-Platzhalter des anderen Spiels mehr benötigt werden.
+- Slider-/Circa-Interaktionen werden nur noch in Circa initialisiert; Classic-Optionen nur noch in Classic.
+- Cache-Version auf V66 angehoben.
+- README um die neue Trennung ergänzt.
+
 ## V65 — Cleanup und Stabilität
 
 - Falschen Speicherhinweis im klassischen Imposter korrigiert: Classic nennt jetzt Einstellungen und Wortfortschritt statt Statistiken und Fragenfortschritt.
