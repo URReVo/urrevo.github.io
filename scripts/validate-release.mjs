@@ -108,7 +108,7 @@ assert(appStateSource.includes('BACKUP_FORMAT="imposter-games-backup"'),"product
 assert(engineSource.includes('EXP_STORAGE="imposterGames.v73.game."'),"V73 isolated game storage missing");
 assert(!html["index.html"].includes("APP-SHELL TEST"),"production launcher still contains experiment badge");
 assert(launcherCss.includes("padding:calc(18px + var(--safeTop)) 16px 26px"),"launcher safe-area top padding missing");
-assert(sw.includes('const CACHE_REVISION="r4"'),"V73 launcher-audio cache revision mismatch");
+assert(sw.includes('const CACHE_REVISION="r5"'),"V73 launcher-audio cache revision mismatch");
 assert(appStateSource.includes("var BACKUP_VERSION=2"),"backup format v2 missing");
 assert(engineSource.includes("experimentRecordCirca(null);"),"Circa shared base-round recording missing");
 assert(engineSource.includes("impostorEscaped:outcome===true?true:outcome===false?false:null"),"Circa unresolved outcome state missing");
@@ -123,6 +123,8 @@ assert(launcherSource.includes("function navigateWithSound(href)"),"launcher sta
 assert(launcherSource.includes("store.getPreferences().sound!==false"),"launcher sound is not tied to global preference");
 assert(launcherSource.includes('querySelectorAll("a.gameCard[href]")'),"game-card sound/navigation binding missing");
 assert(!/\.(mp3|wav|m4a|aac|ogg)["']/i.test(launcherSource),"launcher should not depend on external audio files");
+assert(launcherCss.includes("-webkit-user-select:none")&&launcherCss.includes("user-select:none"),"launcher text-selection lock missing");
+assert(launcherSource.includes('document.addEventListener("copy"'),"launcher copy guard missing");
 
 /* Simulate the first V72 -> V73 profile migration. */
 const legacySeed=new Map();
