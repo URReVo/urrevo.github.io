@@ -264,7 +264,11 @@ function addProfile(input){
 }
 function updateProfile(id,input){
   var p=profileById(id);if(!p)return false;
-  var n=normalizeProfile(input);p.name=n.name;p.avatar=n.avatar;save();return true;
+  var n=normalizeProfile(input);
+  var lower=n.name.toLocaleLowerCase("de-DE");
+  var duplicate=data.profiles.some(function(x){return x.id!==id&&x.name.toLocaleLowerCase("de-DE")===lower;});
+  if(duplicate)return false;
+  p.name=n.name;p.avatar=n.avatar;save();return true;
 }
 function deleteProfile(id){
   if(data.profiles.length<=1)return false;
@@ -410,11 +414,13 @@ function recordRound(input){
   round.roundKey=String(round.roundKey||uid("round"));
   session.lastGame=round.game==="classic"?"classic":"circa";
   round.players=(round.players||[]).map(function(p){
-    var profileId=p.profileId||ensureProfileForPlayer(p);
+    var profileId=p&&p.profileId&&profileById(p.profileId)?p.profileId:null;
+    if(!profileId&&p&&cleanName(p.name))profileId=ensureProfileForPlayer(p);
+    if(!profileId)return null;
     var out=Object.assign({},p,{profileId:profileId});
     delete out.name;delete out.avatar;
     return out;
-  });
+  }).filter(Boolean);
 
   var existing=session.rounds.findIndex(function(r){return r.roundKey===round.roundKey;});
   if(existing>=0){
