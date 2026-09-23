@@ -102,6 +102,20 @@ V63 ist noch **kein Online-Multiplayer**. Die neue Trennung schafft aber eine be
 
 Für echten Multiplayer werden später weiterhin ein gemeinsamer Serverzustand bzw. ein Realtime-Dienst benötigt.
 
+## 📲 Beste Spielerfahrung auf iPhone und iPad
+
+Für die app-ähnlichste Nutzung empfiehlt es sich, **Imposter Games über Safari zum Home-Bildschirm hinzuzufügen**. Dadurch lässt sich die Plattform anschließend direkt über ein eigenes Symbol starten und wirkt deutlich näher an einer normalen App als im regulären Safari-Tab.
+
+### Zum Home-Bildschirm hinzufügen
+
+1. **https://urrevo.github.io/** in **Safari** öffnen.
+2. In Safari auf **Teilen** tippen.
+3. **„Zum Home-Bildschirm“** auswählen.
+4. Den Namen bei Bedarf anpassen und mit **„Hinzufügen“** bestätigen.
+5. Imposter Games anschließend über das neue Symbol auf dem Home-Bildschirm starten.
+
+Für die beste Darstellung ist die Nutzung auf iPhone oder iPad im **Hochformat** vorgesehen.
+
 ## 📱 iOS-Perspektive
 
 Die Web-Oberfläche bleibt Vanilla HTML/CSS/JavaScript und ist weiterhin für iPhone/iPad optimiert.
