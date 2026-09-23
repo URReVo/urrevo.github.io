@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="../../circa_impostor_detective_icon_180.png">
 <link rel="icon" type="image/png" sizes="180x180" href="../../circa_impostor_detective_icon_180.png">
 <link rel="stylesheet" href="../../assets/css/game.css">
-<title>Klassisches Imposter · V63</title>
+<title>Klassisches Imposter · V64</title>
 </head>
 <body data-game="classic">
 
@@ -343,7 +343,7 @@
 <div id="devPanelOverlay" class="devOverlay hidden" aria-hidden="true">
   <div class="devSheet" role="dialog" aria-modal="true" aria-labelledby="devPanelTitle">
     <div class="devSheetHeader">
-      <div id="devPanelTitle" class="devSheetTitle">DEV Tools</div>
+      <div id="devPanelTitle" class="devSheetTitle">DEV Tools · Klassisch</div>
       <button id="devPanelClose" type="button" class="devClose" aria-label="Schließen">✕</button>
     </div>
 
@@ -354,25 +354,22 @@
       </div>
 
       <div class="devCard">
-        <div class="devCardTitle">IMPOSTOR</div>
+        <div class="devCardTitle">IMPOSTOR & FAIRNESS</div>
         <div id="devImpostorInfo"></div>
       </div>
 
       <div class="devCard devWide">
-        <div class="devCardTitle">FRAGE</div>
-        <div id="devQuestionInfo"></div>
+        <div class="devCardTitle">GEHEIMES WORT</div>
+        <div id="devClassicWordInfo"></div>
       </div>
 
       <div class="devCard devWide">
         <div class="devCardTitle">SCREEN-JUMP</div>
-        <div class="devButtonGrid" id="devJumpButtons">
-          <button type="button" class="secondary" data-dev-jump="handoff">Übergabe</button>
-          <button type="button" class="secondary" data-dev-jump="question">Frage</button>
-          <button type="button" class="secondary" data-dev-jump="normalHidden">Richtige Frage · verdeckt</button>
-          <button type="button" class="secondary" data-dev-jump="normalOpen">Richtige Frage · offen</button>
-          <button type="button" class="secondary" data-dev-jump="answers">Schätzungen</button>
-          <button type="button" class="secondary" data-dev-jump="impostor">Impostor revealed</button>
-          <button type="button" class="secondary" data-dev-jump="result">Ergebnis</button>
+        <div class="devButtonGrid" id="devClassicJumpButtons">
+          <button type="button" class="secondary" data-dev-jump="classicHandoff">Übergabe</button>
+          <button type="button" class="secondary" data-dev-jump="classicRole">Rollenkarte</button>
+          <button type="button" class="secondary" data-dev-jump="classicDiscussion">Diskussion</button>
+          <button type="button" class="secondary" data-dev-jump="classicResult">Auflösung</button>
         </div>
         <div id="devActionStatus" class="devStatus"></div>
       </div>
@@ -380,26 +377,20 @@
       <div class="devCard">
         <div class="devCardTitle">IMPOSTOR ERZWINGEN</div>
         <div id="devForceImpostorButtons" class="devButtonStack"></div>
-        <div class="devQuestionMeta">Nur für die aktuelle Test-Runde. Diese Runde wird danach nicht in die dauerhaften Statistiken geschrieben.</div>
+        <div class="devQuestionMeta">Ändert nur die aktuelle Test-Runde und die Fairnesswerte dieser Sitzung.</div>
       </div>
 
       <div class="devCard">
-        <div class="devCardTitle">FRAGE LADEN</div>
-        <input id="devQidInput" class="devField" type="text" autocomplete="off" placeholder="QID, z. B. base-0001">
-        <div class="devControlRow">
-          <select id="devQuestionCategory" class="devSelect" aria-label="DEV Kategorie"></select>
-          <select id="devQuestionDifficulty" class="devSelect" aria-label="DEV Schwierigkeit">
-            <option value="zufaellig">Alle Schwierigkeiten</option>
-            <option value="leicht">Leicht</option>
-            <option value="mittel">Mittel</option>
-            <option value="schwer">Schwer</option>
-          </select>
+        <div class="devCardTitle">WORT LADEN</div>
+        <input id="devWidInput" class="devField" type="text" autocomplete="off" placeholder="WID, z. B. imp-0208">
+        <div class="devControlRow" style="grid-template-columns:1fr">
+          <select id="devClassicWordCategory" class="devSelect" aria-label="DEV Wort-Kategorie"></select>
         </div>
         <div class="devActions">
-          <button id="devLoadQid" type="button" class="secondary">QID laden</button>
-          <button id="devLoadRandomQuestion" type="button" class="secondary">Zufällige laden</button>
+          <button id="devLoadWid" type="button" class="secondary">WID laden</button>
+          <button id="devLoadRandomWord" type="button" class="secondary">Zufälliges Wort</button>
         </div>
-        <div id="devQuestionPickerStatus" class="devStatus"></div>
+        <div id="devClassicWordPickerStatus" class="devStatus"></div>
       </div>
 
       <div class="devCard devWide">
@@ -425,9 +416,8 @@
   </div>
 </div>
 
-
 <script>
-window.CI_GAME_CONFIG={mode:"classic",dataUrl:"../../data/classic-words.json",version:"63"};
+window.CI_GAME_CONFIG={mode:"classic",dataUrl:"../../data/classic-words.json",version:"64"};
 </script>
 <script src="../../assets/js/game-engine.js"></script>
 </body>
