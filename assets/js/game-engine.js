@@ -111,17 +111,25 @@ var experimentGameRunId="run_"+Date.now().toString(36)+"_"+Math.random().toStrin
 var experimentSessionId=null;
 var experimentPreferences=experimentAppState?experimentAppState.getPreferences():{sound:true,haptics:true,animations:true};
 
-function experimentValidProfileId(profileId,name){
+function experimentActiveProfile(profileId){
   if(!experimentAppState||!profileId||!experimentAppState.getProfileById)return null;
   var profile=experimentAppState.getProfileById(profileId);
-  if(!profile||profile.deletedAt)return null;
+  return profile&&!profile.deletedAt?profile:null;
+}
+function experimentValidProfileId(profileId,name){
+  var profile=experimentActiveProfile(profileId);
+  if(!profile)return null;
   return cleanPlayerName(profile.name).toLocaleLowerCase("de-DE")===cleanPlayerName(name).toLocaleLowerCase("de-DE")?profile.id:null;
 }
 function experimentPlayerId(player){
-  if(!experimentAppState)return null;
-  var direct=experimentValidProfileId(player&&player.profileId,player&&player.name);
-  if(direct)return direct;
-  return experimentAppState.ensureProfileForPlayer({name:player.name,avatar:player.avatar});
+  if(!experimentAppState||!player)return null;
+  var activeProfile=experimentActiveProfile(player.profileId);
+  if(activeProfile)return activeProfile.id;
+  var direct=experimentValidProfileId(player.profileId,player.name);
+  if(direct){player.profileId=direct;return direct;}
+  var resolved=experimentAppState.ensureProfileForPlayer({name:player.name,avatar:player.avatar});
+  player.profileId=resolved;
+  return resolved;
 }
 function experimentBeginSession(){
   if(!experimentAppState||!players.length)return null;
@@ -580,8 +588,8 @@ function activeProfileMatchByName(name){
   return null;
 }
 function statsPlayerKey(name,profileId){
-  var direct=experimentValidProfileId(profileId,name);
-  if(direct)return "profile::"+direct;
+  var direct=experimentActiveProfile(profileId);
+  if(direct)return "profile::"+direct.id;
   var matched=activeProfileMatchByName(name);
   if(matched)return "profile::"+matched.id;
   return "name::"+cleanPlayerName(name).toLocaleLowerCase("de-DE");
@@ -612,8 +620,9 @@ function loadPlayerStats(){
     var name=cleanPlayerName(item.name);
     if(!name)continue;
 
-    var matched=activeProfileMatchByName(name);
-    var profileId=experimentValidProfileId(item.profileId,name)||(matched&&matched.id)||null;
+    var direct=experimentActiveProfile(item.profileId);
+    var matched=direct||activeProfileMatchByName(name);
+    var profileId=matched&&matched.id||null;
     var safeKey=statsPlayerKey(name,profileId);
     if(!playerStats[safeKey]){
       playerStats[safeKey]={
@@ -641,13 +650,14 @@ function savePlayerStats(){
   storageSet(STORAGE_DEVICE_STATS,deviceStats);
 }
 function ensurePlayerStat(player){
-  var profileId=experimentValidProfileId(player&&player.profileId,player&&player.name);
+  var activeProfile=experimentActiveProfile(player&&player.profileId);
+  var profileId=activeProfile&&activeProfile.id||null;
   var key=statsPlayerKey(player&&player.name,profileId);
   if(!playerStats[key]){
     playerStats[key]={
       profileId:profileId,
-      name:cleanPlayerName(player&&player.name),
-      avatar:player&&player.avatar||"😎",
+      name:activeProfile?activeProfile.name:cleanPlayerName(player&&player.name),
+      avatar:activeProfile&&activeProfile.avatar||player&&player.avatar||"😎",
       closest:0,
       farthest:0,
       impostor:0,
@@ -660,8 +670,8 @@ function ensurePlayerStat(player){
     if(!isFinite(Number(playerStats[key].errorSum))||Number(playerStats[key].errorSum)<0)playerStats[key].errorSum=0;
     playerStats[key].errorSamples=sanitizeStatNumber(playerStats[key].errorSamples);
     playerStats[key].profileId=profileId||playerStats[key].profileId||null;
-    playerStats[key].name=cleanPlayerName(player&&player.name);
-    playerStats[key].avatar=player&&player.avatar||playerStats[key].avatar||"😎";
+    playerStats[key].name=activeProfile?activeProfile.name:cleanPlayerName(player&&player.name);
+    playerStats[key].avatar=activeProfile&&activeProfile.avatar||player&&player.avatar||playerStats[key].avatar||"😎";
   }
   return playerStats[key];
 }
@@ -1317,6 +1327,7 @@ function renderNames(){
   syncSetupScrollFit();
 }
 function start(){
+  experimentGameRunId="run_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,7);
   var nodes=byId("names").querySelectorAll("input"),names=[],set=Object.create(null);
   if(nodes.length<count){byId("error").textContent="Spielerliste konnte nicht vollständig geladen werden.";return;}
   for(var i=0;i<count;i++){
