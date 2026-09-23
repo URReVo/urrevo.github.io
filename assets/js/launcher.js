@@ -197,7 +197,7 @@ function renderPresets(){
     var name=document.createElement("strong");name.textContent=p.name;
     var small=document.createElement("small");small.textContent=p.summary||"Schnellstart";
     b.appendChild(icon);b.appendChild(name);b.appendChild(small);
-    b.addEventListener("click",function(){openPreset(p);});box.appendChild(b);
+    b.addEventListener("click",function(){uiSound("tap");openPreset(p);});box.appendChild(b);
   });
 }
 function openPreset(p){
@@ -343,8 +343,8 @@ function renderSessions(){
     var c=last.rounds.filter(function(r){return r.game==="circa";}).length;
     var k=last.rounds.length-c;
     byId("lastSessionSub").textContent=fmtDuration(last.startedAt,last.endedAt)+" · "+c+"× Circa · "+k+"× Classic";
-    byId("openLastSession").onclick=function(){renderSessionSheet(last);};
-    byId("lastSessionCard").onclick=function(){renderSessionSheet(last);};
+    byId("openLastSession").onclick=function(){uiSound("tap");renderSessionSheet(last);};
+    byId("lastSessionCard").onclick=function(){uiSound("tap");renderSessionSheet(last);};
   }
 }
 function renderStats(){
@@ -591,7 +591,7 @@ byId("importDataFile").addEventListener("change",function(){
 });
 byId("resetAppData").addEventListener("click",function(){
   if(!window.confirm("Wirklich alle lokalen V73-App-Daten löschen? Die alten V72-Daten bleiben als Rückfallebene unangetastet."))return;
-  store.reset();uiSound("end");byId("dataStatus").textContent="Lokale V73-App-Daten wurden zurückgesetzt.";closeSheets();setView("home");renderAll();
+  uiSound("end");store.reset();byId("dataStatus").textContent="Lokale V73-App-Daten wurden zurückgesetzt.";closeSheets();setView("home");renderAll();
 });
 
 document.querySelectorAll(".closeSheet").forEach(function(b){b.addEventListener("click",closeSheets);});
