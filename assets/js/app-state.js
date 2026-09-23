@@ -132,6 +132,10 @@ function migrateV72(){
     }
   }
 
+  var migratedKnownPerfect=0;
+  Object.keys(profileStats).forEach(function(id){migratedKnownPerfect+=Math.max(0,Number(profileStats[id].perfect)||0);});
+  migrated.stats.perfectEstimates=Math.max(migrated.stats.perfectEstimates,migratedKnownPerfect);
+
   migrated.imports={
     v72MigrationCompleted:true,
     v72MigratedAt:now(),
@@ -176,6 +180,11 @@ function backfillV72Details(data){
     });
   }
   if(oldRounds>0)data.imports.v72PerfectUnknown=true;
+  var knownPerfect=0;
+  Object.keys(data.profileStats||{}).forEach(function(id){
+    knownPerfect+=Math.max(0,Number(data.profileStats[id]&&data.profileStats[id].perfect)||0);
+  });
+  data.stats.perfectEstimates=Math.max(Math.max(0,Number(data.stats.perfectEstimates)||0),knownPerfect);
   data.imports.v72DetailBackfillV1=true;
 }
 function load(){
@@ -376,7 +385,7 @@ function contribution(round,dir){
 }
 function achievementDefs(){
   return [
-    {id:"first-session",icon:"🎬",title:"Erster Abend",text:"Eine Session abgeschlossen",done:function(){return data.sessions.some(function(s){return !!s.endedAt;});},progress:function(){return data.sessions.some(function(s){return !!s.endedAt;})?"1/1":"0/1";}},
+    {id:"first-session",icon:"🎬",title:"Erster Abend",text:"Eine Session mit mindestens einer Runde abgeschlossen",done:function(){return data.sessions.some(function(s){return !!s.endedAt&&Array.isArray(s.rounds)&&s.rounds.length>0;});},progress:function(){return data.sessions.some(function(s){return !!s.endedAt&&Array.isArray(s.rounds)&&s.rounds.length>0;})?"1/1":"0/1";}},
     {id:"perfect",icon:"🎯",title:"Punktlandung",text:"Eine Circa-Schätzung exakt treffen",done:function(){return data.stats.perfectEstimates>=1;},progress:function(){return data.stats.perfectEstimates>=1?"1/1":data.imports&&data.imports.v72PerfectUnknown?"V72: nicht erfasst":"0/1";}},
     {id:"escape-3",icon:"🕵️",title:"Unentdeckt",text:"3× als Imposter davonkommen",done:function(){return Object.values(data.profileStats).some(function(s){return s.impostorEscapes>=3;});},progress:function(){var m=0;Object.values(data.profileStats).forEach(function(s){m=Math.max(m,s.impostorEscapes||0);});return Math.min(3,m)+"/3";}},
     {id:"all-categories",icon:"🗺️",title:"Alles gesehen",text:"Alle 10 Kategorien mindestens einmal",done:function(){return data.stats.categories.length>=10;},progress:function(){return Math.min(10,data.stats.categories.length)+"/10";}},
@@ -391,7 +400,7 @@ function evaluateAchievements(){
 }
 function profileAchievementDefs(id){
   var st=ensureStat(id);
-  function endedSession(){return data.sessions.some(function(s){return !!s.endedAt&&Array.isArray(s.profileIds)&&s.profileIds.indexOf(id)!==-1;});}
+  function endedSession(){return data.sessions.some(function(s){return !!s.endedAt&&Array.isArray(s.rounds)&&s.rounds.length>0&&Array.isArray(s.profileIds)&&s.profileIds.indexOf(id)!==-1;});}
   return [
     {id:"first-session",icon:"🎬",title:"Erster Abend",text:"Eine Session abgeschlossen",done:endedSession,progress:function(){return endedSession()?"1/1":"0/1";}},
     {id:"perfect",icon:"🎯",title:"Punktlandung",text:"Eine Circa-Schätzung exakt treffen",done:function(){return st.perfect>=1;},progress:function(){return st.perfect>=1?"1/1":st.legacyPerfectUnknown?"V72: nicht erfasst":"0/1";}},
