@@ -77,6 +77,12 @@ Die Fragen und Wörter liegen jetzt bewusst außerhalb des UI-/Game-Codes als ve
 
 Beide Dateien besitzen `schemaVersion`, `game`, `count` und `items`.
 
+## 🧩 Spieltrennung ab V66
+
+Ab V66 enthalten die einzelnen Spielseiten nur noch ihren tatsächlich benötigten DOM. **Circa Imposter** lädt keine Classic-Rollen-, Timer- oder Auflösungsansichten mehr; **Klassisches Imposter** lädt keine Circa-Schätz-, Statistik- oder Ergebnisansichten mehr.
+
+Gemeinsame Infrastruktur wie Spieler, Avatare, Fairness, Audio, Storage, Navigation und DEV-Zugang bleibt bewusst zentral in der gemeinsamen Runtime. Gemeinsamer Code wird damit einmal gepflegt statt in mehreren Spielen kopiert.
+
 ## ➕ Neues Spiel ergänzen
 
 Der Launcher wird aus `data/games.json` aufgebaut. Für ein weiteres Spiel kann später ein neuer Ordner unter `games/` angelegt und ein neuer Eintrag im Spielekatalog ergänzt werden.
