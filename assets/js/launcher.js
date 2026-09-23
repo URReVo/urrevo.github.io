@@ -8,6 +8,8 @@ var selectedAvatar="😎";
 var selectedPreset=null;
 var selectedSession=null;
 var statsScope="profile";
+var circaMetadataItems=null;
+var circaMetadataPromise=null;
 
 function byId(id){return document.getElementById(id);}
 function fmtDate(iso){
@@ -334,6 +336,26 @@ function renderSettings(){
 function renderAll(){
   renderHeader();renderPlayers();renderPresets();renderSessions();renderStats();renderSettings();
 }
+function hydrateCircaMetadata(){
+  if(!store.applyCircaQuestionMetadata)return Promise.resolve(false);
+  if(circaMetadataItems){
+    var changed=store.applyCircaQuestionMetadata(circaMetadataItems);
+    if(changed){renderPlayers();renderStats();}
+    return Promise.resolve(changed);
+  }
+  if(circaMetadataPromise)return circaMetadataPromise;
+  circaMetadataPromise=fetch("data/circa-questions.json",{cache:"no-cache"})
+    .then(function(response){if(!response.ok)throw new Error("Circa-Metadaten konnten nicht geladen werden.");return response.json();})
+    .then(function(payload){
+      circaMetadataItems=Array.isArray(payload)?payload:(Array.isArray(payload.items)?payload.items:[]);
+      var changed=store.applyCircaQuestionMetadata(circaMetadataItems);
+      if(changed){renderPlayers();renderStats();}
+      return changed;
+    })
+    .catch(function(){return false;})
+    .finally(function(){circaMetadataPromise=null;});
+  return circaMetadataPromise;
+}
 function renderMigrationChoice(){
   if(!store.getMigrationStatus||!store.completeMigrationProfileChoice)return;
   var status=store.getMigrationStatus();
@@ -467,7 +489,7 @@ byId("importDataFile").addEventListener("change",function(){
       byId("dataStatus").textContent="Import abgebrochen: "+reason;
       input.value="";return;
     }
-    closeSheets();renderAll();
+    closeSheets();renderAll();hydrateCircaMetadata();
     byId("dataStatus").textContent="Backup importiert: "+result.profiles+" Profile · "+result.sessions+" Sessions · "+result.rounds+" Runden.";
     input.value="";
   };
@@ -488,5 +510,6 @@ window.addEventListener("pageshow",function(){renderAll();renderMigrationChoice(
 document.addEventListener("visibilitychange",function(){if(!document.hidden){renderAll();renderMigrationChoice();}});
 
 renderAll();
+hydrateCircaMetadata();
 renderMigrationChoice();
 })();
