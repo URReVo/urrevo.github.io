@@ -113,7 +113,13 @@ function storageGet(key,fallback){
   }catch(e){return fallback;}
 }
 function storageSet(key,value){
-  try{localStorage.setItem(key,JSON.stringify(value));}catch(e){}
+  try{
+    localStorage.setItem(key,JSON.stringify(value));
+    return true;
+  }catch(e){return false;}
+}
+function storageRemove(key){
+  try{localStorage.removeItem(key);return true;}catch(e){return false;}
 }
 function difficultyRatio(item){
   var a=Math.abs(Number(item.normalValue)),b=Math.abs(Number(item.impValue));
@@ -148,14 +154,18 @@ function loadClassicSettings(){
   var storedHint=storageGet(STORAGE_CLASSIC_HINT,null);
   if(storedHint===null){
     storedHint=storageGet(LEGACY_CLASSIC_HINT,true);
-    storageSet(STORAGE_CLASSIC_HINT,storedHint!==false);
+    if(storageSet(STORAGE_CLASSIC_HINT,storedHint!==false))storageRemove(LEGACY_CLASSIC_HINT);
+  }else{
+    storageRemove(LEGACY_CLASSIC_HINT);
   }
   classicHintEnabled=storedHint!==false;
 
   var storedTimer=storageGet(STORAGE_CLASSIC_TIMER,null);
   if(storedTimer===null){
     storedTimer=storageGet(LEGACY_CLASSIC_TIMER,0);
-    storageSet(STORAGE_CLASSIC_TIMER,Number(storedTimer)||0);
+    if(storageSet(STORAGE_CLASSIC_TIMER,Number(storedTimer)||0))storageRemove(LEGACY_CLASSIC_TIMER);
+  }else{
+    storageRemove(LEGACY_CLASSIC_TIMER);
   }
   var timer=Number(storedTimer);
   if([0,60,90,120,150,180,210,240,270,300].indexOf(timer)===-1)timer=0;
@@ -326,7 +336,11 @@ function loadClassicDeckProgress(){
   var data=storageGet(STORAGE_CLASSIC_DECK,null);
   if(data===null){
     data=storageGet(LEGACY_CLASSIC_DECK,{});
-    storageSet(STORAGE_CLASSIC_DECK,data&&typeof data==="object"&&!Array.isArray(data)?data:{});
+    var migratedDeck=data&&typeof data==="object"&&!Array.isArray(data)?data:{};
+    if(storageSet(STORAGE_CLASSIC_DECK,migratedDeck))storageRemove(LEGACY_CLASSIC_DECK);
+    data=migratedDeck;
+  }else{
+    storageRemove(LEGACY_CLASSIC_DECK);
   }
   if(!data||typeof data!=="object"||Array.isArray(data))data={};
   var valid={};
@@ -1346,18 +1360,21 @@ function pickRound(){
     usedConcepts[questionConceptKey(usedItem.imp)]=true;
   }
 
+  var unplayed=[];
   var pool=[];
   for(var a=0;a<eligible.length;a++){
     var idx=eligible[a],candidate=bank[idx];
     if(deckProgress[key].indexOf(candidate.qid)!==-1)continue;
+    unplayed.push(idx);
+
     var normalConcept=questionConceptKey(candidate.normal);
     var impConcept=questionConceptKey(candidate.imp);
-    if(usedConcepts[normalConcept]||usedConcepts[impConcept])continue;
-    pool.push(idx);
+    if(!usedConcepts[normalConcept]&&!usedConcepts[impConcept])pool.push(idx);
   }
 
-  /* If all remaining QIDs only repeat concepts already seen in this cycle,
-     start a fresh cycle rather than immediately serving a paraphrase. */
+  /* Concept diversity is a preference, never a reason to discard unplayed
+     QIDs. Only reset after every eligible QID was actually used once. */
+  if(pool.length===0&&unplayed.length)pool=unplayed.slice();
   if(pool.length===0){
     deckProgress[key]=[];
     storageSet(STORAGE_DECK,deckProgress);
@@ -2927,8 +2944,11 @@ function restoreExistingAudio(){
   if(!soundEnabled||!audioCtx||audioCtx.state==="closed")return;
   if(audioCtx.state!=="running")unlockAudio();
 }
-document.addEventListener("pointerdown",function(){if(soundEnabled)unlockAudio();},{passive:true,capture:true});
-document.addEventListener("touchstart",function(){if(soundEnabled)unlockAudio();},{passive:true,capture:true});
+if(window.PointerEvent){
+  document.addEventListener("pointerdown",function(){if(soundEnabled)unlockAudio();},{passive:true,capture:true});
+}else{
+  document.addEventListener("touchstart",function(){if(soundEnabled)unlockAudio();},{passive:true,capture:true});
+}
 window.addEventListener("pageshow",function(){
   restoreExistingAudio();
   refreshClassicTimerFromClock();
