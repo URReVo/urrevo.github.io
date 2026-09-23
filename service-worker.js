@@ -1,6 +1,6 @@
 "use strict";
 
-const RELEASE="72";
+const RELEASE="73";
 const CACHE_REVISION="r1";
 const CACHE_PREFIX="imposter-games-";
 const CACHE_NAME=CACHE_PREFIX+"v"+RELEASE+"-"+CACHE_REVISION;
@@ -11,6 +11,7 @@ const CORE_URLS=[
   "/manifest.webmanifest",
   versioned("/assets/css/launcher.css"),
   versioned("/assets/js/launcher.js"),
+  versioned("/assets/js/app-state.js"),
   versioned("/assets/js/pwa.js"),
   versioned("/assets/css/game.css"),
   versioned("/assets/js/game-engine.js"),
