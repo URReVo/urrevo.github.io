@@ -44,25 +44,34 @@ function profileName(id){
   return p?p.name:"Ehemaliger Spieler";
 }
 function renderHeader(){
-  var p=store.getPrimaryProfile();
+  var p=store.getSelectedProfile?store.getSelectedProfile():store.getPrimaryProfile();
   byId("headerAvatar").textContent=p.avatar||"😎";
   byId("headerName").textContent=p.name||"Spieler";
   updateGreeting();
 }
 function renderPlayers(){
-  var box=byId("playerList"),profiles=store.getProfiles(),primary=store.getPrimaryProfile();
+  var box=byId("playerList"),profiles=store.getProfiles(),selected=store.getSelectedProfile?store.getSelectedProfile():store.getPrimaryProfile();
   box.textContent="";
   profiles.forEach(function(p){
     var st=store.getProfileStats(p.id);
-    var card=document.createElement("article");card.className="playerCard";
+    var card=document.createElement("article");card.className="playerCard"+(p.id===selected.id?" selected":"");
+    card.setAttribute("role","button");card.setAttribute("tabindex","0");
+    card.setAttribute("aria-label",p.name+" auswählen");
+    if(p.id===selected.id)card.setAttribute("aria-current","true");
     var av=document.createElement("div");av.className="playerAvatarBig";av.textContent=p.avatar||"😎";
     var info=document.createElement("div");info.className="playerInfo";
     var name=document.createElement("strong");name.textContent=p.name;
     var meta=document.createElement("span");meta.textContent=st.rounds+" Runden · "+st.impostor+"× Imposter · "+st.impostorEscapes+"× unentdeckt";
     info.appendChild(name);info.appendChild(meta);
-    if(p.id===primary.id){var tag=document.createElement("span");tag.className="primaryTag";tag.textContent="HAUPTPROFIL";info.appendChild(tag);}
+    if(p.id===selected.id){var tag=document.createElement("span");tag.className="primaryTag";tag.textContent="AUSGEWÄHLT";info.appendChild(tag);}
+    function selectProfile(){
+      if(store.setSelectedProfile)store.setSelectedProfile(p.id);else store.setPrimaryProfile(p.id);
+      renderAll();
+    }
+    card.addEventListener("click",selectProfile);
+    card.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();selectProfile();}});
     var edit=document.createElement("button");edit.type="button";edit.className="playerEdit";edit.textContent="•••";edit.setAttribute("aria-label",p.name+" bearbeiten");
-    edit.addEventListener("click",function(){openProfileEditor(p.id);});
+    edit.addEventListener("click",function(e){e.stopPropagation();openProfileEditor(p.id);});
     card.appendChild(av);card.appendChild(info);card.appendChild(edit);box.appendChild(card);
   });
 }
@@ -75,13 +84,12 @@ function renderAvatars(){
   });
 }
 function openProfileEditor(id){
-  var profiles=store.getProfiles(),primary=store.getPrimaryProfile();
+  var profiles=store.getProfiles();
   var p=id?profiles.find(function(x){return x.id===id;}):null;
   byId("profileId").value=p?p.id:"";
   byId("profileSheetTitle").textContent=p?"Profil bearbeiten":"Spieler hinzufügen";
   byId("profileName").value=p?p.name:"";
   selectedAvatar=p?p.avatar:"😎";
-  byId("makePrimary").checked=!!(p&&p.id===primary.id);
   byId("deleteProfile").classList.toggle("hidden",!p||profiles.length<=1);
   renderAvatars();openSheet("profileSheet");
 }
@@ -257,8 +265,10 @@ byId("saveProfile").addEventListener("click",function(){
   var name=byId("profileName").value.trim();
   if(!name){byId("profileName").focus();return;}
   if(id)store.updateProfile(id,{name:name,avatar:selectedAvatar});
-  else id=store.addProfile({name:name,avatar:selectedAvatar});
-  if(byId("makePrimary").checked)store.setPrimaryProfile(id);
+  else{
+    id=store.addProfile({name:name,avatar:selectedAvatar});
+    if(store.setSelectedProfile)store.setSelectedProfile(id);else store.setPrimaryProfile(id);
+  }
   closeSheets();renderAll();
 });
 byId("deleteProfile").addEventListener("click",function(){
