@@ -933,7 +933,7 @@ function closeStatistics(){
   show("setup");
 }
 function resetStatistics(){
-  if(!window.confirm("Alle lokal gespeicherten Statistiken zurücksetzen?"))return;
+  if(!window.confirm("Nur die Circa-Rangliste dieses Geräts zurücksetzen? Die Profil- und Sessionstatistik im Launcher bleibt erhalten."))return;
   playerStats={};
   deviceStats={roundsPlayed:0};
   storageSet(STORAGE_STATS,playerStats);
@@ -2322,7 +2322,7 @@ function startResolution(){
   },motionDelay(350)));
 }
 function leaveGame(){
-  if(!window.confirm("Spiel verlassen und zurück zum Start?"))return;
+  if(!window.confirm("Aktuelle Partie verlassen und zurück zum Setup?"))return;
   if(roundIntroTimer){clearTimeout(roundIntroTimer);roundIntroTimer=null;}
   if(guessSaveTimer){clearTimeout(guessSaveTimer);guessSaveTimer=null;}
   resetClassicTimerRuntime();
