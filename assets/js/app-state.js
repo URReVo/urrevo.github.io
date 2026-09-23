@@ -21,7 +21,7 @@ function cleanName(v){return String(v==null?"":v).trim().slice(0,24);}
 function clone(v){return JSON.parse(JSON.stringify(v));}
 function now(){return new Date().toISOString();}
 function baseProfileStats(){
-  return {rounds:0,circaRounds:0,classicRounds:0,impostor:0,impostorEscapes:0,closest:0,farthest:0,perfect:0,errorSum:0,errorSamples:0,circaQids:[],classicWids:[],categories:[],legacyPerfectUnknown:false};
+  return {rounds:0,circaRounds:0,classicRounds:0,impostor:0,impostorEscapes:0,closest:0,farthest:0,perfect:0,errorSum:0,errorSamples:0,circaQids:[],classicWids:[],categories:[],legacyPerfectUnknown:false,legacyCategoryUnknown:false};
 }
 function baseStats(){
   return {rounds:0,circaRounds:0,classicRounds:0,perfectEstimates:0,circaQids:[],classicWids:[],categories:[]};
@@ -124,6 +124,9 @@ function migrateV72(){
         var st=profileStats[profile.id];
         if(st&&st.circaRounds===oldRounds){
           oldCompleted.forEach(function(qid){addUnique(st.circaQids,qid);});
+          st.legacyCategoryUnknown=false;
+        }else if(st&&st.circaRounds>0&&oldRounds>st.circaRounds){
+          st.legacyCategoryUnknown=true;
         }
       });
     }
@@ -166,6 +169,9 @@ function backfillV72Details(data){
       if(oldRounds>0&&legacyRounds===oldRounds&&Array.isArray(oldCompleted)){
         if(!Array.isArray(st.circaQids))st.circaQids=[];
         oldCompleted.forEach(function(qid){addUnique(st.circaQids,qid);});
+        st.legacyCategoryUnknown=false;
+      }else if(legacyRounds>0&&oldRounds>legacyRounds){
+        st.legacyCategoryUnknown=true;
       }
     });
   }
@@ -198,6 +204,7 @@ function load(){
     ["rounds","circaRounds","classicRounds","impostor","impostorEscapes","closest","farthest","perfect","errorSum","errorSamples"].forEach(function(k){st[k]=Math.max(0,Number(st[k])||0);});
     ["circaQids","classicWids","categories"].forEach(function(k){if(!Array.isArray(st[k]))st[k]=[];});
     st.legacyPerfectUnknown=st.legacyPerfectUnknown===true;
+    st.legacyCategoryUnknown=st.legacyCategoryUnknown===true;
   });
   if(!data.profileArchive||typeof data.profileArchive!=="object"||Array.isArray(data.profileArchive))data.profileArchive={};
   if(!data.stats||typeof data.stats!=="object")data.stats=baseStats();
@@ -385,7 +392,7 @@ function profileAchievementDefs(id){
     {id:"first-session",icon:"🎬",title:"Erster Abend",text:"Eine Session abgeschlossen",done:endedSession,progress:function(){return endedSession()?"1/1":"0/1";}},
     {id:"perfect",icon:"🎯",title:"Punktlandung",text:"Eine Circa-Schätzung exakt treffen",done:function(){return st.perfect>=1;},progress:function(){return st.perfect>=1?"1/1":st.legacyPerfectUnknown?"V72: nicht erfasst":"0/1";}},
     {id:"escape-3",icon:"🕵️",title:"Unentdeckt",text:"3× als Imposter davonkommen",done:function(){return st.impostorEscapes>=3;},progress:function(){return Math.min(3,st.impostorEscapes)+"/3";}},
-    {id:"all-categories",icon:"🗺️",title:"Alles gesehen",text:"Alle 10 Kategorien mindestens einmal",done:function(){return st.categories.length>=10;},progress:function(){return Math.min(10,st.categories.length)+"/10";}},
+    {id:"all-categories",icon:"🗺️",title:"Alles gesehen",text:"Alle 10 Kategorien mindestens einmal",done:function(){return st.categories.length>=10;},progress:function(){var p=Math.min(10,st.categories.length)+"/10";return st.categories.length>=10?p:st.legacyCategoryUnknown?p+" · V72 teils":p;}},
     {id:"hundred-rounds",icon:"💯",title:"Veteran",text:"100 Runden insgesamt spielen",done:function(){return st.rounds>=100;},progress:function(){return Math.min(100,st.rounds)+"/100";}},
     {id:"classic-50",icon:"🎭",title:"Schauspieler",text:"50 Classic-Runden spielen",done:function(){return st.classicRounds>=50;},progress:function(){return Math.min(50,st.classicRounds)+"/50";}}
   ];
@@ -658,6 +665,7 @@ function sanitizeImportedProfileStats(src){
     safe.classicWids=Array.isArray(item.classicWids)?item.classicWids.map(String).slice(0,250):[];
     safe.categories=Array.isArray(item.categories)?item.categories.map(String).slice(0,30):[];
     safe.legacyPerfectUnknown=item.legacyPerfectUnknown===true;
+    safe.legacyCategoryUnknown=item.legacyCategoryUnknown===true;
     out[String(id).slice(0,80)]=safe;
   });
   return out;
