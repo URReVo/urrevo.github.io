@@ -607,6 +607,14 @@ document.querySelectorAll("a.gameCard[href]").forEach(function(card){
     navigateWithSound(card.getAttribute("href"));
   });
 });
+document.addEventListener("copy",function(event){
+  var target=event.target;
+  var editable=target&&(
+    target.matches&&target.matches("input,textarea,select,[contenteditable=\"true\"]")||
+    target.closest&&target.closest("input,textarea,select,[contenteditable=\"true\"]")
+  );
+  if(!editable)event.preventDefault();
+});
 window.addEventListener("pageshow",function(){renderAll();renderMigrationChoice();});
 document.addEventListener("visibilitychange",function(){if(!document.hidden){renderAll();renderMigrationChoice();}});
 
