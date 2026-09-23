@@ -2,6 +2,18 @@
 
 Die Versionshistorie dokumentiert die aus den Projektchats und der GitHub-Historie eindeutig rekonstruierbaren Änderungen. Frühere Zwischenstände mit generischen Upload-Commits werden nicht künstlich versioniert oder mit erfundenen Details ergänzt.
 
+## V65 — Cleanup und Stabilität
+
+- Falschen Speicherhinweis im klassischen Imposter korrigiert: Classic nennt jetzt Einstellungen und Wortfortschritt statt Statistiken und Fragenfortschritt.
+- 83 Circa-Fragepaare mit insgesamt 105 zuvor nicht exakt erreichbaren Zielwerten korrigiert. Die richtigen Antworten bleiben unverändert; nur die Slider-Schrittweiten wurden so angepasst, dass beide Zielwerte eines Paares exakt auswählbar sind.
+- Classic-DEV-Status `diagRoundDirty` wird bei einer neuen normalen Classic-Runde und beim Start einer neuen Partie sauber zurückgesetzt.
+- Toten Modus-Altcode `setGameMode()` und den nicht mehr verwendeten Storage-Key `STORAGE_MODE` entfernt.
+- Die Wahrscheinlichkeitsbegrenzung für 3-/4-Spieler-Fairness auf eine bounds-sichere Verteilung umgestellt und gegen extreme Gewichtungen geprüft.
+- Cache-Busting für Launcher- und Game-CSS/JavaScript über `?v=65` ergänzt, damit iOS/Home-Screen-Installationen nach Releases seltener alte Assets mit neuem HTML mischen.
+- Veraltete Versionslabels in aktiven Code-Kommentaren bereinigt.
+- README korrigiert: Circa-Fragebank korrekt benannt und aktuelle Architekturtexte von unnötigen Versionsbezügen befreit.
+- Plattform-, Circa- und Classic-Version auf V65 angehoben.
+
 ## V64 — Classic-DEV und Fairnessprüfung
 
 - DEV-Tools des klassischen Imposter-Spiels vollständig auf den Classic-Ablauf umgestellt.
