@@ -4,6 +4,8 @@ Die Versionshistorie dokumentiert die aus den Projektchats und der GitHub-Histor
 
 ## V66 — Spielseiten entkoppelt
 
+- Hotfix: Classic-Hinweis-/Timeroptionen nach der DOM-Trennung wieder sichtbar gemacht; die Optionen gehören jetzt direkt zur Classic-Seite und hängen nicht mehr von der alten Modus-Umschaltung ab.
+
 - Circa- und Classic-Spielseiten funktional entkoppelt, ohne Gameplay oder Designregeln zu verändern.
 - Circa enthält keine Classic-Rollenkarte, Diskussion, Timer, Auflösung oder Classic-Optionen mehr.
 - Klassisches Imposter enthält keine Circa-Statistik, Schwierigkeit, Schätzfrage, Frage-Reveal, Schätzungen oder Circa-Ergebnisansicht mehr.
