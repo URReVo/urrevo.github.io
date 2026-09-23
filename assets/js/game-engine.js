@@ -644,6 +644,9 @@ function loadPlayerStats(){
   var savedDevice=storageGet(STORAGE_DEVICE_STATS,{roundsPlayed:0});
   if(!savedDevice||typeof savedDevice!=="object"||Array.isArray(savedDevice))savedDevice={roundsPlayed:0};
   deviceStats={roundsPlayed:sanitizeStatNumber(savedDevice.roundsPlayed)};
+  /* Persist the normalized ID-based shape immediately so a later profile
+     rename cannot orphan legacy/name-based Circa leaderboard entries. */
+  storageSet(STORAGE_STATS,playerStats);
 }
 function savePlayerStats(){
   storageSet(STORAGE_STATS,playerStats);
