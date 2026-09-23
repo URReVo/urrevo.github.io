@@ -168,8 +168,12 @@
           <span><strong>Bestehende Circa-Statistik übernehmen</strong><small>Liest produktive V72-Daten nur aus und kopiert sie in den Test</small></span><span>›</span>
         </button>
         <button id="exportData" class="settingAction" type="button">
-          <span><strong>Teststatistik exportieren</strong><small>JSON-Datei mit Profilen, Sessions und Statistik</small></span><span>›</span>
+          <span><strong>Testdaten exportieren</strong><small>JSON-Backup mit Profilen, Sessions, Statistik und Einstellungen</small></span><span>›</span>
         </button>
+        <button id="importData" class="settingAction" type="button">
+          <span><strong>Testdaten importieren</strong><small>Ein zuvor exportiertes JSON-Backup wiederherstellen</small></span><span>›</span>
+        </button>
+        <input id="importDataFile" class="hiddenFileInput" type="file" accept="application/json,.json" tabindex="-1" aria-hidden="true">
         <button id="resetExperiment" class="settingAction danger" type="button">
           <span><strong>Testdaten zurücksetzen</strong><small>Nur ciExperiment.* – produktive Daten bleiben bestehen</small></span><span>›</span>
         </button>
@@ -186,10 +190,16 @@
 </main>
 
 <nav class="tabBar" aria-label="App-Bereiche">
-  <button class="tab active" type="button" data-view="home"><span>⌂</span><small>Home</small></button>
-  <button class="tab" type="button" data-view="profile"><span>☺</span><small>Spieler</small></button>
-  <button class="tab" type="button" data-view="stats"><span>▥</span><small>Statistik</small></button>
-  <button class="tab" type="button" data-view="settings"><span>⚙</span><small>Einstellungen</small></button>
+  <button class="tab active" type="button" data-view="home">
+    <span class="tabIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 10.8 12 3l9 7.8v9.7a.5.5 0 0 1-.5.5H15v-6H9v6H3.5a.5.5 0 0 1-.5-.5z"/></svg></span><small>Home</small>
+  </button>
+  <button class="tab" type="button" data-view="profile">
+    <span class="tabIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8.2 11.1a3.6 3.6 0 1 0 0-7.2 3.6 3.6 0 0 0 0 7.2Zm7.8-.8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM2.8 20.2v-1.4c0-3 2.4-5.4 5.4-5.4s5.4 2.4 5.4 5.4v1.4m.6-7.1c.6-.3 1.2-.4 1.8-.4 2.9 0 5.2 2.3 5.2 5.2v2.3"/></svg></span><small>Spieler</small>
+  </button>
+  <button class="tab" type="button" data-view="stats">
+    <span class="tabIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20V11m6 9V4m6 16v-6m4 6H2"/></svg></span><small>Statistik</small>
+  </button>
+  <button class="tab" type="button" data-view="settings"><span class="tabEmoji" aria-hidden="true">⚙</span><small>Einstellungen</small></button>
 </nav>
 
 <div id="sheetBackdrop" class="sheetBackdrop hidden" aria-hidden="true"></div>
@@ -256,7 +266,11 @@
     <div><div class="eyebrow">SESSION-ZUSAMMENFASSUNG</div><h2 id="sessionSheetTitle">Session</h2></div>
     <button class="closeSheet" type="button" aria-label="Schließen">×</button>
   </div>
+  <div class="fieldLabel sessionSectionLabel">Mitgespielt</div>
+  <div id="sessionPlayers" class="sessionPlayers"></div>
+  <div class="fieldLabel sessionSectionLabel">Awards</div>
   <div id="sessionAwards" class="sessionAwards"></div>
+  <div class="fieldLabel sessionSectionLabel">Runden</div>
   <div id="roundHistory" class="roundHistory"></div>
   <p id="sessionNote" class="prototypeNote"></p>
 </section>
