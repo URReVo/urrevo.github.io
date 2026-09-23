@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "platformVersion": "66",
+  "platformVersion": "67",
   "games": [
     {
       "id": "circa-imposter",
@@ -19,4 +19,4 @@
       "path": "games/classic-imposter/"
     }
   ]
-}
+}\n
