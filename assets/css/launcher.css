@@ -15,7 +15,7 @@ button{color:inherit}
   background:#1c1d20;color:#85878e;text-align:center;font-size:8px;font-weight:900;letter-spacing:.8px;
   border-bottom:1px solid rgba(255,255,255,.045)
 }
-.appShell{max-width:720px;margin:0 auto;padding:18px 16px 26px}
+.appShell{max-width:720px;margin:0 auto;padding:calc(18px + var(--safeTop)) 16px 26px}
 .view{display:none}.view.active{display:block}
 .homeHeader,.pageHeader{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:6px 0 18px}
 .profileButton{min-width:0;display:flex;align-items:center;gap:10px;border:0;background:transparent;padding:0;text-align:left}
