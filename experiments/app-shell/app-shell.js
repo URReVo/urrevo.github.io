@@ -306,8 +306,15 @@ byId("endSession").addEventListener("click",function(){
 
 byId("importLegacy").addEventListener("click",function(){
   var result=store.importLegacyCirca();
-  if(!result.ok&&result.reason==="already"){byId("dataStatus").textContent="Die bestehende Circa-Statistik wurde bereits einmal übernommen.";return;}
-  byId("dataStatus").textContent="Übernommen: "+result.players+" Spieler · "+result.rounds+" Runden · "+result.questions+" Fragepaare.";
+  if(!result.ok&&result.reason==="empty"){
+    byId("dataStatus").textContent="Keine produktiven V72-Circa-Daten auf diesem Gerät gefunden.";
+    return;
+  }
+  if(!result.ok&&result.reason==="already"){
+    byId("dataStatus").textContent="V72-Daten sind bereits aktuell übernommen: "+result.players+" Spieler · "+result.rounds+" Runden · "+result.questions+" Fragepaare.";
+    return;
+  }
+  byId("dataStatus").textContent=(result.updated?"V72-Daten aktualisiert: ":"V72-Daten übernommen: ")+result.players+" Spieler · "+result.rounds+" Runden · "+result.questions+" Fragepaare.";
   renderAll();
 });
 byId("exportData").addEventListener("click",function(){
