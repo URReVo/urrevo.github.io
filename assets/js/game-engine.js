@@ -114,7 +114,7 @@ var experimentPreferences=experimentAppState?experimentAppState.getPreferences()
 function experimentValidProfileId(profileId,name){
   if(!experimentAppState||!profileId||!experimentAppState.getProfileById)return null;
   var profile=experimentAppState.getProfileById(profileId);
-  if(!profile)return null;
+  if(!profile||profile.deletedAt)return null;
   return cleanPlayerName(profile.name).toLocaleLowerCase("de-DE")===cleanPlayerName(name).toLocaleLowerCase("de-DE")?profile.id:null;
 }
 function experimentPlayerId(player){
@@ -156,7 +156,7 @@ function experimentCircaPayload(outcome){
     difficulty:selectedDifficulty,
     qid:current.qid,
     impostorId:rows[impIndex]&&rows[impIndex].profileId,
-    impostorEscaped:!!outcome,
+    impostorEscaped:outcome===true?true:outcome===false?false:null,
     players:rows
   };
 }
@@ -570,12 +570,35 @@ function classicPickWord(){
 function cleanPlayerName(value){
   return String(value==null?"":value).replace(/^\s+|\s+$/g,"").slice(0,24);
 }
-function statsPlayerKey(name){
-  return cleanPlayerName(name).toLocaleLowerCase("de-DE");
+function activeProfileMatchByName(name){
+  if(!experimentAppState||!experimentAppState.getProfiles)return null;
+  var lower=cleanPlayerName(name).toLocaleLowerCase("de-DE");
+  var profiles=experimentAppState.getProfiles();
+  for(var i=0;i<profiles.length;i++){
+    if(cleanPlayerName(profiles[i].name).toLocaleLowerCase("de-DE")===lower)return profiles[i];
+  }
+  return null;
+}
+function statsPlayerKey(name,profileId){
+  var direct=experimentValidProfileId(profileId,name);
+  if(direct)return "profile::"+direct;
+  var matched=activeProfileMatchByName(name);
+  if(matched)return "profile::"+matched.id;
+  return "name::"+cleanPlayerName(name).toLocaleLowerCase("de-DE");
 }
 function sanitizeStatNumber(value){
   value=Number(value);
   return isFinite(value)&&value>=0?Math.floor(value):0;
+}
+function mergeLoadedPlayerStat(target,item){
+  target.closest+=sanitizeStatNumber(item.closest);
+  target.farthest+=sanitizeStatNumber(item.farthest);
+  target.impostor+=sanitizeStatNumber(item.impostor);
+  target.impostorWins+=sanitizeStatNumber(item.impostorWins);
+  target.rounds+=sanitizeStatNumber(item.rounds);
+  var errorSum=Number(item.errorSum);
+  if(isFinite(errorSum)&&errorSum>=0)target.errorSum+=errorSum;
+  target.errorSamples+=sanitizeStatNumber(item.errorSamples);
 }
 function loadPlayerStats(){
   var saved=storageGet(STORAGE_STATS,{});
@@ -589,20 +612,24 @@ function loadPlayerStats(){
     var name=cleanPlayerName(item.name);
     if(!name)continue;
 
-    var safeKey=statsPlayerKey(name);
-    var errorSum=Number(item.errorSum);
-    var errorSamples=sanitizeStatNumber(item.errorSamples);
-    playerStats[safeKey]={
-      name:name,
-      avatar:String(item.avatar||"😎").slice(0,8),
-      closest:sanitizeStatNumber(item.closest),
-      farthest:sanitizeStatNumber(item.farthest),
-      impostor:sanitizeStatNumber(item.impostor),
-      impostorWins:sanitizeStatNumber(item.impostorWins),
-      rounds:sanitizeStatNumber(item.rounds),
-      errorSum:isFinite(errorSum)&&errorSum>=0?errorSum:0,
-      errorSamples:errorSamples
-    };
+    var matched=activeProfileMatchByName(name);
+    var profileId=experimentValidProfileId(item.profileId,name)||(matched&&matched.id)||null;
+    var safeKey=statsPlayerKey(name,profileId);
+    if(!playerStats[safeKey]){
+      playerStats[safeKey]={
+        profileId:profileId,
+        name:matched?matched.name:name,
+        avatar:String((matched&&matched.avatar)||item.avatar||"😎").slice(0,8),
+        closest:0,
+        farthest:0,
+        impostor:0,
+        impostorWins:0,
+        rounds:0,
+        errorSum:0,
+        errorSamples:0
+      };
+    }
+    mergeLoadedPlayerStat(playerStats[safeKey],item);
   }
 
   var savedDevice=storageGet(STORAGE_DEVICE_STATS,{roundsPlayed:0});
@@ -614,11 +641,13 @@ function savePlayerStats(){
   storageSet(STORAGE_DEVICE_STATS,deviceStats);
 }
 function ensurePlayerStat(player){
-  var key=statsPlayerKey(player.name);
+  var profileId=experimentValidProfileId(player&&player.profileId,player&&player.name);
+  var key=statsPlayerKey(player&&player.name,profileId);
   if(!playerStats[key]){
     playerStats[key]={
-      name:cleanPlayerName(player.name),
-      avatar:player.avatar||"😎",
+      profileId:profileId,
+      name:cleanPlayerName(player&&player.name),
+      avatar:player&&player.avatar||"😎",
       closest:0,
       farthest:0,
       impostor:0,
@@ -630,8 +659,9 @@ function ensurePlayerStat(player){
   }else{
     if(!isFinite(Number(playerStats[key].errorSum))||Number(playerStats[key].errorSum)<0)playerStats[key].errorSum=0;
     playerStats[key].errorSamples=sanitizeStatNumber(playerStats[key].errorSamples);
-    playerStats[key].name=cleanPlayerName(player.name);
-    playerStats[key].avatar=player.avatar||playerStats[key].avatar||"😎";
+    playerStats[key].profileId=profileId||playerStats[key].profileId||null;
+    playerStats[key].name=cleanPlayerName(player&&player.name);
+    playerStats[key].avatar=player&&player.avatar||playerStats[key].avatar||"😎";
   }
   return playerStats[key];
 }
@@ -685,6 +715,7 @@ function recordRoundBaseStats(){
 
   roundStatsRecorded=true;
   savePlayerStats();
+  experimentRecordCirca(null);
 }
 function setImpostorOutcome(won){
   if(diagRoundDirty){
