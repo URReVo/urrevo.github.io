@@ -589,6 +589,12 @@ function activeProfileMatchByName(name){
   for(var i=0;i<profiles.length;i++){
     if(cleanPlayerName(profiles[i].name).toLocaleLowerCase("de-DE")===lower)return profiles[i];
   }
+  for(var j=0;j<profiles.length;j++){
+    var aliases=Array.isArray(profiles[j].aliases)?profiles[j].aliases:[];
+    for(var a=0;a<aliases.length;a++){
+      if(cleanPlayerName(aliases[a]).toLocaleLowerCase("de-DE")===lower)return profiles[j];
+    }
+  }
   return null;
 }
 function statsPlayerKey(name,profileId){
