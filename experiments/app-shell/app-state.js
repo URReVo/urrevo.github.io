@@ -442,6 +442,101 @@ function importLegacyCirca(){
   save();
   return {ok:true,updated:!!previous,players:source.players.length,rounds:source.rounds,questions:source.qids.length};
 }
+function sanitizeImportedProfile(p){
+  if(!p||typeof p!=="object")return null;
+  var id=String(p.id||"").trim();
+  var name=cleanName(p.name);
+  if(!id||!name)return null;
+  return {id:id.slice(0,80),name:name,avatar:String(p.avatar||"😎").slice(0,8),createdAt:p.createdAt||now()};
+}
+function sanitizeImportedStats(src){
+  src=src&&typeof src==="object"?src:{};
+  return {
+    rounds:Math.max(0,Number(src.rounds)||0),
+    circaRounds:Math.max(0,Number(src.circaRounds)||0),
+    classicRounds:Math.max(0,Number(src.classicRounds)||0),
+    perfectEstimates:Math.max(0,Number(src.perfectEstimates)||0),
+    circaQids:Array.isArray(src.circaQids)?src.circaQids.map(String).slice(0,520):[],
+    classicWids:Array.isArray(src.classicWids)?src.classicWids.map(String).slice(0,250):[],
+    categories:Array.isArray(src.categories)?src.categories.map(String).slice(0,30):[]
+  };
+}
+function sanitizeImportedProfileStats(src){
+  var out={};if(!src||typeof src!=="object"||Array.isArray(src))return out;
+  Object.keys(src).slice(0,250).forEach(function(id){
+    var item=src[id]||{},safe=baseProfileStats();
+    Object.keys(safe).forEach(function(k){safe[k]=Math.max(0,Number(item[k])||0);});
+    out[String(id).slice(0,80)]=safe;
+  });
+  return out;
+}
+function sanitizeImportedSessions(src){
+  if(!Array.isArray(src))return [];
+  return src.slice(-MAX_SESSIONS).filter(function(x){return x&&typeof x==="object";}).map(function(x){
+    return {
+      id:String(x.id||uid("session")).slice(0,100),
+      startedAt:x.startedAt||now(),
+      endedAt:x.endedAt||null,
+      profileIds:Array.isArray(x.profileIds)?x.profileIds.map(String).slice(0,20):[],
+      rounds:Array.isArray(x.rounds)?clone(x.rounds.slice(0,500)):[],
+      awards:Array.isArray(x.awards)?clone(x.awards.slice(0,12)):[]
+    };
+  });
+}
+function importSnapshot(input){
+  var src=input;
+  if(typeof src==="string"){try{src=JSON.parse(src);}catch(e){return {ok:false,reason:"json"};}}
+  if(!src||typeof src!=="object"||Array.isArray(src))return {ok:false,reason:"shape"};
+  if(!Array.isArray(src.profiles)||!src.profiles.length)return {ok:false,reason:"profiles"};
+
+  var profiles=[],seen={};
+  src.profiles.forEach(function(item){
+    var p=sanitizeImportedProfile(item);
+    if(!p||seen[p.id])return;
+    seen[p.id]=true;profiles.push(p);
+  });
+  if(!profiles.length)return {ok:false,reason:"profiles"};
+
+  var archive={};
+  if(src.profileArchive&&typeof src.profileArchive==="object"&&!Array.isArray(src.profileArchive)){
+    Object.keys(src.profileArchive).slice(0,250).forEach(function(id){
+      var p=sanitizeImportedProfile(src.profileArchive[id]);
+      if(p&&!seen[p.id])archive[p.id]=Object.assign(p,{deletedAt:src.profileArchive[id].deletedAt||null});
+    });
+  }
+
+  var selectedId=String(src.selectedProfileId||src.primaryProfileId||"");
+  if(!profiles.some(function(p){return p.id===selectedId;}))selectedId=profiles[0].id;
+
+  var imported={
+    schemaVersion:1,
+    selectedProfileId:selectedId,
+    primaryProfileId:selectedId,
+    profiles:profiles,
+    profileStats:sanitizeImportedProfileStats(src.profileStats),
+    profileArchive:archive,
+    stats:sanitizeImportedStats(src.stats),
+    sessions:sanitizeImportedSessions(src.sessions),
+    activeSessionId:null,
+    achievements:src.achievements&&typeof src.achievements==="object"&&!Array.isArray(src.achievements)?clone(src.achievements):{},
+    presets:Array.isArray(src.presets)?clone(src.presets.slice(0,50)):[],
+    launchPreset:null,
+    preferences:{
+      sound:!src.preferences||src.preferences.sound!==false,
+      haptics:!src.preferences||src.preferences.haptics!==false,
+      animations:!src.preferences||src.preferences.animations!==false
+    },
+    imports:src.imports&&typeof src.imports==="object"&&!Array.isArray(src.imports)?clone(src.imports):{legacyCirca:false}
+  };
+
+  var activeId=String(src.activeSessionId||"");
+  if(activeId&&imported.sessions.some(function(x){return x.id===activeId&&!x.endedAt;}))imported.activeSessionId=activeId;
+
+  data=imported;
+  evaluateAchievements();
+  if(!save())return {ok:false,reason:"storage"};
+  return {ok:true,profiles:data.profiles.length,sessions:data.sessions.length,rounds:data.stats.rounds};
+}
 function reset(){
   try{localStorage.removeItem(KEY);localStorage.removeItem(LEGACY_KEY);}catch(e){}
   data=defaults();save();
@@ -481,6 +576,7 @@ window.CIAppState={
   consumeLaunchPreset:consumeLaunchPreset,
   importLegacyCirca:importLegacyCirca,
   getLegacyImportStatus:getLegacyImportStatus,
+  importSnapshot:importSnapshot,
   reset:reset
 };
 })();
