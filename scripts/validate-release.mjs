@@ -67,6 +67,19 @@ for(const item of questions.items){
   const high=Math.max(...values);
   assert(max+1e-9>=high*1.15,"slider headroom below 15% "+item.qid);
 }
+const difficultyCoverage={};
+for(const item of questions.items){
+  const a=Math.abs(Number(item.normalValue)),b=Math.abs(Number(item.impValue));
+  const low=Math.min(a,b),high=Math.max(a,b),ratio=low>0?high/low:999;
+  const level=ratio<=1.30?"leicht":ratio<=1.80?"mittel":"schwer";
+  if(!difficultyCoverage[item.cat])difficultyCoverage[item.cat]={leicht:0,mittel:0,schwer:0};
+  difficultyCoverage[item.cat][level]++;
+  assert(Number(item.normalValue)!==0&&Number(item.impValue)!==0,"zero target value "+item.qid);
+  assert(String(item.normal).trim().toLocaleLowerCase("de-DE")!==String(item.imp).trim().toLocaleLowerCase("de-DE"),"identical Circa questions "+item.qid);
+}
+for(const [cat,counts] of Object.entries(difficultyCoverage)){
+  for(const level of ["leicht","mittel","schwer"])assert(counts[level]>0,"no "+level+" Circa questions in "+cat);
+}
 
 assert(Number(words.count)===words.items.length,"Classic count mismatch");
 const wids=words.items.map(x=>x.wid);
@@ -85,6 +98,7 @@ assert(!readme.includes("\\n"),"README contains literal \\n text");
 const appStateSource=read("assets/js/app-state.js");
 const launcherSource=read("assets/js/launcher.js");
 const launcherCss=read("assets/css/launcher.css");
+const gameCss=read("assets/css/game.css");
 const engineSource=read("assets/js/game-engine.js");
 for(const [name,source] of [["app-state",appStateSource],["launcher",launcherSource],["game-engine",engineSource]]){
   try{new Function(source);}catch(error){fail(name+" syntax error: "+error.message);}
@@ -94,7 +108,15 @@ assert(appStateSource.includes('BACKUP_FORMAT="imposter-games-backup"'),"product
 assert(engineSource.includes('EXP_STORAGE="imposterGames.v73.game."'),"V73 isolated game storage missing");
 assert(!html["index.html"].includes("APP-SHELL TEST"),"production launcher still contains experiment badge");
 assert(launcherCss.includes("padding:calc(18px + var(--safeTop)) 16px 26px"),"launcher safe-area top padding missing");
-assert(sw.includes('const CACHE_REVISION="r2"'),"V73 hotfix cache revision mismatch");
+assert(sw.includes('const CACHE_REVISION="r3"'),"V73 audited cache revision mismatch");
+assert(appStateSource.includes("var BACKUP_VERSION=2"),"backup format v2 missing");
+assert(engineSource.includes("experimentRecordCirca(null);"),"Circa shared base-round recording missing");
+assert(engineSource.includes("impostorEscaped:outcome===true?true:outcome===false?false:null"),"Circa unresolved outcome state missing");
+assert((engineSource.match(/experimentGameRunId="run_"/g)||[]).length>=2,"new game run IDs are not regenerated per party");
+assert(engineSource.includes("function experimentActiveProfile"),"active-profile identity guard missing");
+assert(engineSource.includes('setPreference("sound",soundEnabled)'),"in-game sound preference persistence missing");
+assert(engineSource.includes("function motionEnabled()"),"game animation preference helper missing");
+assert(gameCss.includes(".experimentReduceMotion *"),"game reduced-motion CSS missing");
 
 /* Simulate the first V72 -> V73 profile migration. */
 const legacySeed=new Map();
@@ -177,5 +199,111 @@ assert(retroStats.circaQids.length===legacyQids.length,"already-migrated V73 pro
 assert(retroStats.legacyPerfectUnknown===true,"already-migrated V73 profile did not receive perfect-stat uncertainty");
 retroStore.applyCircaQuestionMetadata(questions.items);
 assert(retroStore.getProfileStats(retroProfileId).categories.includes(questions.items[0].cat),"already-migrated V73 profile category backfill failed");
+
+/* V73 state/regression audit: round idempotency, groups, reset and backup v2. */
+function auditStorage(seedEntries=[]){
+  const map=new Map(seedEntries);
+  return {
+    map,
+    storage:{
+      getItem:key=>map.has(key)?map.get(key):null,
+      setItem:(key,value)=>map.set(key,String(value)),
+      removeItem:key=>map.delete(key),
+      key:index=>Array.from(map.keys())[index]??null,
+      get length(){return map.size;}
+    }
+  };
+}
+function auditStore(holder){
+  let tick=0;
+  const crypto={getRandomValues(arr){tick++;for(let i=0;i<arr.length;i++)arr[i]=tick*1000+i;return arr;}};
+  const win={crypto};
+  return new Function("window","localStorage","crypto",appStateSource+";return window.CIAppState;")(win,holder.storage,crypto);
+}
+const auditMem=auditStorage();
+const auditState=auditStore(auditMem);
+const auditM=auditState.getProfiles()[0];
+assert(auditState.updateProfile(auditM.id,{name:"Marlon",avatar:"😎"})===true,"profile rename failed");
+const auditL=auditState.addProfile({name:"Leon",avatar:"🦊"});
+const auditA=auditState.addProfile({name:"Alex",avatar:"🐼"});
+const auditC=auditState.addProfile({name:"Chris",avatar:"🤠"});
+assert(auditState.updateProfile(auditA,{name:"LEON",avatar:"🐼"})===false,"duplicate profile rename was accepted");
+const auditMProfile=auditState.getProfileById(auditM.id);
+assert(!auditMProfile.aliases.includes("Spieler"),"generic placeholder leaked into profile aliases");
+
+auditState.beginSession([
+  {profileId:auditM.id,name:"Marlon",avatar:"😎"},
+  {profileId:auditL,name:"Leon",avatar:"🦊"},
+  {profileId:auditA,name:"Alex",avatar:"🐼"}
+]);
+const auditCirca={
+  roundKey:"audit-run-1::circa::1",game:"circa",category:"Allgemein",qid:questions.items[0].qid,
+  impostorId:auditL,impostorEscaped:null,
+  players:[
+    {profileId:auditM.id,role:"normal",error:0,perfect:true,closest:true},
+    {profileId:auditL,role:"impostor",error:10},
+    {profileId:auditA,role:"normal",error:30,farthest:true}
+  ]
+};
+auditState.recordRound(auditCirca);
+assert(auditState.getStats().rounds===1&&auditState.getStats().perfectEstimates===1,"Circa base round counted incorrectly");
+auditState.recordRound({...auditCirca,impostorEscaped:true});
+assert(auditState.getStats().rounds===1&&auditState.getProfileStats(auditL).impostorEscapes===1,"Circa outcome update double-counted");
+auditState.recordRound({...auditCirca,impostorEscaped:false});
+assert(auditState.getStats().rounds===1&&auditState.getProfileStats(auditL).impostorEscapes===0,"Circa outcome correction failed");
+
+auditState.beginSession([
+  {profileId:auditM.id,name:"Marlon",avatar:"😎"},
+  {profileId:auditL,name:"Leon",avatar:"🦊"},
+  {profileId:auditC,name:"Chris",avatar:"🤠"}
+]);
+let auditSession=auditState.getActiveSession();
+assert(auditSession.profileIds.length===4,"session participant union did not update");
+assert(auditSession.lastProfileIds.length===3&&auditSession.lastProfileIds.includes(auditC),"latest session group did not update");
+
+const auditClassic={
+  roundKey:"audit-run-2::classic::1",game:"classic",category:"Alltag",wid:words.items[0].wid,word:words.items[0].word,
+  impostorId:auditC,impostorEscaped:null,
+  players:[
+    {profileId:auditM.id,role:"normal"},
+    {profileId:auditL,role:"normal"},
+    {profileId:auditC,role:"impostor"}
+  ]
+};
+auditState.recordRound(auditClassic);
+auditState.recordRound(auditClassic);
+auditSession=auditState.getActiveSession();
+assert(auditState.getStats().rounds===2&&auditState.getStats().classicRounds===1,"Classic round idempotency failed");
+assert(auditSession.rounds.length===2,"session contains duplicate round records");
+
+const emptyMem=auditStorage();
+const emptyState=auditStore(emptyMem);
+const emptyP1=emptyState.getProfiles()[0];
+emptyState.updateProfile(emptyP1.id,{name:"One",avatar:"😎"});
+const emptyP2=emptyState.addProfile({name:"Two",avatar:"🦊"});
+const emptyP3=emptyState.addProfile({name:"Three",avatar:"🐼"});
+emptyState.beginSession([{profileId:emptyP1.id,name:"One"},{profileId:emptyP2,name:"Two"},{profileId:emptyP3,name:"Three"}]);
+emptyState.endSession();
+assert(!emptyState.getAchievements().find(a=>a.id==="first-session").unlocked,"empty session unlocked first-session achievement");
+
+auditMem.storage.setItem("imposterGames.v73.game.circa.deckProgress.v1",JSON.stringify({"Allgemein::mittel":[questions.items[0].qid]}));
+auditMem.storage.setItem("imposterGames.v73.game.circa.completedQuestions.v1",JSON.stringify([questions.items[0].qid]));
+auditMem.storage.setItem("imposterGames.v73.game.classic.timer.v1",JSON.stringify(180));
+const auditBackup=auditState.createBackup();
+assert(auditBackup.formatVersion===2&&auditBackup.gameStorage,"backup v2 game storage missing");
+
+const restoreMem=auditStorage();
+restoreMem.storage.setItem("imposterGames.v73.game.circa.completedQuestions.v1",JSON.stringify(["stale"]));
+const restoreState=auditStore(restoreMem);
+const restoreResult=restoreState.importSnapshot(auditBackup);
+assert(restoreResult.ok&&restoreResult.gameStorage===true,"backup v2 restore failed");
+assert(JSON.parse(restoreMem.storage.getItem("imposterGames.v73.game.circa.completedQuestions.v1"))[0]===questions.items[0].qid,"game progress was not restored");
+
+restoreState.reset();
+const resetReload=auditStore(restoreMem);
+assert(resetReload.getProfiles().length===1&&resetReload.getProfiles()[0].name==="Spieler","reset profile state resurrected old data");
+assert(resetReload.getMigrationStatus().perfectUnknown===false,"reset leaked V72 perfect uncertainty");
+const remainingGameKeys=Array.from(restoreMem.map.keys()).filter(key=>key.startsWith("imposterGames.v73.game."));
+assert(remainingGameKeys.length===1&&remainingGameKeys[0]==="imposterGames.v73.game.v72Migration.v1","reset left stale V73 game storage");
 
 console.log("Release validation OK · V"+release+" · "+questions.items.length+" Circa pairs · "+words.items.length+" Classic words");
