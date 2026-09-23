@@ -294,7 +294,14 @@ function renderStats(){
   byId("totalRounds").textContent=st.rounds||0;
   byId("circaRounds").textContent=st.circaRounds||0;
   byId("classicRounds").textContent=st.classicRounds||0;
-  byId("perfectCount").textContent=personal?(st.perfect||0):(st.perfectEstimates||0);
+  var migrationStatus=store.getMigrationStatus?store.getMigrationStatus():{};
+  if(personal){
+    var personalPerfect=Number(st.perfect)||0;
+    byId("perfectCount").textContent=st.legacyPerfectUnknown?(personalPerfect?personalPerfect+"+":"–"):personalPerfect;
+  }else{
+    var globalPerfect=Number(st.perfectEstimates)||0;
+    byId("perfectCount").textContent=migrationStatus.perfectUnknown?(globalPerfect?globalPerfect+"+":"–"):globalPerfect;
+  }
   var cats=Array.isArray(st.categories)?st.categories:[];
   byId("categoryCount").textContent=cats.length+" / 10";
   var cq=Array.isArray(st.circaQids)?st.circaQids.length:0;
