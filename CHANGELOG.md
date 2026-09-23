@@ -2,6 +2,17 @@
 
 Die Versionshistorie dokumentiert die aus den Projektchats und der GitHub-Historie eindeutig rekonstruierbaren Änderungen. Frühere Zwischenstände mit generischen Upload-Commits werden nicht künstlich versioniert oder mit erfundenen Details ergänzt.
 
+## V71 — iOS-Sound und Security-Härtung
+
+- V67-Audio-Resume-Serialisierung zurückgebaut und auf die zuvor bewährte V65/V66-Web-Audio-Logik zurückgeführt.
+- Jeder Sound darf den `AudioContext.resume()`-Versuch wieder im auslösenden Nutzer-Event durchführen, statt hinter einer möglicherweise ungeeigneten früheren Resume-Promise zu warten.
+- Neuere Hintergrund-/Foreground-Absicherungen und der echtzeitbasierte Classic-Timer bleiben erhalten.
+- DEV-Status zeigt jetzt zusätzlich Sound an/aus und den aktuellen AudioContext-Zustand.
+- Game-Ladefehler werden nicht mehr durch Verkettung einer Fehlermeldung in `innerHTML` gerendert, sondern ausschließlich über DOM-Knoten und `textContent`.
+- Fehlgeschlagene Service-Worker-Installationen löschen einen eventuell halb gefüllten neuen App-Cache wieder.
+- Offline-Release auf den atomaren Cache `imposter-games-v71-r1` angehoben.
+- Plattform-/Asset-Version auf V71 angehoben.
+
 ## V70 — Offline/PWA
 
 - Root-Service-Worker für Launcher, beide Spiele, gemeinsame Assets, Datenbanken und Icons ergänzt.
