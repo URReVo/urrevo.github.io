@@ -23,7 +23,7 @@ try{
   document.body.innerHTML='<main style="min-height:100vh;display:grid;place-items:center;padding:24px;background:#292929;color:#f8f8fa;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;text-align:center"><div><div style="font-size:42px">⚠️</div><h1 style="font-size:24px">Spiel konnte nicht geladen werden</h1><p style="color:#aaa;line-height:1.45">'+String(loadError&&loadError.message||loadError)+'</p><a href="../../" style="color:#f39a32;font-weight:800">Zur Spieleauswahl</a></div></main>';
   return;
 }
-/* V61: classic word bank for the classic word-based Impostor mode.
+/* Classic word bank for the classic word-based Impostor mode.
    WIDs are independent from Circa QIDs so both deck systems can evolve safely. */
 
 function byId(id){return document.getElementById(id);}
@@ -31,7 +31,7 @@ var sections=["setup","stats","handoff","classicRole","classicDiscussion","class
 var count=3,players=[],active=0,impIndex=0,round=0,current=null,scrubbing=false;
 var guessLocked=false,guessSaveTimer=null;
 
-/* V51: Fairness state exists only for the current game session. */
+/* Fairness state exists only for the current game session. */
 var impostorSessionCounts=[];
 var impostorRecent=[];
 var normalQuestionRevealed=false;
@@ -42,7 +42,7 @@ var roundStatsRecorded=false;
 var roundOutcomeChoice=null;
 var diagRoundDirty=false;
 
-/* V63: per-game local state. Circa keeps its historic keys so existing
+/* Per-game local state. Circa keeps its historic keys so existing
    Circa progress/statistics remain available after the platform split. */
 var STORAGE_PLAYERS=gameMode==="classic"?"classicImpostor.players.v1":"circaImpostor.players.v1";
 var STORAGE_CATEGORIES=gameMode==="classic"?"classicImpostor.categories.v1":"circaImpostor.categories.v1";
@@ -51,7 +51,6 @@ var STORAGE_DIFFICULTY="circaImpostor.difficulty.v1";
 var STORAGE_STATS="circaImpostor.playerStats.v1";
 var STORAGE_DEVICE_STATS="circaImpostor.deviceStats.v1";
 var STORAGE_COMPLETED_QUESTIONS="circaImpostor.completedQuestions.v1";
-var STORAGE_MODE="circaImpostor.gameMode.v1";
 var STORAGE_CLASSIC_DECK="classicImpostor.deck.v1";
 var STORAGE_CLASSIC_HINT="classicImpostor.hint.v1";
 var STORAGE_CLASSIC_TIMER="classicImpostor.timer.v1";
@@ -161,10 +160,6 @@ function setClassicTimer(seconds){
   syncClassicOptionsUI();
   tone(seconds?500:350,0.04,0.012,"sine",0);
 }
-function setGameMode(mode){
-  /* V62: game mode is fixed by the selected game page. */
-  return mode;
-}
 function syncGameModeUI(){
   var classic=gameMode==="classic";
   byId("difficultyEyebrow").classList.toggle("hidden",classic);
@@ -252,7 +247,7 @@ function rememberQuestion(item){
   storageSet(STORAGE_DECK,deckProgress);
 }
 
-/* V58: unique, successfully completed question pairs.
+/* Unique, successfully completed question pairs.
    Deck progress is still used separately for repeat prevention. */
 function validQuestionId(qid){
   if(!qid)return false;
@@ -1091,6 +1086,7 @@ function start(){
   for(var k=0;k<names.length;k++) players.push({name:names[k],avatar:avatarSelections[k]||avatarPool[k%avatarPool.length],guess:null});
   savePlayers();
   round=0;
+  diagRoundDirty=false;
   resetImpostorFairness();
   diagLog("Partie","Gestartet mit "+players.length+" Spielern · "+(gameMode==="classic"?"Impostor":"Circa"));
   if(gameMode==="classic")classicNewRound(false);
@@ -1116,57 +1112,79 @@ function ensureImpostorFairnessState(){
   if(impostorSessionCounts.length!==players.length)resetImpostorFairness();
 }
 function boundedProbabilities(weights,minP,maxP){
-  /* Symmetric projection into the configured probability interval.
-     A single common scale factor prevents player-index/order bias. */
-  var clean=[],i;
-  for(i=0;i<weights.length;i++){
+  var n=weights.length;
+  if(!n)return [];
+
+  minP=Math.max(0,Number(minP)||0);
+  maxP=Math.max(minP,Number(maxP)||1);
+
+  /* Fallback only if callers ever provide mathematically impossible bounds. */
+  if(minP*n>1+1e-12||maxP*n<1-1e-12){
+    var uniform=[];
+    for(var u=0;u<n;u++)uniform.push(1/n);
+    return uniform;
+  }
+
+  var clean=[],result=new Array(n),active=[],i;
+  for(i=0;i<n;i++){
     var w=Number(weights[i]);
-    clean.push(isFinite(w)&&w>0?w:1e-9);
+    if(w===Infinity)w=1e100;
+    if(!isFinite(w)||w<=0)w=1e-100;
+    clean.push(Math.min(1e100,Math.max(1e-100,w)));
+    active.push(i);
   }
 
-  function totalAt(scale){
-    var sum=0;
-    for(var t=0;t<clean.length;t++){
-      var p=scale*clean[t];
-      if(p<minP)p=minP;
-      if(p>maxP)p=maxP;
-      sum+=p;
+  var remaining=1;
+  while(active.length){
+    var sumWeight=0;
+    for(i=0;i<active.length;i++)sumWeight+=clean[active[i]];
+    if(!isFinite(sumWeight)||sumWeight<=0)sumWeight=active.length;
+
+    var next=[],changed=false;
+    for(i=0;i<active.length;i++){
+      var idx=active[i];
+      var share=remaining*(clean[idx]/sumWeight);
+      if(share<minP-1e-12){
+        result[idx]=minP;
+        remaining-=minP;
+        changed=true;
+      }else if(share>maxP+1e-12){
+        result[idx]=maxP;
+        remaining-=maxP;
+        changed=true;
+      }else{
+        next.push(idx);
+      }
     }
-    return sum;
+
+    if(!changed){
+      var finalWeight=0;
+      for(i=0;i<active.length;i++)finalWeight+=clean[active[i]];
+      if(!isFinite(finalWeight)||finalWeight<=0)finalWeight=active.length;
+      for(i=0;i<active.length;i++){
+        var finalIdx=active[i];
+        result[finalIdx]=remaining*(clean[finalIdx]/finalWeight);
+      }
+      remaining=0;
+      break;
+    }
+    active=next;
   }
 
-  var low=0,high=1;
-  while(totalAt(high)<1)high*=2;
-
-  for(var step=0;step<32;step++){
-    var mid=(low+high)/2;
-    if(totalAt(mid)<1)low=mid;
-    else high=mid;
-  }
-
-  var scale=(low+high)/2,probs=[],sum=0;
-  for(i=0;i<clean.length;i++){
-    var value=scale*clean[i];
-    if(value<minP)value=minP;
-    if(value>maxP)value=maxP;
-    probs.push(value);
-    sum+=value;
-  }
-
-  /* Remove floating-point dust while preserving all bounds. */
+  /* Correct only floating-point dust without ever leaving the configured bounds. */
+  var sum=0;
+  for(i=0;i<n;i++)sum+=result[i];
   var diff=1-sum;
-  if(Math.abs(diff)>1e-10){
-    var free=[];
-    for(i=0;i<probs.length;i++){
-      if(diff>0&&probs[i]<maxP-1e-10)free.push(i);
-      if(diff<0&&probs[i]>minP+1e-10)free.push(i);
-    }
-    if(free.length){
-      var share=diff/free.length;
-      for(var f=0;f<free.length;f++)probs[free[f]]+=share;
+  if(Math.abs(diff)>1e-12){
+    for(i=0;i<n&&Math.abs(diff)>1e-12;i++){
+      var room=diff>0?(maxP-result[i]):(result[i]-minP);
+      if(room<=0)continue;
+      var move=Math.min(Math.abs(diff),room);
+      if(diff>0){result[i]+=move;diff-=move;}
+      else{result[i]-=move;diff+=move;}
     }
   }
-  return probs;
+  return result;
 }
 function impostorProbabilities(){
   ensureImpostorFairnessState();
@@ -1370,6 +1388,7 @@ function classicNewRound(confirmFirst){
   if(typeof clearRevealTimers==="function")clearRevealTimers();
   if(roundIntroTimer){clearTimeout(roundIntroTimer);roundIntroTimer=null;}
   if(guessSaveTimer){clearTimeout(guessSaveTimer);guessSaveTimer=null;}
+  diagRoundDirty=false;
 
   if(!classicPickWord()){
     byId("error").textContent="Für diese Auswahl sind keine Wörter verfügbar.";
@@ -1952,7 +1971,7 @@ function leaveGame(){
 }
 
 
-/* -------------------------- V52 hidden diagnostics -------------------------- */
+/* -------------------------- hidden diagnostics -------------------------- */
 var diagSessionKey="ci.diag.session.v1";
 var diagTapTimes=[];
 var diagFailures=0;
