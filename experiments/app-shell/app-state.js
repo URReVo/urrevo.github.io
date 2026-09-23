@@ -76,10 +76,14 @@ function load(){
     (session&&Array.isArray(session.rounds)?session.rounds:[]).forEach(function(round){
       (round&&Array.isArray(round.players)?round.players:[]).forEach(function(rp){
         if(!rp||!rp.profileId)return;
-        var st=ensureStat(rp.profileId);
-        if(round.game==="circa"&&round.qid)addUnique(st.circaQids,round.qid);
-        if(round.game==="classic"&&round.wid)addUnique(st.classicWids,round.wid);
-        if(round.category)addUnique(st.categories,round.category);
+        var pst=data.profileStats[rp.profileId];
+        if(!pst){pst=baseProfileStats();data.profileStats[rp.profileId]=pst;}
+        if(!Array.isArray(pst.circaQids))pst.circaQids=[];
+        if(!Array.isArray(pst.classicWids))pst.classicWids=[];
+        if(!Array.isArray(pst.categories))pst.categories=[];
+        if(round.game==="circa"&&round.qid)addUnique(pst.circaQids,round.qid);
+        if(round.game==="classic"&&round.wid)addUnique(pst.classicWids,round.wid);
+        if(round.category)addUnique(pst.categories,round.category);
       });
     });
   });
