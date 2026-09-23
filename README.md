@@ -55,9 +55,10 @@ Optional kann der Imposter ein **ähnliches Hinweiswort** erhalten. Die Kategori
 │   │   ├── launcher.css               # Startbildschirm
 │   │   └── game.css                   # gemeinsames Game-Design
 │   └── js/
-│       ├── launcher.js                # rendert den Spielekatalog
+│       ├── app-state.js               # Profile, Sessions, Statistik & Migration
+│       ├── launcher.js                # App-Shell / Launcher
 │       ├── pwa.js                     # registriert Offline-/Update-Unterstützung
-│       └── game-engine.js             # gemeinsame bestehende Spiel-Engine
+│       └── game-engine.js             # gemeinsame Spiel-Engine
 │
 ├── data/
 │   ├── games.json                     # Spielekatalog des Launchers
@@ -93,17 +94,19 @@ Gemeinsame Infrastruktur wie Spieler, Avatare, Fairness, Audio, Storage, Navigat
 
 ## ➕ Neues Spiel ergänzen
 
-Der Launcher wird aus `data/games.json` aufgebaut. Für ein weiteres Spiel kann später ein neuer Ordner unter `games/` angelegt und ein neuer Eintrag im Spielekatalog ergänzt werden.
+Der Launcher ist seit V73 eine App-Shell mit Profilen, Sessions, Statistik, Presets und Einstellungen. Für ein weiteres Spiel kann weiterhin ein neuer Ordner unter `games/` angelegt und der Spielekatalog entsprechend erweitert werden.
 
 Ein neues Spiel muss dadurch nicht mehr in die Root-`index.html` eingebaut werden.
 
 ## 💾 Lokale Daten
 
-Die aktuellen Spiele bleiben clientseitig. Spieler, Einstellungen, Fortschritte und Statistiken werden – soweit der jeweilige Modus sie nutzt – per `localStorage` auf dem Gerät gespeichert.
+Die aktuellen Spiele bleiben clientseitig. Profile, Einstellungen, Fortschritte, Sessions und Statistiken werden per `localStorage` auf dem Gerät gespeichert.
 
-Ab V63 besitzen **Circa Imposter** und **Klassisches Imposter** getrennte lokale Speicherbereiche. Spieler, Kategorien und spielbezogene Einstellungen werden dadurch nicht mehr zwischen den Spielen geteilt.
+Ab **V73** besitzt die Plattform einen gemeinsamen App-State mit stabilen Profil-IDs. Beim ersten Start werden vorhandene V72-Spieler aus der Circa-Statistik sowie den zuletzt gespeicherten Circa-/Classic-Spielerlisten automatisch zu lokalen Profilen migriert. Name, Avatar und vorhandene Circa-Statistik werden übernommen; anschließend wählt der Nutzer einmalig sein eigenes Launcher-Profil aus.
 
-Die bisherigen Circa-Schlüssel bleiben erhalten, damit vorhandene Circa-Statistiken und Fortschritte weiterverwendet werden. Classic-spezifische Altwerte für Wortdeck, Hinweis und Timer werden einmalig in den neuen Classic-Namespace übernommen; gemeinsam gespeicherte Spieler/Kategorien werden bewusst nicht migriert.
+Die alten `circaImpostor.*`- und `classicImpostor.*`-V72-Schlüssel werden dabei nicht verändert. Die Spiel-Engine kopiert benötigte V72-Fortschritte und Einstellungen einmalig in einen neuen `imposterGames.v73.game.*`-Namespace und schreibt danach nur noch dort weiter. Dadurch bleibt V72 als Rückfallebene erhalten.
+
+V73 unterstützt außerdem versionierte JSON-Backups für Profile, Sessions, Statistik und Einstellungen.
 
 ## 🌐 Multiplayer-Perspektive
 
