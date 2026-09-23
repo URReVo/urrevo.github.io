@@ -1459,9 +1459,10 @@ body.setup-fits:not(.game-active){
 .classicSegmented2{grid-template-columns:1fr 1fr}
 .classicTimerSelectWrap{position:relative}
 .classicTimerSelect{
-  width:100%;min-height:44px;padding:9px 40px 9px 12px;border-radius:13px;
+  width:100%;min-height:44px;padding:9px 40px;border-radius:13px;
   background:rgba(39,40,46,.88);color:#f2f2f4;border:1px solid rgba(255,255,255,.08);
   font:inherit;font-size:12px;font-weight:900;outline:none;
+  text-align:center;text-align-last:center;
   appearance:none;-webkit-appearance:none
 }
 .classicTimerSelect:focus{border-color:rgba(243,154,50,.65)}
