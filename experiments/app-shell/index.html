@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Imposter Games Test">
+<meta name="theme-color" content="#292929">
+<link rel="apple-touch-icon" sizes="180x180" href="../../circa_impostor_detective_icon_180.png">
+<link rel="icon" type="image/png" sizes="180x180" href="../../circa_impostor_detective_icon_180.png">
+<link rel="stylesheet" href="app-shell.css">
+<title>Imposter Games · App-Shell Test</title>
+</head>
+<body>
+<div class="prototypeBadge">APP-SHELL TEST · V72 UNVERÄNDERT</div>
+
+<main class="appShell">
+  <section id="view-home" class="view active" aria-labelledby="homeTitle">
+    <header class="homeHeader">
+      <button id="profileButton" class="profileButton" type="button" aria-label="Profil öffnen">
+        <span id="headerAvatar" class="profileAvatar">😎</span>
+        <span class="profileText">
+          <span id="greeting" class="profileGreeting">Willkommen</span>
+          <strong id="headerName">Spieler</strong>
+        </span>
+        <span class="chevron">›</span>
+      </button>
+      <button id="settingsShortcut" class="roundButton" type="button" aria-label="Einstellungen öffnen">⚙️</button>
+    </header>
+
+    <section class="heroPanel">
+      <div>
+        <div class="eyebrow">IMPOSTER GAMES</div>
+        <h1 id="homeTitle">Was spielen wir?</h1>
+        <p>Direkt starten oder eine vorbereitete Runde wählen.</p>
+      </div>
+      <div class="heroMark" aria-hidden="true">🎭</div>
+    </section>
+
+    <section class="statusRow" aria-label="App-Status">
+      <div class="statusPill"><span class="statusDot"></span> Offline bereit</div>
+      <div class="statusPill mutedPill">Testoberfläche</div>
+    </section>
+
+    <section class="sectionBlock">
+      <div class="sectionHeading">
+        <div>
+          <div class="eyebrow">SPIELE</div>
+          <h2>Deine Spiele</h2>
+        </div>
+      </div>
+
+      <div class="gameGrid">
+        <a class="gameCard circa" href="../../games/circa-imposter/">
+          <div class="gameTop">
+            <span class="gameIcon">🎯</span>
+            <span class="gameBadge">SCHÄTZEN</span>
+          </div>
+          <div class="gameTitle">Circa<br>Imposter</div>
+          <div class="gameSub">3–12 Spieler</div>
+          <div class="gameAction">Spielen <span>›</span></div>
+        </a>
+
+        <a class="gameCard classic" href="../../games/classic-imposter/">
+          <div class="gameTop">
+            <span class="gameIcon">🎭</span>
+            <span class="gameBadge">KLASSISCH</span>
+          </div>
+          <div class="gameTitle">Klassisches<br>Imposter</div>
+          <div class="gameSub">3–12 Spieler</div>
+          <div class="gameAction">Spielen <span>›</span></div>
+        </a>
+      </div>
+    </section>
+
+    <section class="sectionBlock">
+      <div class="sectionHeading">
+        <div>
+          <div class="eyebrow">SCHNELLSTART</div>
+          <h2>Presets</h2>
+        </div>
+        <span class="sectionHint">Vorschau</span>
+      </div>
+
+      <div class="presetScroller">
+        <button class="presetCard" type="button" data-preset="Schnelle Runde" data-game="Circa Imposter" data-detail="4 Spieler · Alle Kategorien · Zufall">
+          <span class="presetEmoji">⚡️</span>
+          <strong>Schnelle Runde</strong>
+          <small>Circa · Zufall</small>
+        </button>
+        <button class="presetCard" type="button" data-preset="Party" data-game="Klassisches Imposter" data-detail="6 Spieler · Hinweis an · 3:00 Timer">
+          <span class="presetEmoji">🥳</span>
+          <strong>Party</strong>
+          <small>Classic · 3 Min.</small>
+        </button>
+        <button class="presetCard" type="button" data-preset="Spicy" data-game="Circa Imposter" data-detail="5 Spieler · Spicy 🌶️ · Mittel">
+          <span class="presetEmoji">🌶️</span>
+          <strong>Spicy</strong>
+          <small>Circa · Mittel</small>
+        </button>
+      </div>
+    </section>
+
+    <section class="sectionBlock">
+      <div class="sectionHeading">
+        <div>
+          <div class="eyebrow">LETZTE SESSION</div>
+          <h2>Gestern Abend</h2>
+        </div>
+        <button id="openSession" class="textButton" type="button">Ansehen</button>
+      </div>
+      <button id="sessionCard" class="sessionCard" type="button">
+        <div class="sessionIcon">🏆</div>
+        <div class="sessionMain">
+          <strong>8 Runden · 5 Spieler</strong>
+          <span>Circa & Classic gemischt</span>
+        </div>
+        <div class="sessionArrow">›</div>
+      </button>
+    </section>
+  </section>
+
+  <section id="view-profile" class="view" aria-labelledby="profileTitle">
+    <header class="pageHeader">
+      <div>
+        <div class="eyebrow">PROFIL</div>
+        <h1 id="profileTitle">Dein Spielerprofil</h1>
+      </div>
+    </header>
+
+    <section class="profileHero">
+      <button id="avatarPicker" class="bigAvatar" type="button" aria-label="Avatar wechseln">😎</button>
+      <div class="profileHeroText">
+        <strong id="profileNameDisplay">Spieler</strong>
+        <span>Lokales Profil auf diesem Gerät</span>
+      </div>
+      <button id="editProfile" class="secondaryButton" type="button">Bearbeiten</button>
+    </section>
+
+    <div class="statGrid">
+      <div class="statCard"><strong>0</strong><span>Runden</span></div>
+      <div class="statCard"><strong>0</strong><span>Siege</span></div>
+      <div class="statCard"><strong>0</strong><span>Perfekte Tipps</span></div>
+    </div>
+
+    <section class="sectionBlock">
+      <div class="sectionHeading">
+        <div>
+          <div class="eyebrow">ACHIEVEMENTS</div>
+          <h2>Sammlung</h2>
+        </div>
+        <span class="sectionHint">Konzept</span>
+      </div>
+      <div class="achievementList">
+        <article class="achievement unlocked">
+          <span class="achievementIcon">🎬</span>
+          <div><strong>Erster Abend</strong><span>Eine Session abgeschlossen</span></div>
+          <span class="achievementState">✓</span>
+        </article>
+        <article class="achievement">
+          <span class="achievementIcon">🎯</span>
+          <div><strong>Punktlandung</strong><span>Eine Schätzung exakt treffen</span></div>
+          <span class="achievementProgress">0/1</span>
+        </article>
+        <article class="achievement">
+          <span class="achievementIcon">🕵️</span>
+          <div><strong>Unentdeckt</strong><span>3× als Imposter davonkommen</span></div>
+          <span class="achievementProgress">0/3</span>
+        </article>
+        <article class="achievement">
+          <span class="achievementIcon">🗺️</span>
+          <div><strong>Alles gesehen</strong><span>Jede Kategorie mindestens einmal</span></div>
+          <span class="achievementProgress">0/10</span>
+        </article>
+      </div>
+    </section>
+  </section>
+
+  <section id="view-stats" class="view" aria-labelledby="statsTitle">
+    <header class="pageHeader">
+      <div>
+        <div class="eyebrow">STATISTIK</div>
+        <h1 id="statsTitle">Deine Spielwelt</h1>
+      </div>
+    </header>
+
+    <section class="bigStat">
+      <span>Gesamt gespielt</span>
+      <strong>0</strong>
+      <small>Runden auf diesem Gerät</small>
+    </section>
+
+    <div class="statGrid twoCol">
+      <div class="statCard"><strong>0%</strong><span>Circa gesehen</span></div>
+      <div class="statCard"><strong>0%</strong><span>Classic gesehen</span></div>
+    </div>
+
+    <section class="sectionBlock">
+      <div class="eyebrow">SPÄTER MÖGLICH</div>
+      <div class="featurePreview">
+        <div><span>🏅</span><strong>Game Center</strong><small>Achievements & Leaderboards</small></div>
+        <div><span>☁️</span><strong>iCloud</strong><small>Profile & Statistik synchronisieren</small></div>
+        <div><span>📱</span><strong>SharePlay</strong><small>Jeder sieht seine Rolle auf eigenem Gerät</small></div>
+      </div>
+    </section>
+  </section>
+
+  <section id="view-settings" class="view" aria-labelledby="settingsTitle">
+    <header class="pageHeader">
+      <div>
+        <div class="eyebrow">EINSTELLUNGEN</div>
+        <h1 id="settingsTitle">App-Verhalten</h1>
+      </div>
+    </header>
+
+    <section class="settingsGroup">
+      <label class="settingRow">
+        <span><strong>Sound</strong><small>Spiel- und Reveal-Sounds</small></span>
+        <input id="settingSound" type="checkbox" checked>
+      </label>
+      <label class="settingRow">
+        <span><strong>Haptik</strong><small>Für die spätere native iOS-App</small></span>
+        <input id="settingHaptics" type="checkbox" checked>
+      </label>
+      <label class="settingRow">
+        <span><strong>Animationen</strong><small>Übergänge und Reveal-Effekte</small></span>
+        <input id="settingAnimations" type="checkbox" checked>
+      </label>
+    </section>
+
+    <section class="settingsGroup">
+      <button id="resetExperiment" class="settingAction danger" type="button">
+        <span><strong>Testdaten zurücksetzen</strong><small>Nur dieser App-Shell-Prototyp</small></span>
+        <span>›</span>
+      </button>
+    </section>
+
+    <div class="aboutCard">
+      <strong>App-Shell Experiment</strong>
+      <span>Kein V73 · Produktionsversion bleibt V72.</span>
+      <small>Dieser Test verwendet ausschließlich ciExperiment.*-Speicherkeys.</small>
+    </div>
+  </section>
+</main>
+
+<nav class="tabBar" aria-label="App-Bereiche">
+  <button class="tab active" type="button" data-view="home"><span>⌂</span><small>Home</small></button>
+  <button class="tab" type="button" data-view="profile"><span>☺</span><small>Profil</small></button>
+  <button class="tab" type="button" data-view="stats"><span>▥</span><small>Statistik</small></button>
+  <button class="tab" type="button" data-view="settings"><span>⚙</span><small>Einstellungen</small></button>
+</nav>
+
+<div id="sheetBackdrop" class="sheetBackdrop hidden" aria-hidden="true"></div>
+
+<section id="profileSheet" class="bottomSheet hidden" aria-modal="true" role="dialog" aria-labelledby="profileSheetTitle">
+  <div class="sheetHandle"></div>
+  <div class="sheetHeader">
+    <div>
+      <div class="eyebrow">SPIELERPROFIL</div>
+      <h2 id="profileSheetTitle">Profil bearbeiten</h2>
+    </div>
+    <button class="closeSheet" type="button" aria-label="Schließen">×</button>
+  </div>
+  <label class="fieldLabel" for="profileName">Name</label>
+  <input id="profileName" class="textInput" type="text" maxlength="18" autocomplete="off" placeholder="Spieler">
+  <div class="fieldLabel">Avatar</div>
+  <div id="avatarGrid" class="avatarGrid" aria-label="Avatar auswählen"></div>
+  <button id="saveProfile" class="primaryButton" type="button">Profil speichern</button>
+</section>
+
+<section id="presetSheet" class="bottomSheet hidden" aria-modal="true" role="dialog" aria-labelledby="presetTitle">
+  <div class="sheetHandle"></div>
+  <div class="sheetHeader">
+    <div>
+      <div class="eyebrow">PRESET</div>
+      <h2 id="presetTitle">Schnelle Runde</h2>
+    </div>
+    <button class="closeSheet" type="button" aria-label="Schließen">×</button>
+  </div>
+  <div id="presetGame" class="presetSheetGame"></div>
+  <p id="presetDetail" class="presetSheetDetail"></p>
+  <p class="prototypeNote">Im finalen Ausbau würde dieses Preset die jeweilige Spieleinstellung direkt vorausfüllen. Im Test verändert es die produktiven Spiele bewusst nicht.</p>
+  <button id="presetOpenGame" class="primaryButton" type="button">Spiel normal öffnen</button>
+</section>
+
+<section id="sessionSheet" class="bottomSheet hidden" aria-modal="true" role="dialog" aria-labelledby="sessionTitle">
+  <div class="sheetHandle"></div>
+  <div class="sheetHeader">
+    <div>
+      <div class="eyebrow">SESSION-ZUSAMMENFASSUNG</div>
+      <h2 id="sessionTitle">Gestern Abend</h2>
+    </div>
+    <button class="closeSheet" type="button" aria-label="Schließen">×</button>
+  </div>
+  <div class="sessionAwards">
+    <div><span>🏆</span><strong>Lisa</strong><small>Beste Täuschung</small></div>
+    <div><span>🎯</span><strong>Max</strong><small>Beste Schätzung</small></div>
+    <div><span>😵</span><strong>Ben</strong><small>Wildeste Schätzung</small></div>
+  </div>
+  <div class="roundHistory">
+    <div><span>R1</span><strong>Circa</strong><small>Allgemein</small></div>
+    <div><span>R2</span><strong>Classic</strong><small>Wortspiel</small></div>
+    <div><span>R3</span><strong>Circa</strong><small>Spicy 🌶️</small></div>
+    <div><span>R4–8</span><strong>…</strong><small>weitere Runden</small></div>
+  </div>
+  <p class="prototypeNote">Diese Werte sind reine Design-Vorschau und stammen nicht aus deinen echten Statistiken.</p>
+</section>
+
+<script src="app-shell.js"></script>
+</body>
+</html>
