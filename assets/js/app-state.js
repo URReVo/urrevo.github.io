@@ -21,7 +21,7 @@ function cleanName(v){return String(v==null?"":v).trim().slice(0,24);}
 function clone(v){return JSON.parse(JSON.stringify(v));}
 function now(){return new Date().toISOString();}
 function baseProfileStats(){
-  return {rounds:0,circaRounds:0,classicRounds:0,impostor:0,impostorEscapes:0,closest:0,farthest:0,perfect:0,errorSum:0,errorSamples:0,circaQids:[],classicWids:[],categories:[]};
+  return {rounds:0,circaRounds:0,classicRounds:0,impostor:0,impostorEscapes:0,closest:0,farthest:0,perfect:0,errorSum:0,errorSamples:0,circaQids:[],classicWids:[],categories:[],legacyPerfectUnknown:false};
 }
 function baseStats(){
   return {rounds:0,circaRounds:0,classicRounds:0,perfectEstimates:0,circaQids:[],classicWids:[],categories:[]};
@@ -81,6 +81,8 @@ function migrateV72(){
       st.farthest=Math.max(st.farthest,Math.max(0,Number(legacyStat.farthest)||0));
       st.errorSum=Math.max(st.errorSum,Math.max(0,Number(legacyStat.errorSum)||0));
       st.errorSamples=Math.max(st.errorSamples,Math.max(0,Number(legacyStat.errorSamples)||0));
+      st.legacyPerfectUnknown=st.errorSamples>0&&st.errorSum>0;
+      if(st.errorSamples>0&&st.errorSum===0)st.perfect=Math.max(st.perfect,1);
     }
     return existing;
   }
@@ -115,6 +117,14 @@ function migrateV72(){
   migrated.stats.circaRounds=oldRounds;
   if(Array.isArray(oldCompleted)){
     oldCompleted.forEach(function(qid){addUnique(migrated.stats.circaQids,qid);});
+    if(oldRounds>0){
+      profiles.forEach(function(profile){
+        var st=profileStats[profile.id];
+        if(st&&st.circaRounds===oldRounds){
+          oldCompleted.forEach(function(qid){addUnique(st.circaQids,qid);});
+        }
+      });
+    }
   }
 
   migrated.imports={
@@ -150,6 +160,7 @@ function load(){
     if(!st||typeof st!=="object"){data.profileStats[id]=baseProfileStats();return;}
     ["rounds","circaRounds","classicRounds","impostor","impostorEscapes","closest","farthest","perfect","errorSum","errorSamples"].forEach(function(k){st[k]=Math.max(0,Number(st[k])||0);});
     ["circaQids","classicWids","categories"].forEach(function(k){if(!Array.isArray(st[k]))st[k]=[];});
+    st.legacyPerfectUnknown=st.legacyPerfectUnknown===true;
   });
   if(!data.profileArchive||typeof data.profileArchive!=="object"||Array.isArray(data.profileArchive))data.profileArchive={};
   if(!data.stats||typeof data.stats!=="object")data.stats=baseStats();
@@ -334,7 +345,7 @@ function profileAchievementDefs(id){
   function endedSession(){return data.sessions.some(function(s){return !!s.endedAt&&Array.isArray(s.profileIds)&&s.profileIds.indexOf(id)!==-1;});}
   return [
     {id:"first-session",icon:"🎬",title:"Erster Abend",text:"Eine Session abgeschlossen",done:endedSession,progress:function(){return endedSession()?"1/1":"0/1";}},
-    {id:"perfect",icon:"🎯",title:"Punktlandung",text:"Eine Circa-Schätzung exakt treffen",done:function(){return st.perfect>=1;},progress:function(){return Math.min(1,st.perfect)+"/1";}},
+    {id:"perfect",icon:"🎯",title:"Punktlandung",text:"Eine Circa-Schätzung exakt treffen",done:function(){return st.perfect>=1;},progress:function(){return st.perfect>=1?"1/1":st.legacyPerfectUnknown?"V72 nicht erfasst":"0/1";}},
     {id:"escape-3",icon:"🕵️",title:"Unentdeckt",text:"3× als Imposter davonkommen",done:function(){return st.impostorEscapes>=3;},progress:function(){return Math.min(3,st.impostorEscapes)+"/3";}},
     {id:"all-categories",icon:"🗺️",title:"Alles gesehen",text:"Alle 10 Kategorien mindestens einmal",done:function(){return st.categories.length>=10;},progress:function(){return Math.min(10,st.categories.length)+"/10";}},
     {id:"hundred-rounds",icon:"💯",title:"Veteran",text:"100 Runden insgesamt spielen",done:function(){return st.rounds>=100;},progress:function(){return Math.min(100,st.rounds)+"/100";}},
@@ -608,6 +619,7 @@ function sanitizeImportedProfileStats(src){
     safe.circaQids=Array.isArray(item.circaQids)?item.circaQids.map(String).slice(0,520):[];
     safe.classicWids=Array.isArray(item.classicWids)?item.classicWids.map(String).slice(0,250):[];
     safe.categories=Array.isArray(item.categories)?item.categories.map(String).slice(0,30):[];
+    safe.legacyPerfectUnknown=item.legacyPerfectUnknown===true;
     out[String(id).slice(0,80)]=safe;
   });
   return out;
@@ -687,6 +699,29 @@ function importSnapshot(input){
   if(!save())return {ok:false,reason:"storage"};
   return {ok:true,profiles:data.profiles.length,sessions:data.sessions.length,rounds:data.stats.rounds};
 }
+function applyCircaQuestionMetadata(items){
+  if(!Array.isArray(items)||!items.length)return false;
+  var categoryByQid={};
+  items.forEach(function(item){
+    if(item&&item.qid&&item.cat)categoryByQid[String(item.qid)]=String(item.cat);
+  });
+  var changed=false;
+  (data.stats.circaQids||[]).forEach(function(qid){
+    var cat=categoryByQid[String(qid)];
+    if(cat&&data.stats.categories.indexOf(cat)===-1){data.stats.categories.push(cat);changed=true;}
+  });
+  Object.keys(data.profileStats||{}).forEach(function(id){
+    var st=data.profileStats[id];
+    if(!st)return;
+    if(!Array.isArray(st.categories))st.categories=[];
+    (st.circaQids||[]).forEach(function(qid){
+      var cat=categoryByQid[String(qid)];
+      if(cat&&st.categories.indexOf(cat)===-1){st.categories.push(cat);changed=true;}
+    });
+  });
+  if(changed)save();
+  return changed;
+}
 function getMigrationStatus(){
   return {
     completed:!!(data.imports&&data.imports.v72MigrationCompleted),
@@ -752,6 +787,7 @@ window.CIAppState={
   setActiveSessionGame:setActiveSessionGame,
   getMigrationStatus:getMigrationStatus,
   completeMigrationProfileChoice:completeMigrationProfileChoice,
+  applyCircaQuestionMetadata:applyCircaQuestionMetadata,
   importSnapshot:importSnapshot,
   createBackup:createBackup,
   reset:reset
