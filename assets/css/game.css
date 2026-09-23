@@ -1390,7 +1390,7 @@ body.setup-fits:not(.game-active){
 }
 
 
-/* V61: classic Impostor screens. Same cards, radii and neutral/orange palette. */
+/* Classic Impostor screens. Same cards, radii and neutral/orange palette. */
 .classicRoleScreen,.classicDiscussionScreen,.classicResultScreen{justify-content:flex-start}
 .classicRoleMeta{
   flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;
@@ -1498,7 +1498,7 @@ body.setup-fits:not(.game-active){
 
 
 
-/* V62 platform navigation */
+/* Platform navigation */
 .gameHubNav{display:flex;align-items:center;justify-content:flex-start;margin:0 0 2px}
 .gameHubBack{
   display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:6px 10px;border-radius:11px;
