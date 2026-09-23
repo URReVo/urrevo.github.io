@@ -12,6 +12,13 @@ function byId(id){return document.getElementById(id);}
 function fmtDate(iso){
   try{return new Date(iso).toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit",year:"2-digit"});}catch(e){return "–";}
 }
+function fmtTime(iso){
+  try{return new Date(iso).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"});}catch(e){return "–";}
+}
+function fmtDateTime(iso){
+  if(!iso)return "–";
+  return fmtDate(iso)+" · "+fmtTime(iso);
+}
 function updateGreeting(){
   var hour=new Date().getHours();
   byId("greeting").textContent=hour<11?"Guten Morgen":hour<18?"Hallo":"Guten Abend";
@@ -33,8 +40,8 @@ function closeSheets(){
   document.querySelectorAll(".bottomSheet").forEach(function(sheet){sheet.classList.add("hidden");});
 }
 function profileName(id){
-  var p=store.getProfiles().find(function(x){return x.id===id;});
-  return p?p.name:"Spieler";
+  var p=store.getProfileById?store.getProfileById(id):store.getProfiles().find(function(x){return x.id===id;});
+  return p?p.name:"Ehemaliger Spieler";
 }
 function renderHeader(){
   var p=store.getPrimaryProfile();
@@ -113,13 +120,18 @@ function openPresetEditor(){
   renderPresetEditorMode();openSheet("presetEditorSheet");
 }
 function sessionRoundLabel(r){
-  if(r.game==="circa")return (r.category||"Circa")+(r.difficulty?" · "+r.difficulty:"");
-  return r.category||"Classic";
+  if(r.game==="circa"){
+    var circa=(r.category||"Circa")+(r.difficulty?" · "+r.difficulty:"");
+    return circa+(r.qid?" · "+r.qid:"");
+  }
+  var classic=r.category||"Classic";
+  if(r.word)classic+=" · "+r.word;
+  return classic+(r.wid?" · "+r.wid:"");
 }
 function renderSessionSheet(session){
   if(!session)return;
   selectedSession=session;
-  byId("sessionSheetTitle").textContent=(session.endedAt?"Session vom ":"Aktuelle Session · ")+fmtDate(session.startedAt);
+  byId("sessionSheetTitle").textContent=(session.endedAt?"Session · ":"Aktuelle Session · ")+fmtDateTime(session.startedAt);
   var awards=byId("sessionAwards");awards.textContent="";
   var list=session.awards||[];
   if(!list.length){
@@ -147,20 +159,44 @@ function renderSessionSheet(session){
   byId("sessionNote").textContent=session.endedAt?"Diese Zusammenfassung stammt aus echten Runden innerhalb des App-Shell-Tests.":"Diese Session läuft noch. Beim Beenden werden die Awards berechnet.";
   openSheet("sessionSheet");
 }
+function renderSessionHistory(sessions){
+  var box=byId("sessionHistoryList");box.textContent="";
+  if(!sessions.length){
+    var empty=document.createElement("div");empty.className="emptyState";empty.textContent="Noch keine abgeschlossene Test-Session. Beendete Sessions erscheinen hier automatisch.";box.appendChild(empty);return;
+  }
+  sessions.slice(0,10).forEach(function(session){
+    var c=session.rounds.filter(function(r){return r.game==="circa";}).length;
+    var k=session.rounds.length-c;
+    var b=document.createElement("button");b.type="button";b.className="historySession";
+    var icon=document.createElement("span");icon.className="historySessionIcon";icon.textContent=c&&k?"🎲":c?"🎯":"🎭";
+    var main=document.createElement("span");main.className="historySessionMain";
+    var title=document.createElement("strong");title.textContent=fmtDateTime(session.endedAt||session.startedAt);
+    var detail=document.createElement("span");detail.textContent=c+"× Circa · "+k+"× Classic · "+session.profileIds.length+" Spieler";
+    main.appendChild(title);main.appendChild(detail);
+    var meta=document.createElement("span");meta.className="historySessionMeta";
+    var rounds=document.createElement("strong");rounds.textContent=session.rounds.length+" "+(session.rounds.length===1?"Runde":"Runden");
+    var awards=document.createElement("small");awards.textContent=(session.awards||[]).length+" Awards";
+    meta.appendChild(rounds);meta.appendChild(awards);
+    b.appendChild(icon);b.appendChild(main);b.appendChild(meta);
+    b.addEventListener("click",function(){renderSessionSheet(session);});
+    box.appendChild(b);
+  });
+}
 function renderSessions(){
   var active=store.getActiveSession();
   byId("activeSessionBlock").classList.toggle("hidden",!active);
   byId("sessionStatusPill").textContent=active?"Session läuft · "+active.rounds.length+" Runden":"Keine Session aktiv";
   if(active){
-    byId("activeSessionTitle").textContent="Seit "+fmtDate(active.startedAt);
+    byId("activeSessionTitle").textContent="Seit "+fmtTime(active.startedAt);
     byId("activeSessionMain").textContent=active.rounds.length+" "+(active.rounds.length===1?"Runde":"Runden");
     byId("activeSessionSub").textContent=active.profileIds.length+" Spieler · "+(active.rounds.length?"Statistik wird live geführt":"noch keine Runde abgeschlossen");
   }
   var sessions=store.getSessions().filter(function(s){return !!s.endedAt;});
+  renderSessionHistory(sessions);
   var last=sessions[0]||null;
   byId("lastSessionBlock").classList.toggle("hidden",!last);
   if(last){
-    byId("lastSessionTitle").textContent=fmtDate(last.endedAt);
+    byId("lastSessionTitle").textContent=fmtDateTime(last.endedAt);
     byId("lastSessionMain").textContent=last.rounds.length+" "+(last.rounds.length===1?"Runde":"Runden")+" · "+last.profileIds.length+" Spieler";
     var c=last.rounds.filter(function(r){return r.game==="circa";}).length;
     var k=last.rounds.length-c;
