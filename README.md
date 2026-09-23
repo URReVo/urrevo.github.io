@@ -121,6 +121,7 @@ Ab V70 kann **Imposter Games nach einem erfolgreichen Online-Start auch offline 
 - Spieler, Einstellungen, Statistiken und Fortschritte bleiben davon getrennt in `localStorage` und werden durch den Cache-Cleanup nicht gelöscht.
 - Es werden keine beliebigen besuchten URLs dauerhaft gesammelt; der Offline-Cache ist auf die definierten App-Dateien begrenzt.
 - Der allererste Start muss online erfolgen, damit die Offline-Dateien installiert werden können.
+- Bei jedem Plattform-Release müssen `CACHE_NAME` und die versionierten Asset-URLs in `service-worker.js` auf die neue Version angehoben werden. Dadurch bleiben HTML, CSS, JavaScript und Datenbanken immer als zusammengehöriges Release gecacht.
 
 ## 📲 Beste Spielerfahrung auf iPhone und iPad
 
