@@ -1,17 +1,17 @@
 "use strict";
 
 const CACHE_PREFIX="imposter-games-";
-const CACHE_NAME=CACHE_PREFIX+"v70-r3";
+const CACHE_NAME=CACHE_PREFIX+"v71-r1";
 
 const CORE_URLS=[
   "/",
   "/index.html",
   "/manifest.webmanifest",
-  "/assets/css/launcher.css?v=70",
-  "/assets/js/launcher.js?v=70",
-  "/assets/js/pwa.js?v=70",
-  "/assets/css/game.css?v=70",
-  "/assets/js/game-engine.js?v=70",
+  "/assets/css/launcher.css?v=71",
+  "/assets/js/launcher.js?v=71",
+  "/assets/js/pwa.js?v=71",
+  "/assets/css/game.css?v=71",
+  "/assets/js/game-engine.js?v=71",
   "/data/games.json",
   "/data/circa-questions.json",
   "/data/classic-words.json",
@@ -40,12 +40,18 @@ const DATA_PATHS=new Set([
 
 self.addEventListener("install",event=>{
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache=>{
-      /* A release is installable only when every required app file was
-         fetched successfully. The currently active cache is not touched. */
-      const requests=CORE_URLS.map(url=>new Request(url,{cache:"reload"}));
-      return cache.addAll(requests);
-    })
+    caches.open(CACHE_NAME)
+      .then(cache=>{
+        /* A release is installable only when every required app file was
+           fetched successfully. The currently active cache is not touched. */
+        const requests=CORE_URLS.map(url=>new Request(url,{cache:"reload"}));
+        return cache.addAll(requests);
+      })
+      .catch(async error=>{
+        /* Do not leave a half-filled cache behind after a failed release. */
+        try{await caches.delete(CACHE_NAME);}catch(cleanupError){}
+        throw error;
+      })
   );
 });
 
