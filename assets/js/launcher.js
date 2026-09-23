@@ -405,15 +405,29 @@ byId("presetGameInput").addEventListener("change",renderPresetEditorMode);
 
 byId("saveProfile").addEventListener("click",function(){
   var id=byId("profileId").value;
-  var name=byId("profileName").value.trim();
-  if(!name){byId("profileName").focus();return;}
-  if(id)store.updateProfile(id,{name:name,avatar:selectedAvatar});
-  else{
+  var input=byId("profileName");
+  var name=input.value.trim();
+  input.setCustomValidity("");
+  if(!name){input.focus();return;}
+  var duplicate=store.getProfiles().some(function(p){
+    return p.id!==id&&p.name.toLocaleLowerCase("de-DE")===name.toLocaleLowerCase("de-DE");
+  });
+  if(duplicate){
+    input.setCustomValidity("Ein Profil mit diesem Namen existiert bereits.");
+    input.reportValidity();return;
+  }
+  if(id){
+    if(!store.updateProfile(id,{name:name,avatar:selectedAvatar})){
+      input.setCustomValidity("Profil konnte nicht gespeichert werden.");
+      input.reportValidity();return;
+    }
+  }else{
     id=store.addProfile({name:name,avatar:selectedAvatar});
     if(store.setSelectedProfile)store.setSelectedProfile(id);else store.setPrimaryProfile(id);
   }
   closeSheets();renderAll();
 });
+byId("profileName").addEventListener("input",function(){this.setCustomValidity("");});
 byId("deleteProfile").addEventListener("click",function(){
   var id=byId("profileId").value;if(!id)return;
   if(!window.confirm("Dieses Profil löschen? Bereits gespeicherte Session-Historie bleibt erhalten."))return;
