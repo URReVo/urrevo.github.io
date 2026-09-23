@@ -333,10 +333,13 @@ function sessionById(id){
 function beginSession(players){
   var current=data.activeSessionId&&sessionById(data.activeSessionId);
   if(current&&!current.endedAt){
+    var activeIds=[];
     (players||[]).forEach(function(p){
       var id=ensureProfileForPlayer(p);
       if(current.profileIds.indexOf(id)===-1)current.profileIds.push(id);
+      if(activeIds.indexOf(id)===-1)activeIds.push(id);
     });
+    if(activeIds.length)current.lastProfileIds=activeIds;
     save();return current.id;
   }
   var profileIds=[];
@@ -344,7 +347,7 @@ function beginSession(players){
     var id=ensureProfileForPlayer(p);
     if(profileIds.indexOf(id)===-1)profileIds.push(id);
   });
-  var session={id:uid("session"),startedAt:now(),endedAt:null,profileIds:profileIds,rounds:[],awards:[]};
+  var session={id:uid("session"),startedAt:now(),endedAt:null,profileIds:profileIds,lastProfileIds:profileIds.slice(),rounds:[],awards:[]};
   data.sessions.push(session);
   data.activeSessionId=session.id;
   if(data.sessions.length>MAX_SESSIONS)data.sessions.splice(0,data.sessions.length-MAX_SESSIONS);
@@ -446,9 +449,12 @@ function recordRound(input){
   }
   contribution(round,1);
 
+  var roundProfileIds=[];
   round.players.forEach(function(p){
     if(session.profileIds.indexOf(p.profileId)===-1)session.profileIds.push(p.profileId);
+    if(roundProfileIds.indexOf(p.profileId)===-1)roundProfileIds.push(p.profileId);
   });
+  if(roundProfileIds.length)session.lastProfileIds=roundProfileIds;
 
   evaluateAchievements();save();return true;
 }
@@ -699,6 +705,7 @@ function sanitizeImportedSessions(src){
       startedAt:x.startedAt||now(),
       endedAt:x.endedAt||null,
       profileIds:Array.isArray(x.profileIds)?x.profileIds.map(String).slice(0,20):[],
+      lastProfileIds:Array.isArray(x.lastProfileIds)?x.lastProfileIds.map(String).slice(0,20):[],
       rounds:Array.isArray(x.rounds)?clone(x.rounds.slice(0,500)):[],
       awards:Array.isArray(x.awards)?clone(x.awards.slice(0,12)):[],
       lastGame:x.lastGame==="classic"?"classic":x.lastGame==="circa"?"circa":null
