@@ -28,6 +28,7 @@ function defaults(){
   var id=uid("player");
   return {
     schemaVersion:1,
+    selectedProfileId:id,
     primaryProfileId:id,
     profiles:[{id:id,name:"Spieler",avatar:"😎",createdAt:now()}],
     profileStats:{},
@@ -49,8 +50,12 @@ function load(){
 
   if(!Array.isArray(data.profiles))data.profiles=[];
   if(!data.profiles.length){
-    var p=defaults().profiles[0];data.profiles=[p];data.primaryProfileId=p.id;
+    var p=defaults().profiles[0];data.profiles=[p];data.selectedProfileId=p.id;data.primaryProfileId=p.id;
   }
+  var selectedCandidate=data.selectedProfileId||data.primaryProfileId;
+  if(!data.profiles.some(function(p){return p.id===selectedCandidate;}))selectedCandidate=data.profiles[0].id;
+  data.selectedProfileId=selectedCandidate;
+  data.primaryProfileId=selectedCandidate; /* compatibility with earlier experiment builds */
   if(!data.profileStats||typeof data.profileStats!=="object")data.profileStats={};
   if(!data.profileArchive||typeof data.profileArchive!=="object"||Array.isArray(data.profileArchive))data.profileArchive={};
   if(!data.stats||typeof data.stats!=="object")data.stats=baseStats();
@@ -113,7 +118,10 @@ function deleteProfile(id){
   var removed=data.profiles[idx];
   data.profileArchive[id]={id:removed.id,name:removed.name,avatar:removed.avatar,createdAt:removed.createdAt||null,deletedAt:now()};
   data.profiles.splice(idx,1);
-  if(data.primaryProfileId===id)data.primaryProfileId=data.profiles[0].id;
+  if(data.selectedProfileId===id||data.primaryProfileId===id){
+    data.selectedProfileId=data.profiles[0].id;
+    data.primaryProfileId=data.selectedProfileId;
+  }
   save();return true;
 }
 function getProfileById(id){
@@ -121,16 +129,24 @@ function getProfileById(id){
   if(active)return clone(active);
   return data.profileArchive[id]?clone(data.profileArchive[id]):null;
 }
-function setPrimary(id){
+function setSelected(id){
   if(!profileById(id))return false;
-  data.primaryProfileId=id;save();return true;
+  data.selectedProfileId=id;
+  data.primaryProfileId=id; /* compatibility with earlier experiment builds */
+  save();return true;
+}
+function getSelected(){
+  return clone(profileById(data.selectedProfileId)||data.profiles[0]);
 }
 function ensureProfileForPlayer(player){
+  if(player&&player.profileId&&profileById(player.profileId)){
+    ensureStat(player.profileId);
+    return player.profileId;
+  }
   var name=cleanName(player&&player.name)||"Spieler";
   var lower=name.toLocaleLowerCase("de-DE");
   var match=data.profiles.find(function(p){return p.name.toLocaleLowerCase("de-DE")===lower;});
   if(match){
-    if(player&&player.avatar)match.avatar=String(player.avatar).slice(0,8);
     ensureStat(match.id);
     return match.id;
   }
@@ -138,8 +154,8 @@ function ensureProfileForPlayer(player){
 }
 function getPreferredPlayers(limit){
   var list=data.profiles.slice();
-  var primaryIndex=list.findIndex(function(p){return p.id===data.primaryProfileId;});
-  if(primaryIndex>0){var primary=list.splice(primaryIndex,1)[0];list.unshift(primary);}
+  var selectedIndex=list.findIndex(function(p){return p.id===data.selectedProfileId;});
+  if(selectedIndex>0){var selected=list.splice(selectedIndex,1)[0];list.unshift(selected);}
   if(limit)list=list.slice(0,limit);
   return clone(list);
 }
@@ -439,12 +455,14 @@ window.CIAppState={
   snapshot:snapshot,
   getProfiles:function(){return clone(data.profiles);},
   getProfileById:getProfileById,
-  getPrimaryProfile:function(){return clone(profileById(data.primaryProfileId)||data.profiles[0]);},
+  getSelectedProfile:getSelected,
+  setSelectedProfile:setSelected,
+  getPrimaryProfile:getSelected,
   getPreferredPlayers:getPreferredPlayers,
   addProfile:addProfile,
   updateProfile:updateProfile,
   deleteProfile:deleteProfile,
-  setPrimaryProfile:setPrimary,
+  setPrimaryProfile:setSelected,
   ensureProfileForPlayer:ensureProfileForPlayer,
   beginSession:beginSession,
   recordRound:recordRound,
