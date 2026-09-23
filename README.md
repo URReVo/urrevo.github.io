@@ -1,6 +1,6 @@
 # 🎭 Imposter Games
 
-Dieses Repository ist ab **V62** nicht mehr nur eine einzelne `index.html`, sondern eine kleine, statische **Partyspiel-Plattform**.
+Dieses Repository ist ab **V63** nicht mehr nur eine einzelne `index.html`, sondern eine kleine, statische **Partyspiel-Plattform**.
 
 👉 **Live:** https://urrevo.github.io/
 
@@ -8,9 +8,9 @@ Der Startbildschirm zeigt die verfügbaren Spiele. Jedes Spiel besitzt anschlie�
 
 ## 🎮 Spiele
 
-### 🎯 Faker Imposter
+### 🎯 Circa Imposter
 
-Das bisherige Circa-Spiel: Alle Spieler beantworten eine numerische Schätzfrage. Eine Person ist der Imposter und bekommt eine andere Frage aus derselben Kategorie. Die Antworten können dadurch plausibel zusammenpassen, obwohl nicht alle dieselbe Frage gesehen haben.
+Das Schätzspiel: Alle Spieler beantworten eine numerische Schätzfrage. Eine Person ist der Imposter und bekommt eine andere Frage aus derselben Kategorie. Die Antworten können dadurch plausibel zusammenpassen, obwohl nicht alle dieselbe Frage gesehen haben.
 
 - 3–12 Spieler
 - 520 Fragepaare / 1.040 Fragetexte
@@ -52,11 +52,11 @@ Optional kann der Imposter ein **ähnliches Hinweiswort** erhalten. Die Kategori
 │
 ├── data/
 │   ├── games.json                     # Spielekatalog des Launchers
-│   ├── faker-questions.json           # 520 Faker-Fragepaare
+│   ├── circa-questions.json           # 520 Faker-Fragepaare
 │   └── classic-words.json             # 250 Wörter + Hinweise
 │
 ├── games/
-│   ├── faker-imposter/
+│   ├── circa-imposter/
 │   │   └── index.html
 │   └── classic-imposter/
 │       └── index.html
@@ -86,11 +86,13 @@ Ein neues Spiel muss dadurch nicht mehr in die Root-`index.html` eingebaut werde
 
 Die aktuellen Spiele bleiben clientseitig. Spieler, Einstellungen, Fortschritte und Statistiken werden – soweit der jeweilige Modus sie nutzt – per `localStorage` auf dem Gerät gespeichert.
 
-Bestehende Storage-Schlüssel des Faker-Spiels bleiben bei der V62-Aufteilung erhalten, damit vorhandene lokale Daten nicht absichtlich zurückgesetzt werden.
+Ab V63 besitzen **Circa Imposter** und **Klassisches Imposter** getrennte lokale Speicherbereiche. Spieler, Kategorien und spielbezogene Einstellungen werden dadurch nicht mehr zwischen den Spielen geteilt.
+
+Die bisherigen Circa-Schlüssel bleiben erhalten, damit vorhandene Circa-Statistiken und Fortschritte weiterverwendet werden. Classic-spezifische Altwerte für Wortdeck, Hinweis und Timer werden einmalig in den neuen Classic-Namespace übernommen; gemeinsam gespeicherte Spieler/Kategorien werden bewusst nicht migriert.
 
 ## 🌐 Multiplayer-Perspektive
 
-V62 ist noch **kein Online-Multiplayer**. Die neue Trennung schafft aber eine bessere Basis dafür:
+V63 ist noch **kein Online-Multiplayer**. Die neue Trennung schafft aber eine bessere Basis dafür:
 
 - Launcher und Spiele sind getrennt.
 - Spieldaten liegen unabhängig vom UI vor.
@@ -106,7 +108,7 @@ Die Web-Oberfläche bleibt Vanilla HTML/CSS/JavaScript und ist weiterhin für iP
 
 Die neue Trennung in Daten, Plattform und Spielbereiche erleichtert eine spätere native Umsetzung, weil Wort-/Frage-Daten und Spielkonzepte nicht mehr untrennbar in einer einzigen HTML-Datei stecken.
 
-Eine native iOS-App würde trotzdem eine eigene Swift/SwiftUI-Oberfläche und native Zustandslogik erhalten; V62 ist dafür eine bessere Ausgangsbasis, aber kein automatischer Web-zu-Native-Wrapper.
+Eine native iOS-App würde trotzdem eine eigene Swift/SwiftUI-Oberfläche und native Zustandslogik erhalten; V63 ist dafür eine bessere Ausgangsbasis, aber kein automatischer Web-zu-Native-Wrapper.
 
 ## 🛠 Technik
 
@@ -127,7 +129,7 @@ Die Root-`index.html` ist ab V62 **nur noch der Spiele-Launcher**.
 
 Direkte Spielpfade:
 
-- `/games/faker-imposter/`
+- `/games/circa-imposter/`
 - `/games/classic-imposter/`
 
 ## 📝 Versionshistorie
