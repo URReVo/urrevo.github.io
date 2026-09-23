@@ -1,0 +1,24 @@
+{
+  "name": "Imposter Games",
+  "short_name": "Imposter",
+  "description": "Lokale Partyspiele mit Circa Imposter und Klassischem Imposter.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#292929",
+  "theme_color": "#292929",
+  "icons": [
+    {
+      "src": "/circa_impostor_detective_icon_180.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/circa_impostor_detective_icon_512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
