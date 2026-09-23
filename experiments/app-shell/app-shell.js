@@ -286,7 +286,7 @@ function renderStats(){
   byId("statsScopeProfile").textContent=selected.name;
   byId("statsScopeProfile").classList.toggle("active",personal);
   byId("statsScopeGlobal").classList.toggle("active",!personal);
-  byId("statsScopeLabel").textContent=personal?selected.name+" gespielt":"Gesamt gespielt";
+  byId("statsScopeLabel").textContent=personal?"Gespielt von "+selected.name:"Gesamt gespielt";
   byId("statsScopeSub").textContent=personal?"Runden dieses lokalen Profils":"Runden in diesem App-Shell-Test";
 
   byId("totalRounds").textContent=st.rounds||0;
