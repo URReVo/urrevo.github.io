@@ -2,6 +2,15 @@
 
 Die Versionshistorie dokumentiert die aus den Projektchats und der GitHub-Historie eindeutig rekonstruierbaren Änderungen. Frühere Zwischenstände mit generischen Upload-Commits werden nicht künstlich versioniert oder mit erfundenen Details ergänzt.
 
+## V69 — iOS-Safe-Area wie Launcher
+
+- Launcher als funktionierende Referenz für den iOS-Status-/Safe-Area-Bereich verwendet.
+- Root-Hintergrund der Spielseiten auf eine echte feste Farbe `#292929` umgestellt, analog zum Launcher.
+- Premium-Gradient bleibt optisch erhalten, wird aber nur noch als `background-image` auf dem Body gezeichnet.
+- Verhindert, dass das CSS-`background`-Shorthand die Root-`background-color` auf transparent zurücksetzt und iOS oben einen hellen/weißen Streifen durchscheinen lässt.
+- Body-Grundhöhe auf `100dvh` an den Launcher angeglichen.
+- Plattform-/Cache-Version auf V69 angehoben.
+
 ## V68 — Ladezustand, Timer und Wiederholungen
 
 - Wörtliches `\\n` aus dem `<head>` beider Spielseiten entfernt. Dieser ungültige Text konnte Safari den Head vorzeitig beenden lassen und war die Ursache für das sichtbare „/N“ sowie fehlerhaftes First-Paint-Verhalten.
