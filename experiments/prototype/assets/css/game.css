@@ -1898,3 +1898,37 @@ button.ghost,#restart,#classicRestart{
   .classicDiscussionHero{padding:19px 16px}
   .resolutionMain,.classicResultMain{padding:16px 14px}
 }
+
+
+/* Prototype Classic option-card overflow fix */
+.classicOptionCard{
+  padding:13px 14px 12px!important;
+  overflow:hidden;
+}
+.classicOptionHeader{
+  min-height:22px;
+  margin-bottom:10px!important;
+  line-height:1.25;
+  flex-wrap:wrap;
+}
+.classicOptionHeader>span:first-child{
+  min-width:0;
+  overflow-wrap:anywhere;
+}
+.classicOptionValue{
+  flex:0 0 auto;
+}
+.classicSegmented,
+.classicTimerSelectWrap{
+  width:100%;
+  min-width:0;
+}
+.classicOptionHelp{
+  margin-top:9px!important;
+  line-height:1.4!important;
+  overflow-wrap:anywhere;
+}
+@media(max-width:390px){
+  .classicOptionCard{padding:12px 12px 11px!important}
+  .classicOptionHeader{font-size:12px}
+}
