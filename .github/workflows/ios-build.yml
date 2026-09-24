@@ -1,0 +1,213 @@
+name: Native iOS build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "ios/**"
+      - "data/**"
+      - ".github/workflows/ios-build.yml"
+  pull_request:
+    paths:
+      - "ios/**"
+      - "data/**"
+      - ".github/workflows/ios-build.yml"
+  workflow_dispatch:
+    inputs:
+      signed_ipa:
+        description: "Zusätzlich eine signierte IPA bauen"
+        required: true
+        default: false
+        type: boolean
+      export_method:
+        description: "Xcode Export-Methode für die signierte IPA"
+        required: true
+        default: "debugging"
+        type: choice
+        options:
+          - debugging
+          - release-testing
+          - app-store-connect
+
+permissions:
+  contents: read
+
+jobs:
+  simulator-build:
+    name: Build & test native iOS
+    runs-on: macos-26
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Xcode version
+        run: xcodebuild -version
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Sync shared game content
+        run: |
+          ./ios/scripts/sync-content.sh
+          git diff --exit-code -- ios/ImposterGames/Resources/Content
+
+      - name: Generate Xcode project
+        working-directory: ios
+        run: xcodegen generate
+
+      - name: Select simulator
+        id: simulator
+        run: |
+          DEVICE_ID="$(xcrun simctl list devices available -j | python3 -c 'import json,sys; data=json.load(sys.stdin)["devices"]; print(next(device["udid"] for devices in data.values() for device in devices if device.get("isAvailable") and device.get("name","").startswith("iPhone")))')"
+          echo "udid=$DEVICE_ID" >> "$GITHUB_OUTPUT"
+          echo "Using simulator $DEVICE_ID"
+
+      - name: Build and run unit tests
+        run: |
+          xcodebuild \
+            -project ios/ImposterGames.xcodeproj \
+            -scheme ImposterGames \
+            -configuration Debug \
+            -destination "platform=iOS Simulator,id=${{ steps.simulator.outputs.udid }}" \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            CODE_SIGNING_ALLOWED=NO \
+            test
+
+      - name: Upload simulator app
+        uses: actions/upload-artifact@v7
+        with:
+          name: ImposterGames-iOS-Simulator
+          path: ${{ runner.temp }}/DerivedData/Build/Products/Debug-iphonesimulator/ImposterGames.app
+          if-no-files-found: error
+
+  signed-ipa:
+    name: Build signed IPA
+    needs: simulator-build
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.signed_ipa == true }}
+    runs-on: macos-26
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Sync shared game content
+        run: ./ios/scripts/sync-content.sh
+
+      - name: Generate Xcode project
+        working-directory: ios
+        run: xcodegen generate
+
+      - name: Archive and export signed IPA
+        env:
+          IOS_CERTIFICATE_BASE64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
+          IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+          IOS_BUNDLE_ID: ${{ secrets.IOS_BUNDLE_ID }}
+          EXPORT_METHOD: ${{ inputs.export_method }}
+        run: |
+          set -euo pipefail
+
+          CERT_PATH="$RUNNER_TEMP/signing-certificate.p12"
+          PROFILE_PATH="$RUNNER_TEMP/profile.mobileprovision"
+          PROFILE_PLIST="$RUNNER_TEMP/profile.plist"
+          KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
+          ARCHIVE_PATH="$RUNNER_TEMP/ImposterGames.xcarchive"
+          EXPORT_PATH="$RUNNER_TEMP/Export"
+          EXPORT_PLIST="$RUNNER_TEMP/ExportOptions.plist"
+          KEYCHAIN_PASSWORD="$(openssl rand -hex 24)"
+
+          python3 - <<'PY'
+import base64, os
+with open(os.environ["CERT_PATH"], "wb") as f:
+    f.write(base64.b64decode(os.environ["IOS_CERTIFICATE_BASE64"]))
+with open(os.environ["PROFILE_PATH"], "wb") as f:
+    f.write(base64.b64decode(os.environ["IOS_PROVISIONING_PROFILE_BASE64"]))
+PY
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import "$CERT_PATH" -P "$IOS_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychains -d user -s "$KEYCHAIN_PATH"
+
+          security cms -D -i "$PROFILE_PATH" > "$PROFILE_PLIST"
+          PROFILE_UUID="$(/usr/libexec/PlistBuddy -c 'Print :UUID' "$PROFILE_PLIST")"
+          PROFILE_NAME="$(/usr/libexec/PlistBuddy -c 'Print :Name' "$PROFILE_PLIST")"
+          TEAM_ID="$(/usr/libexec/PlistBuddy -c 'Print :TeamIdentifier:0' "$PROFILE_PLIST")"
+          IDENTITY="$(security find-identity -v -p codesigning "$KEYCHAIN_PATH" | awk -F '"' 'NR==1 { print $2 }')"
+
+          if [[ -z "$IDENTITY" ]]; then
+            echo "::error::Keine Code-Signing-Identity im Zertifikat gefunden."
+            exit 1
+          fi
+
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+          cp "$PROFILE_PATH" "$HOME/Library/MobileDevice/Provisioning Profiles/$PROFILE_UUID.mobileprovision"
+
+          xcodebuild \
+            -project ios/ImposterGames.xcodeproj \
+            -scheme ImposterGames \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
+            -archivePath "$ARCHIVE_PATH" \
+            PRODUCT_BUNDLE_IDENTIFIER="$IOS_BUNDLE_ID" \
+            DEVELOPMENT_TEAM="$TEAM_ID" \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="$IDENTITY" \
+            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME" \
+            CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" \
+            OTHER_CODE_SIGN_FLAGS="--keychain $KEYCHAIN_PATH" \
+            archive
+
+          cat > "$EXPORT_PLIST" <<PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>method</key>
+  <string>$EXPORT_METHOD</string>
+  <key>signingStyle</key>
+  <string>manual</string>
+  <key>teamID</key>
+  <string>$TEAM_ID</string>
+  <key>provisioningProfiles</key>
+  <dict>
+    <key>$IOS_BUNDLE_ID</key>
+    <string>$PROFILE_NAME</string>
+  </dict>
+</dict>
+</plist>
+PLIST
+
+          rm -rf "$EXPORT_PATH"
+          xcodebuild \
+            -exportArchive \
+            -archivePath "$ARCHIVE_PATH" \
+            -exportPath "$EXPORT_PATH" \
+            -exportOptionsPlist "$EXPORT_PLIST"
+
+          IPA_PATH="$(find "$EXPORT_PATH" -maxdepth 1 -name '*.ipa' -print -quit)"
+          if [[ -z "$IPA_PATH" ]]; then
+            echo "::error::Xcode hat keine IPA erzeugt."
+            exit 1
+          fi
+
+          FINAL_IPA="$RUNNER_TEMP/ImposterGames-$GITHUB_RUN_NUMBER.ipa"
+          cp "$IPA_PATH" "$FINAL_IPA"
+          echo "IPA_PATH=$FINAL_IPA" >> "$GITHUB_ENV"
+
+      - name: Upload signed IPA
+        uses: actions/upload-artifact@v7
+        with:
+          path: ${{ env.IPA_PATH }}
+          archive: false
+          if-no-files-found: error
+
+      - name: Cleanup signing keychain
+        if: always()
+        run: |
+          security delete-keychain "$RUNNER_TEMP/app-signing.keychain-db" 2>/dev/null || true
+          rm -f "$HOME/Library/MobileDevice/Provisioning Profiles/"*.mobileprovision 2>/dev/null || true
