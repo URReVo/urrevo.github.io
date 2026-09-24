@@ -100,7 +100,9 @@ Das aktuelle Backup enthält unter anderem:
 - Circa- und Classic-Spielfortschritt
 - Deckstände und spielbezogene Optionen
 
-Neue Backups verwenden Backup V3 und enthalten eine SHA-256-Integritätsprüfung. Wird eine V3-Datei nach dem Export verändert, lehnt die App den Import als verändert oder beschädigt ab. Der Schutz soll einfache Manipulationen erkennen; da kein geheimer Server-Schlüssel verwendet wird, ist er nicht kryptografisch fälschungssicher.\n\nÄltere V1- und V2-Backups bleiben importierbar und können weiterhin auf ein anderes Gerät übertragen werden.
+Neue Backups verwenden Backup V3 und enthalten eine SHA-256-Integritätsprüfung. Wird eine V3-Datei nach dem Export verändert, lehnt die App den Import als verändert oder beschädigt ab. Der Schutz soll einfache Manipulationen erkennen; da kein geheimer Server-Schlüssel verwendet wird, ist er nicht kryptografisch fälschungssicher.
+
+Ältere V1- und V2-Backups bleiben importierbar und können weiterhin auf ein anderes Gerät übertragen werden.
 
 ## 📴 Offline und Updates
 
