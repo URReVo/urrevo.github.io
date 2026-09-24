@@ -2,6 +2,12 @@
 
 ## V73
 
+- **Scharade** aus `prototype-r16` in Produktion übernommen: 2–12 Spieler, 300 Begriffe in 12 Kategorien, Timer, Stirn-/Wippsteuerung, Touch-Fallback, Rundenauswertung und Gesamtergebnis.
+- Die zuletzt getestete bidirektionale Sensorlogik nutzt primär `accelerationIncludingGravity` und trennt Vorwärts = Richtig von Zurück = Überspringen; 3-Sekunden-Sperre und Neutralzonen-Schutz bleiben erhalten.
+- Eigene Produktions-Storage-Keys unter `imposterGames.v73.game.charades.*`; Spieler, Kategorien, Deck, Timer und Wipp-Richtung sind in Backup V3 enthalten.
+- Launcher auf vier gleichwertige Spielkarten umgestellt und PWA-Offline-Cache um Scharade erweitert.
+- Produktionsstand auf **V73R12** / Offline-Cache r12 angehoben.
+
 - „Wer bin ich?“: Reveal-Inhalt ab „DIE BEGRIFFE“ um 10 px nach oben gesetzt, ohne Spieler-/Fortschrittszeile oder interne Kartenabstände zu verändern.
 - Produktionsstand auf **V73R11** / Offline-Cache r11 angehoben.
 

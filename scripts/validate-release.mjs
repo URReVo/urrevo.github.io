@@ -10,12 +10,13 @@ const games=JSON.parse(read("data/games.json"));
 const questions=JSON.parse(read("data/circa-questions.json"));
 const words=JSON.parse(read("data/classic-words.json"));
 const who=JSON.parse(read("data/who-am-i.json"));
+const charades=JSON.parse(read("data/charades.json"));
 const manifest=JSON.parse(read("manifest.webmanifest"));
 const release=String(games.platformVersion);
 const cacheRevision=(read("service-worker.js").match(/const CACHE_REVISION="([^"]+)"/)||[])[1]||"";
 const launcherBuild="V"+release+String(cacheRevision).toUpperCase();
 
-const htmlFiles=["index.html","games/circa-imposter/index.html","games/classic-imposter/index.html","games/who-am-i/index.html"];
+const htmlFiles=["index.html","games/circa-imposter/index.html","games/classic-imposter/index.html","games/who-am-i/index.html","games/charades/index.html"];
 const html=Object.fromEntries(htmlFiles.map(p=>[p,read(p)]));
 
 for(const [file,source] of Object.entries(html)){
@@ -51,6 +52,13 @@ assert(html["games/who-am-i/index.html"].includes("app-state.js?v="+release),"Wh
 assert(html["games/who-am-i/index.html"].includes("who-am-i.js?v="+release),"WhoAmI JS version mismatch");
 assert(html["games/who-am-i/index.html"].includes("pwa.js?v="+release),"WhoAmI pwa version mismatch");
 assert(html["games/who-am-i/index.html"].indexOf("app-state.js?v="+release)<html["games/who-am-i/index.html"].indexOf("who-am-i.js?v="+release),"WhoAmI app-state load order mismatch");
+assert(html["games/charades/index.html"].includes("V"+release),"Scharade title/version mismatch");
+assert(html["games/charades/index.html"].includes("game.css?v="+release),"Scharade game.css version mismatch");
+assert(html["games/charades/index.html"].includes("charades.css?v="+release),"Scharade CSS version mismatch");
+assert(html["games/charades/index.html"].includes("app-state.js?v="+release),"Scharade app-state version mismatch");
+assert(html["games/charades/index.html"].includes("charades.js?v="+release),"Scharade JS version mismatch");
+assert(html["games/charades/index.html"].includes("pwa.js?v="+release),"Scharade pwa version mismatch");
+assert(html["games/charades/index.html"].indexOf("app-state.js?v="+release)<html["games/charades/index.html"].indexOf("charades.js?v="+release),"Scharade app-state load order mismatch");
 
 const sw=read("service-worker.js");
 const swRelease=(sw.match(/const RELEASE="([^"]+)"/)||[])[1];
@@ -114,6 +122,18 @@ for(const category of who.categories){
   assert(actual===Number(category.count),"WhoAmI category metadata mismatch: "+category.name);
 }
 
+assert(Number(charades.count)===charades.items.length,"Scharade count mismatch");
+assert(charades.items.length===300,"Scharade production term count mismatch");
+const charadesIds=charades.items.map(x=>String(x.id));
+const charadesTerms=charades.items.map(x=>String(x.term).toLocaleLowerCase("de-DE"));
+assert(new Set(charadesIds).size===charadesIds.length,"duplicate Scharade id");
+assert(new Set(charadesTerms).size===charadesTerms.length,"duplicate Scharade term");
+assert(Array.isArray(charades.categories)&&charades.categories.length===12,"Scharade category count mismatch");
+for(const category of charades.categories){
+  const actual=charades.items.filter(item=>item.cat===category.name).length;
+  assert(actual===Number(category.count),"Scharade category metadata mismatch: "+category.name);
+}
+
 assert(manifest.start_url==="/"&&manifest.scope==="/","manifest root scope/start mismatch");
 assert(manifest.display==="standalone","manifest display must be standalone");
 
@@ -127,7 +147,9 @@ const gameCss=read("assets/css/game.css");
 const engineSource=read("assets/js/game-engine.js");
 const whoSource=read("assets/js/who-am-i.js");
 const whoCss=read("assets/css/who-am-i.css");
-for(const [name,source] of [["app-state",appStateSource],["launcher",launcherSource],["game-engine",engineSource],["who-am-i",whoSource]]){
+const charadesSource=read("assets/js/charades.js");
+const charadesCss=read("assets/css/charades.css");
+for(const [name,source] of [["app-state",appStateSource],["launcher",launcherSource],["game-engine",engineSource],["who-am-i",whoSource],["charades",charadesSource]]){
   try{new Function(source);}catch(error){fail(name+" syntax error: "+error.message);}
 }
 assert(appStateSource.includes('var KEY="imposterGames.appState.v1"'),"production app-state key missing");
@@ -138,10 +160,18 @@ assert(!engineSource.includes("imposterGames.prototype."),"production game engin
 assert(whoSource.includes('STORAGE_PREFIX="imposterGames.v73.game.whoami."'),"WhoAmI production storage namespace missing");
 assert(!whoSource.includes("imposterGames.prototype."),"production WhoAmI must not reference prototype storage");
 assert(appStateSource.includes('"whoami.players.v1","whoami.categories.v1","whoami.deck.v1"'),"WhoAmI backup allowlist missing");
+assert(charadesSource.includes('PREFIX="imposterGames.v73.game.charades."'),"Scharade production storage namespace missing");
+assert(!charadesSource.includes("imposterGames.prototype."),"production Scharade must not reference prototype storage");
+assert(appStateSource.includes('"charades.players.v1","charades.categories.v1","charades.deck.v1","charades.timer.v1","charades.motionFlip.v2"'),"Scharade backup allowlist missing");
+assert(charadesSource.includes('window.addEventListener("devicemotion",onDeviceMotion,true)'),"Scharade DeviceMotion listener missing");
+assert(charadesSource.includes("latestGravityZ-baseGravityZ"),"Scharade signed gravity direction missing");
+assert(charadesSource.includes("ACTION_COOLDOWN_MS=3000"),"Scharade 3-second action cooldown missing");
+assert(charadesSource.includes("GRAVITY_CORRECT_TRIGGER=7.0")&&charadesSource.includes("GRAVITY_SKIP_TRIGGER=5.0"),"Scharade bidirectional thresholds missing");
 assert(!sw.includes("/experiments/prototype"),"production service worker must not cache prototype paths");
 const prototypeAppStateSource=read("experiments/prototype/assets/js/app-state.js");
 const prototypeEngineSource=read("experiments/prototype/assets/js/game-engine.js");
 const prototypeWhoSource=read("experiments/prototype/assets/js/who-am-i.js");
+const prototypeCharadesSource=read("experiments/prototype/assets/js/charades.js");
 assert(prototypeAppStateSource.includes('var KEY="imposterGames.prototype.appState.v1"'),"prototype app-state key lost isolation");
 assert(prototypeAppStateSource.includes('BACKUP_FORMAT="imposter-games-prototype-backup"'),"prototype backup format lost isolation");
 assert(prototypeEngineSource.includes('EXP_STORAGE="imposterGames.prototype.game."'),"prototype game storage lost isolation");
@@ -149,9 +179,11 @@ assert(!prototypeAppStateSource.includes('var KEY="imposterGames.appState.v1"'),
 assert(!prototypeEngineSource.includes('EXP_STORAGE="imposterGames.v73.game."'),"prototype must not use production game storage");
 assert(prototypeWhoSource.includes('STORAGE_PREFIX="imposterGames.prototype.game.whoami."'),"prototype WhoAmI namespace lost isolation");
 assert(!prototypeWhoSource.includes('STORAGE_PREFIX="imposterGames.v73.game.whoami."'),"prototype WhoAmI must not use production storage");
+assert(prototypeCharadesSource.includes('PREFIX="imposterGames.prototype.game.charades."'),"prototype Scharade namespace lost isolation");
+assert(!prototypeCharadesSource.includes('PREFIX="imposterGames.v73.game.charades."'),"prototype Scharade must not use production storage");
 assert(!html["index.html"].includes("APP-SHELL TEST"),"production launcher still contains experiment badge");
 assert(launcherCss.includes("padding:calc(18px + var(--safeTop)) 16px 26px"),"launcher safe-area top padding missing");
-assert(sw.includes('const CACHE_REVISION="r11"'),"V73 cache revision mismatch");
+assert(sw.includes('const CACHE_REVISION="r12"'),"V73 cache revision mismatch");
 assert(appStateSource.includes("var BACKUP_VERSION=3"),"backup format v3 missing");
 assert(engineSource.includes("experimentRecordCirca(null);"),"Circa shared base-round recording missing");
 assert(engineSource.includes("impostorEscaped:outcome===true?true:outcome===false?false:null"),"Circa unresolved outcome state missing");
@@ -175,12 +207,18 @@ assert(gameCss.includes("color:#00d747!important"),"Circa result success green m
 assert(html["games/circa-imposter/index.html"].includes('apple-mobile-web-app-status-bar-style\" content=\"black\"'),"Circa opaque iOS status bar missing");
 assert(html["games/classic-imposter/index.html"].includes('apple-mobile-web-app-status-bar-style\" content=\"black\"'),"Classic opaque iOS status bar missing");
 assert(html["games/who-am-i/index.html"].includes('apple-mobile-web-app-status-bar-style\" content=\"black\"'),"WhoAmI opaque iOS status bar missing");
+assert(html["games/charades/index.html"].includes('apple-mobile-web-app-status-bar-style\" content=\"black\"'),"Scharade opaque iOS status bar missing");
 assert(whoCss.includes(".whoViewerScreen .whoBottomButton{margin-top:18px}"),"WhoAmI reveal spacing missing");
 assert(whoCss.includes(".whoViewerHeader{flex:0 0 auto;margin:-7px 2px 10px}"),"WhoAmI reveal content vertical position missing");
 assert(html["index.html"].includes('href="games/who-am-i/"'),"WhoAmI launcher card missing");
 assert(games.games.some(game=>game.id==="who-am-i"&&game.path==="games/who-am-i/"),"WhoAmI registry entry missing");
 assert(sw.includes('versioned("/assets/js/who-am-i.js")')&&sw.includes('versioned("/assets/css/who-am-i.css")'),"WhoAmI service-worker assets missing");
 assert(sw.includes('"/data/who-am-i.json"')&&sw.includes('"/games/who-am-i/"'),"WhoAmI service-worker data/page missing");
+assert(html["index.html"].includes('href="games/charades/"'),"Scharade launcher card missing");
+assert(games.games.some(game=>game.id==="charades"&&game.path==="games/charades/"),"Scharade registry entry missing");
+assert(sw.includes('versioned("/assets/js/charades.js")')&&sw.includes('versioned("/assets/css/charades.css")'),"Scharade service-worker assets missing");
+assert(sw.includes('"/data/charades.json"')&&sw.includes('"/games/charades/"'),"Scharade service-worker data/page missing");
+assert(charadesCss.includes(".charadesActions button:disabled"),"Scharade cooldown button styling missing");
 
 /* Simulate the first V72 -> V73 profile migration. */
 const legacySeed=new Map();
@@ -354,6 +392,8 @@ auditMem.storage.setItem("imposterGames.v73.game.circa.deckProgress.v1",JSON.str
 auditMem.storage.setItem("imposterGames.v73.game.circa.completedQuestions.v1",JSON.stringify([questions.items[0].qid]));
 auditMem.storage.setItem("imposterGames.v73.game.classic.timer.v1",JSON.stringify(180));
 auditMem.storage.setItem("imposterGames.v73.game.whoami.deck.v1",JSON.stringify({"Alle":[who.items[0].id]}));
+auditMem.storage.setItem("imposterGames.v73.game.charades.deck.v1",JSON.stringify({"Alle":[charades.items[0].id]}));
+auditMem.storage.setItem("imposterGames.v73.game.charades.timer.v1",JSON.stringify(60));
 const auditBackup=await auditState.createBackup();
 assert(auditBackup.formatVersion===3&&auditBackup.gameStorage,"backup v3 game storage missing");
 assert(auditBackup.integrity&&auditBackup.integrity.algorithm==="SHA-256"&&/^[a-f0-9]{64}$/.test(auditBackup.integrity.sha256),"backup v3 SHA-256 integrity missing");
@@ -373,6 +413,8 @@ const restoreResult=await restoreState.importSnapshot(auditBackup);
 assert(restoreResult.ok&&restoreResult.gameStorage===true,"backup v3 restore failed on fresh device state");
 assert(JSON.parse(restoreMem.storage.getItem("imposterGames.v73.game.circa.completedQuestions.v1"))[0]===questions.items[0].qid,"game progress was not restored");
 assert(JSON.parse(restoreMem.storage.getItem("imposterGames.v73.game.whoami.deck.v1")).Alle[0]===who.items[0].id,"WhoAmI game progress was not restored");
+assert(JSON.parse(restoreMem.storage.getItem("imposterGames.v73.game.charades.deck.v1")).Alle[0]===charades.items[0].id,"Scharade game progress was not restored");
+assert(JSON.parse(restoreMem.storage.getItem("imposterGames.v73.game.charades.timer.v1"))===60,"Scharade timer was not restored");
 
 const downgradedBackup=structuredClone(auditBackup);
 downgradedBackup.formatVersion=2;
@@ -407,4 +449,4 @@ assert(resetReload.getMigrationStatus().perfectUnknown===false,"reset leaked V72
 const remainingGameKeys=Array.from(restoreMem.map.keys()).filter(key=>key.startsWith("imposterGames.v73.game."));
 assert(remainingGameKeys.length===1&&remainingGameKeys[0]==="imposterGames.v73.game.v72Migration.v1","reset left stale V73 game storage");
 
-console.log("Release validation OK · V"+release+" · "+questions.items.length+" Circa pairs · "+words.items.length+" Classic words · "+who.items.length+" WhoAmI terms");
+console.log("Release validation OK · V"+release+" · "+questions.items.length+" Circa pairs · "+words.items.length+" Classic words · "+who.items.length+" WhoAmI terms · "+charades.items.length+" Scharade terms");

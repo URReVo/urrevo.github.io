@@ -62,9 +62,24 @@ Jeder Spieler erhält einen eigenen geheimen Begriff. Beim Weitergeben des Handy
 - gemeinsame Auflösung aller Begriffe am Ende
 - Spieler-, Kategorie- und Deck-Fortschritt wird lokal gespeichert und in Backup V3 mitgesichert
 
+### 🎬 Scharade
+
+Ein Spieler hält das iPhone mit dem Display nach außen an die Stirn. Die Mitspieler sehen den Begriff und erklären ihn. Eine Wippbewegung wertet den Begriff als richtig oder übersprungen; Touch-Tasten bleiben als Fallback verfügbar.
+
+- 2–12 Spieler
+- 300 eindeutige Begriffe
+- 12 Kategorien, auch kombinierbar
+- Rundendauer 30 / 45 / 60 / 90 / 120 Sekunden
+- iOS-Bewegungssensor mit getrennten Richtungen für Richtig und Überspringen
+- 3-Sekunden-Sperre zwischen zwei Wertungen und Neutralzonen-Schutz
+- Touch-Fallback sowie umschaltbare Wipp-Richtung
+- Rundenauswertung und Gesamtergebnis
+- eigener Wiederholungsschutz
+- Spieler-, Kategorie-, Timer-, Richtungs- und Deck-Fortschritt wird lokal gespeichert und in Backup V3 mitgesichert
+
 ## 🏠 Launcher und Profile
 
-Der Launcher verbindet alle drei Spiele zu einer gemeinsamen App.
+Der Launcher verbindet alle vier Spiele zu einer gemeinsamen App.
 
 Enthalten sind:
 

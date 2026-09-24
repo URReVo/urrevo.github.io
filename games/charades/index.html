@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Scharade">
+<meta name="theme-color" content="#292929">
+<style>.hidden{display:none!important}body.booting #app{visibility:hidden}</style>
+<link rel="apple-touch-icon" sizes="180x180" href="../../circa_impostor_detective_icon_180.png">
+<link rel="icon" type="image/png" sizes="180x180" href="../../circa_impostor_detective_icon_180.png">
+<link rel="manifest" href="../../manifest.webmanifest">
+<link rel="stylesheet" href="../../assets/css/game.css?v=73">
+<link rel="stylesheet" href="../../assets/css/charades.css?v=73">
+<title>Scharade · V73</title>
+</head>
+<body data-game="charades" class="booting" aria-busy="true">
+<div class="app" id="app">
+  <div id="gameTopbar" class="gameTopbar hidden">
+    <div class="toolbarLeft">
+      <div id="topPlayer" class="toolbarBadge">Spieler</div>
+      <div id="topTimer" class="toolbarBadge roundBadge">60s</div>
+    </div>
+    <div class="toolbarActions">
+      <button id="soundToggle" type="button" class="iconButton" aria-label="Sound ausschalten" aria-pressed="true" title="Sound">
+        <svg id="soundOnIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M16 9.5c1.4 1.4 1.4 3.6 0 5M18.5 7c2.8 2.8 2.8 7.2 0 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <svg id="soundOffIcon" class="hidden" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M17 9l5 6M22 9l-5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <button id="endTurnTop" type="button" class="iconButton" aria-label="Runde beenden" title="Runde beenden">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6h12v12H6z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg>
+      </button>
+      <button id="leaveGame" type="button" class="iconButton" aria-label="Spiel verlassen" title="Spiel verlassen">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <section id="setup">
+    <div class="gameHubNav"><a class="gameHubBack" href="../../"><span>‹</span> Spiele</a></div>
+    <div class="hero center charadesSetupHero">
+      <div class="charadesLogo" aria-hidden="true">🎬</div>
+      <h1>Scharade</h1>
+      <p class="sub">Handy an die Stirn. Die anderen erklären – du errätst den Begriff.</p>
+    </div>
+
+    <div class="sectionEyebrow">KATEGORIE</div>
+    <div id="categoryDeck" class="categoryDeck" role="group" aria-label="Kategorie auswählen"></div>
+
+    <div class="sectionEyebrow charadesOptionsEyebrow">RUNDENDAUER</div>
+    <div id="timerControl" class="charadesTimerControl" role="group" aria-label="Rundendauer">
+      <button type="button" data-seconds="30">30 s</button>
+      <button type="button" data-seconds="45">45 s</button>
+      <button type="button" data-seconds="60">60 s</button>
+      <button type="button" data-seconds="90">90 s</button>
+      <button type="button" data-seconds="120">120 s</button>
+    </div>
+
+    <div class="charadesInfoCard">
+      <div class="charadesInfoIcon">↕</div>
+      <div><strong>Wippen + Tasten</strong><span>Eine Wertung braucht eine deutliche Bewegung. Danach sind Wippen und Tasten 3 Sekunden gesperrt. Touch bleibt der Fallback.</span></div>
+    </div>
+
+    <div class="row between playerControlsRow">
+      <label style="margin:0">Spieler</label>
+      <div class="controls">
+        <button id="minus" type="button" class="secondary" aria-label="Spieler entfernen">−</button>
+        <button id="plus" type="button" class="secondary" aria-label="Spieler hinzufügen">+</button>
+      </div>
+    </div>
+    <div id="names"></div>
+    <button id="start" type="button" class="full">Partie starten</button>
+    <div id="error" class="notice" aria-live="polite"></div>
+    <div id="poolCount" class="count">300 Begriffe</div>
+    <div class="savedHint">Spieler, Kategorien, Timer &amp; Begriff-Fortschritt bleiben auf diesem Gerät gespeichert</div>
+  </section>
+
+  <section id="handoff" class="hidden gameScreen charadesHandoffScreen">
+    <div class="handoffInner">
+      <div id="handoffAvatar" class="handoffAvatar">😎</div>
+      <div id="handoffName" class="handoffName">Spieler</div>
+      <p class="sub">Du bist dran. Halte das Handy gleich mit dem Display nach außen an deine Stirn.</p>
+      <div class="charadesRuleHint"><strong>Nach vorne:</strong> Richtig · <strong>zur Stirn zurück:</strong> Überspringen. Danach wieder in die Mittelposition.</div>
+    </div>
+    <button id="beginTurn" type="button" class="full handoffButton">Sensor aktivieren &amp; starten</button>
+    <div id="permissionNote" class="charadesPermissionNote"></div>
+  </section>
+
+  <section id="play" class="hidden gameScreen charadesPlayScreen">
+    <div id="countdown" class="charadesCountdown hidden"><span id="countdownValue">3</span><small>Handy an die Stirn</small></div>
+    <div class="charadesPlayMeta">
+      <div><span id="playAvatar" class="miniAvatar">😎</span><strong id="playName">Spieler</strong></div>
+      <div id="scorePill" class="charadesScorePill">✓ 0 · ↷ 0</div>
+    </div>
+    <div id="termCard" class="charadesTermCard">
+      <div id="termCategory" class="charadesTermCategory">Kategorie</div>
+      <div id="termText" class="charadesTermText">Begriff</div>
+      <div id="motionFeedback" class="charadesMotionFeedback">Handy ruhig halten</div>
+    </div>
+    <div class="charadesMotionBar">
+      <span id="motionStatus">Bewegung wird vorbereitet …</span>
+      <button id="flipMotion" type="button" class="secondary">↕ Richtung tauschen</button>
+    </div>
+    <div class="charadesActions">
+      <button id="skipTerm" type="button" class="charadesSkip">Überspringen</button>
+      <button id="correctTerm" type="button" class="charadesCorrect">Richtig</button>
+    </div>
+  </section>
+
+  <section id="turnResult" class="hidden gameScreen charadesResultScreen">
+    <div class="charadesResultHero">
+      <div id="turnResultAvatar" class="charadesResultAvatar">😎</div>
+      <div class="sectionEyebrow">RUNDE BEENDET</div>
+      <h2 id="turnResultName">Spieler</h2>
+      <div class="charadesResultScore"><strong id="turnCorrect">0</strong><span>richtig</span><strong id="turnSkipped">0</strong><span>übersprungen</span></div>
+    </div>
+    <div id="turnItems" class="charadesResultList"></div>
+    <button id="nextPlayer" type="button" class="full charadesBottomButton">Nächster Spieler</button>
+  </section>
+
+  <section id="finalResult" class="hidden gameScreen charadesFinalScreen">
+    <div class="charadesFinalHeader"><div class="sectionEyebrow">PARTIE BEENDET</div><h2>Das Ergebnis</h2><p>Alle waren einmal dran.</p></div>
+    <div id="leaderboard" class="charadesLeaderboard"></div>
+    <div class="charadesFinalActions">
+      <button id="sameGroup" type="button" class="full">Noch eine Partie</button>
+      <button id="backSetup" type="button" class="full secondary">Spieler &amp; Kategorien</button>
+    </div>
+  </section>
+</div>
+<script src="../../assets/js/app-state.js?v=73"></script>
+<script src="../../assets/js/charades.js?v=73"></script>
+<script src="../../assets/js/pwa.js?v=73"></script>
+</body>
+</html>

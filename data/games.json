@@ -25,6 +25,14 @@
       "description": "Jeder kennt die Begriffe der anderen – nur den eigenen nicht.",
       "meta": "2–12 Spieler · Fragen & raten",
       "path": "games/who-am-i/"
+    },
+    {
+      "id": "charades",
+      "title": "Scharade",
+      "icon": "🎬",
+      "description": "Handy an die Stirn, Begriff erklären lassen und per Wippen weiterschalten.",
+      "meta": "2–12 Spieler · Timer & Bewegung",
+      "path": "games/charades/"
     }
   ]
 }
