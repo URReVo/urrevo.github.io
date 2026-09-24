@@ -50,7 +50,7 @@ enum GameStorage {
 
         for suffix in knownSuffixes {
             guard let data = UserDefaults.standard.data(forKey: prefix + suffix),
-                  let object = try? JSONSerialization.jsonObject(with: data),
+                  let object = try? JSONSerialization.jsonObject(with: data, options: [.fragmentsAllowed]),
                   let value = JSONValue.fromFoundation(object) else {
                 continue
             }
@@ -63,10 +63,10 @@ enum GameStorage {
     static func restore(_ snapshot: [String: JSONValue]) {
         clear()
 
+        let encoder = JSONEncoder()
         for suffix in knownSuffixes {
             guard let value = snapshot[suffix],
-                  JSONSerialization.isValidJSONObject(value.foundationObject),
-                  let data = try? JSONSerialization.data(withJSONObject: value.foundationObject) else {
+                  let data = try? encoder.encode(value) else {
                 continue
             }
             UserDefaults.standard.set(data, forKey: prefix + suffix)
