@@ -12,7 +12,7 @@ var selectedCategories=["Alle"],timerSeconds=60,motionFlip=false;
 var playerIndex=0,currentItem=null,turnItems=[],results=[],turnCorrect=0,turnSkipped=0,remaining=60,timerHandle=null;
 var turnRunning=false,countdownRunning=false,lastTick=0;
 var orientationAttached=false,motionPermission="unknown",latestBeta=null,latestGamma=null,baseBeta=null,baseGamma=null,motionArmed=false,lastMotionAt=0,motionCandidate=0,motionCandidateSince=0,actionLockedUntil=0,actionUnlockTimer=null;
-var MOTION_TRIGGER_DEG=58,MOTION_NEUTRAL_DEG=16,MOTION_CONFIRM_MS=180,ACTION_COOLDOWN_MS=3000;
+var MOTION_CORRECT_TRIGGER_DEG=58,MOTION_SKIP_TRIGGER_DEG=40,MOTION_NEUTRAL_DEG=16,MOTION_CONFIRM_MS=180,ACTION_COOLDOWN_MS=3000;
 var sections=["setup","handoff","play","turnResult","finalResult"];
 
 function get(key,fallback){try{var raw=localStorage.getItem(key);return raw===null?fallback:JSON.parse(raw);}catch(e){return fallback;}}
@@ -121,12 +121,17 @@ function onOrientation(event){
     return;
   }
 
-  if(abs<MOTION_TRIGGER_DEG){
+  var positiveThreshold=MOTION_CORRECT_TRIGGER_DEG;
+  var negativeThreshold=MOTION_SKIP_TRIGGER_DEG;
+  var direction=0;
+  if(delta>=positiveThreshold)direction=1;
+  else if(delta<=-negativeThreshold)direction=-1;
+  else{
     motionCandidate=0;motionCandidateSince=0;
     return;
   }
 
-  var direction=delta>0?1:-1;
+  if(motionFlip)direction=-direction;
   if(motionCandidate!==direction){
     motionCandidate=direction;motionCandidateSince=now;
     return;
@@ -134,12 +139,10 @@ function onOrientation(event){
   if(now-motionCandidateSince<MOTION_CONFIRM_MS)return;
 
   motionArmed=false;motionCandidate=0;motionCandidateSince=0;lastMotionAt=now;
-  var positive=direction>0;
-  var correct=motionFlip?!positive:positive;
-  markCurrent(correct?"correct":"skipped","motion");
+  markCurrent(direction>0?"correct":"skipped","motion");
 }
 function motionStatusText(){
-  if(motionPermission==="granted")return "Wippen aktiv · deutlich kippen, dann zurück in die Mitte";
+  if(motionPermission==="granted")return "Wippen aktiv · vor = richtig · zurück = überspringen";
   if(motionPermission==="denied")return "Bewegung nicht erlaubt · Touch-Tasten aktiv";
   if(motionPermission==="unsupported")return "Bewegung nicht verfügbar · Touch-Tasten aktiv";
   return "Bewegung wird vorbereitet …";
