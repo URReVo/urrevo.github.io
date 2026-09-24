@@ -1,9 +1,9 @@
 # 🎭 Imposter Games
 
-**Imposter Games** ist eine lokale Partyspiel-App mit vier Spielmodi. Das Projekt besteht aus einer produktiven PWA und einer nativen iOS-App in SwiftUI.
+**Imposter Games** ist ein lokales Partyspiel mit vier Spielmodi.
 
 **Version:** V73  
-**PWA:** https://urrevo.github.io/
+**Live-Spiel:** https://urrevo.github.io/
 
 ## 🎮 Spiele
 
@@ -12,53 +12,49 @@
 - **❓ Wer bin ich?** – jeder Spieler erhält einen eigenen geheimen Begriff
 - **🎬 Scharade** – Begriffe erraten per Bewegungssensor oder Touch
 
-Die Produktionsdaten umfassen aktuell:
+Aktuell enthalten:
 
 - 520 Circa-Fragepaare
 - 250 Classic-Wörter
 - 275 Wer-bin-ich?-Begriffe
 - 300 Scharade-Begriffe
 
-## 📱 Plattformen
+## 📱 Bestes Spielerlebnis auf iPhone und iPad
 
-### PWA
+Das Live-Spiel kann direkt im Browser genutzt werden. Auf iPhone und iPad funktioniert es am besten, wenn es über Safari wie eine App zum Home-Bildschirm hinzugefügt wird.
 
-Die Web-Version läuft direkt im Browser und kann auf iPhone und iPad über Safari zum Home-Bildschirm hinzugefügt werden.
+1. **https://urrevo.github.io/** in Safari öffnen.
+2. Auf **Teilen** tippen.
+3. **Zum Home-Bildschirm** auswählen.
+4. Mit **Hinzufügen** bestätigen.
+5. Imposter Games anschließend über das Symbol auf dem Home-Bildschirm starten.
 
-- offlinefähig
-- lokale Profile, Statistiken und Spielstände
-- Backup und Wiederherstellung
-- keine Serverabhängigkeit für Spielrunden
+So läuft das Spiel im app-ähnlichen Vollbildmodus und ist für Hochformat optimiert.
 
-### Native iOS-App
+Nach dem ersten vollständigen Online-Start kann das Spiel auch offline genutzt werden. Profile, Statistiken, Einstellungen und Spielstände bleiben lokal auf dem Gerät gespeichert.
 
-Parallel existiert eine eigenständige SwiftUI-Version ohne WebView.
+## ✅ Getestet auf
+
+Das Live-Spiel wurde bisher auf folgenden Geräten und Systemen getestet:
+
+- **iPad Air**
+- **iPhone 17**
+- **iPhone 14**
+- **Windows**
+
+## 🛠 Technik
+
+Das Live-Spiel verwendet HTML, CSS, Vanilla JavaScript und JSON.
 
 Enthalten sind unter anderem:
 
-- alle vier Spiele nativ
-- Profile und Avatare
-- Statistiken, Sessions und Achievements
+- lokale Profile und Avatare
+- persönliche und gesamte Statistik
+- Sessions und Achievements
 - Schnellstart-Presets
-- Sound, Core Haptics und Core Motion
-- Backup V3 mit SHA-256-Prüfung
-- iPhone-Device-Build für Sideloading
-
-## 🛠 Entwicklung
-
-Die PWA verwendet HTML, CSS, Vanilla JavaScript und JSON.
-
-Die native iOS-App verwendet SwiftUI, Core Motion, Core Haptics und XcodeGen. Die Produktionsdaten werden aus dem gemeinsamen `data/`-Verzeichnis in den iOS-Build übernommen.
-
-GitHub Actions übernimmt:
-
-- Release-Validierung
-- PWA-Deployment über GitHub Pages
-- nativen iOS-Build
-- XCTest
-- Simulator-App
-- unsignierte Sideload-IPA
+- Sound, Haptik und Animationen
+- Backup und Wiederherstellung
+- Offline-Unterstützung
+- GitHub Pages Deployment
 
 Die detaillierte Entwicklung und Versionshistorie steht in [CHANGELOG.md](CHANGELOG.md).
-
-Weitere Informationen zur nativen iOS-Version stehen in [ios/README.md](ios/README.md).
