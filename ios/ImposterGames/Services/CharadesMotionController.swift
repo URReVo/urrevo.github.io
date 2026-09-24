@@ -3,7 +3,7 @@ import Combine
 import Foundation
 import QuartzCore
 
-enum CharadesMotionDecision: Equatable {
+enum CharadesMotionDecision: Hashable {
     case correct
     case skipped
 }
