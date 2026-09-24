@@ -107,7 +107,7 @@ struct QuickPreset: Codable, Identifiable, Hashable {
     var summary: String
 }
 
-struct AppData: Codable, Hashable {
+struct AppData: Codable {
     var schemaVersion: Int
     var selectedProfileId: String
     var primaryProfileId: String
