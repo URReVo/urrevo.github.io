@@ -141,7 +141,7 @@ assert(manifest.description.includes("Wer bin ich?")&&manifest.description.inclu
 
 const readme=read("README.md");
 assert(!readme.includes("\\n"),"README contains literal \\n text");
-assert(readme.includes("vier lokalen Partyspielen"),"README must describe the four-game app");
+assert(["Circa Imposter","Klassisches Imposter","Wer bin ich?","Scharade"].every(name=>readme.includes(name)),"README must describe the four-game app");
 
 const appStateSource=read("assets/js/app-state.js");
 const launcherSource=read("assets/js/launcher.js");
