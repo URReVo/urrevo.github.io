@@ -2,9 +2,12 @@ import SwiftUI
 
 struct CharadesView: View {
     @StateObject private var model: CharadesGameModel
+    @ObservedObject private var store: AppStore
+    @State private var confirmLeave = false
 
-    init(repository: ContentRepository) {
-        _model = StateObject(wrappedValue: CharadesGameModel(repository: repository))
+    init(repository: ContentRepository, store: AppStore) {
+        _store = ObservedObject(wrappedValue: store)
+        _model = StateObject(wrappedValue: CharadesGameModel(repository: repository, store: store))
     }
 
     var body: some View {
@@ -14,19 +17,46 @@ struct CharadesView: View {
             switch model.phase {
             case .setup:
                 setupView
-            case .ready:
-                readyView
+            case .handoff:
+                handoffView
+            case .countdown:
+                countdownView
             case .playing:
                 playView
-            case .result:
-                resultView
+            case .turnResult:
+                turnResultView
+            case .finalResult:
+                finalResultView
             }
         }
         .navigationTitle("Scharade")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                Button {
+                    store.setPreference("sound", value: !store.data.preferences.sound)
+                } label: {
+                    Image(systemName: store.data.preferences.sound ? "speaker.wave.2.fill" : "speaker.slash.fill")
+                }
+
+                if model.phase != .setup {
+                    Button {
+                        confirmLeave = true
+                    } label: {
+                        Image(systemName: "xmark")
+                    }
+                }
+            }
+        }
+        .alert("Scharade verlassen?", isPresented: $confirmLeave) {
+            Button("Abbrechen", role: .cancel) {}
+            Button("Verlassen", role: .destructive) { model.backToSetup() }
+        } message: {
+            Text("Die aktuelle Partie wird beendet.")
+        }
         .onDisappear {
-            if model.phase == .playing {
-                model.finishRound()
+            if model.phase == .playing || model.phase == .countdown {
+                model.finishTurn()
             }
         }
     }
@@ -34,7 +64,7 @@ struct CharadesView: View {
     private var setupView: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                VStack(spacing: 8) {
+                VStack(spacing: 7) {
                     Text("🎬")
                         .font(.system(size: 58))
                     Text("Scharade")
@@ -47,39 +77,46 @@ struct CharadesView: View {
                 }
                 .frame(maxWidth: .infinity)
 
-                sectionLabel("KATEGORIE")
+                CategorySelector(
+                    categories: model.payload.categories,
+                    selection: $model.selectedCategories,
+                    tint: AppTheme.charades,
+                    onChange: model.categoriesChanged
+                )
 
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
-                    categoryButton(name: "Alle", emoji: "✨")
-
-                    ForEach(model.payload.categories) { category in
-                        categoryButton(name: category.name, emoji: category.emoji)
-                    }
-                }
-
-                sectionLabel("RUNDENDAUER")
-
-                HStack(spacing: 7) {
-                    ForEach([30, 45, 60, 90, 120], id: \.self) { seconds in
-                        Button {
-                            model.selectDuration(seconds)
-                        } label: {
-                            Text("\(seconds)s")
-                                .font(.caption.weight(.black))
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 44)
-                                .background(
-                                    model.duration == seconds ? AppTheme.charades.opacity(0.20) : AppTheme.card,
-                                    in: RoundedRectangle(cornerRadius: 13, style: .continuous)
-                                )
-                                .overlay {
-                                    RoundedRectangle(cornerRadius: 13, style: .continuous)
-                                        .stroke(model.duration == seconds ? AppTheme.charades.opacity(0.75) : Color.white.opacity(0.06))
-                                }
+                VStack(alignment: .leading, spacing: 10) {
+                    SectionEyebrow(text: "RUNDENDAUER")
+                    HStack(spacing: 7) {
+                        ForEach([30, 45, 60, 90, 120], id: \.self) { seconds in
+                            Button {
+                                model.selectDuration(seconds)
+                            } label: {
+                                Text("\(seconds)s")
+                                    .font(.caption.weight(.black))
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 44)
+                                    .foregroundStyle(model.duration == seconds ? AppTheme.text : AppTheme.muted)
+                                    .background(
+                                        model.duration == seconds ? AppTheme.charades.opacity(0.20) : AppTheme.card,
+                                        in: RoundedRectangle(cornerRadius: 13, style: .continuous)
+                                    )
+                                    .overlay {
+                                        RoundedRectangle(cornerRadius: 13, style: .continuous)
+                                            .stroke(model.duration == seconds ? AppTheme.charades.opacity(0.75) : Color.white.opacity(0.06))
+                                    }
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
                     }
                 }
+
+                PlayerSetupEditor(
+                    players: $model.players,
+                    minimum: 2,
+                    maximum: 12,
+                    tint: AppTheme.charades,
+                    onChange: model.saveSetup
+                )
 
                 HStack(spacing: 12) {
                     Image(systemName: "waveform.path")
@@ -96,42 +133,43 @@ struct CharadesView: View {
                     }
                 }
                 .padding(14)
-                .background(AppTheme.panel, in: RoundedRectangle(cornerRadius: 17, style: .continuous))
+                .appPanel(cornerRadius: 17)
 
-                if let loadError = model.loadError {
-                    Text(loadError)
-                        .font(.caption)
-                        .foregroundStyle(.red)
+                if let error = model.errorMessage {
+                    Text(error)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(AppTheme.danger)
                 }
 
-                Button {
-                    model.prepareRound()
-                } label: {
-                    Text("Runde vorbereiten · \(model.availableCount) Begriffe")
-                        .font(.headline.weight(.black))
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 54)
-                        .foregroundStyle(Color.black.opacity(0.84))
-                        .background(AppTheme.charades, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-                }
-                .buttonStyle(.plain)
-                .disabled(model.availableCount == 0)
+                PrimaryGameButton(
+                    title: "Partie starten · \(model.availableCount) Begriffe",
+                    tint: AppTheme.charades,
+                    enabled: model.availableCount > 0,
+                    action: { model.startParty() }
+                )
             }
             .padding(16)
             .padding(.bottom, 24)
         }
     }
 
-    private var readyView: some View {
+    private var handoffView: some View {
         VStack(spacing: 18) {
+            GameHeaderBar(
+                title: model.currentPlayer?.name ?? "Spieler",
+                subtitle: "Spieler \(model.playerIndex + 1) von \(model.players.count)"
+            )
+
             Spacer()
 
-            Text("😎")
-                .font(.system(size: 70))
-
+            Text(model.currentPlayer?.avatar ?? "😎")
+                .font(.system(size: 76))
             Text("Handy an die Stirn")
-                .font(.system(size: 30, weight: .black, design: .rounded))
+                .font(.system(size: 31, weight: .black, design: .rounded))
                 .foregroundStyle(AppTheme.text)
+            Text(model.currentPlayer?.name ?? "Spieler")
+                .font(.title2.weight(.black))
+                .foregroundStyle(AppTheme.charades)
 
             Text("Display nach außen. Nach vorne wippen = Richtig, zur Stirn zurück = Überspringen.")
                 .font(.body)
@@ -141,20 +179,27 @@ struct CharadesView: View {
 
             Spacer()
 
-            Button {
-                model.startRound()
-            } label: {
-                Text("Start")
-                    .font(.headline.weight(.black))
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 56)
-                    .foregroundStyle(Color.black.opacity(0.84))
-                    .background(AppTheme.charades, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-            }
-            .buttonStyle(.plain)
-            .padding(.horizontal, 16)
-            .padding(.bottom, 18)
+            PrimaryGameButton(title: "Runde starten", tint: AppTheme.charades, action: model.beginTurn)
         }
+        .padding(16)
+        .padding(.bottom, 12)
+    }
+
+    private var countdownView: some View {
+        VStack(spacing: 14) {
+            Spacer()
+            Text(model.currentPlayer?.avatar ?? "😎")
+                .font(.system(size: 64))
+            Text(model.countdownText)
+                .font(.system(size: model.countdownText == "LOS" ? 70 : 96, weight: .black, design: .rounded))
+                .foregroundStyle(model.countdownText == "LOS" ? AppTheme.charades : AppTheme.text)
+                .contentTransition(.numericText())
+            Text("Handy ruhig an der Stirn halten")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(AppTheme.muted)
+            Spacer()
+        }
+        .padding(20)
     }
 
     private var playView: some View {
@@ -171,23 +216,28 @@ struct CharadesView: View {
                     .foregroundStyle(AppTheme.muted)
 
                 Button("Beenden") {
-                    model.finishRound()
+                    model.finishTurn()
                 }
                 .font(.caption.weight(.bold))
                 .foregroundStyle(AppTheme.accent)
             }
 
-            Spacer(minLength: 4)
+            VStack(spacing: 4) {
+                Text(model.currentPlayer?.avatar ?? "😎")
+                Text(model.currentPlayer?.name ?? "Spieler")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(AppTheme.muted)
+            }
 
             VStack(spacing: 12) {
                 Text(model.currentTerm?.cat.uppercased() ?? "KATEGORIE")
                     .font(.caption2.weight(.black))
                     .tracking(1)
-                    .foregroundStyle(AppTheme.charades.opacity(0.82))
+                    .foregroundStyle(AppTheme.charades.opacity(0.85))
 
                 Text(model.currentTerm?.term ?? "…")
                     .font(.system(size: 48, weight: .black, design: .rounded))
-                    .minimumScaleFactor(0.45)
+                    .minimumScaleFactor(0.42)
                     .multilineTextAlignment(.center)
                     .foregroundStyle(AppTheme.text)
                     .padding(.horizontal, 8)
@@ -219,14 +269,12 @@ struct CharadesView: View {
 
                 Spacer()
 
-                Button("↕ Richtung tauschen") {
-                    model.motion.flipDirections()
-                    HapticsService.shared.selection()
+                Button(model.motion.directionsFlipped ? "↕ Getauscht" : "↕ Richtung tauschen") {
+                    model.flipMotionDirection()
                 }
                 .font(.caption2.weight(.bold))
                 .foregroundStyle(AppTheme.charades)
             }
-            .padding(.horizontal, 2)
 
             HStack(spacing: 9) {
                 Button {
@@ -237,7 +285,7 @@ struct CharadesView: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: 58)
                         .foregroundStyle(AppTheme.text)
-                        .background(Color.red.opacity(0.15), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                        .background(AppTheme.danger.opacity(0.15), in: RoundedRectangle(cornerRadius: 16))
                 }
                 .disabled(model.motion.isLocked)
 
@@ -249,7 +297,7 @@ struct CharadesView: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: 58)
                         .foregroundStyle(Color.black.opacity(0.84))
-                        .background(AppTheme.charades, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                        .background(AppTheme.charades, in: RoundedRectangle(cornerRadius: 16))
                 }
                 .disabled(model.motion.isLocked)
             }
@@ -259,90 +307,118 @@ struct CharadesView: View {
         .padding(.bottom, 10)
     }
 
-    private var resultView: some View {
-        VStack(spacing: 16) {
-            Text("RUNDE BEENDET")
-                .font(.caption2.weight(.black))
-                .tracking(1)
-                .foregroundStyle(AppTheme.muted)
+    private var turnResultView: some View {
+        VStack(spacing: 14) {
+            if let result = model.currentTurnResult {
+                Text(result.player.avatar)
+                    .font(.system(size: 58))
+                Text(result.player.name)
+                    .font(.title2.weight(.black))
+                    .foregroundStyle(AppTheme.text)
 
-            Text("\(model.correct) richtig")
-                .font(.system(size: 34, weight: .black, design: .rounded))
+                HStack(spacing: 10) {
+                    scoreCard(value: result.correct, label: "Richtig", tint: AppTheme.success)
+                    scoreCard(value: result.skipped, label: "Übersprungen", tint: AppTheme.accent)
+                }
+
+                List(result.items) { item in
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(item.term.term)
+                                .font(.subheadline.weight(.bold))
+                            Text(item.term.cat)
+                                .font(.caption2)
+                                .foregroundStyle(AppTheme.muted)
+                        }
+                        Spacer()
+                        Text(item.decision == .correct ? "✓ Richtig" : "↷ Übersprungen")
+                            .font(.caption.weight(.black))
+                            .foregroundStyle(item.decision == .correct ? AppTheme.success : AppTheme.accent)
+                    }
+                    .listRowBackground(AppTheme.card)
+                }
+                .scrollContentBackground(.hidden)
+
+                PrimaryGameButton(
+                    title: model.playerIndex == model.players.count - 1 ? "Gesamtergebnis" : "Nächster Spieler",
+                    tint: AppTheme.charades,
+                    action: model.advancePlayer
+                )
+            }
+        }
+        .padding(16)
+        .padding(.bottom, 10)
+    }
+
+    private var finalResultView: some View {
+        VStack(spacing: 14) {
+            Text("🏆")
+                .font(.system(size: 56))
+            SectionEyebrow(text: "GESAMTERGEBNIS")
+            Text("Scharade")
+                .font(.system(size: 31, weight: .black, design: .rounded))
                 .foregroundStyle(AppTheme.text)
 
-            Text("\(model.skipped) übersprungen")
-                .font(.subheadline.weight(.bold))
-                .foregroundStyle(AppTheme.muted)
-
-            List(model.history) { item in
-                HStack {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(item.term.term)
-                            .font(.subheadline.weight(.bold))
-                        Text(item.term.cat)
-                            .font(.caption2)
-                            .foregroundStyle(AppTheme.muted)
+            ScrollView {
+                VStack(spacing: 8) {
+                    ForEach(Array(model.leaderboard.enumerated()), id: \.element.id) { index, row in
+                        HStack(spacing: 11) {
+                            Text("#\(index + 1)")
+                                .font(.caption.weight(.black))
+                                .foregroundStyle(AppTheme.muted)
+                                .frame(width: 30)
+                            Text(row.player.avatar)
+                                .font(.title2)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(row.player.name)
+                                    .font(.headline.weight(.black))
+                                    .foregroundStyle(AppTheme.text)
+                                Text("\(row.skipped) übersprungen")
+                                    .font(.caption)
+                                    .foregroundStyle(AppTheme.muted)
+                            }
+                            Spacer()
+                            Text("\(row.correct)")
+                                .font(.system(size: 28, weight: .black, design: .rounded))
+                                .foregroundStyle(AppTheme.charades)
+                        }
+                        .padding(13)
+                        .background(AppTheme.card, in: RoundedRectangle(cornerRadius: 15))
                     }
-
-                    Spacer()
-
-                    Text(item.decision == .correct ? "✓ Richtig" : "↷ Übersprungen")
-                        .font(.caption.weight(.black))
-                        .foregroundStyle(item.decision == .correct ? Color.green : AppTheme.accent)
                 }
-                .listRowBackground(AppTheme.card)
             }
-            .scrollContentBackground(.hidden)
 
-            Button {
-                model.reset()
-            } label: {
-                Text("Neue Runde")
-                    .font(.headline.weight(.black))
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 54)
-                    .foregroundStyle(Color.black.opacity(0.84))
-                    .background(AppTheme.charades, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-            }
-            .buttonStyle(.plain)
-            .padding(.horizontal, 16)
-            .padding(.bottom, 10)
-        }
-        .padding(.top, 16)
-    }
+            HStack(spacing: 10) {
+                Button {
+                    model.backToSetup()
+                } label: {
+                    Text("Setup")
+                        .font(.headline.weight(.bold))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 54)
+                        .foregroundStyle(AppTheme.text)
+                        .background(AppTheme.card, in: RoundedRectangle(cornerRadius: 16))
+                }
+                .buttonStyle(.plain)
 
-    private func sectionLabel(_ text: String) -> some View {
-        Text(text)
-            .font(.caption2.weight(.black))
-            .tracking(1)
-            .foregroundStyle(AppTheme.muted)
-    }
-
-    private func categoryButton(name: String, emoji: String) -> some View {
-        let selected = model.selectedCategories.contains(name)
-
-        return Button {
-            model.toggleCategory(name)
-        } label: {
-            HStack(spacing: 8) {
-                Text(emoji)
-                Text(name)
-                    .font(.caption.weight(.bold))
-                    .lineLimit(1)
-                Spacer(minLength: 0)
-            }
-            .foregroundStyle(selected ? AppTheme.text : AppTheme.muted)
-            .padding(.horizontal, 12)
-            .frame(height: 48)
-            .background(
-                selected ? AppTheme.charades.opacity(0.16) : AppTheme.card,
-                in: RoundedRectangle(cornerRadius: 14, style: .continuous)
-            )
-            .overlay {
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .stroke(selected ? AppTheme.charades.opacity(0.65) : Color.white.opacity(0.06))
+                PrimaryGameButton(title: "Gleiche Gruppe", tint: AppTheme.charades, action: model.sameGroupAgain)
             }
         }
-        .buttonStyle(.plain)
+        .padding(16)
+        .padding(.bottom, 10)
+    }
+
+    private func scoreCard(value: Int, label: String, tint: Color) -> some View {
+        VStack(spacing: 3) {
+            Text("\(value)")
+                .font(.system(size: 32, weight: .black, design: .rounded))
+                .foregroundStyle(tint)
+            Text(label)
+                .font(.caption.weight(.bold))
+                .foregroundStyle(AppTheme.muted)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(12)
+        .background(AppTheme.card, in: RoundedRectangle(cornerRadius: 16))
     }
 }
