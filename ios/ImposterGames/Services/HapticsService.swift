@@ -44,6 +44,47 @@ final class HapticsService {
         }
     }
 
+
+    func impact() {
+        if !playTransient(intensity: 1.0, sharpness: 0.55) {
+            impactGenerator.impactOccurred(intensity: 0.92)
+            impactGenerator.prepare()
+        }
+    }
+
+    func reveal() {
+        guard startCoreHaptics(), let engine else {
+            correctGenerator.notificationOccurred(.success)
+            correctGenerator.prepare()
+            return
+        }
+
+        let first = CHHapticEvent(
+            eventType: .hapticTransient,
+            parameters: [
+                CHHapticEventParameter(parameterID: .hapticIntensity, value: 0.5),
+                CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.35)
+            ],
+            relativeTime: 0
+        )
+        let second = CHHapticEvent(
+            eventType: .hapticTransient,
+            parameters: [
+                CHHapticEventParameter(parameterID: .hapticIntensity, value: 1.0),
+                CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.8)
+            ],
+            relativeTime: 0.12
+        )
+
+        do {
+            let pattern = try CHHapticPattern(events: [first, second], parameters: [])
+            let player = try engine.makePlayer(with: pattern)
+            try player.start(atTime: CHHapticTimeImmediate)
+        } catch {
+            correctGenerator.notificationOccurred(.success)
+        }
+    }
+
     private func startCoreHaptics() -> Bool {
         guard let engine else { return false }
 
