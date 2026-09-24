@@ -93,6 +93,71 @@ jobs:
           path: ${{ runner.temp }}/DerivedData/Build/Products/Debug-iphonesimulator/ImposterGames.app
           if-no-files-found: error
 
+
+  unsigned-device-ipa:
+    name: Build sideload IPA
+    needs: simulator-build
+    runs-on: macos-26
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Sync shared game content
+        run: |
+          ./ios/scripts/sync-content.sh
+          git diff --exit-code -- ios/ImposterGames/Resources/Content
+
+      - name: Generate Xcode project
+        working-directory: ios
+        run: xcodegen generate
+
+      - name: Build unsigned iPhone app
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project ios/ImposterGames.xcodeproj \
+            -scheme ImposterGames \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
+            -derivedDataPath "$RUNNER_TEMP/DeviceDerivedData" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" \
+            build
+
+      - name: Package sideload IPA
+        run: |
+          set -euo pipefail
+          APP_PATH="$RUNNER_TEMP/DeviceDerivedData/Build/Products/Release-iphoneos/ImposterGames.app"
+          IPA_PATH="$RUNNER_TEMP/ImposterGames-Sideload-$GITHUB_RUN_NUMBER.ipa"
+          PAYLOAD_DIR="$RUNNER_TEMP/SideloadPayload/Payload"
+
+          if [[ ! -d "$APP_PATH" ]]; then
+            echo "::error::Der iPhone-Device-Build wurde nicht gefunden."
+            exit 1
+          fi
+
+          rm -rf "$RUNNER_TEMP/SideloadPayload"
+          mkdir -p "$PAYLOAD_DIR"
+          cp -R "$APP_PATH" "$PAYLOAD_DIR/"
+          (
+            cd "$RUNNER_TEMP/SideloadPayload"
+            /usr/bin/zip -qry "$IPA_PATH" Payload
+          )
+
+          test -s "$IPA_PATH"
+          echo "IPA_PATH=$IPA_PATH" >> "$GITHUB_ENV"
+
+      - name: Upload sideload IPA
+        uses: actions/upload-artifact@v7
+        with:
+          name: ImposterGames-iOS-Sideload
+          path: ${{ env.IPA_PATH }}
+          if-no-files-found: error
+
   signed-ipa:
     name: Build signed IPA
     needs: simulator-build
