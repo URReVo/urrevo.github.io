@@ -1,0 +1,5 @@
+ImposterGames.xcodeproj/
+DerivedData/
+build/
+*.xcarchive
+*.ipa
