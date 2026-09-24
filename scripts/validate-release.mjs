@@ -11,6 +11,8 @@ const questions=JSON.parse(read("data/circa-questions.json"));
 const words=JSON.parse(read("data/classic-words.json"));
 const manifest=JSON.parse(read("manifest.webmanifest"));
 const release=String(games.platformVersion);
+const cacheRevision=(read("service-worker.js").match(/const CACHE_REVISION="([^"]+)"/)||[])[1]||"";
+const launcherBuild="V"+release+String(cacheRevision).toUpperCase();
 
 const htmlFiles=["index.html","games/circa-imposter/index.html","games/classic-imposter/index.html"];
 const html=Object.fromEntries(htmlFiles.map(p=>[p,read(p)]));
@@ -23,6 +25,9 @@ for(const [file,source] of Object.entries(html)){
 }
 
 assert(html["index.html"].includes("V"+release),"launcher title/version mismatch");
+assert(html["index.html"].includes("<title>Imposter Games · "+launcherBuild+"</title>"),"launcher build label mismatch");
+assert(html["index.html"].includes("<strong>Imposter Games · "+launcherBuild+"</strong>"),"settings build label mismatch");
+assert(!html["index.html"].includes("IMPOSTER GAMES · "+launcherBuild),"home eyebrow must not show build revision");
 for(const file of ["games/circa-imposter/index.html","games/classic-imposter/index.html"]){
   assert(html[file].includes("V"+release),file+" title/version mismatch");
   assert(html[file].includes('version:"'+release+'"'),file+" config version mismatch");
@@ -118,7 +123,7 @@ assert(!prototypeAppStateSource.includes('var KEY="imposterGames.appState.v1"'),
 assert(!prototypeEngineSource.includes('EXP_STORAGE="imposterGames.v73.game."'),"prototype must not use production game storage");
 assert(!html["index.html"].includes("APP-SHELL TEST"),"production launcher still contains experiment badge");
 assert(launcherCss.includes("padding:calc(18px + var(--safeTop)) 16px 26px"),"launcher safe-area top padding missing");
-assert(sw.includes('const CACHE_REVISION="r8"'),"V73 cache revision mismatch");
+assert(sw.includes('const CACHE_REVISION="r9"'),"V73 cache revision mismatch");
 assert(appStateSource.includes("var BACKUP_VERSION=3"),"backup format v3 missing");
 assert(engineSource.includes("experimentRecordCirca(null);"),"Circa shared base-round recording missing");
 assert(engineSource.includes("impostorEscaped:outcome===true?true:outcome===false?false:null"),"Circa unresolved outcome state missing");

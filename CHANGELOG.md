@@ -27,6 +27,8 @@
 - Backup-Downgrade-Schutz ergänzt: Import akzeptiert ausschließlich Backup V3 mit gültiger SHA-256-Prüfung. V1/V2 und ungekennzeichnete Alt-Snapshots werden abgelehnt, damit ein manuelles Herabsetzen von `formatVersion` die Integritätsprüfung nicht umgehen kann.
 - V3-Backups bleiben weiterhin ohne PIN oder Gerätebindung auf andere Geräte übertragbar.
 - Offline-Cache für den gehärteten Backup-V3-Import auf Revision r8 angehoben.
+- Launcher zeigt den vollständigen Build-Stand `V73R9` im Seitentitel und im Info-Bereich der Einstellungen; der Home-Bereich bleibt unverändert.
+- Offline-Cache für die Build-Anzeige auf Revision r9 angehoben.
 
 Die Versionshistorie dokumentiert die aus den Projektchats und der GitHub-Historie eindeutig rekonstruierbaren Änderungen. Frühere Zwischenstände mit generischen Upload-Commits werden nicht künstlich versioniert oder mit erfundenen Details ergänzt.
 
