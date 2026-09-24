@@ -23,6 +23,18 @@ struct ContentRepository {
         self.bundle = bundle
     }
 
+    func circa() throws -> CircaPayload {
+        try decode("circa-questions", as: CircaPayload.self)
+    }
+
+    func classic() throws -> ClassicPayload {
+        try decode("classic-words", as: ClassicPayload.self)
+    }
+
+    func whoAmI() throws -> WhoAmIPayload {
+        try decode("who-am-i", as: WhoAmIPayload.self)
+    }
+
     func charades() throws -> CharadesPayload {
         try decode("charades", as: CharadesPayload.self)
     }
