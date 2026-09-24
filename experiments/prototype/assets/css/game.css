@@ -2042,3 +2042,26 @@ button.ghost,#restart,#classicRestart{
 .classicResultScreen.hidden{
   display:none!important;
 }
+
+
+/* Prototype Classic compact role card */
+.classicRoleCard{
+  flex:0 1 320px!important;
+  min-height:220px!important;
+  max-height:320px!important;
+  height:auto;
+}
+@media(max-height:760px){
+  .classicRoleCard{
+    flex-basis:260px!important;
+    min-height:190px!important;
+    max-height:260px!important;
+  }
+}
+@media(max-height:650px){
+  .classicRoleCard{
+    flex-basis:220px!important;
+    min-height:170px!important;
+    max-height:220px!important;
+  }
+}
