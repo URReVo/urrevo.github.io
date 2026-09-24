@@ -117,10 +117,12 @@ struct AppData: Codable, Hashable {
     var stats: GlobalStats
     var sessions: [GameSession]
     var activeSessionId: String?
-    var achievements: [String: Bool]
+    var achievements: [String: JSONValue]
     var presets: [QuickPreset]
+    var launchPreset: QuickPreset?
+    var launchGroup: [PlayerProfile]?
     var preferences: AppPreferences
-    var imports: [String: String]
+    var imports: [String: JSONValue]
 }
 
 struct PlayerDraft: Codable, Identifiable, Hashable {
