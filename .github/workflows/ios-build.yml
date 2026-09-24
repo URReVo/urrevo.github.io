@@ -34,7 +34,7 @@ permissions:
 
 jobs:
   simulator-build:
-    name: Compile native iOS
+    name: Build & test native iOS
     runs-on: macos-26
     steps:
       - name: Checkout
@@ -55,16 +55,36 @@ jobs:
         working-directory: ios
         run: xcodegen generate
 
+      - name: Select and boot simulator
+        id: simulator
+        run: |
+          DEVICE_ID="$(xcrun simctl list devices available -j | python3 -c 'import json,sys; data=json.load(sys.stdin)["devices"]; print(next(device["udid"] for devices in data.values() for device in devices if device.get("isAvailable") and device.get("name","").startswith("iPhone")))')"
+          echo "udid=$DEVICE_ID" >> "$GITHUB_OUTPUT"
+          echo "Using simulator $DEVICE_ID"
+          xcrun simctl boot "$DEVICE_ID" 2>/dev/null || true
+          xcrun simctl bootstatus "$DEVICE_ID" -b
+
       - name: Compile app and test bundle
         run: |
           xcodebuild \
             -project ios/ImposterGames.xcodeproj \
             -scheme ImposterGames \
             -configuration Debug \
-            -destination "generic/platform=iOS Simulator" \
+            -destination "platform=iOS Simulator,id=${{ steps.simulator.outputs.udid }}" \
             -derivedDataPath "$RUNNER_TEMP/DerivedData" \
             CODE_SIGNING_ALLOWED=NO \
             build-for-testing
+
+      - name: Run unit tests
+        run: |
+          xcodebuild \
+            -project ios/ImposterGames.xcodeproj \
+            -scheme ImposterGames \
+            -configuration Debug \
+            -destination "platform=iOS Simulator,id=${{ steps.simulator.outputs.udid }}" \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            CODE_SIGNING_ALLOWED=NO \
+            test-without-building
 
       - name: Upload simulator app
         uses: actions/upload-artifact@v7

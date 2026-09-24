@@ -21,8 +21,8 @@ targets:
       - path: ImposterGames
         excludes:
           - Resources/Content/**
-    resources:
       - path: ImposterGames/Resources/Content
+        buildPhase: resources
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: de.urrevo.impostergames

@@ -2,6 +2,9 @@
 
 ## V73
 
+- Native iOS-Vorbereitung gehärtet: Produktions-JSONs werden explizit als App-Ressourcen gebündelt, der echte XCTest-Lauf ist wieder Pflicht in CI und Core Haptics besitzt einen UIKit-Fallback.
+- Der iOS-Release-Validator verhindert künftig einen Rückfall auf Compile-only-CI oder fehlende Content-Ressourcen.
+
 - Produktions-Audit: PWA-Manifest und README beschreiben jetzt konsistent alle vier Spiele; der Release-Validator schützt diese Vier-Spiele-Metadaten zusätzlich.
 - Produktionsstand auf **V73R14** / Offline-Cache r14 angehoben.
 

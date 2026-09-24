@@ -9,7 +9,7 @@ Die native App liegt getrennt von der produktiven PWA und wird vollständig mit 
 - Scharade bereits als nativer Technik-/Gameplay-Proof
 - Core Motion mit signiertem `gravity.z` für Vorwärts/Rückwärts
 - 180-ms-Bestätigung, 3-Sekunden-Sperre und Neutralposition
-- native Taptic-Engine-Rückmeldung über iOS Feedback Generatoren
+- Core Haptics für native Spielrückmeldungen, mit UIKit-Feedback als Fallback auf nicht unterstützter Hardware bzw. im Simulator
 - Circa, Classic und Wer bin ich? sind als nächste native Portierungsschritte vorbereitet
 - XcodeGen erzeugt das Xcode-Projekt reproduzierbar aus `project.yml`
 

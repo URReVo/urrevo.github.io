@@ -40,12 +40,14 @@ for(const file of forbidden)assert(!fs.existsSync(path.join(root,file)),"Duplica
 const project=read("ios/project.yml");
 assert(!project.includes("PRODUCT_NAME: Imposter Games"),"PRODUCT_NAME must match target name so XCTest can resolve TEST_HOST");
 assert(project.includes("ImposterGames/Resources/Content"),"Synced production content resource folder missing");
+assert(project.includes("buildPhase: resources"),"Production JSON must be copied into the iOS app bundle as resources");
 
 const swiftFiles=required.filter(x=>x.endsWith(".swift")).map(read).join("\n");
 assert(!/WKWebView|SFSafariViewController/.test(swiftFiles),"Native iOS source contains a web wrapper");
 assert(swiftFiles.includes("CMMotionManager"),"Native Core Motion integration missing");
 assert(swiftFiles.includes("motion?.gravity.z"),"Signed native gravity direction missing");
-assert(swiftFiles.includes("UIImpactFeedbackGenerator")||swiftFiles.includes("CHHapticEngine"),"Native iOS haptics missing");
+assert(swiftFiles.includes("import CoreHaptics")&&swiftFiles.includes("CHHapticEngine"),"Native Core Haptics integration missing");
+assert(swiftFiles.includes("UIImpactFeedbackGenerator"),"UIKit haptics fallback missing");
 assert(swiftFiles.includes("cooldownDuration: CFTimeInterval = 3.0"),"Native Scharade 3-second cooldown missing");
 assert(swiftFiles.includes("submitTouchDecision"),"Native touch cooldown path missing");
 
@@ -64,8 +66,10 @@ const workflow=read(".github/workflows/ios-build.yml");
 assert(workflow.includes("runs-on: macos-26"),"iOS CI must use macOS runner");
 assert(workflow.includes("xcodegen generate"),"iOS CI XcodeGen step missing");
 assert(workflow.includes("xcodebuild"),"iOS xcodebuild step missing");
+assert(workflow.includes("Run unit tests")&&workflow.includes("test-without-building"),"Native XCTest execution missing from iOS CI");
+assert(workflow.includes("xcrun simctl bootstatus"),"iOS CI must boot a real simulator before XCTest");
 assert(workflow.includes("signed_ipa"),"Manual signed IPA option missing");
 assert(workflow.includes("-exportArchive"),"Signed IPA export step missing");
 assert(workflow.includes("upload-artifact@v7"),"iOS artifact upload missing");
 
-console.log("iOS readiness validation OK · one native scaffold · shared production data · motion · haptics · signed IPA workflow");
+console.log("iOS readiness validation OK · one native scaffold · bundled production data · Core Motion · Core Haptics · XCTest · signed IPA workflow");

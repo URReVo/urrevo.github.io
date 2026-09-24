@@ -28,11 +28,17 @@ struct ContentRepository {
     }
 
     func hasResource(named name: String) -> Bool {
-        bundle.url(forResource: name, withExtension: "json") != nil
+        resourceURL(named: name) != nil
+    }
+
+    private func resourceURL(named name: String) -> URL? {
+        bundle.url(forResource: name, withExtension: "json")
+            ?? bundle.url(forResource: name, withExtension: "json", subdirectory: "Content")
+            ?? bundle.url(forResource: name, withExtension: "json", subdirectory: "Resources/Content")
     }
 
     private func decode<T: Decodable>(_ name: String, as type: T.Type) throws -> T {
-        guard let url = bundle.url(forResource: name, withExtension: "json") else {
+        guard let url = resourceURL(named: name) else {
             throw ContentRepositoryError.missingResource(name)
         }
 
