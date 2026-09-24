@@ -217,12 +217,17 @@ struct SettingsView: View {
         }
     }
 
-    private func importBackup(_ result: Result<URL, Error>) {
+    private func importBackup(_ result: Result<[URL], Error>) {
         switch result {
         case .failure(let error):
             setStatus("Import fehlgeschlagen: \(error.localizedDescription)", error: true)
 
-        case .success(let url):
+        case .success(let urls):
+            guard let url = urls.first else {
+                setStatus("Import fehlgeschlagen: Keine Datei ausgewählt.", error: true)
+                return
+            }
+
             let accessed = url.startAccessingSecurityScopedResource()
             defer {
                 if accessed { url.stopAccessingSecurityScopedResource() }
