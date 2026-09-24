@@ -9,6 +9,7 @@ final class HapticsService {
     private let correctGenerator = UINotificationFeedbackGenerator()
     private let skipGenerator = UIImpactFeedbackGenerator(style: .medium)
     private let selectionGenerator = UISelectionFeedbackGenerator()
+    private let impactGenerator = UIImpactFeedbackGenerator(style: .heavy)
 
     private init() {
         guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }
