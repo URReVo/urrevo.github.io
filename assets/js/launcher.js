@@ -548,9 +548,9 @@ byId("endSession").addEventListener("click",function(){
   });
 });
 
-byId("exportData").addEventListener("click",function(){
+byId("exportData").addEventListener("click",async function(){
   try{
-    var backup=store.createBackup?store.createBackup():store.snapshot();
+    var backup=store.createBackup?await store.createBackup():store.snapshot();
     var blob=new Blob([JSON.stringify(backup,null,2)],{type:"application/json"});
     var url=URL.createObjectURL(blob);
     var a=document.createElement("a");a.href=url;a.download="imposter-games-v73-backup.json";document.body.appendChild(a);a.click();a.remove();
@@ -571,15 +571,15 @@ byId("importDataFile").addEventListener("change",function(){
   }
   var reader=new FileReader();
   reader.onerror=function(){byId("dataStatus").textContent="Die Datei konnte nicht gelesen werden.";input.value="";};
-  reader.onload=function(){
+  reader.onload=async function(){
     var parsed=null;
     try{parsed=JSON.parse(String(reader.result||""));}catch(e){
       byId("dataStatus").textContent="Import abgebrochen: Keine gültige JSON-Datei.";input.value="";return;
     }
     if(!window.confirm("Dieses Backup ersetzt die aktuellen lokalen V73-App-Daten. Fortfahren?")){input.value="";return;}
-    var result=store.importSnapshot?store.importSnapshot(parsed):{ok:false,reason:"unsupported"};
+    var result=store.importSnapshot?await store.importSnapshot(parsed):{ok:false,reason:"unsupported"};
     if(!result.ok){
-      var reason=result.reason==="profiles"?"Keine gültigen Profile im Backup gefunden.":result.reason==="duplicate-profiles"?"Das Backup enthält doppelte Profilnamen und wurde aus Sicherheitsgründen nicht übernommen.":result.reason==="storage"?"Die importierten Daten konnten nicht lokal gespeichert werden.":result.reason==="version"?"Das Backup stammt aus einer neueren, hier noch nicht unterstützten Backup-Version.":result.reason==="format"?"Die Datei ist kein Imposter-App-Backup.":"Das Backup passt nicht zu dieser App-Version.";
+      var reason=result.reason==="profiles"?"Keine gültigen Profile im Backup gefunden.":result.reason==="duplicate-profiles"?"Das Backup enthält doppelte Profilnamen und wurde aus Sicherheitsgründen nicht übernommen.":result.reason==="storage"?"Die importierten Daten konnten nicht lokal gespeichert werden.":result.reason==="version"?"Das Backup stammt aus einer neueren, hier noch nicht unterstützten Backup-Version.":result.reason==="format"?"Die Datei ist kein Imposter-App-Backup.":result.reason==="integrity"?"Das Backup wurde verändert oder ist beschädigt.":result.reason==="integrity-unavailable"?"Die Integrität dieses Backups kann auf diesem Gerät nicht geprüft werden.":"Das Backup passt nicht zu dieser App-Version.";
       byId("dataStatus").textContent="Import abgebrochen: "+reason;
       input.value="";return;
     }

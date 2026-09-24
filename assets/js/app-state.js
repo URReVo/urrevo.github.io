@@ -5,7 +5,7 @@ var KEY="imposterGames.appState.v1";
 var LEGACY_KEY="imposterGames.appState.legacy";
 var MAX_SESSIONS=50;
 var BACKUP_FORMAT="imposter-games-backup";
-var BACKUP_VERSION=2;
+var BACKUP_VERSION=3;
 var GAME_STORAGE_PREFIX="imposterGames.v73.game.";
 var GAME_STORAGE_KEYS=[
   "circa.players.v1","classic.players.v1",
@@ -784,7 +784,35 @@ function restoreGameStorage(snapshot){
     }
   }catch(e){}
 }
-function importSnapshot(input){
+function canonicalBackupJson(value){
+  if(value===null)return "null";
+  if(Array.isArray(value))return "["+value.map(function(item){return canonicalBackupJson(item===undefined?null:item);}).join(",")+"]";
+  if(typeof value==="object"){
+    return "{"+Object.keys(value).sort().filter(function(key){
+      return value[key]!==undefined&&typeof value[key]!=="function";
+    }).map(function(key){
+      return JSON.stringify(key)+":"+canonicalBackupJson(value[key]);
+    }).join(",")+"}";
+  }
+  return JSON.stringify(value);
+}
+function backupIntegrityPayload(src){
+  return {
+    format:src.format,
+    formatVersion:Number(src.formatVersion),
+    exportedAt:src.exportedAt||null,
+    data:src.data,
+    gameStorage:src.gameStorage&&typeof src.gameStorage==="object"&&!Array.isArray(src.gameStorage)?src.gameStorage:{}
+  };
+}
+async function backupSha256(src){
+  var cryptoApi=(window&&window.crypto)||crypto;
+  if(!cryptoApi||!cryptoApi.subtle||typeof cryptoApi.subtle.digest!=="function"||typeof TextEncoder==="undefined")throw new Error("sha256-unavailable");
+  var bytes=new TextEncoder().encode(canonicalBackupJson(backupIntegrityPayload(src)));
+  var digest=await cryptoApi.subtle.digest("SHA-256",bytes);
+  return Array.from(new Uint8Array(digest)).map(function(byte){return byte.toString(16).padStart(2,"0");}).join("");
+}
+async function importSnapshot(input){
   var src=input,gameStorage=null;
   if(typeof src==="string"){try{src=JSON.parse(src);}catch(e){return {ok:false,reason:"json"};}}
   if(!src||typeof src!=="object"||Array.isArray(src))return {ok:false,reason:"shape"};
@@ -792,6 +820,13 @@ function importSnapshot(input){
     if(src.format!==BACKUP_FORMAT)return {ok:false,reason:"format"};
     var version=Number(src.formatVersion);
     if(!Number.isFinite(version)||version<1||version>BACKUP_VERSION)return {ok:false,reason:"version"};
+    if(version>=3){
+      var integrity=src.integrity;
+      if(!integrity||integrity.algorithm!=="SHA-256"||typeof integrity.sha256!=="string"||!/^[a-f0-9]{64}$/i.test(integrity.sha256))return {ok:false,reason:"integrity"};
+      var actualHash="";
+      try{actualHash=await backupSha256(src);}catch(e){return {ok:false,reason:"integrity-unavailable"};}
+      if(actualHash.toLowerCase()!==integrity.sha256.toLowerCase())return {ok:false,reason:"integrity"};
+    }
     gameStorage=src.gameStorage&&typeof src.gameStorage==="object"&&!Array.isArray(src.gameStorage)?src.gameStorage:null;
     src=src.data;
   }
@@ -913,14 +948,20 @@ function reset(){
   save();
 }
 function snapshot(){return clone(data);}
-function createBackup(){
-  return {
+async function createBackup(){
+  var backup={
     format:BACKUP_FORMAT,
     formatVersion:BACKUP_VERSION,
     exportedAt:now(),
     data:snapshot(),
     gameStorage:snapshotGameStorage()
   };
+  backup.integrity={
+    algorithm:"SHA-256",
+    canonical:"sorted-json-v1",
+    sha256:await backupSha256(backup)
+  };
+  return backup;
 }
 
 save();
