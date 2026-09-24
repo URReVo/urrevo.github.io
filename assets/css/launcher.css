@@ -79,3 +79,18 @@ select,
   user-select:text;
   -webkit-touch-callout:default;
 }
+
+
+/* Wer bin ich? launcher card */
+.gameCard.whoami{
+  grid-column:1/-1;min-height:158px;
+  background:radial-gradient(circle at 92% 8%,rgba(132,101,255,.18),transparent 34%),linear-gradient(150deg,#33303d,#242329)
+}
+.gameCard.whoami .gameTitle{margin-top:13px}
+.gameCard.whoami .gameAction{padding-top:10px}
+@media(min-width:560px){
+  .gameGrid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .gameCard.whoami{grid-column:auto;min-height:214px}
+  .gameCard.whoami .gameTitle{margin-top:18px}
+  .gameCard.whoami .gameAction{padding-top:18px}
+}

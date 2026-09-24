@@ -17,6 +17,14 @@
       "description": "Alle kennen dasselbe geheime Wort – außer dem Imposter.",
       "meta": "3–12 Spieler · Wort & Hinweis",
       "path": "games/classic-imposter/"
+    },
+    {
+      "id": "who-am-i",
+      "title": "Wer bin ich?",
+      "icon": "❓",
+      "description": "Jeder kennt die Begriffe der anderen – nur den eigenen nicht.",
+      "meta": "2–12 Spieler · Fragen & raten",
+      "path": "games/who-am-i/"
     }
   ]
 }

@@ -9,12 +9,13 @@ const assert=(cond,msg)=>{if(!cond)fail(msg);};
 const games=JSON.parse(read("data/games.json"));
 const questions=JSON.parse(read("data/circa-questions.json"));
 const words=JSON.parse(read("data/classic-words.json"));
+const who=JSON.parse(read("data/who-am-i.json"));
 const manifest=JSON.parse(read("manifest.webmanifest"));
 const release=String(games.platformVersion);
 const cacheRevision=(read("service-worker.js").match(/const CACHE_REVISION="([^"]+)"/)||[])[1]||"";
 const launcherBuild="V"+release+String(cacheRevision).toUpperCase();
 
-const htmlFiles=["index.html","games/circa-imposter/index.html","games/classic-imposter/index.html"];
+const htmlFiles=["index.html","games/circa-imposter/index.html","games/classic-imposter/index.html","games/who-am-i/index.html"];
 const html=Object.fromEntries(htmlFiles.map(p=>[p,read(p)]));
 
 for(const [file,source] of Object.entries(html)){
@@ -43,6 +44,13 @@ for(const file of ["games/circa-imposter/index.html","games/classic-imposter/ind
   assert(html[file].includes("app-state.js?v="+release),file+" app-state version mismatch");
   assert(html[file].indexOf("app-state.js?v="+release)<html[file].indexOf("game-engine.js?v="+release),file+" must load app-state before engine");
 }
+assert(html["games/who-am-i/index.html"].includes("V"+release),"WhoAmI title/version mismatch");
+assert(html["games/who-am-i/index.html"].includes("game.css?v="+release),"WhoAmI game.css version mismatch");
+assert(html["games/who-am-i/index.html"].includes("who-am-i.css?v="+release),"WhoAmI CSS version mismatch");
+assert(html["games/who-am-i/index.html"].includes("app-state.js?v="+release),"WhoAmI app-state version mismatch");
+assert(html["games/who-am-i/index.html"].includes("who-am-i.js?v="+release),"WhoAmI JS version mismatch");
+assert(html["games/who-am-i/index.html"].includes("pwa.js?v="+release),"WhoAmI pwa version mismatch");
+assert(html["games/who-am-i/index.html"].indexOf("app-state.js?v="+release)<html["games/who-am-i/index.html"].indexOf("who-am-i.js?v="+release),"WhoAmI app-state load order mismatch");
 
 const sw=read("service-worker.js");
 const swRelease=(sw.match(/const RELEASE="([^"]+)"/)||[])[1];
@@ -94,6 +102,18 @@ const hints=words.items.map(x=>String(x.hint).toLocaleLowerCase("de-DE"));
 assert(new Set(wordNames).size===wordNames.length,"duplicate Classic word");
 assert(new Set(hints).size===hints.length,"duplicate Classic hint");
 
+assert(Number(who.count)===who.items.length,"WhoAmI count mismatch");
+assert(who.items.length===275,"WhoAmI production term count mismatch");
+const whoIds=who.items.map(x=>String(x.id));
+const whoTerms=who.items.map(x=>String(x.term).toLocaleLowerCase("de-DE"));
+assert(new Set(whoIds).size===whoIds.length,"duplicate WhoAmI id");
+assert(new Set(whoTerms).size===whoTerms.length,"duplicate WhoAmI term");
+assert(Array.isArray(who.categories)&&who.categories.length===11,"WhoAmI category count mismatch");
+for(const category of who.categories){
+  const actual=who.items.filter(item=>item.cat===category.name).length;
+  assert(actual===Number(category.count),"WhoAmI category metadata mismatch: "+category.name);
+}
+
 assert(manifest.start_url==="/"&&manifest.scope==="/","manifest root scope/start mismatch");
 assert(manifest.display==="standalone","manifest display must be standalone");
 
@@ -105,7 +125,9 @@ const launcherSource=read("assets/js/launcher.js");
 const launcherCss=read("assets/css/launcher.css");
 const gameCss=read("assets/css/game.css");
 const engineSource=read("assets/js/game-engine.js");
-for(const [name,source] of [["app-state",appStateSource],["launcher",launcherSource],["game-engine",engineSource]]){
+const whoSource=read("assets/js/who-am-i.js");
+const whoCss=read("assets/css/who-am-i.css");
+for(const [name,source] of [["app-state",appStateSource],["launcher",launcherSource],["game-engine",engineSource],["who-am-i",whoSource]]){
   try{new Function(source);}catch(error){fail(name+" syntax error: "+error.message);}
 }
 assert(appStateSource.includes('var KEY="imposterGames.appState.v1"'),"production app-state key missing");
@@ -113,17 +135,23 @@ assert(appStateSource.includes('BACKUP_FORMAT="imposter-games-backup"'),"product
 assert(engineSource.includes('EXP_STORAGE="imposterGames.v73.game."'),"V73 isolated game storage missing");
 assert(!appStateSource.includes("imposterGames.prototype."),"production app-state must not reference prototype storage");
 assert(!engineSource.includes("imposterGames.prototype."),"production game engine must not reference prototype storage");
+assert(whoSource.includes('STORAGE_PREFIX="imposterGames.v73.game.whoami."'),"WhoAmI production storage namespace missing");
+assert(!whoSource.includes("imposterGames.prototype."),"production WhoAmI must not reference prototype storage");
+assert(appStateSource.includes('"whoami.players.v1","whoami.categories.v1","whoami.deck.v1"'),"WhoAmI backup allowlist missing");
 assert(!sw.includes("/experiments/prototype"),"production service worker must not cache prototype paths");
 const prototypeAppStateSource=read("experiments/prototype/assets/js/app-state.js");
 const prototypeEngineSource=read("experiments/prototype/assets/js/game-engine.js");
+const prototypeWhoSource=read("experiments/prototype/assets/js/who-am-i.js");
 assert(prototypeAppStateSource.includes('var KEY="imposterGames.prototype.appState.v1"'),"prototype app-state key lost isolation");
 assert(prototypeAppStateSource.includes('BACKUP_FORMAT="imposter-games-prototype-backup"'),"prototype backup format lost isolation");
 assert(prototypeEngineSource.includes('EXP_STORAGE="imposterGames.prototype.game."'),"prototype game storage lost isolation");
 assert(!prototypeAppStateSource.includes('var KEY="imposterGames.appState.v1"'),"prototype must not use production app-state key");
 assert(!prototypeEngineSource.includes('EXP_STORAGE="imposterGames.v73.game."'),"prototype must not use production game storage");
+assert(prototypeWhoSource.includes('STORAGE_PREFIX="imposterGames.prototype.game.whoami."'),"prototype WhoAmI namespace lost isolation");
+assert(!prototypeWhoSource.includes('STORAGE_PREFIX="imposterGames.v73.game.whoami."'),"prototype WhoAmI must not use production storage");
 assert(!html["index.html"].includes("APP-SHELL TEST"),"production launcher still contains experiment badge");
 assert(launcherCss.includes("padding:calc(18px + var(--safeTop)) 16px 26px"),"launcher safe-area top padding missing");
-assert(sw.includes('const CACHE_REVISION="r9"'),"V73 cache revision mismatch");
+assert(sw.includes('const CACHE_REVISION="r10"'),"V73 cache revision mismatch");
 assert(appStateSource.includes("var BACKUP_VERSION=3"),"backup format v3 missing");
 assert(engineSource.includes("experimentRecordCirca(null);"),"Circa shared base-round recording missing");
 assert(engineSource.includes("impostorEscaped:outcome===true?true:outcome===false?false:null"),"Circa unresolved outcome state missing");
@@ -146,6 +174,12 @@ assert(gameCss.includes(".classicRoleScreen.hidden"),"Classic hidden-screen safe
 assert(gameCss.includes("color:#00d747!important"),"Circa result success green missing");
 assert(html["games/circa-imposter/index.html"].includes('apple-mobile-web-app-status-bar-style\" content=\"black\"'),"Circa opaque iOS status bar missing");
 assert(html["games/classic-imposter/index.html"].includes('apple-mobile-web-app-status-bar-style\" content=\"black\"'),"Classic opaque iOS status bar missing");
+assert(html["games/who-am-i/index.html"].includes('apple-mobile-web-app-status-bar-style\" content=\"black\"'),"WhoAmI opaque iOS status bar missing");
+assert(whoCss.includes(".whoViewerScreen .whoBottomButton{margin-top:18px}"),"WhoAmI reveal spacing missing");
+assert(html["index.html"].includes('href="games/who-am-i/"'),"WhoAmI launcher card missing");
+assert(games.games.some(game=>game.id==="who-am-i"&&game.path==="games/who-am-i/"),"WhoAmI registry entry missing");
+assert(sw.includes('versioned("/assets/js/who-am-i.js")')&&sw.includes('versioned("/assets/css/who-am-i.css")'),"WhoAmI service-worker assets missing");
+assert(sw.includes('"/data/who-am-i.json"')&&sw.includes('"/games/who-am-i/"'),"WhoAmI service-worker data/page missing");
 
 /* Simulate the first V72 -> V73 profile migration. */
 const legacySeed=new Map();
@@ -318,6 +352,7 @@ assert(!emptyState.getAchievements().find(a=>a.id==="first-session").unlocked,"e
 auditMem.storage.setItem("imposterGames.v73.game.circa.deckProgress.v1",JSON.stringify({"Allgemein::mittel":[questions.items[0].qid]}));
 auditMem.storage.setItem("imposterGames.v73.game.circa.completedQuestions.v1",JSON.stringify([questions.items[0].qid]));
 auditMem.storage.setItem("imposterGames.v73.game.classic.timer.v1",JSON.stringify(180));
+auditMem.storage.setItem("imposterGames.v73.game.whoami.deck.v1",JSON.stringify({"Alle":[who.items[0].id]}));
 const auditBackup=await auditState.createBackup();
 assert(auditBackup.formatVersion===3&&auditBackup.gameStorage,"backup v3 game storage missing");
 assert(auditBackup.integrity&&auditBackup.integrity.algorithm==="SHA-256"&&/^[a-f0-9]{64}$/.test(auditBackup.integrity.sha256),"backup v3 SHA-256 integrity missing");
@@ -336,6 +371,7 @@ const restoreState=auditStore(restoreMem);
 const restoreResult=await restoreState.importSnapshot(auditBackup);
 assert(restoreResult.ok&&restoreResult.gameStorage===true,"backup v3 restore failed on fresh device state");
 assert(JSON.parse(restoreMem.storage.getItem("imposterGames.v73.game.circa.completedQuestions.v1"))[0]===questions.items[0].qid,"game progress was not restored");
+assert(JSON.parse(restoreMem.storage.getItem("imposterGames.v73.game.whoami.deck.v1")).Alle[0]===who.items[0].id,"WhoAmI game progress was not restored");
 
 const downgradedBackup=structuredClone(auditBackup);
 downgradedBackup.formatVersion=2;
@@ -370,4 +406,4 @@ assert(resetReload.getMigrationStatus().perfectUnknown===false,"reset leaked V72
 const remainingGameKeys=Array.from(restoreMem.map.keys()).filter(key=>key.startsWith("imposterGames.v73.game."));
 assert(remainingGameKeys.length===1&&remainingGameKeys[0]==="imposterGames.v73.game.v72Migration.v1","reset left stale V73 game storage");
 
-console.log("Release validation OK · V"+release+" · "+questions.items.length+" Circa pairs · "+words.items.length+" Classic words");
+console.log("Release validation OK · V"+release+" · "+questions.items.length+" Circa pairs · "+words.items.length+" Classic words · "+who.items.length+" WhoAmI terms");

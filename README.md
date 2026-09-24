@@ -49,9 +49,22 @@ Alle normalen Spieler sehen dasselbe geheime Wort. Der Imposter kennt das Wort n
 - eigener Wiederholungsschutz
 - persönliche Profil- und Sessionstatistik
 
+### ❓ Wer bin ich?
+
+Jeder Spieler erhält einen eigenen geheimen Begriff. Beim Weitergeben des Handys sieht jede Person die Begriffe aller anderen Spieler, während der eigene Begriff als `???` verborgen bleibt. Danach wird außerhalb der App gefragt, geraten und diskutiert; die App dient nur zur fairen Verteilung und späteren Auflösung.
+
+- 2–12 Spieler
+- 275 eindeutige Begriffe
+- 11 Kategorien, auch kombinierbar
+- eigener Wiederholungsschutz
+- vorhandene Profile und Avatare werden übernommen
+- neutraler Spielbildschirm nach der geheimen Verteilung
+- gemeinsame Auflösung aller Begriffe am Ende
+- Spieler-, Kategorie- und Deck-Fortschritt wird lokal gespeichert und in Backup V3 mitgesichert
+
 ## 🏠 Launcher und Profile
 
-Der Launcher verbindet beide Spiele zu einer gemeinsamen App.
+Der Launcher verbindet alle drei Spiele zu einer gemeinsamen App.
 
 Enthalten sind:
 

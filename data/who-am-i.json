@@ -1,0 +1,1438 @@
+{
+  "schemaVersion": 1,
+  "count": 275,
+  "categories": [
+    {
+      "name": "Film & Serien",
+      "emoji": "🎬",
+      "count": 25
+    },
+    {
+      "name": "Games & Figuren",
+      "emoji": "🎮",
+      "count": 25
+    },
+    {
+      "name": "Personen & Geschichte",
+      "emoji": "🧠",
+      "count": 25
+    },
+    {
+      "name": "Tiere",
+      "emoji": "🐾",
+      "count": 25
+    },
+    {
+      "name": "Berufe",
+      "emoji": "🧰",
+      "count": 25
+    },
+    {
+      "name": "Fahrzeuge",
+      "emoji": "🚗",
+      "count": 25
+    },
+    {
+      "name": "Orte & Reisen",
+      "emoji": "🌍",
+      "count": 25
+    },
+    {
+      "name": "Essen & Trinken",
+      "emoji": "🍕",
+      "count": 25
+    },
+    {
+      "name": "Marken & Technik",
+      "emoji": "📱",
+      "count": 25
+    },
+    {
+      "name": "Sport & Freizeit",
+      "emoji": "⚽",
+      "count": 25
+    },
+    {
+      "name": "Alltag & Objekte",
+      "emoji": "🧩",
+      "count": 25
+    }
+  ],
+  "items": [
+    {
+      "id": "who-0001",
+      "cat": "Film & Serien",
+      "term": "Harry Potter"
+    },
+    {
+      "id": "who-0002",
+      "cat": "Film & Serien",
+      "term": "Darth Vader"
+    },
+    {
+      "id": "who-0003",
+      "cat": "Film & Serien",
+      "term": "Shrek"
+    },
+    {
+      "id": "who-0004",
+      "cat": "Film & Serien",
+      "term": "Wednesday Addams"
+    },
+    {
+      "id": "who-0005",
+      "cat": "Film & Serien",
+      "term": "Homer Simpson"
+    },
+    {
+      "id": "who-0006",
+      "cat": "Film & Serien",
+      "term": "SpongeBob"
+    },
+    {
+      "id": "who-0007",
+      "cat": "Film & Serien",
+      "term": "Elsa"
+    },
+    {
+      "id": "who-0008",
+      "cat": "Film & Serien",
+      "term": "Batman"
+    },
+    {
+      "id": "who-0009",
+      "cat": "Film & Serien",
+      "term": "Spider-Man"
+    },
+    {
+      "id": "who-0010",
+      "cat": "Film & Serien",
+      "term": "Iron Man"
+    },
+    {
+      "id": "who-0011",
+      "cat": "Film & Serien",
+      "term": "Jack Sparrow"
+    },
+    {
+      "id": "who-0012",
+      "cat": "Film & Serien",
+      "term": "Mr. Bean"
+    },
+    {
+      "id": "who-0013",
+      "cat": "Film & Serien",
+      "term": "Rocky Balboa"
+    },
+    {
+      "id": "who-0014",
+      "cat": "Film & Serien",
+      "term": "Indiana Jones"
+    },
+    {
+      "id": "who-0015",
+      "cat": "Film & Serien",
+      "term": "Yoda"
+    },
+    {
+      "id": "who-0016",
+      "cat": "Film & Serien",
+      "term": "Sherlock Holmes"
+    },
+    {
+      "id": "who-0017",
+      "cat": "Film & Serien",
+      "term": "James Bond"
+    },
+    {
+      "id": "who-0018",
+      "cat": "Film & Serien",
+      "term": "Forrest Gump"
+    },
+    {
+      "id": "who-0019",
+      "cat": "Film & Serien",
+      "term": "Barbie"
+    },
+    {
+      "id": "who-0020",
+      "cat": "Film & Serien",
+      "term": "Simba"
+    },
+    {
+      "id": "who-0021",
+      "cat": "Film & Serien",
+      "term": "Buzz Lightyear"
+    },
+    {
+      "id": "who-0022",
+      "cat": "Film & Serien",
+      "term": "Woody"
+    },
+    {
+      "id": "who-0023",
+      "cat": "Film & Serien",
+      "term": "Neo"
+    },
+    {
+      "id": "who-0024",
+      "cat": "Film & Serien",
+      "term": "Terminator"
+    },
+    {
+      "id": "who-0025",
+      "cat": "Film & Serien",
+      "term": "E.T."
+    },
+    {
+      "id": "who-0026",
+      "cat": "Games & Figuren",
+      "term": "Super Mario"
+    },
+    {
+      "id": "who-0027",
+      "cat": "Games & Figuren",
+      "term": "Luigi"
+    },
+    {
+      "id": "who-0028",
+      "cat": "Games & Figuren",
+      "term": "Bowser"
+    },
+    {
+      "id": "who-0029",
+      "cat": "Games & Figuren",
+      "term": "Pikachu"
+    },
+    {
+      "id": "who-0030",
+      "cat": "Games & Figuren",
+      "term": "Link"
+    },
+    {
+      "id": "who-0031",
+      "cat": "Games & Figuren",
+      "term": "Zelda"
+    },
+    {
+      "id": "who-0032",
+      "cat": "Games & Figuren",
+      "term": "Sonic"
+    },
+    {
+      "id": "who-0033",
+      "cat": "Games & Figuren",
+      "term": "Lara Croft"
+    },
+    {
+      "id": "who-0034",
+      "cat": "Games & Figuren",
+      "term": "Master Chief"
+    },
+    {
+      "id": "who-0035",
+      "cat": "Games & Figuren",
+      "term": "Kratos"
+    },
+    {
+      "id": "who-0036",
+      "cat": "Games & Figuren",
+      "term": "Minecraft Steve"
+    },
+    {
+      "id": "who-0037",
+      "cat": "Games & Figuren",
+      "term": "Pac-Man"
+    },
+    {
+      "id": "who-0038",
+      "cat": "Games & Figuren",
+      "term": "Donkey Kong"
+    },
+    {
+      "id": "who-0039",
+      "cat": "Games & Figuren",
+      "term": "Kirby"
+    },
+    {
+      "id": "who-0040",
+      "cat": "Games & Figuren",
+      "term": "Crash Bandicoot"
+    },
+    {
+      "id": "who-0041",
+      "cat": "Games & Figuren",
+      "term": "Spyro"
+    },
+    {
+      "id": "who-0042",
+      "cat": "Games & Figuren",
+      "term": "Geralt von Riva"
+    },
+    {
+      "id": "who-0043",
+      "cat": "Games & Figuren",
+      "term": "Aloy"
+    },
+    {
+      "id": "who-0044",
+      "cat": "Games & Figuren",
+      "term": "Nathan Drake"
+    },
+    {
+      "id": "who-0045",
+      "cat": "Games & Figuren",
+      "term": "Agent 47"
+    },
+    {
+      "id": "who-0046",
+      "cat": "Games & Figuren",
+      "term": "Chun-Li"
+    },
+    {
+      "id": "who-0047",
+      "cat": "Games & Figuren",
+      "term": "Ryu"
+    },
+    {
+      "id": "who-0048",
+      "cat": "Games & Figuren",
+      "term": "Samus Aran"
+    },
+    {
+      "id": "who-0049",
+      "cat": "Games & Figuren",
+      "term": "Toad"
+    },
+    {
+      "id": "who-0050",
+      "cat": "Games & Figuren",
+      "term": "Yoshi"
+    },
+    {
+      "id": "who-0051",
+      "cat": "Personen & Geschichte",
+      "term": "Albert Einstein"
+    },
+    {
+      "id": "who-0052",
+      "cat": "Personen & Geschichte",
+      "term": "Leonardo da Vinci"
+    },
+    {
+      "id": "who-0053",
+      "cat": "Personen & Geschichte",
+      "term": "Cleopatra"
+    },
+    {
+      "id": "who-0054",
+      "cat": "Personen & Geschichte",
+      "term": "Napoleon Bonaparte"
+    },
+    {
+      "id": "who-0055",
+      "cat": "Personen & Geschichte",
+      "term": "Wolfgang Amadeus Mozart"
+    },
+    {
+      "id": "who-0056",
+      "cat": "Personen & Geschichte",
+      "term": "Ludwig van Beethoven"
+    },
+    {
+      "id": "who-0057",
+      "cat": "Personen & Geschichte",
+      "term": "Marie Curie"
+    },
+    {
+      "id": "who-0058",
+      "cat": "Personen & Geschichte",
+      "term": "Isaac Newton"
+    },
+    {
+      "id": "who-0059",
+      "cat": "Personen & Geschichte",
+      "term": "Galileo Galilei"
+    },
+    {
+      "id": "who-0060",
+      "cat": "Personen & Geschichte",
+      "term": "Julius Caesar"
+    },
+    {
+      "id": "who-0061",
+      "cat": "Personen & Geschichte",
+      "term": "Vincent van Gogh"
+    },
+    {
+      "id": "who-0062",
+      "cat": "Personen & Geschichte",
+      "term": "Pablo Picasso"
+    },
+    {
+      "id": "who-0063",
+      "cat": "Personen & Geschichte",
+      "term": "William Shakespeare"
+    },
+    {
+      "id": "who-0064",
+      "cat": "Personen & Geschichte",
+      "term": "Elvis Presley"
+    },
+    {
+      "id": "who-0065",
+      "cat": "Personen & Geschichte",
+      "term": "Michael Jackson"
+    },
+    {
+      "id": "who-0066",
+      "cat": "Personen & Geschichte",
+      "term": "Freddie Mercury"
+    },
+    {
+      "id": "who-0067",
+      "cat": "Personen & Geschichte",
+      "term": "Charlie Chaplin"
+    },
+    {
+      "id": "who-0068",
+      "cat": "Personen & Geschichte",
+      "term": "Marilyn Monroe"
+    },
+    {
+      "id": "who-0069",
+      "cat": "Personen & Geschichte",
+      "term": "Steve Jobs"
+    },
+    {
+      "id": "who-0070",
+      "cat": "Personen & Geschichte",
+      "term": "Nikola Tesla"
+    },
+    {
+      "id": "who-0071",
+      "cat": "Personen & Geschichte",
+      "term": "Neil Armstrong"
+    },
+    {
+      "id": "who-0072",
+      "cat": "Personen & Geschichte",
+      "term": "Frida Kahlo"
+    },
+    {
+      "id": "who-0073",
+      "cat": "Personen & Geschichte",
+      "term": "Charles Darwin"
+    },
+    {
+      "id": "who-0074",
+      "cat": "Personen & Geschichte",
+      "term": "Marco Polo"
+    },
+    {
+      "id": "who-0075",
+      "cat": "Personen & Geschichte",
+      "term": "Amelia Earhart"
+    },
+    {
+      "id": "who-0076",
+      "cat": "Tiere",
+      "term": "Hund"
+    },
+    {
+      "id": "who-0077",
+      "cat": "Tiere",
+      "term": "Katze"
+    },
+    {
+      "id": "who-0078",
+      "cat": "Tiere",
+      "term": "Elefant"
+    },
+    {
+      "id": "who-0079",
+      "cat": "Tiere",
+      "term": "Giraffe"
+    },
+    {
+      "id": "who-0080",
+      "cat": "Tiere",
+      "term": "Löwe"
+    },
+    {
+      "id": "who-0081",
+      "cat": "Tiere",
+      "term": "Tiger"
+    },
+    {
+      "id": "who-0082",
+      "cat": "Tiere",
+      "term": "Pinguin"
+    },
+    {
+      "id": "who-0083",
+      "cat": "Tiere",
+      "term": "Känguru"
+    },
+    {
+      "id": "who-0084",
+      "cat": "Tiere",
+      "term": "Koala"
+    },
+    {
+      "id": "who-0085",
+      "cat": "Tiere",
+      "term": "Delfin"
+    },
+    {
+      "id": "who-0086",
+      "cat": "Tiere",
+      "term": "Hai"
+    },
+    {
+      "id": "who-0087",
+      "cat": "Tiere",
+      "term": "Oktopus"
+    },
+    {
+      "id": "who-0088",
+      "cat": "Tiere",
+      "term": "Eule"
+    },
+    {
+      "id": "who-0089",
+      "cat": "Tiere",
+      "term": "Adler"
+    },
+    {
+      "id": "who-0090",
+      "cat": "Tiere",
+      "term": "Flamingo"
+    },
+    {
+      "id": "who-0091",
+      "cat": "Tiere",
+      "term": "Krokodil"
+    },
+    {
+      "id": "who-0092",
+      "cat": "Tiere",
+      "term": "Nilpferd"
+    },
+    {
+      "id": "who-0093",
+      "cat": "Tiere",
+      "term": "Nashorn"
+    },
+    {
+      "id": "who-0094",
+      "cat": "Tiere",
+      "term": "Faultier"
+    },
+    {
+      "id": "who-0095",
+      "cat": "Tiere",
+      "term": "Panda"
+    },
+    {
+      "id": "who-0096",
+      "cat": "Tiere",
+      "term": "Gorilla"
+    },
+    {
+      "id": "who-0097",
+      "cat": "Tiere",
+      "term": "Fuchs"
+    },
+    {
+      "id": "who-0098",
+      "cat": "Tiere",
+      "term": "Wolf"
+    },
+    {
+      "id": "who-0099",
+      "cat": "Tiere",
+      "term": "Eichhörnchen"
+    },
+    {
+      "id": "who-0100",
+      "cat": "Tiere",
+      "term": "Chamäleon"
+    },
+    {
+      "id": "who-0101",
+      "cat": "Berufe",
+      "term": "Feuerwehrmann"
+    },
+    {
+      "id": "who-0102",
+      "cat": "Berufe",
+      "term": "Polizist"
+    },
+    {
+      "id": "who-0103",
+      "cat": "Berufe",
+      "term": "Arzt"
+    },
+    {
+      "id": "who-0104",
+      "cat": "Berufe",
+      "term": "Zahnarzt"
+    },
+    {
+      "id": "who-0105",
+      "cat": "Berufe",
+      "term": "Pilot"
+    },
+    {
+      "id": "who-0106",
+      "cat": "Berufe",
+      "term": "Koch"
+    },
+    {
+      "id": "who-0107",
+      "cat": "Berufe",
+      "term": "Bäcker"
+    },
+    {
+      "id": "who-0108",
+      "cat": "Berufe",
+      "term": "Friseur"
+    },
+    {
+      "id": "who-0109",
+      "cat": "Berufe",
+      "term": "Lehrer"
+    },
+    {
+      "id": "who-0110",
+      "cat": "Berufe",
+      "term": "Mechaniker"
+    },
+    {
+      "id": "who-0111",
+      "cat": "Berufe",
+      "term": "Elektriker"
+    },
+    {
+      "id": "who-0112",
+      "cat": "Berufe",
+      "term": "Programmierer"
+    },
+    {
+      "id": "who-0113",
+      "cat": "Berufe",
+      "term": "Fotograf"
+    },
+    {
+      "id": "who-0114",
+      "cat": "Berufe",
+      "term": "Journalist"
+    },
+    {
+      "id": "who-0115",
+      "cat": "Berufe",
+      "term": "Richter"
+    },
+    {
+      "id": "who-0116",
+      "cat": "Berufe",
+      "term": "Anwalt"
+    },
+    {
+      "id": "who-0117",
+      "cat": "Berufe",
+      "term": "Architekt"
+    },
+    {
+      "id": "who-0118",
+      "cat": "Berufe",
+      "term": "Gärtner"
+    },
+    {
+      "id": "who-0119",
+      "cat": "Berufe",
+      "term": "Landwirt"
+    },
+    {
+      "id": "who-0120",
+      "cat": "Berufe",
+      "term": "Postbote"
+    },
+    {
+      "id": "who-0121",
+      "cat": "Berufe",
+      "term": "Busfahrer"
+    },
+    {
+      "id": "who-0122",
+      "cat": "Berufe",
+      "term": "Schauspieler"
+    },
+    {
+      "id": "who-0123",
+      "cat": "Berufe",
+      "term": "Musiker"
+    },
+    {
+      "id": "who-0124",
+      "cat": "Berufe",
+      "term": "Astronaut"
+    },
+    {
+      "id": "who-0125",
+      "cat": "Berufe",
+      "term": "Detektiv"
+    },
+    {
+      "id": "who-0126",
+      "cat": "Fahrzeuge",
+      "term": "Fahrrad"
+    },
+    {
+      "id": "who-0127",
+      "cat": "Fahrzeuge",
+      "term": "Motorrad"
+    },
+    {
+      "id": "who-0128",
+      "cat": "Fahrzeuge",
+      "term": "Sportwagen"
+    },
+    {
+      "id": "who-0129",
+      "cat": "Fahrzeuge",
+      "term": "Formel-1-Auto"
+    },
+    {
+      "id": "who-0130",
+      "cat": "Fahrzeuge",
+      "term": "Traktor"
+    },
+    {
+      "id": "who-0131",
+      "cat": "Fahrzeuge",
+      "term": "Bagger"
+    },
+    {
+      "id": "who-0132",
+      "cat": "Fahrzeuge",
+      "term": "Feuerwehrwagen"
+    },
+    {
+      "id": "who-0133",
+      "cat": "Fahrzeuge",
+      "term": "Krankenwagen"
+    },
+    {
+      "id": "who-0134",
+      "cat": "Fahrzeuge",
+      "term": "Polizeiauto"
+    },
+    {
+      "id": "who-0135",
+      "cat": "Fahrzeuge",
+      "term": "Bus"
+    },
+    {
+      "id": "who-0136",
+      "cat": "Fahrzeuge",
+      "term": "Straßenbahn"
+    },
+    {
+      "id": "who-0137",
+      "cat": "Fahrzeuge",
+      "term": "U-Bahn"
+    },
+    {
+      "id": "who-0138",
+      "cat": "Fahrzeuge",
+      "term": "Zug"
+    },
+    {
+      "id": "who-0139",
+      "cat": "Fahrzeuge",
+      "term": "ICE"
+    },
+    {
+      "id": "who-0140",
+      "cat": "Fahrzeuge",
+      "term": "Flugzeug"
+    },
+    {
+      "id": "who-0141",
+      "cat": "Fahrzeuge",
+      "term": "Hubschrauber"
+    },
+    {
+      "id": "who-0142",
+      "cat": "Fahrzeuge",
+      "term": "Segelboot"
+    },
+    {
+      "id": "who-0143",
+      "cat": "Fahrzeuge",
+      "term": "Kreuzfahrtschiff"
+    },
+    {
+      "id": "who-0144",
+      "cat": "Fahrzeuge",
+      "term": "U-Boot"
+    },
+    {
+      "id": "who-0145",
+      "cat": "Fahrzeuge",
+      "term": "Heißluftballon"
+    },
+    {
+      "id": "who-0146",
+      "cat": "Fahrzeuge",
+      "term": "Wohnmobil"
+    },
+    {
+      "id": "who-0147",
+      "cat": "Fahrzeuge",
+      "term": "Gabelstapler"
+    },
+    {
+      "id": "who-0148",
+      "cat": "Fahrzeuge",
+      "term": "Müllwagen"
+    },
+    {
+      "id": "who-0149",
+      "cat": "Fahrzeuge",
+      "term": "Taxi"
+    },
+    {
+      "id": "who-0150",
+      "cat": "Fahrzeuge",
+      "term": "E-Scooter"
+    },
+    {
+      "id": "who-0151",
+      "cat": "Orte & Reisen",
+      "term": "Eiffelturm"
+    },
+    {
+      "id": "who-0152",
+      "cat": "Orte & Reisen",
+      "term": "Brandenburger Tor"
+    },
+    {
+      "id": "who-0153",
+      "cat": "Orte & Reisen",
+      "term": "Kölner Dom"
+    },
+    {
+      "id": "who-0154",
+      "cat": "Orte & Reisen",
+      "term": "Big Ben"
+    },
+    {
+      "id": "who-0155",
+      "cat": "Orte & Reisen",
+      "term": "Freiheitsstatue"
+    },
+    {
+      "id": "who-0156",
+      "cat": "Orte & Reisen",
+      "term": "Pyramiden von Gizeh"
+    },
+    {
+      "id": "who-0157",
+      "cat": "Orte & Reisen",
+      "term": "Chinesische Mauer"
+    },
+    {
+      "id": "who-0158",
+      "cat": "Orte & Reisen",
+      "term": "Taj Mahal"
+    },
+    {
+      "id": "who-0159",
+      "cat": "Orte & Reisen",
+      "term": "Mount Everest"
+    },
+    {
+      "id": "who-0160",
+      "cat": "Orte & Reisen",
+      "term": "Grand Canyon"
+    },
+    {
+      "id": "who-0161",
+      "cat": "Orte & Reisen",
+      "term": "Sahara"
+    },
+    {
+      "id": "who-0162",
+      "cat": "Orte & Reisen",
+      "term": "Amazonas"
+    },
+    {
+      "id": "who-0163",
+      "cat": "Orte & Reisen",
+      "term": "Nordpol"
+    },
+    {
+      "id": "who-0164",
+      "cat": "Orte & Reisen",
+      "term": "Südpol"
+    },
+    {
+      "id": "who-0165",
+      "cat": "Orte & Reisen",
+      "term": "Hawaii"
+    },
+    {
+      "id": "who-0166",
+      "cat": "Orte & Reisen",
+      "term": "Mallorca"
+    },
+    {
+      "id": "who-0167",
+      "cat": "Orte & Reisen",
+      "term": "Venedig"
+    },
+    {
+      "id": "who-0168",
+      "cat": "Orte & Reisen",
+      "term": "New York"
+    },
+    {
+      "id": "who-0169",
+      "cat": "Orte & Reisen",
+      "term": "Tokio"
+    },
+    {
+      "id": "who-0170",
+      "cat": "Orte & Reisen",
+      "term": "Paris"
+    },
+    {
+      "id": "who-0171",
+      "cat": "Orte & Reisen",
+      "term": "Berlin"
+    },
+    {
+      "id": "who-0172",
+      "cat": "Orte & Reisen",
+      "term": "London"
+    },
+    {
+      "id": "who-0173",
+      "cat": "Orte & Reisen",
+      "term": "Rom"
+    },
+    {
+      "id": "who-0174",
+      "cat": "Orte & Reisen",
+      "term": "Sydney"
+    },
+    {
+      "id": "who-0175",
+      "cat": "Orte & Reisen",
+      "term": "Dubai"
+    },
+    {
+      "id": "who-0176",
+      "cat": "Essen & Trinken",
+      "term": "Pizza"
+    },
+    {
+      "id": "who-0177",
+      "cat": "Essen & Trinken",
+      "term": "Döner"
+    },
+    {
+      "id": "who-0178",
+      "cat": "Essen & Trinken",
+      "term": "Sushi"
+    },
+    {
+      "id": "who-0179",
+      "cat": "Essen & Trinken",
+      "term": "Burger"
+    },
+    {
+      "id": "who-0180",
+      "cat": "Essen & Trinken",
+      "term": "Pommes"
+    },
+    {
+      "id": "who-0181",
+      "cat": "Essen & Trinken",
+      "term": "Spaghetti"
+    },
+    {
+      "id": "who-0182",
+      "cat": "Essen & Trinken",
+      "term": "Lasagne"
+    },
+    {
+      "id": "who-0183",
+      "cat": "Essen & Trinken",
+      "term": "Currywurst"
+    },
+    {
+      "id": "who-0184",
+      "cat": "Essen & Trinken",
+      "term": "Bratwurst"
+    },
+    {
+      "id": "who-0185",
+      "cat": "Essen & Trinken",
+      "term": "Schnitzel"
+    },
+    {
+      "id": "who-0186",
+      "cat": "Essen & Trinken",
+      "term": "Pfannkuchen"
+    },
+    {
+      "id": "who-0187",
+      "cat": "Essen & Trinken",
+      "term": "Waffel"
+    },
+    {
+      "id": "who-0188",
+      "cat": "Essen & Trinken",
+      "term": "Eis"
+    },
+    {
+      "id": "who-0189",
+      "cat": "Essen & Trinken",
+      "term": "Schokolade"
+    },
+    {
+      "id": "who-0190",
+      "cat": "Essen & Trinken",
+      "term": "Gummibärchen"
+    },
+    {
+      "id": "who-0191",
+      "cat": "Essen & Trinken",
+      "term": "Popcorn"
+    },
+    {
+      "id": "who-0192",
+      "cat": "Essen & Trinken",
+      "term": "Croissant"
+    },
+    {
+      "id": "who-0193",
+      "cat": "Essen & Trinken",
+      "term": "Brezel"
+    },
+    {
+      "id": "who-0194",
+      "cat": "Essen & Trinken",
+      "term": "Käsekuchen"
+    },
+    {
+      "id": "who-0195",
+      "cat": "Essen & Trinken",
+      "term": "Erdbeere"
+    },
+    {
+      "id": "who-0196",
+      "cat": "Essen & Trinken",
+      "term": "Banane"
+    },
+    {
+      "id": "who-0197",
+      "cat": "Essen & Trinken",
+      "term": "Ananas"
+    },
+    {
+      "id": "who-0198",
+      "cat": "Essen & Trinken",
+      "term": "Kaffee"
+    },
+    {
+      "id": "who-0199",
+      "cat": "Essen & Trinken",
+      "term": "Cola"
+    },
+    {
+      "id": "who-0200",
+      "cat": "Essen & Trinken",
+      "term": "Kakao"
+    },
+    {
+      "id": "who-0201",
+      "cat": "Marken & Technik",
+      "term": "iPhone"
+    },
+    {
+      "id": "who-0202",
+      "cat": "Marken & Technik",
+      "term": "PlayStation"
+    },
+    {
+      "id": "who-0203",
+      "cat": "Marken & Technik",
+      "term": "Xbox"
+    },
+    {
+      "id": "who-0204",
+      "cat": "Marken & Technik",
+      "term": "Nintendo Switch"
+    },
+    {
+      "id": "who-0205",
+      "cat": "Marken & Technik",
+      "term": "Tesla"
+    },
+    {
+      "id": "who-0206",
+      "cat": "Marken & Technik",
+      "term": "BMW"
+    },
+    {
+      "id": "who-0207",
+      "cat": "Marken & Technik",
+      "term": "Mercedes-Benz"
+    },
+    {
+      "id": "who-0208",
+      "cat": "Marken & Technik",
+      "term": "Porsche"
+    },
+    {
+      "id": "who-0209",
+      "cat": "Marken & Technik",
+      "term": "Ferrari"
+    },
+    {
+      "id": "who-0210",
+      "cat": "Marken & Technik",
+      "term": "LEGO"
+    },
+    {
+      "id": "who-0211",
+      "cat": "Marken & Technik",
+      "term": "IKEA"
+    },
+    {
+      "id": "who-0212",
+      "cat": "Marken & Technik",
+      "term": "Adidas"
+    },
+    {
+      "id": "who-0213",
+      "cat": "Marken & Technik",
+      "term": "Nike"
+    },
+    {
+      "id": "who-0214",
+      "cat": "Marken & Technik",
+      "term": "Coca-Cola"
+    },
+    {
+      "id": "who-0215",
+      "cat": "Marken & Technik",
+      "term": "YouTube"
+    },
+    {
+      "id": "who-0216",
+      "cat": "Marken & Technik",
+      "term": "Netflix"
+    },
+    {
+      "id": "who-0217",
+      "cat": "Marken & Technik",
+      "term": "Spotify"
+    },
+    {
+      "id": "who-0218",
+      "cat": "Marken & Technik",
+      "term": "WhatsApp"
+    },
+    {
+      "id": "who-0219",
+      "cat": "Marken & Technik",
+      "term": "Instagram"
+    },
+    {
+      "id": "who-0220",
+      "cat": "Marken & Technik",
+      "term": "Snapchat"
+    },
+    {
+      "id": "who-0221",
+      "cat": "Marken & Technik",
+      "term": "Google"
+    },
+    {
+      "id": "who-0222",
+      "cat": "Marken & Technik",
+      "term": "Amazon"
+    },
+    {
+      "id": "who-0223",
+      "cat": "Marken & Technik",
+      "term": "Apple Watch"
+    },
+    {
+      "id": "who-0224",
+      "cat": "Marken & Technik",
+      "term": "AirPods"
+    },
+    {
+      "id": "who-0225",
+      "cat": "Marken & Technik",
+      "term": "GoPro"
+    },
+    {
+      "id": "who-0226",
+      "cat": "Sport & Freizeit",
+      "term": "Fußball"
+    },
+    {
+      "id": "who-0227",
+      "cat": "Sport & Freizeit",
+      "term": "Basketball"
+    },
+    {
+      "id": "who-0228",
+      "cat": "Sport & Freizeit",
+      "term": "Tennis"
+    },
+    {
+      "id": "who-0229",
+      "cat": "Sport & Freizeit",
+      "term": "Tischtennis"
+    },
+    {
+      "id": "who-0230",
+      "cat": "Sport & Freizeit",
+      "term": "Volleyball"
+    },
+    {
+      "id": "who-0231",
+      "cat": "Sport & Freizeit",
+      "term": "Handball"
+    },
+    {
+      "id": "who-0232",
+      "cat": "Sport & Freizeit",
+      "term": "Golf"
+    },
+    {
+      "id": "who-0233",
+      "cat": "Sport & Freizeit",
+      "term": "Boxen"
+    },
+    {
+      "id": "who-0234",
+      "cat": "Sport & Freizeit",
+      "term": "Schwimmen"
+    },
+    {
+      "id": "who-0235",
+      "cat": "Sport & Freizeit",
+      "term": "Skifahren"
+    },
+    {
+      "id": "who-0236",
+      "cat": "Sport & Freizeit",
+      "term": "Snowboarden"
+    },
+    {
+      "id": "who-0237",
+      "cat": "Sport & Freizeit",
+      "term": "Surfen"
+    },
+    {
+      "id": "who-0238",
+      "cat": "Sport & Freizeit",
+      "term": "Skateboarden"
+    },
+    {
+      "id": "who-0239",
+      "cat": "Sport & Freizeit",
+      "term": "Klettern"
+    },
+    {
+      "id": "who-0240",
+      "cat": "Sport & Freizeit",
+      "term": "Wandern"
+    },
+    {
+      "id": "who-0241",
+      "cat": "Sport & Freizeit",
+      "term": "Angeln"
+    },
+    {
+      "id": "who-0242",
+      "cat": "Sport & Freizeit",
+      "term": "Bowling"
+    },
+    {
+      "id": "who-0243",
+      "cat": "Sport & Freizeit",
+      "term": "Darts"
+    },
+    {
+      "id": "who-0244",
+      "cat": "Sport & Freizeit",
+      "term": "Billard"
+    },
+    {
+      "id": "who-0245",
+      "cat": "Sport & Freizeit",
+      "term": "Schach"
+    },
+    {
+      "id": "who-0246",
+      "cat": "Sport & Freizeit",
+      "term": "Fitnessstudio"
+    },
+    {
+      "id": "who-0247",
+      "cat": "Sport & Freizeit",
+      "term": "Camping"
+    },
+    {
+      "id": "who-0248",
+      "cat": "Sport & Freizeit",
+      "term": "Karaoke"
+    },
+    {
+      "id": "who-0249",
+      "cat": "Sport & Freizeit",
+      "term": "Tanzen"
+    },
+    {
+      "id": "who-0250",
+      "cat": "Sport & Freizeit",
+      "term": "Joggen"
+    },
+    {
+      "id": "who-0251",
+      "cat": "Alltag & Objekte",
+      "term": "Zahnbürste"
+    },
+    {
+      "id": "who-0252",
+      "cat": "Alltag & Objekte",
+      "term": "Regenschirm"
+    },
+    {
+      "id": "who-0253",
+      "cat": "Alltag & Objekte",
+      "term": "Schlüsselbund"
+    },
+    {
+      "id": "who-0254",
+      "cat": "Alltag & Objekte",
+      "term": "Fernbedienung"
+    },
+    {
+      "id": "who-0255",
+      "cat": "Alltag & Objekte",
+      "term": "Kühlschrank"
+    },
+    {
+      "id": "who-0256",
+      "cat": "Alltag & Objekte",
+      "term": "Waschmaschine"
+    },
+    {
+      "id": "who-0257",
+      "cat": "Alltag & Objekte",
+      "term": "Staubsauger"
+    },
+    {
+      "id": "who-0258",
+      "cat": "Alltag & Objekte",
+      "term": "Toaster"
+    },
+    {
+      "id": "who-0259",
+      "cat": "Alltag & Objekte",
+      "term": "Kaffeemaschine"
+    },
+    {
+      "id": "who-0260",
+      "cat": "Alltag & Objekte",
+      "term": "Mikrowelle"
+    },
+    {
+      "id": "who-0261",
+      "cat": "Alltag & Objekte",
+      "term": "Wecker"
+    },
+    {
+      "id": "who-0262",
+      "cat": "Alltag & Objekte",
+      "term": "Sonnenbrille"
+    },
+    {
+      "id": "who-0263",
+      "cat": "Alltag & Objekte",
+      "term": "Rucksack"
+    },
+    {
+      "id": "who-0264",
+      "cat": "Alltag & Objekte",
+      "term": "Koffer"
+    },
+    {
+      "id": "who-0265",
+      "cat": "Alltag & Objekte",
+      "term": "Kopfhörer"
+    },
+    {
+      "id": "who-0266",
+      "cat": "Alltag & Objekte",
+      "term": "Taschenlampe"
+    },
+    {
+      "id": "who-0267",
+      "cat": "Alltag & Objekte",
+      "term": "Kerze"
+    },
+    {
+      "id": "who-0268",
+      "cat": "Alltag & Objekte",
+      "term": "Hammer"
+    },
+    {
+      "id": "who-0269",
+      "cat": "Alltag & Objekte",
+      "term": "Schraubenzieher"
+    },
+    {
+      "id": "who-0270",
+      "cat": "Alltag & Objekte",
+      "term": "Leiter"
+    },
+    {
+      "id": "who-0271",
+      "cat": "Alltag & Objekte",
+      "term": "Einkaufswagen"
+    },
+    {
+      "id": "who-0272",
+      "cat": "Alltag & Objekte",
+      "term": "Briefkasten"
+    },
+    {
+      "id": "who-0273",
+      "cat": "Alltag & Objekte",
+      "term": "Mülleimer"
+    },
+    {
+      "id": "who-0274",
+      "cat": "Alltag & Objekte",
+      "term": "Bürostuhl"
+    },
+    {
+      "id": "who-0275",
+      "cat": "Alltag & Objekte",
+      "term": "Wasserflasche"
+    }
+  ]
+}
