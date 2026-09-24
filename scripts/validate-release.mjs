@@ -118,7 +118,7 @@ assert(!prototypeAppStateSource.includes('var KEY="imposterGames.appState.v1"'),
 assert(!prototypeEngineSource.includes('EXP_STORAGE="imposterGames.v73.game."'),"prototype must not use production game storage");
 assert(!html["index.html"].includes("APP-SHELL TEST"),"production launcher still contains experiment badge");
 assert(launcherCss.includes("padding:calc(18px + var(--safeTop)) 16px 26px"),"launcher safe-area top padding missing");
-assert(sw.includes('const CACHE_REVISION="r7"'),"V73 cache revision mismatch");
+assert(sw.includes('const CACHE_REVISION="r8"'),"V73 cache revision mismatch");
 assert(appStateSource.includes("var BACKUP_VERSION=3"),"backup format v3 missing");
 assert(engineSource.includes("experimentRecordCirca(null);"),"Circa shared base-round recording missing");
 assert(engineSource.includes("impostorEscaped:outcome===true?true:outcome===false?false:null"),"Circa unresolved outcome state missing");
@@ -332,6 +332,14 @@ const restoreResult=await restoreState.importSnapshot(auditBackup);
 assert(restoreResult.ok&&restoreResult.gameStorage===true,"backup v3 restore failed on fresh device state");
 assert(JSON.parse(restoreMem.storage.getItem("imposterGames.v73.game.circa.completedQuestions.v1"))[0]===questions.items[0].qid,"game progress was not restored");
 
+const downgradedBackup=structuredClone(auditBackup);
+downgradedBackup.formatVersion=2;
+const downgradeMem=auditStorage();
+const downgradeState=auditStore(downgradeMem);
+const downgradeResult=await downgradeState.importSnapshot(downgradedBackup);
+assert(!downgradeResult.ok&&downgradeResult.reason==="version","backup v3 -> v2 downgrade bypass was accepted");
+assert(downgradeState.getStats().rounds===0,"downgraded backup modified local state");
+
 const legacyV2Backup={
   format:auditBackup.format,
   formatVersion:2,
@@ -342,7 +350,13 @@ const legacyV2Backup={
 const legacyMem=auditStorage();
 const legacyState=auditStore(legacyMem);
 const legacyResult=await legacyState.importSnapshot(legacyV2Backup);
-assert(legacyResult.ok&&legacyResult.gameStorage===true,"backup v2 backward compatibility failed");
+assert(!legacyResult.ok&&legacyResult.reason==="version","legacy backup v2 was accepted");
+
+const unwrappedBackup=structuredClone(auditBackup.data);
+const unwrappedMem=auditStorage();
+const unwrappedState=auditStore(unwrappedMem);
+const unwrappedResult=await unwrappedState.importSnapshot(unwrappedBackup);
+assert(!unwrappedResult.ok&&unwrappedResult.reason==="format","unwrapped legacy snapshot bypass was accepted");
 
 restoreState.reset();
 const resetReload=auditStore(restoreMem);

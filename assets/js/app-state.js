@@ -816,20 +816,16 @@ async function importSnapshot(input){
   var src=input,gameStorage=null;
   if(typeof src==="string"){try{src=JSON.parse(src);}catch(e){return {ok:false,reason:"json"};}}
   if(!src||typeof src!=="object"||Array.isArray(src))return {ok:false,reason:"shape"};
-  if(src.format){
-    if(src.format!==BACKUP_FORMAT)return {ok:false,reason:"format"};
-    var version=Number(src.formatVersion);
-    if(!Number.isFinite(version)||version<1||version>BACKUP_VERSION)return {ok:false,reason:"version"};
-    if(version>=3){
-      var integrity=src.integrity;
-      if(!integrity||integrity.algorithm!=="SHA-256"||typeof integrity.sha256!=="string"||!/^[a-f0-9]{64}$/i.test(integrity.sha256))return {ok:false,reason:"integrity"};
-      var actualHash="";
-      try{actualHash=await backupSha256(src);}catch(e){return {ok:false,reason:"integrity-unavailable"};}
-      if(actualHash.toLowerCase()!==integrity.sha256.toLowerCase())return {ok:false,reason:"integrity"};
-    }
-    gameStorage=src.gameStorage&&typeof src.gameStorage==="object"&&!Array.isArray(src.gameStorage)?src.gameStorage:null;
-    src=src.data;
-  }
+  if(src.format!==BACKUP_FORMAT)return {ok:false,reason:"format"};
+  var version=Number(src.formatVersion);
+  if(version!==BACKUP_VERSION)return {ok:false,reason:"version"};
+  var integrity=src.integrity;
+  if(!integrity||integrity.algorithm!=="SHA-256"||typeof integrity.sha256!=="string"||!/^[a-f0-9]{64}$/i.test(integrity.sha256))return {ok:false,reason:"integrity"};
+  var actualHash="";
+  try{actualHash=await backupSha256(src);}catch(e){return {ok:false,reason:"integrity-unavailable"};}
+  if(actualHash.toLowerCase()!==integrity.sha256.toLowerCase())return {ok:false,reason:"integrity"};
+  gameStorage=src.gameStorage&&typeof src.gameStorage==="object"&&!Array.isArray(src.gameStorage)?src.gameStorage:null;
+  src=src.data;
   if(!src||typeof src!=="object"||Array.isArray(src))return {ok:false,reason:"shape"};
   if(!Array.isArray(src.profiles)||!src.profiles.length)return {ok:false,reason:"profiles"};
 

@@ -24,8 +24,9 @@
 - V73-Hotfix: dezente Web-Audio-UI-Töne im Launcher für Navigation, Profilwahl, Spielstart, Session-Aktionen und Bestätigungen ergänzt. Die Töne respektieren den globalen Sound-Schalter und benötigen keine Audiodateien.
 - Offline-Cache für die Launcher-Audio-Erweiterung auf Revision r4 angehoben.
 - V73-Backup V3 ergänzt: neue Exporte enthalten einen kanonisch berechneten SHA-256-Integritätswert; veränderte oder beschädigte V3-Dateien werden vor dem Schreiben in den lokalen Speicher abgewiesen.
-- V1-/V2-Backups bleiben importierbar; V3-Backups sind weiterhin ohne PIN oder Gerätebindung auf andere Geräte übertragbar.
-- Offline-Cache für Backup V3 auf Revision r7 angehoben.
+- Backup-Downgrade-Schutz ergänzt: Import akzeptiert ausschließlich Backup V3 mit gültiger SHA-256-Prüfung. V1/V2 und ungekennzeichnete Alt-Snapshots werden abgelehnt, damit ein manuelles Herabsetzen von `formatVersion` die Integritätsprüfung nicht umgehen kann.
+- V3-Backups bleiben weiterhin ohne PIN oder Gerätebindung auf andere Geräte übertragbar.
+- Offline-Cache für den gehärteten Backup-V3-Import auf Revision r8 angehoben.
 
 Die Versionshistorie dokumentiert die aus den Projektchats und der GitHub-Historie eindeutig rekonstruierbaren Änderungen. Frühere Zwischenstände mit generischen Upload-Commits werden nicht künstlich versioniert oder mit erfundenen Details ergänzt.
 

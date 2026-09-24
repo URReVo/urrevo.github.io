@@ -102,7 +102,7 @@ Das aktuelle Backup enthält unter anderem:
 
 Neue Backups verwenden Backup V3 und enthalten eine SHA-256-Integritätsprüfung. Wird eine V3-Datei nach dem Export verändert, lehnt die App den Import als verändert oder beschädigt ab. Der Schutz soll einfache Manipulationen erkennen; da kein geheimer Server-Schlüssel verwendet wird, ist er nicht kryptografisch fälschungssicher.
 
-Ältere V1- und V2-Backups bleiben importierbar und können weiterhin auf ein anderes Gerät übertragen werden.
+Importiert werden ausschließlich Backup-V3-Dateien mit gültiger SHA-256-Prüfung. Ältere V1-/V2-Backups und ungekennzeichnete Alt-Snapshots werden bewusst abgelehnt, damit die Integritätsprüfung nicht durch ein Herabsetzen der Formatversion umgangen werden kann. V3-Backups bleiben ohne PIN oder Gerätebindung auf andere Geräte übertragbar.
 
 ## 📴 Offline und Updates
 
