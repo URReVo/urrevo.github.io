@@ -68,8 +68,11 @@ assert(workflow.includes("xcodegen generate"),"iOS CI XcodeGen step missing");
 assert(workflow.includes("xcodebuild"),"iOS xcodebuild step missing");
 assert(workflow.includes("Run unit tests")&&workflow.includes("test-without-building"),"Native XCTest execution missing from iOS CI");
 assert(workflow.includes("xcrun simctl bootstatus"),"iOS CI must boot a real simulator before XCTest");
+assert(workflow.includes("unsigned-device-ipa:"),"Unsigned iPhone sideload job missing");
+assert(workflow.includes("generic/platform=iOS"),"Unsigned sideload build must target a real iPhone device SDK");
+assert(workflow.includes("ImposterGames-iOS-Sideload"),"Unsigned sideload IPA artifact missing");
 assert(workflow.includes("signed_ipa"),"Manual signed IPA option missing");
 assert(workflow.includes("-exportArchive"),"Signed IPA export step missing");
 assert(workflow.includes("upload-artifact@v7"),"iOS artifact upload missing");
 
-console.log("iOS readiness validation OK · one native scaffold · bundled production data · Core Motion · Core Haptics · XCTest · signed IPA workflow");
+console.log("iOS readiness validation OK · bundled production data · Core Motion · Core Haptics · XCTest · unsigned sideload IPA · optional signed IPA");
