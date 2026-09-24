@@ -2065,3 +2065,9 @@ button.ghost,#restart,#classicRestart{
     max-height:220px!important;
   }
 }
+
+
+/* Prototype Circa result question spacing */
+.resolutionQuestion{
+  padding-top:4px;
+}
