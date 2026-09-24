@@ -2,6 +2,9 @@
 
 ## V73
 
+- „Wer bin ich?“: Reveal-Inhalt ab „DIE BEGRIFFE“ um 10 px nach oben gesetzt, ohne Spieler-/Fortschrittszeile oder interne Kartenabstände zu verändern.
+- Produktionsstand auf **V73R11** / Offline-Cache r11 angehoben.
+
 - Neues Spiel **„Wer bin ich?“** aus dem Prototypen in Produktion übernommen: 2–12 Spieler, 275 eindeutige Begriffe in 11 Kategorien, geheime Weitergabe mit eigenem `???`, neutraler realer Spielabschnitt und gemeinsame Auflösung.
 - Eigene Produktions-Storage-Keys unter `imposterGames.v73.game.whoami.*`; Spieler, Kategorien und Deck-Fortschritt sind in Backup V3 enthalten.
 - Finales Prototype-r12-Abstandsverhalten beim Aufdecken übernommen: mehr Abstand zwischen Begriffskarten und „Gesehen“-Button.

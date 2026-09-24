@@ -4,7 +4,7 @@
 .whoViewerScreen,.whoPlayScreen,.whoResultScreen,.whoHandoffScreen{position:relative;display:flex!important;flex-direction:column;min-height:0}
 .whoViewerScreen.hidden,.whoPlayScreen.hidden,.whoResultScreen.hidden,.whoHandoffScreen.hidden{display:none!important}
 .whoViewerMeta{flex:0 0 38px;min-height:38px;margin:0 0 8px;display:flex;align-items:center;justify-content:space-between;color:#9b9da4;font-size:11px;font-weight:900}
-.whoViewerHeader{flex:0 0 auto;margin:3px 2px 10px}.whoViewerHeader h2,.whoResultHeader h2{margin:4px 0 4px;font-size:25px}.whoViewerHeader p,.whoResultHeader p{margin:0;color:#85878e;font-size:11px;line-height:1.45}
+.whoViewerHeader{flex:0 0 auto;margin:-7px 2px 10px}.whoViewerHeader h2,.whoResultHeader h2{margin:4px 0 4px;font-size:25px}.whoViewerHeader p,.whoResultHeader p{margin:0;color:#85878e;font-size:11px;line-height:1.45}
 .whoTermsList,.whoResultList{min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;display:grid;gap:8px;padding:1px 1px 4px}.whoTermsList{flex:1 1 auto}
 .whoTermRow,.whoResultRow{min-height:65px;padding:10px 12px;border-radius:18px;display:grid;grid-template-columns:45px minmax(0,1fr);gap:11px;align-items:center;background:#242529;border:1px solid rgba(255,255,255,.07)}
 .whoTermRow.self{background:linear-gradient(145deg,rgba(139,110,255,.12),#25262b);border-color:rgba(151,128,255,.27)}

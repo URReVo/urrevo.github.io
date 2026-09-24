@@ -151,7 +151,7 @@ assert(prototypeWhoSource.includes('STORAGE_PREFIX="imposterGames.prototype.game
 assert(!prototypeWhoSource.includes('STORAGE_PREFIX="imposterGames.v73.game.whoami."'),"prototype WhoAmI must not use production storage");
 assert(!html["index.html"].includes("APP-SHELL TEST"),"production launcher still contains experiment badge");
 assert(launcherCss.includes("padding:calc(18px + var(--safeTop)) 16px 26px"),"launcher safe-area top padding missing");
-assert(sw.includes('const CACHE_REVISION="r10"'),"V73 cache revision mismatch");
+assert(sw.includes('const CACHE_REVISION="r11"'),"V73 cache revision mismatch");
 assert(appStateSource.includes("var BACKUP_VERSION=3"),"backup format v3 missing");
 assert(engineSource.includes("experimentRecordCirca(null);"),"Circa shared base-round recording missing");
 assert(engineSource.includes("impostorEscaped:outcome===true?true:outcome===false?false:null"),"Circa unresolved outcome state missing");
@@ -176,6 +176,7 @@ assert(html["games/circa-imposter/index.html"].includes('apple-mobile-web-app-st
 assert(html["games/classic-imposter/index.html"].includes('apple-mobile-web-app-status-bar-style\" content=\"black\"'),"Classic opaque iOS status bar missing");
 assert(html["games/who-am-i/index.html"].includes('apple-mobile-web-app-status-bar-style\" content=\"black\"'),"WhoAmI opaque iOS status bar missing");
 assert(whoCss.includes(".whoViewerScreen .whoBottomButton{margin-top:18px}"),"WhoAmI reveal spacing missing");
+assert(whoCss.includes(".whoViewerHeader{flex:0 0 auto;margin:-7px 2px 10px}"),"WhoAmI reveal content vertical position missing");
 assert(html["index.html"].includes('href="games/who-am-i/"'),"WhoAmI launcher card missing");
 assert(games.games.some(game=>game.id==="who-am-i"&&game.path==="games/who-am-i/"),"WhoAmI registry entry missing");
 assert(sw.includes('versioned("/assets/js/who-am-i.js")')&&sw.includes('versioned("/assets/css/who-am-i.css")'),"WhoAmI service-worker assets missing");
