@@ -1,5 +1,5 @@
 ImposterGames.xcodeproj/
-DerivedData/
 build/
-*.xcarchive
-*.ipa
+DerivedData/
+*.xcuserstate
+xcuserdata/

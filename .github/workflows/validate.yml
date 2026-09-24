@@ -20,3 +20,5 @@ jobs:
           node-version: "22"
       - name: Validate release
         run: node scripts/validate-release.mjs
+      - name: Validate iOS readiness
+        run: node scripts/validate-ios-readiness.mjs

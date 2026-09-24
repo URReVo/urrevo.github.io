@@ -1,62 +1,38 @@
-# Imposter Games · Native iOS
+# Native iOS preparation
 
-Diese Struktur ist die native SwiftUI-Basis der App. Sie ist **kein WebView** und bleibt bewusst parallel zur bestehenden Web/PWA-Version.
+This directory contains the native SwiftUI foundation for Imposter Games. It is intentionally separate from the production PWA.
 
-## Architektur
+## Architecture
 
-- SwiftUI für die Oberfläche
-- Core Motion für Scharade
-- native iOS-Haptik über UIKit Feedback Generator
-- gemeinsame JSON-Inhalte aus dem Root-Verzeichnis `data/`
-- XcodeGen erzeugt reproduzierbar das Xcode-Projekt
-- GitHub Actions baut auf einem macOS-Runner
-- Deployment Target: iOS 17.0, damit die App auch auf älteren iPhones läuft; iOS 27 wird vollständig unterstützt
+- SwiftUI application, no WebView.
+- Minimum deployment target: iOS 18.
+- Shared game content comes directly from the repository root `data/*.json`.
+- Scharade already has a native Core Motion sensor path and native Core Haptics feedback.
+- Circa, Classic and Wer bin ich? are wired into the launcher and shared content repository; their native game flows are the next migration step.
+- Xcode project files are generated from `project.yml` with XcodeGen and are not committed.
 
-## Inhalte synchronisieren
+## CI
 
-Die Web-Daten bleiben die Quelle der Wahrheit:
+`.github/workflows/ios.yml` generates the project and compiles the app plus test bundle on a GitHub macOS runner with code signing disabled.
 
-```bash
-./ios/scripts/sync-content.sh
-```
+`.github/workflows/ios-ipa.yml` is a manual signed build. Before using it, configure:
 
-Dabei werden Circa, Classic, Wer bin ich? und Scharade nach
-`ios/ImposterGames/Resources/Content/` gespiegelt.
+Repository variables:
+- `IOS_TEAM_ID`
+- `IOS_BUNDLE_ID` (default project value is `de.urrevo.impostergames`)
 
-## Xcode-Projekt erzeugen
+Repository secrets:
+- `IOS_CERTIFICATE_BASE64` — base64-encoded Apple `.p12`
+- `IOS_CERTIFICATE_PASSWORD`
+- `IOS_PROVISIONING_PROFILE_BASE64` — base64-encoded matching `.mobileprovision`
 
-Auf einem Mac:
+The signed workflow exports an `.ipa` as a GitHub Actions artifact. Use a development or Ad Hoc provisioning profile depending on how the iPhone is registered.
+
+## Local generation on macOS
 
 ```bash
 brew install xcodegen
-./ios/scripts/bootstrap.sh
+cd ios
+xcodegen generate
+open ImposterGames.xcodeproj
 ```
-
-Das erzeugte `ImposterGames.xcodeproj` wird absichtlich nicht committed.
-
-## Windows-Workflow
-
-Für die normale Entwicklung ist lokal kein Mac nötig:
-
-1. Änderungen nach GitHub pushen.
-2. GitHub Actions startet einen macOS-Runner.
-3. XcodeGen erzeugt das Projekt.
-4. Xcode kompiliert die native SwiftUI-App und führt Tests aus.
-5. Der Simulator-Build wird als Artifact bereitgestellt.
-
-Sobald Apple-Signing eingerichtet ist, kann derselbe Workflow zusätzlich eine signierte `.ipa` erzeugen.
-
-## Signing-Secrets für die spätere IPA
-
-Im Repository unter **Settings → Secrets and variables → Actions**:
-
-- `IOS_CERTIFICATE_BASE64` – .p12 als Base64
-- `IOS_CERTIFICATE_PASSWORD` – Passwort des .p12
-- `IOS_PROVISIONING_PROFILE_BASE64` – .mobileprovision als Base64
-- `IOS_BUNDLE_ID` – z. B. `de.urrevo.impostergames`
-
-Team-ID, Profilname und Signing-Identity werden im Workflow soweit möglich aus dem Provisioning Profile bzw. Zertifikat ermittelt.
-
-## Aktueller nativer Funktionsstand
-
-Die App besitzt bereits einen nativen Launcher für alle vier Spiele. Scharade ist als erster technischer Native-Proof umgesetzt: Begriffsdaten, Timer, Core-Motion-Wippen, 3-Sekunden-Sperre, Richtungswechsel und echte iPhone-Haptik. Die anderen Spiele sind als native Ziele vorbereitet und werden anschließend schrittweise portiert.
