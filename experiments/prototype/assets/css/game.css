@@ -1932,3 +1932,104 @@ button.ghost,#restart,#classicRestart{
   .classicOptionCard{padding:12px 12px 11px!important}
   .classicOptionHeader{font-size:12px}
 }
+
+
+/* Prototype Classic transition alignment */
+/* All Classic stages share one vertical skeleton:
+   38px context row -> flexible content card -> bottom action zone. */
+.classicRoleScreen,
+.classicDiscussionScreen,
+.classicResultScreen{
+  position:relative;
+  display:flex!important;
+  flex-direction:column;
+  justify-content:flex-start!important;
+  min-height:0;
+}
+
+/* Role already has this row; reserve the same height on the other stages. */
+.classicRoleMeta{
+  flex:0 0 38px;
+  min-height:38px;
+  margin:0 0 8px!important;
+}
+.classicDiscussionScreen::before,
+.classicResultScreen::before{
+  content:"";
+  display:block;
+  flex:0 0 38px;
+  height:38px;
+  margin-bottom:8px;
+}
+
+/* Main content always starts and ends on the same vertical rails. */
+.classicRoleCard,
+.classicDiscussionHero,
+.classicResultMain{
+  flex:1 1 0!important;
+  min-height:0!important;
+  max-height:none!important;
+  width:100%;
+  margin:0 0 10px!important;
+  overflow:auto;
+  -webkit-overflow-scrolling:touch;
+}
+
+/* Discussion/result content remains vertically centered inside the common card. */
+.classicDiscussionHero,
+.classicResultMain{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+}
+
+/* Every main Classic action is pinned to the lowest available position. */
+.classicRoleButton,
+#classicReveal,
+.classicResultActions{
+  flex:0 0 auto!important;
+  margin-top:auto!important;
+  margin-bottom:0!important;
+}
+.classicRoleButton,
+#classicReveal{
+  width:100%;
+  min-height:50px;
+}
+.classicResultActions{
+  width:100%;
+  min-height:50px;
+  align-items:stretch;
+}
+.classicResultActions>button{
+  min-height:50px;
+  height:100%;
+}
+
+/* Timer may change content height, but never moves the bottom action. */
+.classicDiscussionHero{
+  justify-content:center;
+}
+.classicTimerBox{
+  flex:0 0 auto;
+}
+
+@media(max-height:760px){
+  .classicRoleMeta{
+    flex-basis:34px;
+    min-height:34px;
+    margin-bottom:6px!important;
+  }
+  .classicDiscussionScreen::before,
+  .classicResultScreen::before{
+    flex-basis:34px;
+    height:34px;
+    margin-bottom:6px;
+  }
+  .classicRoleCard,
+  .classicDiscussionHero,
+  .classicResultMain{
+    margin-bottom:8px!important;
+  }
+}
