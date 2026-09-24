@@ -2,6 +2,9 @@
 
 ## V73
 
+- Launcher-Einstellungstext nach dem Vier-Spiele-Ausbau bereinigt: Sound gilt jetzt korrekt „für alle Spiele“ statt „für beide Spiele“.
+- Produktionsstand auf **V73R13** / Offline-Cache r13 angehoben.
+
 - **Scharade** aus `prototype-r16` in Produktion übernommen: 2–12 Spieler, 300 Begriffe in 12 Kategorien, Timer, Stirn-/Wippsteuerung, Touch-Fallback, Rundenauswertung und Gesamtergebnis.
 - Die zuletzt getestete bidirektionale Sensorlogik nutzt primär `accelerationIncludingGravity` und trennt Vorwärts = Richtig von Zurück = Überspringen; 3-Sekunden-Sperre und Neutralzonen-Schutz bleiben erhalten.
 - Eigene Produktions-Storage-Keys unter `imposterGames.v73.game.charades.*`; Spieler, Kategorien, Deck, Timer und Wipp-Richtung sind in Backup V3 enthalten.

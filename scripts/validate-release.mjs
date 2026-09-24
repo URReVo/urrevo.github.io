@@ -28,6 +28,7 @@ for(const [file,source] of Object.entries(html)){
 
 assert(html["index.html"].includes("V"+release),"launcher title/version mismatch");
 assert(html["index.html"].includes("<title>Imposter Games · "+launcherBuild+"</title>"),"launcher build label mismatch");
+assert(html["index.html"].includes("Gilt für alle Spiele"),"launcher settings still use outdated game-count wording");
 assert(html["index.html"].includes("<strong>Imposter Games · "+launcherBuild+"</strong>"),"settings build label mismatch");
 assert(!html["index.html"].includes("IMPOSTER GAMES · "+launcherBuild),"home eyebrow must not show build revision");
 for(const file of ["games/circa-imposter/index.html","games/classic-imposter/index.html"]){
@@ -183,7 +184,7 @@ assert(prototypeCharadesSource.includes('PREFIX="imposterGames.prototype.game.ch
 assert(!prototypeCharadesSource.includes('PREFIX="imposterGames.v73.game.charades."'),"prototype Scharade must not use production storage");
 assert(!html["index.html"].includes("APP-SHELL TEST"),"production launcher still contains experiment badge");
 assert(launcherCss.includes("padding:calc(18px + var(--safeTop)) 16px 26px"),"launcher safe-area top padding missing");
-assert(sw.includes('const CACHE_REVISION="r12"'),"V73 cache revision mismatch");
+assert(sw.includes('const CACHE_REVISION="r13"'),"V73 cache revision mismatch");
 assert(appStateSource.includes("var BACKUP_VERSION=3"),"backup format v3 missing");
 assert(engineSource.includes("experimentRecordCirca(null);"),"Circa shared base-round recording missing");
 assert(engineSource.includes("impostorEscaped:outcome===true?true:outcome===false?false:null"),"Circa unresolved outcome state missing");
