@@ -813,7 +813,7 @@ final class AppStore: ObservableObject {
     }
 
     private static func jsonScalar(_ value: Any) -> String? {
-        guard let data = try? JSONSerialization.data(withJSONObject: [value], options: []),
+        guard let data = try? JSONSerialization.data(withJSONObject: [value], options: [.withoutEscapingSlashes]),
               var string = String(data: data, encoding: .utf8),
               string.count >= 2 else {
             return nil
