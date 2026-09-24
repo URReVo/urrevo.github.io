@@ -129,8 +129,8 @@ assert(gameCss.includes("V73 launcher-aligned game makeover"),"launcher-aligned 
 assert(gameCss.includes(".classicRoleScreen:not(.hidden)"),"Classic visible-only transition layout missing");
 assert(gameCss.includes(".classicRoleScreen.hidden"),"Classic hidden-screen safety missing");
 assert(gameCss.includes("color:#00d747!important"),"Circa result success green missing");
-assert(circaHtml.includes('apple-mobile-web-app-status-bar-style\" content=\"black\"'),"Circa opaque iOS status bar missing");
-assert(classicHtml.includes('apple-mobile-web-app-status-bar-style\" content=\"black\"'),"Classic opaque iOS status bar missing");
+assert(html["games/circa-imposter/index.html"].includes('apple-mobile-web-app-status-bar-style\" content=\"black\"'),"Circa opaque iOS status bar missing");
+assert(html["games/classic-imposter/index.html"].includes('apple-mobile-web-app-status-bar-style\" content=\"black\"'),"Classic opaque iOS status bar missing");
 
 /* Simulate the first V72 -> V73 profile migration. */
 const legacySeed=new Map();
