@@ -109,6 +109,13 @@ jobs:
         run: |
           set -euo pipefail
 
+          for required in IOS_CERTIFICATE_BASE64 IOS_CERTIFICATE_PASSWORD IOS_PROVISIONING_PROFILE_BASE64 IOS_BUNDLE_ID; do
+            if [[ -z "${!required:-}" ]]; then
+              echo "::error::$required fehlt als GitHub Actions Secret."
+              exit 1
+            fi
+          done
+
           CERT_PATH="$RUNNER_TEMP/signing-certificate.p12"
           PROFILE_PATH="$RUNNER_TEMP/profile.mobileprovision"
           PROFILE_PLIST="$RUNNER_TEMP/profile.plist"
@@ -118,13 +125,8 @@ jobs:
           EXPORT_PLIST="$RUNNER_TEMP/ExportOptions.plist"
           KEYCHAIN_PASSWORD="$(openssl rand -hex 24)"
 
-          python3 - <<'PY'
-import base64, os
-with open(os.environ["CERT_PATH"], "wb") as f:
-    f.write(base64.b64decode(os.environ["IOS_CERTIFICATE_BASE64"]))
-with open(os.environ["PROFILE_PATH"], "wb") as f:
-    f.write(base64.b64decode(os.environ["IOS_PROVISIONING_PROFILE_BASE64"]))
-PY
+          export CERT_PATH PROFILE_PATH EXPORT_PLIST
+          python3 -c 'import base64,os; open(os.environ["CERT_PATH"],"wb").write(base64.b64decode(os.environ["IOS_CERTIFICATE_BASE64"])); open(os.environ["PROFILE_PATH"],"wb").write(base64.b64decode(os.environ["IOS_PROVISIONING_PROFILE_BASE64"]))'
 
           security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
           security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
@@ -162,25 +164,8 @@ PY
             OTHER_CODE_SIGN_FLAGS="--keychain $KEYCHAIN_PATH" \
             archive
 
-          cat > "$EXPORT_PLIST" <<PLIST
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-  <key>method</key>
-  <string>$EXPORT_METHOD</string>
-  <key>signingStyle</key>
-  <string>manual</string>
-  <key>teamID</key>
-  <string>$TEAM_ID</string>
-  <key>provisioningProfiles</key>
-  <dict>
-    <key>$IOS_BUNDLE_ID</key>
-    <string>$PROFILE_NAME</string>
-  </dict>
-</dict>
-</plist>
-PLIST
+          export TEAM_ID PROFILE_NAME IOS_BUNDLE_ID EXPORT_METHOD
+          python3 -c 'import os,plistlib; plistlib.dump({"method":os.environ["EXPORT_METHOD"],"signingStyle":"manual","teamID":os.environ["TEAM_ID"],"provisioningProfiles":{os.environ["IOS_BUNDLE_ID"]:os.environ["PROFILE_NAME"]}},open(os.environ["EXPORT_PLIST"],"wb"))'
 
           rm -rf "$EXPORT_PATH"
           xcodebuild \
@@ -210,4 +195,3 @@ PLIST
         if: always()
         run: |
           security delete-keychain "$RUNNER_TEMP/app-signing.keychain-db" 2>/dev/null || true
-          rm -f "$HOME/Library/MobileDevice/Provisioning Profiles/"*.mobileprovision 2>/dev/null || true
