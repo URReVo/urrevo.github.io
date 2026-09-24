@@ -17,7 +17,9 @@ Die native App liegt getrennt von der produktiven PWA und wird vollständig mit 
 
 `.github/workflows/ios-build.yml` baut und testet die App auf `macos-26`.
 
-Bei manueller Ausführung kann derselbe Workflow zusätzlich eine signierte `.ipa` erzeugen. Dafür werden folgende Secrets benötigt:
+Bei jedem iOS-CI-Lauf wird zusätzlich das Artifact `ImposterGames-iOS-Sideload` erzeugt. Darin liegt eine unsignierte iPhone-Device-`.ipa`, die z. B. mit AltStore/AltServer und einem normalen Apple-Account auf einem persönlichen iPhone neu signiert und installiert werden kann. Für diesen Build sind keine Apple-Zertifikate im Repository nötig.
+
+Bei manueller Ausführung kann derselbe Workflow zusätzlich eine bereits von GitHub signierte `.ipa` erzeugen. Dafür werden folgende Secrets benötigt:
 
 - `IOS_CERTIFICATE_BASE64`
 - `IOS_CERTIFICATE_PASSWORD`
