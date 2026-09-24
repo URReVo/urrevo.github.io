@@ -91,7 +91,11 @@ final class CharadesMotionController: ObservableObject {
     }
 
     func flipDirections() {
-        directionsFlipped.toggle()
+        setDirectionsFlipped(!directionsFlipped)
+    }
+
+    func setDirectionsFlipped(_ flipped: Bool) {
+        directionsFlipped = flipped
         armed = false
         candidate = nil
         candidateSince = nil
