@@ -137,9 +137,11 @@ for(const category of charades.categories){
 
 assert(manifest.start_url==="/"&&manifest.scope==="/","manifest root scope/start mismatch");
 assert(manifest.display==="standalone","manifest display must be standalone");
+assert(manifest.description.includes("Wer bin ich?")&&manifest.description.includes("Scharade"),"manifest description must describe the four-game launcher");
 
 const readme=read("README.md");
 assert(!readme.includes("\\n"),"README contains literal \\n text");
+assert(readme.includes("vier lokalen Partyspielen"),"README must describe the four-game app");
 
 const appStateSource=read("assets/js/app-state.js");
 const launcherSource=read("assets/js/launcher.js");
@@ -184,7 +186,7 @@ assert(prototypeCharadesSource.includes('PREFIX="imposterGames.prototype.game.ch
 assert(!prototypeCharadesSource.includes('PREFIX="imposterGames.v73.game.charades."'),"prototype Scharade must not use production storage");
 assert(!html["index.html"].includes("APP-SHELL TEST"),"production launcher still contains experiment badge");
 assert(launcherCss.includes("padding:calc(18px + var(--safeTop)) 16px 26px"),"launcher safe-area top padding missing");
-assert(sw.includes('const CACHE_REVISION="r13"'),"V73 cache revision mismatch");
+assert(sw.includes('const CACHE_REVISION="r14"'),"V73 cache revision mismatch");
 assert(appStateSource.includes("var BACKUP_VERSION=3"),"backup format v3 missing");
 assert(engineSource.includes("experimentRecordCirca(null);"),"Circa shared base-round recording missing");
 assert(engineSource.includes("impostorEscaped:outcome===true?true:outcome===false?false:null"),"Circa unresolved outcome state missing");

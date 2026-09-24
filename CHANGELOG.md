@@ -2,6 +2,9 @@
 
 ## V73
 
+- Produktions-Audit: PWA-Manifest und README beschreiben jetzt konsistent alle vier Spiele; der Release-Validator schützt diese Vier-Spiele-Metadaten zusätzlich.
+- Produktionsstand auf **V73R14** / Offline-Cache r14 angehoben.
+
 - Launcher-Einstellungstext nach dem Vier-Spiele-Ausbau bereinigt: Sound gilt jetzt korrekt „für alle Spiele“ statt „für beide Spiele“.
 - Produktionsstand auf **V73R13** / Offline-Cache r13 angehoben.
 

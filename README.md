@@ -1,6 +1,6 @@
 # 🎭 Imposter Games
 
-**Imposter Games** ist eine für iPhone und iPad optimierte Partyspiel-App mit zwei lokalen Imposter-Spielen.
+**Imposter Games** ist eine für iPhone und iPad optimierte Partyspiel-App mit vier lokalen Partyspielen: Circa Imposter, Klassisches Imposter, Wer bin ich? und Scharade.
 
 **Aktuelle Version:** V73  
 **Live:** https://urrevo.github.io/

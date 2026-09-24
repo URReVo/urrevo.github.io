@@ -1,7 +1,7 @@
 {
   "name": "Imposter Games",
   "short_name": "Imposter",
-  "description": "Lokale Partyspiele mit Circa Imposter und Klassischem Imposter.",
+  "description": "Vier lokale Partyspiele: Circa Imposter, Klassisches Imposter, Wer bin ich? und Scharade.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
