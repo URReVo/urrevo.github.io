@@ -108,7 +108,7 @@ assert(appStateSource.includes('BACKUP_FORMAT="imposter-games-backup"'),"product
 assert(engineSource.includes('EXP_STORAGE="imposterGames.v73.game."'),"V73 isolated game storage missing");
 assert(!html["index.html"].includes("APP-SHELL TEST"),"production launcher still contains experiment badge");
 assert(launcherCss.includes("padding:calc(18px + var(--safeTop)) 16px 26px"),"launcher safe-area top padding missing");
-assert(sw.includes('const CACHE_REVISION="r5"'),"V73 launcher-audio cache revision mismatch");
+assert(sw.includes('const CACHE_REVISION="r6"'),"V73 launcher-audio cache revision mismatch");
 assert(appStateSource.includes("var BACKUP_VERSION=2"),"backup format v2 missing");
 assert(engineSource.includes("experimentRecordCirca(null);"),"Circa shared base-round recording missing");
 assert(engineSource.includes("impostorEscaped:outcome===true?true:outcome===false?false:null"),"Circa unresolved outcome state missing");
@@ -125,6 +125,12 @@ assert(launcherSource.includes('querySelectorAll("a.gameCard[href]")'),"game-car
 assert(!/\.(mp3|wav|m4a|aac|ogg)["']/i.test(launcherSource),"launcher should not depend on external audio files");
 assert(launcherCss.includes("-webkit-user-select:none")&&launcherCss.includes("user-select:none"),"launcher text-selection lock missing");
 assert(launcherSource.includes('document.addEventListener("copy"'),"launcher copy guard missing");
+assert(gameCss.includes("V73 launcher-aligned game makeover"),"launcher-aligned game makeover missing");
+assert(gameCss.includes(".classicRoleScreen:not(.hidden)"),"Classic visible-only transition layout missing");
+assert(gameCss.includes(".classicRoleScreen.hidden"),"Classic hidden-screen safety missing");
+assert(gameCss.includes("color:#00d747!important"),"Circa result success green missing");
+assert(circaHtml.includes('apple-mobile-web-app-status-bar-style\" content=\"black\"'),"Circa opaque iOS status bar missing");
+assert(classicHtml.includes('apple-mobile-web-app-status-bar-style\" content=\"black\"'),"Classic opaque iOS status bar missing");
 
 /* Simulate the first V72 -> V73 profile migration. */
 const legacySeed=new Map();
