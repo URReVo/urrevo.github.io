@@ -14,6 +14,7 @@ var GAME_STORAGE_KEYS=[
   "circa.playerStats.v1","circa.deviceStats.v1","circa.completedQuestions.v1",
   "classic.deck.v1","classic.hint.v1","classic.timer.v1",
   "whoami.players.v1","whoami.categories.v1","whoami.deck.v1",
+  "charades.players.v1","charades.categories.v1","charades.deck.v1","charades.timer.v1","charades.motionFlip.v1",
   "v72Migration.v1"
 ];
 var DEFAULT_AVATARS=["😎","🕵️","🥷","🤠","👻","🤖","🦊","🐼","🐸","🦁","🐙","🦄"];

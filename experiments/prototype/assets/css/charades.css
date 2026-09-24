@@ -1,0 +1,51 @@
+/* Scharade · isolated prototype game */
+.charadesSetupHero{padding-top:14px}
+.charadesLogo{width:82px;height:82px;margin:0 auto 14px;border-radius:25px;display:grid;place-items:center;font-size:39px;border:1px solid rgba(255,255,255,.08);background:radial-gradient(circle at 68% 24%,rgba(72,196,167,.24),transparent 42%),linear-gradient(145deg,#30403d,#252a29);box-shadow:0 18px 45px rgba(0,0,0,.22)}
+.charadesOptionsEyebrow{margin-top:10px!important}
+.charadesTimerControl{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:11px}
+.charadesTimerControl button{min-height:44px;padding:8px 5px;background:#292a2f;color:#a7a9af;border:1px solid rgba(255,255,255,.08);font-size:11px}
+.charadesTimerControl button.selected{background:rgba(72,196,167,.14);border-color:rgba(72,196,167,.48);color:#c8f1e7}
+.charadesInfoCard{display:grid;grid-template-columns:48px 1fr;gap:11px;align-items:center;margin:8px 0 18px;padding:12px;border:1px solid rgba(255,255,255,.07);border-radius:17px;background:#242529}
+.charadesInfoIcon{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;background:#343a39;color:#9de0d0;font-size:24px;font-weight:950}
+.charadesInfoCard div:last-child{display:flex;flex-direction:column}.charadesInfoCard strong{font-size:12px}.charadesInfoCard span{margin-top:4px;color:#85888d;font-size:9px;line-height:1.45}
+.charadesHandoffScreen,.charadesPlayScreen,.charadesResultScreen,.charadesFinalScreen{position:relative;display:flex!important;flex-direction:column;min-height:0}
+.charadesHandoffScreen.hidden,.charadesPlayScreen.hidden,.charadesResultScreen.hidden,.charadesFinalScreen.hidden{display:none!important}
+.charadesRuleHint{margin-top:10px;padding:9px 11px;border-radius:12px;background:rgba(255,255,255,.035);color:#8e9197;font-size:10px;line-height:1.4}
+.charadesPermissionNote{min-height:18px;margin-top:7px;text-align:center;color:#81848a;font-size:9px}
+.charadesPlayMeta{flex:0 0 40px;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.charadesPlayMeta>div:first-child{display:flex;align-items:center;gap:8px;min-width:0}.charadesPlayMeta strong{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.charadesScorePill{padding:7px 10px;border-radius:999px;background:#2b2c31;border:1px solid rgba(255,255,255,.07);color:#a8abb0;font-size:10px;font-weight:900}
+.charadesTermCard{flex:1 1 auto;min-height:180px;border-radius:30px;border:1px solid rgba(255,255,255,.08);background:radial-gradient(circle at 50% 16%,rgba(72,196,167,.17),transparent 38%),linear-gradient(150deg,#303633,#222625);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px 18px;box-shadow:0 22px 55px rgba(0,0,0,.22)}
+.charadesTermCategory{color:#83b9ad;font-size:9px;font-weight:950;letter-spacing:1.1px;text-transform:uppercase}
+.charadesTermText{max-width:100%;margin-top:9px;font-size:clamp(36px,11vw,72px);line-height:.98;font-weight:950;letter-spacing:-1.6px;overflow-wrap:anywhere}
+.charadesMotionFeedback{min-height:18px;margin-top:15px;color:#85888d;font-size:10px;font-weight:800}
+.charadesTermCard.feedback-correct{border-color:rgba(0,215,71,.52);box-shadow:0 0 0 1px rgba(0,215,71,.18) inset,0 22px 55px rgba(0,0,0,.22)}
+.charadesTermCard.feedback-skip{border-color:rgba(243,154,50,.52);box-shadow:0 0 0 1px rgba(243,154,50,.16) inset,0 22px 55px rgba(0,0,0,.22)}
+.charadesMotionBar{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:8px;margin:8px 1px;color:#7f8288;font-size:9px}
+.charadesMotionBar span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.charadesMotionBar button{min-height:32px;padding:6px 9px;border-radius:10px;font-size:8px;white-space:nowrap}
+.charadesActions{flex:0 0 auto;display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.charadesActions button{min-height:58px;font-size:13px}
+.charadesSkip{background:#383338;color:#f1d7d9;border:1px solid rgba(235,130,140,.18)}
+.charadesCorrect{background:#89cdbd;color:#10211d}
+.charadesCountdown{position:absolute;inset:0;z-index:20;border-radius:25px;background:rgba(26,27,30,.94);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.charadesCountdown span{font-size:84px;font-weight:950;line-height:1}.charadesCountdown small{margin-top:10px;color:#a4a6ab;font-size:12px;font-weight:850}
+.charadesResultHero{text-align:center;flex:0 0 auto;margin:5px 0 13px}.charadesResultAvatar{width:62px;height:62px;margin:0 auto 11px;border-radius:20px;display:grid;place-items:center;background:#34353a;font-size:32px}
+.charadesResultHero h2{margin:4px 0 13px;font-size:25px}
+.charadesResultScore{display:grid;grid-template-columns:auto auto auto auto;gap:7px;justify-content:center;align-items:baseline}.charadesResultScore strong{font-size:24px}.charadesResultScore span{color:#85888d;font-size:9px;font-weight:800}
+.charadesResultList{flex:1 1 auto;min-height:0;overflow:auto;display:grid;gap:7px;padding:1px}
+.charadesResultRow{min-height:50px;padding:9px 11px;border-radius:15px;background:#242529;border:1px solid rgba(255,255,255,.06);display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
+.charadesResultRow>div{min-width:0;display:flex;flex-direction:column}.charadesResultRow strong{font-size:12px}.charadesResultRow small{margin-top:2px;color:#777a80;font-size:8px}
+.charadesResultState{font-size:10px;font-weight:950}.charadesResultState.correct{color:#69d895}.charadesResultState.skipped{color:#e4aa69}
+.charadesBottomButton{flex:0 0 auto;margin-top:10px}
+.charadesFinalHeader{flex:0 0 auto;margin:4px 2px 12px}.charadesFinalHeader h2{margin:4px 0 4px;font-size:27px}.charadesFinalHeader p{margin:0;color:#85888d;font-size:10px}
+.charadesLeaderboard{flex:1 1 auto;min-height:0;overflow:auto;display:grid;gap:8px}
+.charadesLeaderRow{min-height:66px;padding:10px 12px;border-radius:18px;background:#242529;border:1px solid rgba(255,255,255,.065);display:grid;grid-template-columns:32px 45px minmax(0,1fr) auto;gap:9px;align-items:center}
+.charadesLeaderRank{font-size:15px;font-weight:950;color:#8d9096}.charadesLeaderAvatar{width:45px;height:45px;border-radius:14px;display:grid;place-items:center;background:#34353a;font-size:23px}
+.charadesLeaderInfo{min-width:0;display:flex;flex-direction:column}.charadesLeaderInfo strong{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.charadesLeaderInfo span{margin-top:3px;color:#7e8187;font-size:8px}
+.charadesLeaderScore{font-size:22px;font-weight:950;color:#b9eee2}
+.charadesFinalActions{flex:0 0 auto;display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.charadesFinalActions button{min-height:50px;min-width:0}
+@media(max-width:390px){.charadesTimerControl{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}.charadesTimerControl button{padding:7px 2px;font-size:9px}.charadesFinalActions{grid-template-columns:1fr}}
+@media(max-height:650px){.charadesTermCard{min-height:140px;padding:16px}.charadesTermText{font-size:clamp(31px,9vw,58px)}.charadesActions button{min-height:50px}.charadesMotionBar{margin:5px 1px}}
+@media(orientation:landscape) and (max-height:500px){.charadesPlayMeta{display:none}.charadesTermCard{min-height:0;border-radius:24px}.charadesTermText{font-size:clamp(38px,9vw,72px)}.charadesMotionFeedback{margin-top:8px}.charadesMotionBar{margin:4px 1px}.charadesActions button{min-height:46px}}

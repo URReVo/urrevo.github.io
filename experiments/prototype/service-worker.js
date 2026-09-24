@@ -1,7 +1,7 @@
 "use strict";
 
 const RELEASE="73";
-const CACHE_REVISION="prototype-r12";
+const CACHE_REVISION="prototype-r13";
 const BASE="/experiments/prototype";
 const CACHE_PREFIX="imposter-games-prototype-";
 const CACHE_NAME=CACHE_PREFIX+"v"+RELEASE+"-"+CACHE_REVISION;
@@ -18,13 +18,17 @@ const CORE_URLS=[
   versioned("/assets/js/game-engine.js"),
   versioned("/assets/js/who-am-i.js"),
   versioned("/assets/css/who-am-i.css"),
+  versioned("/assets/js/charades.js"),
+  versioned("/assets/css/charades.css"),
   BASE+"/data/games.json",
   BASE+"/data/circa-questions.json",
   BASE+"/data/classic-words.json",
   BASE+"/data/who-am-i.json",
+  BASE+"/data/charades.json",
   BASE+"/games/circa-imposter/",
   BASE+"/games/classic-imposter/",
   BASE+"/games/who-am-i/",
+  BASE+"/games/charades/",
   BASE+"/circa_impostor_detective_icon_180.png",
   BASE+"/circa_impostor_detective_icon_512.png"
 ];
@@ -37,14 +41,17 @@ const NAV_FALLBACKS={
   [BASE+"/games/classic-imposter/"]:BASE+"/games/classic-imposter/",
   [BASE+"/games/classic-imposter/index.html"]:BASE+"/games/classic-imposter/",
   [BASE+"/games/who-am-i/"]:BASE+"/games/who-am-i/",
-  [BASE+"/games/who-am-i/index.html"]:BASE+"/games/who-am-i/"
+  [BASE+"/games/who-am-i/index.html"]:BASE+"/games/who-am-i/",
+  [BASE+"/games/charades/"]:BASE+"/games/charades/",
+  [BASE+"/games/charades/index.html"]:BASE+"/games/charades/"
 };
 
 const DATA_PATHS=new Set([
   BASE+"/data/games.json",
   BASE+"/data/circa-questions.json",
   BASE+"/data/classic-words.json",
-  BASE+"/data/who-am-i.json"
+  BASE+"/data/who-am-i.json",
+  BASE+"/data/charades.json"
 ]);
 
 self.addEventListener("install",event=>{

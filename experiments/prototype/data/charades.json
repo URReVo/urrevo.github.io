@@ -1,0 +1,1568 @@
+{
+  "schemaVersion": 1,
+  "count": 300,
+  "categories": [
+    {
+      "name": "Tiere",
+      "emoji": "🐾",
+      "count": 25
+    },
+    {
+      "name": "Berufe",
+      "emoji": "🧰",
+      "count": 25
+    },
+    {
+      "name": "Film & Serien",
+      "emoji": "🎬",
+      "count": 25
+    },
+    {
+      "name": "Personen & Figuren",
+      "emoji": "🎭",
+      "count": 25
+    },
+    {
+      "name": "Alltag & Objekte",
+      "emoji": "🧩",
+      "count": 25
+    },
+    {
+      "name": "Essen & Trinken",
+      "emoji": "🍕",
+      "count": 25
+    },
+    {
+      "name": "Fahrzeuge",
+      "emoji": "🚗",
+      "count": 25
+    },
+    {
+      "name": "Orte & Reisen",
+      "emoji": "🌍",
+      "count": 25
+    },
+    {
+      "name": "Sport & Freizeit",
+      "emoji": "⚽",
+      "count": 25
+    },
+    {
+      "name": "Aktionen & Situationen",
+      "emoji": "🎯",
+      "count": 25
+    },
+    {
+      "name": "Musik & Bühne",
+      "emoji": "🎵",
+      "count": 25
+    },
+    {
+      "name": "Technik & Internet",
+      "emoji": "📱",
+      "count": 25
+    }
+  ],
+  "items": [
+    {
+      "id": "sch-0001",
+      "cat": "Tiere",
+      "term": "Elefant"
+    },
+    {
+      "id": "sch-0002",
+      "cat": "Tiere",
+      "term": "Pinguin"
+    },
+    {
+      "id": "sch-0003",
+      "cat": "Tiere",
+      "term": "Giraffe"
+    },
+    {
+      "id": "sch-0004",
+      "cat": "Tiere",
+      "term": "Känguru"
+    },
+    {
+      "id": "sch-0005",
+      "cat": "Tiere",
+      "term": "Delfin"
+    },
+    {
+      "id": "sch-0006",
+      "cat": "Tiere",
+      "term": "Hai"
+    },
+    {
+      "id": "sch-0007",
+      "cat": "Tiere",
+      "term": "Faultier"
+    },
+    {
+      "id": "sch-0008",
+      "cat": "Tiere",
+      "term": "Panda"
+    },
+    {
+      "id": "sch-0009",
+      "cat": "Tiere",
+      "term": "Gorilla"
+    },
+    {
+      "id": "sch-0010",
+      "cat": "Tiere",
+      "term": "Krokodil"
+    },
+    {
+      "id": "sch-0011",
+      "cat": "Tiere",
+      "term": "Flamingo"
+    },
+    {
+      "id": "sch-0012",
+      "cat": "Tiere",
+      "term": "Eichhörnchen"
+    },
+    {
+      "id": "sch-0013",
+      "cat": "Tiere",
+      "term": "Chamäleon"
+    },
+    {
+      "id": "sch-0014",
+      "cat": "Tiere",
+      "term": "Oktopus"
+    },
+    {
+      "id": "sch-0015",
+      "cat": "Tiere",
+      "term": "Nashorn"
+    },
+    {
+      "id": "sch-0016",
+      "cat": "Tiere",
+      "term": "Nilpferd"
+    },
+    {
+      "id": "sch-0017",
+      "cat": "Tiere",
+      "term": "Pfau"
+    },
+    {
+      "id": "sch-0018",
+      "cat": "Tiere",
+      "term": "Waschbär"
+    },
+    {
+      "id": "sch-0019",
+      "cat": "Tiere",
+      "term": "Seepferdchen"
+    },
+    {
+      "id": "sch-0020",
+      "cat": "Tiere",
+      "term": "Eisbär"
+    },
+    {
+      "id": "sch-0021",
+      "cat": "Tiere",
+      "term": "Maulwurf"
+    },
+    {
+      "id": "sch-0022",
+      "cat": "Tiere",
+      "term": "Specht"
+    },
+    {
+      "id": "sch-0023",
+      "cat": "Tiere",
+      "term": "Qualle"
+    },
+    {
+      "id": "sch-0024",
+      "cat": "Tiere",
+      "term": "Krake"
+    },
+    {
+      "id": "sch-0025",
+      "cat": "Tiere",
+      "term": "Erdmännchen"
+    },
+    {
+      "id": "sch-0026",
+      "cat": "Berufe",
+      "term": "Feuerwehrmann"
+    },
+    {
+      "id": "sch-0027",
+      "cat": "Berufe",
+      "term": "Polizist"
+    },
+    {
+      "id": "sch-0028",
+      "cat": "Berufe",
+      "term": "Arzt"
+    },
+    {
+      "id": "sch-0029",
+      "cat": "Berufe",
+      "term": "Zahnarzt"
+    },
+    {
+      "id": "sch-0030",
+      "cat": "Berufe",
+      "term": "Pilot"
+    },
+    {
+      "id": "sch-0031",
+      "cat": "Berufe",
+      "term": "Koch"
+    },
+    {
+      "id": "sch-0032",
+      "cat": "Berufe",
+      "term": "Bäcker"
+    },
+    {
+      "id": "sch-0033",
+      "cat": "Berufe",
+      "term": "Friseur"
+    },
+    {
+      "id": "sch-0034",
+      "cat": "Berufe",
+      "term": "Lehrer"
+    },
+    {
+      "id": "sch-0035",
+      "cat": "Berufe",
+      "term": "Mechaniker"
+    },
+    {
+      "id": "sch-0036",
+      "cat": "Berufe",
+      "term": "Elektriker"
+    },
+    {
+      "id": "sch-0037",
+      "cat": "Berufe",
+      "term": "Programmierer"
+    },
+    {
+      "id": "sch-0038",
+      "cat": "Berufe",
+      "term": "Fotograf"
+    },
+    {
+      "id": "sch-0039",
+      "cat": "Berufe",
+      "term": "Richter"
+    },
+    {
+      "id": "sch-0040",
+      "cat": "Berufe",
+      "term": "Anwalt"
+    },
+    {
+      "id": "sch-0041",
+      "cat": "Berufe",
+      "term": "Architekt"
+    },
+    {
+      "id": "sch-0042",
+      "cat": "Berufe",
+      "term": "Gärtner"
+    },
+    {
+      "id": "sch-0043",
+      "cat": "Berufe",
+      "term": "Landwirt"
+    },
+    {
+      "id": "sch-0044",
+      "cat": "Berufe",
+      "term": "Postbote"
+    },
+    {
+      "id": "sch-0045",
+      "cat": "Berufe",
+      "term": "Busfahrer"
+    },
+    {
+      "id": "sch-0046",
+      "cat": "Berufe",
+      "term": "Schauspieler"
+    },
+    {
+      "id": "sch-0047",
+      "cat": "Berufe",
+      "term": "Astronaut"
+    },
+    {
+      "id": "sch-0048",
+      "cat": "Berufe",
+      "term": "Detektiv"
+    },
+    {
+      "id": "sch-0049",
+      "cat": "Berufe",
+      "term": "Tierarzt"
+    },
+    {
+      "id": "sch-0050",
+      "cat": "Berufe",
+      "term": "Kellner"
+    },
+    {
+      "id": "sch-0051",
+      "cat": "Film & Serien",
+      "term": "Harry Potter"
+    },
+    {
+      "id": "sch-0052",
+      "cat": "Film & Serien",
+      "term": "Darth Vader"
+    },
+    {
+      "id": "sch-0053",
+      "cat": "Film & Serien",
+      "term": "Shrek"
+    },
+    {
+      "id": "sch-0054",
+      "cat": "Film & Serien",
+      "term": "Wednesday Addams"
+    },
+    {
+      "id": "sch-0055",
+      "cat": "Film & Serien",
+      "term": "Homer Simpson"
+    },
+    {
+      "id": "sch-0056",
+      "cat": "Film & Serien",
+      "term": "SpongeBob"
+    },
+    {
+      "id": "sch-0057",
+      "cat": "Film & Serien",
+      "term": "Elsa"
+    },
+    {
+      "id": "sch-0058",
+      "cat": "Film & Serien",
+      "term": "Jack Sparrow"
+    },
+    {
+      "id": "sch-0059",
+      "cat": "Film & Serien",
+      "term": "Rocky Balboa"
+    },
+    {
+      "id": "sch-0060",
+      "cat": "Film & Serien",
+      "term": "Indiana Jones"
+    },
+    {
+      "id": "sch-0061",
+      "cat": "Film & Serien",
+      "term": "Yoda"
+    },
+    {
+      "id": "sch-0062",
+      "cat": "Film & Serien",
+      "term": "James Bond"
+    },
+    {
+      "id": "sch-0063",
+      "cat": "Film & Serien",
+      "term": "Forrest Gump"
+    },
+    {
+      "id": "sch-0064",
+      "cat": "Film & Serien",
+      "term": "Barbie"
+    },
+    {
+      "id": "sch-0065",
+      "cat": "Film & Serien",
+      "term": "Simba"
+    },
+    {
+      "id": "sch-0066",
+      "cat": "Film & Serien",
+      "term": "Buzz Lightyear"
+    },
+    {
+      "id": "sch-0067",
+      "cat": "Film & Serien",
+      "term": "Woody"
+    },
+    {
+      "id": "sch-0068",
+      "cat": "Film & Serien",
+      "term": "Terminator"
+    },
+    {
+      "id": "sch-0069",
+      "cat": "Film & Serien",
+      "term": "E.T."
+    },
+    {
+      "id": "sch-0070",
+      "cat": "Film & Serien",
+      "term": "Marty McFly"
+    },
+    {
+      "id": "sch-0071",
+      "cat": "Film & Serien",
+      "term": "Gollum"
+    },
+    {
+      "id": "sch-0072",
+      "cat": "Film & Serien",
+      "term": "Mr. Bean"
+    },
+    {
+      "id": "sch-0073",
+      "cat": "Film & Serien",
+      "term": "Winnie Puuh"
+    },
+    {
+      "id": "sch-0074",
+      "cat": "Film & Serien",
+      "term": "Scooby-Doo"
+    },
+    {
+      "id": "sch-0075",
+      "cat": "Film & Serien",
+      "term": "Pippi Langstrumpf"
+    },
+    {
+      "id": "sch-0076",
+      "cat": "Personen & Figuren",
+      "term": "Albert Einstein"
+    },
+    {
+      "id": "sch-0077",
+      "cat": "Personen & Figuren",
+      "term": "Leonardo da Vinci"
+    },
+    {
+      "id": "sch-0078",
+      "cat": "Personen & Figuren",
+      "term": "Cleopatra"
+    },
+    {
+      "id": "sch-0079",
+      "cat": "Personen & Figuren",
+      "term": "Napoleon Bonaparte"
+    },
+    {
+      "id": "sch-0080",
+      "cat": "Personen & Figuren",
+      "term": "Mozart"
+    },
+    {
+      "id": "sch-0081",
+      "cat": "Personen & Figuren",
+      "term": "Beethoven"
+    },
+    {
+      "id": "sch-0082",
+      "cat": "Personen & Figuren",
+      "term": "Marie Curie"
+    },
+    {
+      "id": "sch-0083",
+      "cat": "Personen & Figuren",
+      "term": "Isaac Newton"
+    },
+    {
+      "id": "sch-0084",
+      "cat": "Personen & Figuren",
+      "term": "Julius Caesar"
+    },
+    {
+      "id": "sch-0085",
+      "cat": "Personen & Figuren",
+      "term": "Vincent van Gogh"
+    },
+    {
+      "id": "sch-0086",
+      "cat": "Personen & Figuren",
+      "term": "William Shakespeare"
+    },
+    {
+      "id": "sch-0087",
+      "cat": "Personen & Figuren",
+      "term": "Elvis Presley"
+    },
+    {
+      "id": "sch-0088",
+      "cat": "Personen & Figuren",
+      "term": "Michael Jackson"
+    },
+    {
+      "id": "sch-0089",
+      "cat": "Personen & Figuren",
+      "term": "Freddie Mercury"
+    },
+    {
+      "id": "sch-0090",
+      "cat": "Personen & Figuren",
+      "term": "Charlie Chaplin"
+    },
+    {
+      "id": "sch-0091",
+      "cat": "Personen & Figuren",
+      "term": "Marilyn Monroe"
+    },
+    {
+      "id": "sch-0092",
+      "cat": "Personen & Figuren",
+      "term": "Steve Jobs"
+    },
+    {
+      "id": "sch-0093",
+      "cat": "Personen & Figuren",
+      "term": "Nikola Tesla"
+    },
+    {
+      "id": "sch-0094",
+      "cat": "Personen & Figuren",
+      "term": "Neil Armstrong"
+    },
+    {
+      "id": "sch-0095",
+      "cat": "Personen & Figuren",
+      "term": "Frida Kahlo"
+    },
+    {
+      "id": "sch-0096",
+      "cat": "Personen & Figuren",
+      "term": "Super Mario"
+    },
+    {
+      "id": "sch-0097",
+      "cat": "Personen & Figuren",
+      "term": "Pikachu"
+    },
+    {
+      "id": "sch-0098",
+      "cat": "Personen & Figuren",
+      "term": "Batman"
+    },
+    {
+      "id": "sch-0099",
+      "cat": "Personen & Figuren",
+      "term": "Spider-Man"
+    },
+    {
+      "id": "sch-0100",
+      "cat": "Personen & Figuren",
+      "term": "Sherlock Holmes"
+    },
+    {
+      "id": "sch-0101",
+      "cat": "Alltag & Objekte",
+      "term": "Zahnbürste"
+    },
+    {
+      "id": "sch-0102",
+      "cat": "Alltag & Objekte",
+      "term": "Regenschirm"
+    },
+    {
+      "id": "sch-0103",
+      "cat": "Alltag & Objekte",
+      "term": "Schlüsselbund"
+    },
+    {
+      "id": "sch-0104",
+      "cat": "Alltag & Objekte",
+      "term": "Fernbedienung"
+    },
+    {
+      "id": "sch-0105",
+      "cat": "Alltag & Objekte",
+      "term": "Kühlschrank"
+    },
+    {
+      "id": "sch-0106",
+      "cat": "Alltag & Objekte",
+      "term": "Waschmaschine"
+    },
+    {
+      "id": "sch-0107",
+      "cat": "Alltag & Objekte",
+      "term": "Staubsauger"
+    },
+    {
+      "id": "sch-0108",
+      "cat": "Alltag & Objekte",
+      "term": "Toaster"
+    },
+    {
+      "id": "sch-0109",
+      "cat": "Alltag & Objekte",
+      "term": "Kaffeemaschine"
+    },
+    {
+      "id": "sch-0110",
+      "cat": "Alltag & Objekte",
+      "term": "Mikrowelle"
+    },
+    {
+      "id": "sch-0111",
+      "cat": "Alltag & Objekte",
+      "term": "Wecker"
+    },
+    {
+      "id": "sch-0112",
+      "cat": "Alltag & Objekte",
+      "term": "Sonnenbrille"
+    },
+    {
+      "id": "sch-0113",
+      "cat": "Alltag & Objekte",
+      "term": "Rucksack"
+    },
+    {
+      "id": "sch-0114",
+      "cat": "Alltag & Objekte",
+      "term": "Koffer"
+    },
+    {
+      "id": "sch-0115",
+      "cat": "Alltag & Objekte",
+      "term": "Kopfhörer"
+    },
+    {
+      "id": "sch-0116",
+      "cat": "Alltag & Objekte",
+      "term": "Taschenlampe"
+    },
+    {
+      "id": "sch-0117",
+      "cat": "Alltag & Objekte",
+      "term": "Kerze"
+    },
+    {
+      "id": "sch-0118",
+      "cat": "Alltag & Objekte",
+      "term": "Hammer"
+    },
+    {
+      "id": "sch-0119",
+      "cat": "Alltag & Objekte",
+      "term": "Schraubenzieher"
+    },
+    {
+      "id": "sch-0120",
+      "cat": "Alltag & Objekte",
+      "term": "Leiter"
+    },
+    {
+      "id": "sch-0121",
+      "cat": "Alltag & Objekte",
+      "term": "Einkaufswagen"
+    },
+    {
+      "id": "sch-0122",
+      "cat": "Alltag & Objekte",
+      "term": "Briefkasten"
+    },
+    {
+      "id": "sch-0123",
+      "cat": "Alltag & Objekte",
+      "term": "Mülleimer"
+    },
+    {
+      "id": "sch-0124",
+      "cat": "Alltag & Objekte",
+      "term": "Bürostuhl"
+    },
+    {
+      "id": "sch-0125",
+      "cat": "Alltag & Objekte",
+      "term": "Wasserflasche"
+    },
+    {
+      "id": "sch-0126",
+      "cat": "Essen & Trinken",
+      "term": "Pizza"
+    },
+    {
+      "id": "sch-0127",
+      "cat": "Essen & Trinken",
+      "term": "Döner"
+    },
+    {
+      "id": "sch-0128",
+      "cat": "Essen & Trinken",
+      "term": "Sushi"
+    },
+    {
+      "id": "sch-0129",
+      "cat": "Essen & Trinken",
+      "term": "Burger"
+    },
+    {
+      "id": "sch-0130",
+      "cat": "Essen & Trinken",
+      "term": "Pommes"
+    },
+    {
+      "id": "sch-0131",
+      "cat": "Essen & Trinken",
+      "term": "Spaghetti"
+    },
+    {
+      "id": "sch-0132",
+      "cat": "Essen & Trinken",
+      "term": "Lasagne"
+    },
+    {
+      "id": "sch-0133",
+      "cat": "Essen & Trinken",
+      "term": "Currywurst"
+    },
+    {
+      "id": "sch-0134",
+      "cat": "Essen & Trinken",
+      "term": "Bratwurst"
+    },
+    {
+      "id": "sch-0135",
+      "cat": "Essen & Trinken",
+      "term": "Schnitzel"
+    },
+    {
+      "id": "sch-0136",
+      "cat": "Essen & Trinken",
+      "term": "Pfannkuchen"
+    },
+    {
+      "id": "sch-0137",
+      "cat": "Essen & Trinken",
+      "term": "Waffel"
+    },
+    {
+      "id": "sch-0138",
+      "cat": "Essen & Trinken",
+      "term": "Eis"
+    },
+    {
+      "id": "sch-0139",
+      "cat": "Essen & Trinken",
+      "term": "Schokolade"
+    },
+    {
+      "id": "sch-0140",
+      "cat": "Essen & Trinken",
+      "term": "Gummibärchen"
+    },
+    {
+      "id": "sch-0141",
+      "cat": "Essen & Trinken",
+      "term": "Popcorn"
+    },
+    {
+      "id": "sch-0142",
+      "cat": "Essen & Trinken",
+      "term": "Croissant"
+    },
+    {
+      "id": "sch-0143",
+      "cat": "Essen & Trinken",
+      "term": "Brezel"
+    },
+    {
+      "id": "sch-0144",
+      "cat": "Essen & Trinken",
+      "term": "Käsekuchen"
+    },
+    {
+      "id": "sch-0145",
+      "cat": "Essen & Trinken",
+      "term": "Erdbeere"
+    },
+    {
+      "id": "sch-0146",
+      "cat": "Essen & Trinken",
+      "term": "Banane"
+    },
+    {
+      "id": "sch-0147",
+      "cat": "Essen & Trinken",
+      "term": "Ananas"
+    },
+    {
+      "id": "sch-0148",
+      "cat": "Essen & Trinken",
+      "term": "Kaffee"
+    },
+    {
+      "id": "sch-0149",
+      "cat": "Essen & Trinken",
+      "term": "Cola"
+    },
+    {
+      "id": "sch-0150",
+      "cat": "Essen & Trinken",
+      "term": "Kakao"
+    },
+    {
+      "id": "sch-0151",
+      "cat": "Fahrzeuge",
+      "term": "Fahrrad"
+    },
+    {
+      "id": "sch-0152",
+      "cat": "Fahrzeuge",
+      "term": "Motorrad"
+    },
+    {
+      "id": "sch-0153",
+      "cat": "Fahrzeuge",
+      "term": "Sportwagen"
+    },
+    {
+      "id": "sch-0154",
+      "cat": "Fahrzeuge",
+      "term": "Formel-1-Auto"
+    },
+    {
+      "id": "sch-0155",
+      "cat": "Fahrzeuge",
+      "term": "Traktor"
+    },
+    {
+      "id": "sch-0156",
+      "cat": "Fahrzeuge",
+      "term": "Bagger"
+    },
+    {
+      "id": "sch-0157",
+      "cat": "Fahrzeuge",
+      "term": "Feuerwehrwagen"
+    },
+    {
+      "id": "sch-0158",
+      "cat": "Fahrzeuge",
+      "term": "Krankenwagen"
+    },
+    {
+      "id": "sch-0159",
+      "cat": "Fahrzeuge",
+      "term": "Polizeiauto"
+    },
+    {
+      "id": "sch-0160",
+      "cat": "Fahrzeuge",
+      "term": "Bus"
+    },
+    {
+      "id": "sch-0161",
+      "cat": "Fahrzeuge",
+      "term": "Straßenbahn"
+    },
+    {
+      "id": "sch-0162",
+      "cat": "Fahrzeuge",
+      "term": "U-Bahn"
+    },
+    {
+      "id": "sch-0163",
+      "cat": "Fahrzeuge",
+      "term": "ICE"
+    },
+    {
+      "id": "sch-0164",
+      "cat": "Fahrzeuge",
+      "term": "Flugzeug"
+    },
+    {
+      "id": "sch-0165",
+      "cat": "Fahrzeuge",
+      "term": "Hubschrauber"
+    },
+    {
+      "id": "sch-0166",
+      "cat": "Fahrzeuge",
+      "term": "Segelboot"
+    },
+    {
+      "id": "sch-0167",
+      "cat": "Fahrzeuge",
+      "term": "Kreuzfahrtschiff"
+    },
+    {
+      "id": "sch-0168",
+      "cat": "Fahrzeuge",
+      "term": "U-Boot"
+    },
+    {
+      "id": "sch-0169",
+      "cat": "Fahrzeuge",
+      "term": "Heißluftballon"
+    },
+    {
+      "id": "sch-0170",
+      "cat": "Fahrzeuge",
+      "term": "Wohnmobil"
+    },
+    {
+      "id": "sch-0171",
+      "cat": "Fahrzeuge",
+      "term": "Gabelstapler"
+    },
+    {
+      "id": "sch-0172",
+      "cat": "Fahrzeuge",
+      "term": "Müllwagen"
+    },
+    {
+      "id": "sch-0173",
+      "cat": "Fahrzeuge",
+      "term": "Taxi"
+    },
+    {
+      "id": "sch-0174",
+      "cat": "Fahrzeuge",
+      "term": "E-Scooter"
+    },
+    {
+      "id": "sch-0175",
+      "cat": "Fahrzeuge",
+      "term": "Monstertruck"
+    },
+    {
+      "id": "sch-0176",
+      "cat": "Orte & Reisen",
+      "term": "Eiffelturm"
+    },
+    {
+      "id": "sch-0177",
+      "cat": "Orte & Reisen",
+      "term": "Brandenburger Tor"
+    },
+    {
+      "id": "sch-0178",
+      "cat": "Orte & Reisen",
+      "term": "Kölner Dom"
+    },
+    {
+      "id": "sch-0179",
+      "cat": "Orte & Reisen",
+      "term": "Big Ben"
+    },
+    {
+      "id": "sch-0180",
+      "cat": "Orte & Reisen",
+      "term": "Freiheitsstatue"
+    },
+    {
+      "id": "sch-0181",
+      "cat": "Orte & Reisen",
+      "term": "Pyramiden von Gizeh"
+    },
+    {
+      "id": "sch-0182",
+      "cat": "Orte & Reisen",
+      "term": "Chinesische Mauer"
+    },
+    {
+      "id": "sch-0183",
+      "cat": "Orte & Reisen",
+      "term": "Taj Mahal"
+    },
+    {
+      "id": "sch-0184",
+      "cat": "Orte & Reisen",
+      "term": "Mount Everest"
+    },
+    {
+      "id": "sch-0185",
+      "cat": "Orte & Reisen",
+      "term": "Grand Canyon"
+    },
+    {
+      "id": "sch-0186",
+      "cat": "Orte & Reisen",
+      "term": "Sahara"
+    },
+    {
+      "id": "sch-0187",
+      "cat": "Orte & Reisen",
+      "term": "Amazonas"
+    },
+    {
+      "id": "sch-0188",
+      "cat": "Orte & Reisen",
+      "term": "Nordpol"
+    },
+    {
+      "id": "sch-0189",
+      "cat": "Orte & Reisen",
+      "term": "Südpol"
+    },
+    {
+      "id": "sch-0190",
+      "cat": "Orte & Reisen",
+      "term": "Hawaii"
+    },
+    {
+      "id": "sch-0191",
+      "cat": "Orte & Reisen",
+      "term": "Mallorca"
+    },
+    {
+      "id": "sch-0192",
+      "cat": "Orte & Reisen",
+      "term": "Venedig"
+    },
+    {
+      "id": "sch-0193",
+      "cat": "Orte & Reisen",
+      "term": "New York"
+    },
+    {
+      "id": "sch-0194",
+      "cat": "Orte & Reisen",
+      "term": "Tokio"
+    },
+    {
+      "id": "sch-0195",
+      "cat": "Orte & Reisen",
+      "term": "Paris"
+    },
+    {
+      "id": "sch-0196",
+      "cat": "Orte & Reisen",
+      "term": "Berlin"
+    },
+    {
+      "id": "sch-0197",
+      "cat": "Orte & Reisen",
+      "term": "London"
+    },
+    {
+      "id": "sch-0198",
+      "cat": "Orte & Reisen",
+      "term": "Rom"
+    },
+    {
+      "id": "sch-0199",
+      "cat": "Orte & Reisen",
+      "term": "Sydney"
+    },
+    {
+      "id": "sch-0200",
+      "cat": "Orte & Reisen",
+      "term": "Dubai"
+    },
+    {
+      "id": "sch-0201",
+      "cat": "Sport & Freizeit",
+      "term": "Fußball"
+    },
+    {
+      "id": "sch-0202",
+      "cat": "Sport & Freizeit",
+      "term": "Basketball"
+    },
+    {
+      "id": "sch-0203",
+      "cat": "Sport & Freizeit",
+      "term": "Tennis"
+    },
+    {
+      "id": "sch-0204",
+      "cat": "Sport & Freizeit",
+      "term": "Tischtennis"
+    },
+    {
+      "id": "sch-0205",
+      "cat": "Sport & Freizeit",
+      "term": "Volleyball"
+    },
+    {
+      "id": "sch-0206",
+      "cat": "Sport & Freizeit",
+      "term": "Handball"
+    },
+    {
+      "id": "sch-0207",
+      "cat": "Sport & Freizeit",
+      "term": "Golf"
+    },
+    {
+      "id": "sch-0208",
+      "cat": "Sport & Freizeit",
+      "term": "Boxen"
+    },
+    {
+      "id": "sch-0209",
+      "cat": "Sport & Freizeit",
+      "term": "Schwimmen"
+    },
+    {
+      "id": "sch-0210",
+      "cat": "Sport & Freizeit",
+      "term": "Skifahren"
+    },
+    {
+      "id": "sch-0211",
+      "cat": "Sport & Freizeit",
+      "term": "Snowboarden"
+    },
+    {
+      "id": "sch-0212",
+      "cat": "Sport & Freizeit",
+      "term": "Surfen"
+    },
+    {
+      "id": "sch-0213",
+      "cat": "Sport & Freizeit",
+      "term": "Skateboarden"
+    },
+    {
+      "id": "sch-0214",
+      "cat": "Sport & Freizeit",
+      "term": "Klettern"
+    },
+    {
+      "id": "sch-0215",
+      "cat": "Sport & Freizeit",
+      "term": "Wandern"
+    },
+    {
+      "id": "sch-0216",
+      "cat": "Sport & Freizeit",
+      "term": "Angeln"
+    },
+    {
+      "id": "sch-0217",
+      "cat": "Sport & Freizeit",
+      "term": "Bowling"
+    },
+    {
+      "id": "sch-0218",
+      "cat": "Sport & Freizeit",
+      "term": "Darts"
+    },
+    {
+      "id": "sch-0219",
+      "cat": "Sport & Freizeit",
+      "term": "Billard"
+    },
+    {
+      "id": "sch-0220",
+      "cat": "Sport & Freizeit",
+      "term": "Schach"
+    },
+    {
+      "id": "sch-0221",
+      "cat": "Sport & Freizeit",
+      "term": "Fitnessstudio"
+    },
+    {
+      "id": "sch-0222",
+      "cat": "Sport & Freizeit",
+      "term": "Camping"
+    },
+    {
+      "id": "sch-0223",
+      "cat": "Sport & Freizeit",
+      "term": "Karaoke"
+    },
+    {
+      "id": "sch-0224",
+      "cat": "Sport & Freizeit",
+      "term": "Tanzen"
+    },
+    {
+      "id": "sch-0225",
+      "cat": "Sport & Freizeit",
+      "term": "Joggen"
+    },
+    {
+      "id": "sch-0226",
+      "cat": "Aktionen & Situationen",
+      "term": "Zähne putzen"
+    },
+    {
+      "id": "sch-0227",
+      "cat": "Aktionen & Situationen",
+      "term": "verschlafen"
+    },
+    {
+      "id": "sch-0228",
+      "cat": "Aktionen & Situationen",
+      "term": "einen Koffer packen"
+    },
+    {
+      "id": "sch-0229",
+      "cat": "Aktionen & Situationen",
+      "term": "im Stau stehen"
+    },
+    {
+      "id": "sch-0230",
+      "cat": "Aktionen & Situationen",
+      "term": "einen Reifen wechseln"
+    },
+    {
+      "id": "sch-0231",
+      "cat": "Aktionen & Situationen",
+      "term": "ein Selfie machen"
+    },
+    {
+      "id": "sch-0232",
+      "cat": "Aktionen & Situationen",
+      "term": "Geschenk auspacken"
+    },
+    {
+      "id": "sch-0233",
+      "cat": "Aktionen & Situationen",
+      "term": "im Aufzug stecken bleiben"
+    },
+    {
+      "id": "sch-0234",
+      "cat": "Aktionen & Situationen",
+      "term": "einen Kuchen backen"
+    },
+    {
+      "id": "sch-0235",
+      "cat": "Aktionen & Situationen",
+      "term": "einen Hund ausführen"
+    },
+    {
+      "id": "sch-0236",
+      "cat": "Aktionen & Situationen",
+      "term": "auf Glatteis ausrutschen"
+    },
+    {
+      "id": "sch-0237",
+      "cat": "Aktionen & Situationen",
+      "term": "eine Spinne entdecken"
+    },
+    {
+      "id": "sch-0238",
+      "cat": "Aktionen & Situationen",
+      "term": "im Regen rennen"
+    },
+    {
+      "id": "sch-0239",
+      "cat": "Aktionen & Situationen",
+      "term": "einen Ballon aufblasen"
+    },
+    {
+      "id": "sch-0240",
+      "cat": "Aktionen & Situationen",
+      "term": "eine Fliege jagen"
+    },
+    {
+      "id": "sch-0241",
+      "cat": "Aktionen & Situationen",
+      "term": "einen Sonnenbrand haben"
+    },
+    {
+      "id": "sch-0242",
+      "cat": "Aktionen & Situationen",
+      "term": "einen Wecker überhören"
+    },
+    {
+      "id": "sch-0243",
+      "cat": "Aktionen & Situationen",
+      "term": "einen Einkaufswagen schieben"
+    },
+    {
+      "id": "sch-0244",
+      "cat": "Aktionen & Situationen",
+      "term": "ein Zelt aufbauen"
+    },
+    {
+      "id": "sch-0245",
+      "cat": "Aktionen & Situationen",
+      "term": "eine schwere Kiste tragen"
+    },
+    {
+      "id": "sch-0246",
+      "cat": "Aktionen & Situationen",
+      "term": "im Kino Popcorn essen"
+    },
+    {
+      "id": "sch-0247",
+      "cat": "Aktionen & Situationen",
+      "term": "eine Tür aufbrechen"
+    },
+    {
+      "id": "sch-0248",
+      "cat": "Aktionen & Situationen",
+      "term": "ein Lagerfeuer machen"
+    },
+    {
+      "id": "sch-0249",
+      "cat": "Aktionen & Situationen",
+      "term": "einen Drachen steigen lassen"
+    },
+    {
+      "id": "sch-0250",
+      "cat": "Aktionen & Situationen",
+      "term": "eine Achterbahn fahren"
+    },
+    {
+      "id": "sch-0251",
+      "cat": "Musik & Bühne",
+      "term": "Gitarre"
+    },
+    {
+      "id": "sch-0252",
+      "cat": "Musik & Bühne",
+      "term": "Schlagzeug"
+    },
+    {
+      "id": "sch-0253",
+      "cat": "Musik & Bühne",
+      "term": "Klavier"
+    },
+    {
+      "id": "sch-0254",
+      "cat": "Musik & Bühne",
+      "term": "Geige"
+    },
+    {
+      "id": "sch-0255",
+      "cat": "Musik & Bühne",
+      "term": "Saxofon"
+    },
+    {
+      "id": "sch-0256",
+      "cat": "Musik & Bühne",
+      "term": "Trompete"
+    },
+    {
+      "id": "sch-0257",
+      "cat": "Musik & Bühne",
+      "term": "DJ"
+    },
+    {
+      "id": "sch-0258",
+      "cat": "Musik & Bühne",
+      "term": "Dirigent"
+    },
+    {
+      "id": "sch-0259",
+      "cat": "Musik & Bühne",
+      "term": "Mikrofon"
+    },
+    {
+      "id": "sch-0260",
+      "cat": "Musik & Bühne",
+      "term": "Konzert"
+    },
+    {
+      "id": "sch-0261",
+      "cat": "Musik & Bühne",
+      "term": "Oper"
+    },
+    {
+      "id": "sch-0262",
+      "cat": "Musik & Bühne",
+      "term": "Musical"
+    },
+    {
+      "id": "sch-0263",
+      "cat": "Musik & Bühne",
+      "term": "Rockband"
+    },
+    {
+      "id": "sch-0264",
+      "cat": "Musik & Bühne",
+      "term": "Orchester"
+    },
+    {
+      "id": "sch-0265",
+      "cat": "Musik & Bühne",
+      "term": "Kopfhörerkonzert"
+    },
+    {
+      "id": "sch-0266",
+      "cat": "Musik & Bühne",
+      "term": "Tanzfläche"
+    },
+    {
+      "id": "sch-0267",
+      "cat": "Musik & Bühne",
+      "term": "Bühnenlicht"
+    },
+    {
+      "id": "sch-0268",
+      "cat": "Musik & Bühne",
+      "term": "Zugabe"
+    },
+    {
+      "id": "sch-0269",
+      "cat": "Musik & Bühne",
+      "term": "Sänger"
+    },
+    {
+      "id": "sch-0270",
+      "cat": "Musik & Bühne",
+      "term": "Rapper"
+    },
+    {
+      "id": "sch-0271",
+      "cat": "Musik & Bühne",
+      "term": "Ballett"
+    },
+    {
+      "id": "sch-0272",
+      "cat": "Musik & Bühne",
+      "term": "Festival"
+    },
+    {
+      "id": "sch-0273",
+      "cat": "Musik & Bühne",
+      "term": "Plattenspieler"
+    },
+    {
+      "id": "sch-0274",
+      "cat": "Musik & Bühne",
+      "term": "Notenblatt"
+    },
+    {
+      "id": "sch-0275",
+      "cat": "Musik & Bühne",
+      "term": "Luftgitarre"
+    },
+    {
+      "id": "sch-0276",
+      "cat": "Technik & Internet",
+      "term": "iPhone"
+    },
+    {
+      "id": "sch-0277",
+      "cat": "Technik & Internet",
+      "term": "PlayStation"
+    },
+    {
+      "id": "sch-0278",
+      "cat": "Technik & Internet",
+      "term": "Xbox"
+    },
+    {
+      "id": "sch-0279",
+      "cat": "Technik & Internet",
+      "term": "Nintendo Switch"
+    },
+    {
+      "id": "sch-0280",
+      "cat": "Technik & Internet",
+      "term": "Laptop"
+    },
+    {
+      "id": "sch-0281",
+      "cat": "Technik & Internet",
+      "term": "Smartwatch"
+    },
+    {
+      "id": "sch-0282",
+      "cat": "Technik & Internet",
+      "term": "AirPods"
+    },
+    {
+      "id": "sch-0283",
+      "cat": "Technik & Internet",
+      "term": "Drohne"
+    },
+    {
+      "id": "sch-0284",
+      "cat": "Technik & Internet",
+      "term": "3D-Drucker"
+    },
+    {
+      "id": "sch-0285",
+      "cat": "Technik & Internet",
+      "term": "Roboter"
+    },
+    {
+      "id": "sch-0286",
+      "cat": "Technik & Internet",
+      "term": "VR-Brille"
+    },
+    {
+      "id": "sch-0287",
+      "cat": "Technik & Internet",
+      "term": "WLAN-Router"
+    },
+    {
+      "id": "sch-0288",
+      "cat": "Technik & Internet",
+      "term": "Powerbank"
+    },
+    {
+      "id": "sch-0289",
+      "cat": "Technik & Internet",
+      "term": "Smart-TV"
+    },
+    {
+      "id": "sch-0290",
+      "cat": "Technik & Internet",
+      "term": "Touchscreen"
+    },
+    {
+      "id": "sch-0291",
+      "cat": "Technik & Internet",
+      "term": "USB-Stick"
+    },
+    {
+      "id": "sch-0292",
+      "cat": "Technik & Internet",
+      "term": "Drucker"
+    },
+    {
+      "id": "sch-0293",
+      "cat": "Technik & Internet",
+      "term": "Webcam"
+    },
+    {
+      "id": "sch-0294",
+      "cat": "Technik & Internet",
+      "term": "Tastatur"
+    },
+    {
+      "id": "sch-0295",
+      "cat": "Technik & Internet",
+      "term": "Computermaus"
+    },
+    {
+      "id": "sch-0296",
+      "cat": "Technik & Internet",
+      "term": "Google"
+    },
+    {
+      "id": "sch-0297",
+      "cat": "Technik & Internet",
+      "term": "YouTube"
+    },
+    {
+      "id": "sch-0298",
+      "cat": "Technik & Internet",
+      "term": "Netflix"
+    },
+    {
+      "id": "sch-0299",
+      "cat": "Technik & Internet",
+      "term": "WhatsApp"
+    },
+    {
+      "id": "sch-0300",
+      "cat": "Technik & Internet",
+      "term": "Snapchat"
+    }
+  ]
+}
