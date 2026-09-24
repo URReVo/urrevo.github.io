@@ -2077,11 +2077,11 @@ button.ghost,#restart,#classicRestart{
 /* Bring back a restrained success glow on the revealed correct values. */
 .resolutionNumber.locked,
 .impNumber.locked{
-  color:#72d98a!important;
+  color:#00d747!important;
   text-shadow:
-    0 0 10px rgba(114,217,138,.34),
-    0 0 24px rgba(79,194,105,.22),
-    0 0 42px rgba(79,194,105,.10)!important;
+    0 0 8px rgba(0,215,71,.52),
+    0 0 20px rgba(0,215,71,.34),
+    0 0 38px rgba(0,215,71,.18)!important;
 }
 
 /* Keep the in-game controls visually clear of the iOS top/status region. */
