@@ -1937,9 +1937,9 @@ button.ghost,#restart,#classicRestart{
 /* Prototype Classic transition alignment */
 /* All Classic stages share one vertical skeleton:
    38px context row -> flexible content card -> bottom action zone. */
-.classicRoleScreen,
-.classicDiscussionScreen,
-.classicResultScreen{
+.classicRoleScreen:not(.hidden),
+.classicDiscussionScreen:not(.hidden),
+.classicResultScreen:not(.hidden){
   position:relative;
   display:flex!important;
   flex-direction:column;
@@ -2035,16 +2035,10 @@ button.ghost,#restart,#classicRestart{
 }
 
 
-/* Prototype remove legacy premium blur effects */
-.gameTopbar{
-  background:#292929!important;
-  backdrop-filter:none!important;
-  -webkit-backdrop-filter:none!important;
-  border-color:transparent!important;
-}
-.questionCard:after{
-  display:none!important;
-}
-.resolutionScreen:before{
+
+/* Prototype visibility safety */
+.classicRoleScreen.hidden,
+.classicDiscussionScreen.hidden,
+.classicResultScreen.hidden{
   display:none!important;
 }
