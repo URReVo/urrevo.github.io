@@ -106,6 +106,16 @@ for(const [name,source] of [["app-state",appStateSource],["launcher",launcherSou
 assert(appStateSource.includes('var KEY="imposterGames.appState.v1"'),"production app-state key missing");
 assert(appStateSource.includes('BACKUP_FORMAT="imposter-games-backup"'),"production backup format missing");
 assert(engineSource.includes('EXP_STORAGE="imposterGames.v73.game."'),"V73 isolated game storage missing");
+assert(!appStateSource.includes("imposterGames.prototype."),"production app-state must not reference prototype storage");
+assert(!engineSource.includes("imposterGames.prototype."),"production game engine must not reference prototype storage");
+assert(!sw.includes("/experiments/prototype"),"production service worker must not cache prototype paths");
+const prototypeAppStateSource=read("experiments/prototype/assets/js/app-state.js");
+const prototypeEngineSource=read("experiments/prototype/assets/js/game-engine.js");
+assert(prototypeAppStateSource.includes('var KEY="imposterGames.prototype.appState.v1"'),"prototype app-state key lost isolation");
+assert(prototypeAppStateSource.includes('BACKUP_FORMAT="imposter-games-prototype-backup"'),"prototype backup format lost isolation");
+assert(prototypeEngineSource.includes('EXP_STORAGE="imposterGames.prototype.game."'),"prototype game storage lost isolation");
+assert(!prototypeAppStateSource.includes('var KEY="imposterGames.appState.v1"'),"prototype must not use production app-state key");
+assert(!prototypeEngineSource.includes('EXP_STORAGE="imposterGames.v73.game."'),"prototype must not use production game storage");
 assert(!html["index.html"].includes("APP-SHELL TEST"),"production launcher still contains experiment badge");
 assert(launcherCss.includes("padding:calc(18px + var(--safeTop)) 16px 26px"),"launcher safe-area top padding missing");
 assert(sw.includes('const CACHE_REVISION="r6"'),"V73 launcher-audio cache revision mismatch");
