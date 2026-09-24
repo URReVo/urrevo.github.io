@@ -6,6 +6,7 @@ struct PlayerProfile: Codable, Identifiable, Hashable {
     var avatar: String
     var aliases: [String]
     var createdAt: String
+    var deletedAt: String? = nil
 }
 
 struct ProfileStats: Codable, Hashable {
