@@ -148,6 +148,21 @@ final class AppStore: ObservableObject {
         return Array(profiles.prefix(max(0, limit)))
     }
 
+    func resolvedPlayers(_ players: [PlayerDraft]) -> [PlayerDraft] {
+        var working = data
+        var resolved: [PlayerDraft] = []
+
+        for var player in players {
+            let id = Self.ensureProfile(player, in: &working)
+            player.profileId = id
+            resolved.append(player)
+        }
+
+        data = working
+        persist(working)
+        return resolved
+    }
+
     func beginSession(players: [PlayerDraft], game: String) -> String {
         var working = data
         var resolvedIds: [String] = []
