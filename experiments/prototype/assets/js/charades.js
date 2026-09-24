@@ -11,7 +11,8 @@ var bank=[],categoryMeta=[],count=3,players=[],savedNames=[],savedIds=[],avatars
 var selectedCategories=["Alle"],timerSeconds=60,motionFlip=false;
 var playerIndex=0,currentItem=null,turnItems=[],results=[],turnCorrect=0,turnSkipped=0,remaining=60,timerHandle=null;
 var turnRunning=false,countdownRunning=false,lastTick=0;
-var orientationAttached=false,motionPermission="unknown",latestBeta=null,latestGamma=null,baseBeta=null,baseGamma=null,motionArmed=false,lastMotionAt=0;
+var orientationAttached=false,motionPermission="unknown",latestBeta=null,latestGamma=null,baseBeta=null,baseGamma=null,motionArmed=false,lastMotionAt=0,motionCandidate=0,motionCandidateSince=0,actionLockedUntil=0,actionUnlockTimer=null;
+var MOTION_TRIGGER_DEG=58,MOTION_NEUTRAL_DEG=16,MOTION_CONFIRM_MS=180,ACTION_COOLDOWN_MS=3000;
 var sections=["setup","handoff","play","turnResult","finalResult"];
 
 function get(key,fallback){try{var raw=localStorage.getItem(key);return raw===null?fallback:JSON.parse(raw);}catch(e){return fallback;}}
@@ -59,24 +60,86 @@ async function requestMotion(){
   }catch(e){motionPermission="denied";return motionPermission;}
 }
 function angleDelta(value,base){var d=value-base;while(d>180)d-=360;while(d<-180)d+=360;return d;}
+function screenAngle(){
+  var raw=0;
+  try{
+    if(window.screen&&window.screen.orientation&&Number.isFinite(Number(window.screen.orientation.angle)))raw=Number(window.screen.orientation.angle);
+    else if(Number.isFinite(Number(window.orientation)))raw=Number(window.orientation);
+  }catch(e){}
+  raw=((raw%360)+360)%360;
+  return raw;
+}
+function motionDelta(){
+  var db=angleDelta(latestBeta,baseBeta),dg=angleDelta(latestGamma,baseGamma),angle=screenAngle();
+  if(angle===90)return -dg;
+  if(angle===270)return dg;
+  return db;
+}
+function setActionButtonsLocked(locked){
+  byId("correctTerm").disabled=!!locked;
+  byId("skipTerm").disabled=!!locked;
+}
+function actionCooldownRemaining(){
+  return Math.max(0,actionLockedUntil-Date.now());
+}
+function updateActionLockUi(){
+  if(!turnRunning)return;
+  var left=actionCooldownRemaining();
+  if(left<=0){
+    setActionButtonsLocked(false);
+    if(actionUnlockTimer){clearTimeout(actionUnlockTimer);actionUnlockTimer=null;}
+    if(motionPermission!=="granted")byId("motionFeedback").textContent="Touch-Tasten bereit";
+    return;
+  }
+  setActionButtonsLocked(true);
+  byId("motionFeedback").textContent="Nächste Wertung in "+Math.max(1,Math.ceil(left/1000))+" s";
+  actionUnlockTimer=setTimeout(updateActionLockUi,180);
+}
+function lockActions(){
+  actionLockedUntil=Date.now()+ACTION_COOLDOWN_MS;
+  setActionButtonsLocked(true);
+  if(actionUnlockTimer)clearTimeout(actionUnlockTimer);
+  updateActionLockUi();
+}
 function onOrientation(event){
   if(Number.isFinite(event.beta))latestBeta=Number(event.beta);
   if(Number.isFinite(event.gamma))latestGamma=Number(event.gamma);
   if(!turnRunning||countdownRunning||motionPermission!=="granted"||!Number.isFinite(baseBeta)||!Number.isFinite(baseGamma))return;
-  var db=angleDelta(latestBeta,baseBeta),dg=angleDelta(latestGamma,baseGamma);
-  var delta=Math.abs(db)>=Math.abs(dg)?db:dg,abs=Math.abs(delta),now=Date.now();
+  var delta=motionDelta(),abs=Math.abs(delta),now=Date.now();
+
   if(!motionArmed){
-    if(abs<=14&&now-lastMotionAt>320){motionArmed=true;byId("motionFeedback").textContent="Bereit fürs nächste Wippen";}
+    motionCandidate=0;motionCandidateSince=0;
+    if(abs<=MOTION_NEUTRAL_DEG&&actionCooldownRemaining()<=0){
+      motionArmed=true;
+      byId("motionFeedback").textContent="Bereit · jetzt deutlich wippen";
+    }
     return;
   }
-  if(abs<38)return;
-  motionArmed=false;lastMotionAt=now;
-  var positive=delta>0;
+
+  if(actionCooldownRemaining()>0){
+    motionArmed=false;motionCandidate=0;motionCandidateSince=0;
+    return;
+  }
+
+  if(abs<MOTION_TRIGGER_DEG){
+    motionCandidate=0;motionCandidateSince=0;
+    return;
+  }
+
+  var direction=delta>0?1:-1;
+  if(motionCandidate!==direction){
+    motionCandidate=direction;motionCandidateSince=now;
+    return;
+  }
+  if(now-motionCandidateSince<MOTION_CONFIRM_MS)return;
+
+  motionArmed=false;motionCandidate=0;motionCandidateSince=0;lastMotionAt=now;
+  var positive=direction>0;
   var correct=motionFlip?!positive:positive;
   markCurrent(correct?"correct":"skipped","motion");
 }
 function motionStatusText(){
-  if(motionPermission==="granted")return "Wippen aktiv · bei falscher Richtung unten tauschen";
+  if(motionPermission==="granted")return "Wippen aktiv · deutlich kippen, dann zurück in die Mitte";
   if(motionPermission==="denied")return "Bewegung nicht erlaubt · Touch-Tasten aktiv";
   if(motionPermission==="unsupported")return "Bewegung nicht verfügbar · Touch-Tasten aktiv";
   return "Bewegung wird vorbereitet …";
@@ -95,16 +158,16 @@ function startCountdown(){
   countdownRunning=true;turnRunning=false;baseBeta=null;baseGamma=null;motionArmed=false;
   var overlay=byId("countdown"),value=byId("countdownValue"),n=3;overlay.classList.remove("hidden");value.textContent=String(n);
   tone(460,.05);
-  var step=function(){n--;if(n>0){value.textContent=String(n);tone(460+40*(3-n),.05);setTimeout(step,700);return;}value.textContent="LOS";tone(720,.08);setTimeout(function(){overlay.classList.add("hidden");countdownRunning=false;baseBeta=Number.isFinite(latestBeta)?latestBeta:0;baseGamma=Number.isFinite(latestGamma)?latestGamma:0;motionArmed=true;turnRunning=true;lastTick=Date.now();updateTimer();timerHandle=setInterval(tickTimer,200);byId("motionFeedback").textContent=motionPermission==="granted"?"Wippen: eine Richtung richtig, die andere überspringen":"Touch-Tasten verwenden";},450);};
+  var step=function(){n--;if(n>0){value.textContent=String(n);tone(460+40*(3-n),.05);setTimeout(step,700);return;}value.textContent="LOS";tone(720,.08);setTimeout(function(){overlay.classList.add("hidden");countdownRunning=false;baseBeta=Number.isFinite(latestBeta)?latestBeta:0;baseGamma=Number.isFinite(latestGamma)?latestGamma:0;motionArmed=false;motionCandidate=0;motionCandidateSince=0;actionLockedUntil=0;turnRunning=true;lastTick=Date.now();setActionButtonsLocked(false);updateTimer();timerHandle=setInterval(tickTimer,200);byId("motionFeedback").textContent=motionPermission==="granted"?"Kurz ruhig halten · dann deutlich wippen":"Touch-Tasten bereit";},450);};
   setTimeout(step,700);
 }
 function tickTimer(){if(!turnRunning)return;var now=Date.now(),elapsed=(now-lastTick)/1000;if(elapsed<.18)return;var whole=Math.floor(elapsed);if(whole<1)return;remaining=Math.max(0,remaining-whole);lastTick+=whole*1000;updateTimer();if(remaining<=0)endTurn("timer");}
 function updateTimer(){byId("topTimer").textContent=remaining+"s";}
 function syncScore(){byId("scorePill").textContent="✓ "+turnCorrect+" · ↷ "+turnSkipped;}
 function renderTerm(){if(!currentItem)return;byId("termCategory").textContent=currentItem.cat;byId("termText").textContent=currentItem.term;}
-function feedback(type){var card=byId("termCard"),label=byId("motionFeedback");card.classList.remove("feedback-correct","feedback-skip");if(type==="correct"){card.classList.add("feedback-correct");label.textContent="✓ Richtig";tone(780,.055);pulse(10);}else{card.classList.add("feedback-skip");label.textContent="↷ Übersprungen";tone(330,.045);pulse(6);}setTimeout(function(){card.classList.remove("feedback-correct","feedback-skip");if(turnRunning)label.textContent=motionPermission==="granted"?"Zur Neutralposition – dann wieder wippen":"Touch-Tasten verwenden";},260);}
-function markCurrent(state,source){if(!turnRunning||!currentItem)return;turnItems.push({id:currentItem.id,term:currentItem.term,cat:currentItem.cat,state:state,source:source});if(state==="correct")turnCorrect++;else turnSkipped++;syncScore();feedback(state);currentItem=drawOne();if(!currentItem){endTurn("empty");return;}renderTerm();}
-function clearTurnRuntime(){turnRunning=false;countdownRunning=false;if(timerHandle){clearInterval(timerHandle);timerHandle=null;}byId("countdown").classList.add("hidden");}
+function feedback(type){var card=byId("termCard"),label=byId("motionFeedback");card.classList.remove("feedback-correct","feedback-skip");if(type==="correct"){card.classList.add("feedback-correct");label.textContent="✓ Richtig";tone(780,.055);pulse(10);}else{card.classList.add("feedback-skip");label.textContent="↷ Übersprungen";tone(330,.045);pulse(6);}setTimeout(function(){card.classList.remove("feedback-correct","feedback-skip");if(turnRunning&&actionCooldownRemaining()<=0)label.textContent=motionPermission==="granted"?"Zur Mitte zurück · bereit fürs nächste Wippen":"Touch-Tasten bereit";},420);}
+function markCurrent(state,source){if(!turnRunning||!currentItem||actionCooldownRemaining()>0)return;turnItems.push({id:currentItem.id,term:currentItem.term,cat:currentItem.cat,state:state,source:source});if(state==="correct")turnCorrect++;else turnSkipped++;syncScore();feedback(state);currentItem=drawOne();if(!currentItem){endTurn("empty");return;}renderTerm();lockActions();motionArmed=false;motionCandidate=0;motionCandidateSince=0;}
+function clearTurnRuntime(){turnRunning=false;countdownRunning=false;motionArmed=false;motionCandidate=0;motionCandidateSince=0;actionLockedUntil=0;if(timerHandle){clearInterval(timerHandle);timerHandle=null;}if(actionUnlockTimer){clearTimeout(actionUnlockTimer);actionUnlockTimer=null;}setActionButtonsLocked(false);byId("countdown").classList.add("hidden");}
 function endTurn(reason){if(!turnRunning&&!countdownRunning&&byId("play").classList.contains("hidden"))return;clearTurnRuntime();results[playerIndex]={player:players[playerIndex],correct:turnCorrect,skipped:turnSkipped,items:turnItems.slice(),reason:reason||"manual"};renderTurnResult();}
 function renderTurnResult(){var result=results[playerIndex],p=result.player;byId("turnResultAvatar").textContent=p.avatar;byId("turnResultName").textContent=p.name;byId("turnCorrect").textContent=String(result.correct);byId("turnSkipped").textContent=String(result.skipped);var box=byId("turnItems");box.innerHTML="";if(!result.items.length){var empty=document.createElement("div");empty.className="savedHint";empty.textContent="Noch kein Begriff gewertet.";box.appendChild(empty);}result.items.forEach(function(item){var row=document.createElement("div");row.className="charadesResultRow";var info=document.createElement("div"),name=document.createElement("strong"),cat=document.createElement("small"),state=document.createElement("span");name.textContent=item.term;cat.textContent=item.cat;state.className="charadesResultState "+item.state;state.textContent=item.state==="correct"?"✓ Richtig":"↷ Übersprungen";info.append(name,cat);row.append(info,state);box.appendChild(row);});byId("nextPlayer").textContent=playerIndex===players.length-1?"Gesamtergebnis":"Nächster Spieler";show("turnResult");}
 function advance(){if(playerIndex>=players.length-1){renderFinal();return;}playerIndex++;prepareHandoff();}

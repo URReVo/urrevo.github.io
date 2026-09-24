@@ -49,3 +49,5 @@
 @media(max-width:390px){.charadesTimerControl{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}.charadesTimerControl button{padding:7px 2px;font-size:9px}.charadesFinalActions{grid-template-columns:1fr}}
 @media(max-height:650px){.charadesTermCard{min-height:140px;padding:16px}.charadesTermText{font-size:clamp(31px,9vw,58px)}.charadesActions button{min-height:50px}.charadesMotionBar{margin:5px 1px}}
 @media(orientation:landscape) and (max-height:500px){.charadesPlayMeta{display:none}.charadesTermCard{min-height:0;border-radius:24px}.charadesTermText{font-size:clamp(38px,9vw,72px)}.charadesMotionFeedback{margin-top:8px}.charadesMotionBar{margin:4px 1px}.charadesActions button{min-height:46px}}
+
+.charadesActions button:disabled{opacity:.42;transform:none!important;filter:saturate(.55)}
