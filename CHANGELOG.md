@@ -2,6 +2,13 @@
 
 ## V73
 
+- Native iOS auf Funktionsparität zur V73-PWA ausgebaut: Circa, Classic, Wer bin ich? und Scharade sind vollständig in SwiftUI umgesetzt; der letzte Spiel-Platzhalter wurde entfernt.
+- Nativer App-Shell mit lokalen Profilen, persönlicher/Gesamt-Statistik, Sessions/Awards, Achievements, Schnellstart-Presets und Einstellungen ergänzt.
+- Backup V3 nativ umgesetzt: SHA-256-Integritätsprüfung, PWA-kompatibler zentraler App-State und vollständiger V73-Game-Storage inklusive skalaren Einstellungen sowie gespeicherten Spielerlisten.
+- Scharade auf den vollständigen Mehrspieler-Ablauf erweitert: Spielerrotation, 3-2-1-Countdown, Core Motion/Core Haptics, Touch-Fallback, Rundenergebnis, Gesamtrangliste, Repeat-Protection und persistente Wipprichtung.
+- GitHub Actions erzeugt zusätzlich eine unsignierte iPhone-Device-IPA für Windows-Sideloading via AltStore/AltServer.
+
+
 - Native iOS-Vorbereitung gehärtet: Produktions-JSONs werden explizit als App-Ressourcen gebündelt, der echte XCTest-Lauf ist wieder Pflicht in CI und Core Haptics besitzt einen UIKit-Fallback.
 - Der iOS-Release-Validator verhindert künftig einen Rückfall auf Compile-only-CI oder fehlende Content-Ressourcen.
 
