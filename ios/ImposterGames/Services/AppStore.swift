@@ -10,8 +10,6 @@ final class AppStore: ObservableObject {
     static let avatars = ["😎", "🕵️", "🥷", "🤠", "👻", "🤖", "🦊", "🐼", "🐸", "🦁", "🐙", "🦄"]
 
     @Published private(set) var data: AppData
-    @Published var launchPreset: QuickPreset?
-    @Published var launchGroup: [PlayerProfile]?
 
     private let defaults: UserDefaults
     private let encoder: JSONEncoder
@@ -129,7 +127,8 @@ final class AppStore: ObservableObject {
         }
 
         mutate { working in
-            let removed = working.profiles.remove(at: index)
+            var removed = working.profiles.remove(at: index)
+            removed.deletedAt = Self.now()
             working.profileArchive[id] = removed
             if working.selectedProfileId == id || working.primaryProfileId == id {
                 working.selectedProfileId = working.profiles[0].id
@@ -369,19 +368,22 @@ final class AppStore: ObservableObject {
     }
 
     func prepareLaunch(preset: QuickPreset?, group: [PlayerProfile]? = nil) {
-        launchPreset = preset
-        launchGroup = group
+        mutate {
+            $0.launchPreset = preset
+            $0.launchGroup = group
+        }
     }
 
     func consumeLaunchPreset(for game: String) -> QuickPreset? {
-        guard let preset = launchPreset, preset.game == game else { return nil }
-        launchPreset = nil
+        guard let preset = data.launchPreset, preset.game == game else { return nil }
+        mutate { $0.launchPreset = nil }
         return preset
     }
 
     func consumeLaunchGroup() -> [PlayerProfile]? {
-        defer { launchGroup = nil }
-        return launchGroup
+        let group = data.launchGroup
+        if group != nil { mutate { $0.launchGroup = nil } }
+        return group
     }
 
     func group(for session: GameSession) -> [PlayerProfile] {
@@ -392,8 +394,6 @@ final class AppStore: ObservableObject {
     func resetAllData() {
         let fresh = Self.defaultData()
         data = fresh
-        launchPreset = nil
-        launchGroup = nil
         GameStorage.clear()
         GameStorage.save(
             ["completed": JSONValue.bool(true), "reset": .bool(true), "at": .string(Self.now())],
@@ -453,9 +453,9 @@ final class AppStore: ObservableObject {
             decoded.data.sessions.contains(where: { $0.id == id && $0.endedAt == nil }) ? id : nil
         }
 
+        decoded.data.launchPreset = nil
+        decoded.data.launchGroup = nil
         data = decoded.data
-        launchPreset = nil
-        launchGroup = nil
         GameStorage.restore(decoded.gameStorage)
         persist(decoded.data)
     }
@@ -500,10 +500,11 @@ final class AppStore: ObservableObject {
             activeSessionId: nil,
             achievements: [:],
             presets: [],
+            launchPreset: nil,
+            launchGroup: nil,
             preferences: AppPreferences(),
             imports: [
-                "native": .bool(true),
-                "v72MigrationCompleted": .bool(true)
+                "legacyCirca": .bool(false)
             ]
         )
     }
