@@ -135,6 +135,18 @@ struct PlayerDraft: Codable, Identifiable, Hashable {
         self.name = name
         self.avatar = avatar
     }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, profileId, name, avatar
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decodeIfPresent(String.self, forKey: .id) ?? UUID().uuidString
+        profileId = try container.decodeIfPresent(String.self, forKey: .profileId)
+        name = try container.decodeIfPresent(String.self, forKey: .name) ?? "Spieler"
+        avatar = try container.decodeIfPresent(String.self, forKey: .avatar) ?? "😎"
+    }
 }
 
 struct AchievementViewData: Identifiable, Hashable {
