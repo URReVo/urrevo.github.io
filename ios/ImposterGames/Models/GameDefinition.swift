@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct GameDefinition: Identifiable {
-    enum Kind: String {
+    enum Kind: String, Hashable {
         case circa
         case classic
         case whoAmI
