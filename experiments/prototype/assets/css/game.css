@@ -2071,3 +2071,23 @@ button.ghost,#restart,#classicRestart{
 .resolutionQuestion{
   padding-top:4px;
 }
+
+
+/* Prototype result glow and toolbar safe-area spacing */
+/* Bring back a restrained success glow on the revealed correct values. */
+.resolutionNumber.locked,
+.impNumber.locked{
+  color:#72d98a!important;
+  text-shadow:
+    0 0 10px rgba(114,217,138,.34),
+    0 0 24px rgba(79,194,105,.22),
+    0 0 42px rgba(79,194,105,.10)!important;
+}
+
+/* Keep the in-game controls visually clear of the iOS top/status region. */
+.gameTopbar{
+  margin-top:4px!important;
+}
+@media(max-height:760px){
+  .gameTopbar{margin-top:3px!important}
+}
