@@ -110,6 +110,11 @@ final class CharadesGameModel: ObservableObject {
         }
     }
 
+    func applyTouch(_ decision: CharadesMotionDecision) {
+        guard phase == .playing, !motion.isLocked else { return }
+        motion.submitTouchDecision(decision)
+    }
+
     func apply(_ decision: CharadesMotionDecision) {
         guard phase == .playing, let currentTerm else { return }
 

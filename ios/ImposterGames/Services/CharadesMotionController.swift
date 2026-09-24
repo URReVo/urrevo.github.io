@@ -12,6 +12,7 @@ final class CharadesMotionController: ObservableObject {
     @Published private(set) var statusText = "Sensor bereit"
     @Published private(set) var isAvailable = true
     @Published private(set) var isRunning = false
+    @Published private(set) var isLocked = false
     @Published private(set) var directionsFlipped = false
 
     var onDecision: ((CharadesMotionDecision) -> Void)?
@@ -45,6 +46,7 @@ final class CharadesMotionController: ObservableObject {
         candidate = nil
         candidateSince = nil
         lockedUntil = 0
+        isLocked = false
         statusText = "Handy kurz ruhig halten …"
 
         manager.deviceMotionUpdateInterval = 1.0 / 60.0
@@ -74,6 +76,17 @@ final class CharadesMotionController: ObservableObject {
         candidate = nil
         candidateSince = nil
         lockedUntil = 0
+        isLocked = false
+    }
+
+    func submitTouchDecision(_ decision: CharadesMotionDecision) {
+        let now = CACurrentMediaTime()
+        guard now >= lockedUntil else { return }
+        armed = false
+        candidate = nil
+        candidateSince = nil
+        beginCooldown(now: now, decision: decision)
+        onDecision?(decision)
     }
 
     func flipDirections() {
@@ -99,6 +112,7 @@ final class CharadesMotionController: ObservableObject {
         let absoluteDelta = abs(delta)
 
         if now < lockedUntil {
+            isLocked = true
             armed = false
             candidate = nil
             candidateSince = nil
@@ -110,6 +124,7 @@ final class CharadesMotionController: ObservableObject {
         if !armed {
             if absoluteDelta <= neutralThreshold {
                 armed = true
+                isLocked = false
                 statusText = "Bereit · vor = richtig · zurück = überspringen"
             }
             return
@@ -145,8 +160,23 @@ final class CharadesMotionController: ObservableObject {
         armed = false
         candidate = nil
         self.candidateSince = nil
-        lockedUntil = now + cooldownDuration
-        statusText = decision == .correct ? "✓ Richtig" : "↷ Übersprungen"
+        beginCooldown(now: now, decision: decision)
         onDecision?(decision)
+    }
+
+    private func beginCooldown(now: CFTimeInterval, decision: CharadesMotionDecision) {
+        lockedUntil = now + cooldownDuration
+        isLocked = true
+        statusText = decision == .correct ? "✓ Richtig" : "↷ Übersprungen"
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + cooldownDuration) { [weak self] in
+            guard let self, CACurrentMediaTime() >= self.lockedUntil else { return }
+            self.isLocked = false
+            if self.isRunning {
+                self.statusText = "Zur Neutralposition · dann wieder wippen"
+            } else {
+                self.statusText = "Touch-Tasten bereit"
+            }
+        }
     }
 }

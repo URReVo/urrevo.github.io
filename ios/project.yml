@@ -19,16 +19,13 @@ targets:
     deploymentTarget: "18.0"
     sources:
       - path: ImposterGames
+        excludes:
+          - Resources/Content/**
     resources:
-      - path: ../data/games.json
-      - path: ../data/circa-questions.json
-      - path: ../data/classic-words.json
-      - path: ../data/who-am-i.json
-      - path: ../data/charades.json
+      - path: ImposterGames/Resources/Content
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: de.urrevo.impostergames
-        PRODUCT_NAME: Imposter Games
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: Imposter Games
         INFOPLIST_KEY_NSMotionUsageDescription: Imposter Games nutzt Bewegungssensoren für die Wippsteuerung in Scharade.
@@ -52,7 +49,6 @@ schemes:
     build:
       targets:
         ImposterGames: all
-        ImposterGamesTests: [test]
     test:
       targets:
         - ImposterGamesTests

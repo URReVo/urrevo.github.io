@@ -230,7 +230,7 @@ struct CharadesView: View {
 
             HStack(spacing: 9) {
                 Button {
-                    model.apply(.skipped)
+                    model.applyTouch(.skipped)
                 } label: {
                     Label("Überspringen", systemImage: "arrow.uturn.forward")
                         .font(.subheadline.weight(.black))
@@ -239,9 +239,10 @@ struct CharadesView: View {
                         .foregroundStyle(AppTheme.text)
                         .background(Color.red.opacity(0.15), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
                 }
+                .disabled(model.motion.isLocked)
 
                 Button {
-                    model.apply(.correct)
+                    model.applyTouch(.correct)
                 } label: {
                     Label("Richtig", systemImage: "checkmark")
                         .font(.subheadline.weight(.black))
@@ -250,6 +251,7 @@ struct CharadesView: View {
                         .foregroundStyle(Color.black.opacity(0.84))
                         .background(AppTheme.charades, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
                 }
+                .disabled(model.motion.isLocked)
             }
             .buttonStyle(.plain)
         }
