@@ -2,7 +2,7 @@
 "use strict";
 function byId(id){return document.getElementById(id);}
 var PREFIX="imposterGames.prototype.game.charades.";
-var STORAGE_PLAYERS=PREFIX+"players.v1",STORAGE_CATEGORIES=PREFIX+"categories.v1",STORAGE_DECK=PREFIX+"deck.v1",STORAGE_TIMER=PREFIX+"timer.v1",STORAGE_FLIP=PREFIX+"motionFlip.v1";
+var STORAGE_PLAYERS=PREFIX+"players.v1",STORAGE_CATEGORIES=PREFIX+"categories.v1",STORAGE_DECK=PREFIX+"deck.v1",STORAGE_TIMER=PREFIX+"timer.v1",STORAGE_FLIP=PREFIX+"motionFlip.v2";
 var avatarPool=["😎","🕵️","🥷","🤠","👻","🤖","🦊","🐼","🐸","🦁","🐙","🦄"];
 var appState=window.CIAppState||null;
 var preferences=appState&&appState.getPreferences?appState.getPreferences():{sound:true,haptics:true,animations:true};
@@ -11,8 +11,12 @@ var bank=[],categoryMeta=[],count=3,players=[],savedNames=[],savedIds=[],avatars
 var selectedCategories=["Alle"],timerSeconds=60,motionFlip=false;
 var playerIndex=0,currentItem=null,turnItems=[],results=[],turnCorrect=0,turnSkipped=0,remaining=60,timerHandle=null;
 var turnRunning=false,countdownRunning=false,lastTick=0;
-var orientationAttached=false,motionPermission="unknown",latestBeta=null,latestGamma=null,baseBeta=null,baseGamma=null,motionArmed=false,lastMotionAt=0,motionCandidate=0,motionCandidateSince=0,actionLockedUntil=0,actionUnlockTimer=null;
-var MOTION_CORRECT_TRIGGER_DEG=58,MOTION_SKIP_TRIGGER_DEG=40,MOTION_NEUTRAL_DEG=16,MOTION_CONFIRM_MS=180,ACTION_COOLDOWN_MS=3000;
+var orientationAttached=false,deviceMotionAttached=false,motionPermission="unknown",orientationPermission=false,deviceMotionPermission=false;
+var latestBeta=null,latestGamma=null,baseBeta=null,baseGamma=null,lockedScreenAngle=0,latestGravityZ=null,baseGravityZ=null,motionSource="orientation";
+var motionArmed=false,lastMotionAt=0,motionCandidate=0,motionCandidateSince=0,actionLockedUntil=0,actionUnlockTimer=null;
+var MOTION_CORRECT_TRIGGER_DEG=58,MOTION_SKIP_TRIGGER_DEG=40,MOTION_NEUTRAL_DEG=16;
+var GRAVITY_CORRECT_TRIGGER=7.0,GRAVITY_SKIP_TRIGGER=5.0,GRAVITY_NEUTRAL=1.8;
+var MOTION_CONFIRM_MS=180,ACTION_COOLDOWN_MS=3000;
 var sections=["setup","handoff","play","turnResult","finalResult"];
 
 function get(key,fallback){try{var raw=localStorage.getItem(key);return raw===null?fallback:JSON.parse(raw);}catch(e){return fallback;}}
@@ -48,16 +52,39 @@ function beginParty(reuse){if(!reuse){var check=collectPlayers();if(!check.ok){b
 function prepareHandoff(){clearTurnRuntime();var p=players[playerIndex];byId("handoffAvatar").textContent=p.avatar;byId("handoffName").textContent=p.name;byId("permissionNote").textContent="";remaining=timerSeconds;show("handoff");}
 
 function attachOrientation(){if(orientationAttached)return;window.addEventListener("deviceorientation",onOrientation,true);orientationAttached=true;}
+function attachDeviceMotion(){if(deviceMotionAttached)return;window.addEventListener("devicemotion",onDeviceMotion,true);deviceMotionAttached=true;}
+function onDeviceMotion(event){
+  var gravity=event&&event.accelerationIncludingGravity;
+  if(gravity&&Number.isFinite(Number(gravity.z)))latestGravityZ=Number(gravity.z);
+}
 async function requestMotion(){
-  if(!("DeviceOrientationEvent" in window)){motionPermission="unsupported";return motionPermission;}
+  var hasOrientation=("DeviceOrientationEvent" in window),hasMotion=("DeviceMotionEvent" in window);
+  if(!hasOrientation&&!hasMotion){motionPermission="unsupported";return motionPermission;}
   try{
-    var E=window.DeviceOrientationEvent;
-    if(typeof E.requestPermission==="function"){
-      var result=await E.requestPermission();
-      if(result!=="granted"){motionPermission="denied";return motionPermission;}
+    var pending=[],motionNeedsPermission=false,orientationNeedsPermission=false;
+    if(hasMotion){
+      var M=window.DeviceMotionEvent;
+      if(typeof M.requestPermission==="function"){
+        motionNeedsPermission=true;
+        pending.push(Promise.resolve(M.requestPermission()).then(function(result){deviceMotionPermission=result==="granted";}));
+      }else deviceMotionPermission=true;
     }
-    motionPermission="granted";attachOrientation();return motionPermission;
-  }catch(e){motionPermission="denied";return motionPermission;}
+    if(hasOrientation){
+      var O=window.DeviceOrientationEvent;
+      if(typeof O.requestPermission==="function"){
+        orientationNeedsPermission=true;
+        pending.push(Promise.resolve(O.requestPermission()).then(function(result){orientationPermission=result==="granted";}));
+      }else orientationPermission=true;
+    }
+    if(pending.length)await Promise.all(pending);
+    if(deviceMotionPermission)attachDeviceMotion();
+    if(orientationPermission)attachOrientation();
+    motionPermission=(deviceMotionPermission||orientationPermission)?"granted":"denied";
+    return motionPermission;
+  }catch(e){
+    motionPermission="denied";
+    return motionPermission;
+  }
 }
 function angleDelta(value,base){var d=value-base;while(d>180)d-=360;while(d<-180)d+=360;return d;}
 function screenAngle(){
@@ -69,11 +96,19 @@ function screenAngle(){
   raw=((raw%360)+360)%360;
   return raw;
 }
-function motionDelta(){
-  var db=angleDelta(latestBeta,baseBeta),dg=angleDelta(latestGamma,baseGamma),angle=screenAngle();
-  if(angle===90)return -dg;
-  if(angle===270)return dg;
+function orientationMotionDelta(){
+  var db=angleDelta(latestBeta,baseBeta),dg=angleDelta(latestGamma,baseGamma);
+  if(lockedScreenAngle===90)return -dg;
+  if(lockedScreenAngle===270)return dg;
   return db;
+}
+function motionDelta(){
+  if(motionSource==="gravity"&&Number.isFinite(latestGravityZ)&&Number.isFinite(baseGravityZ))return latestGravityZ-baseGravityZ;
+  return orientationMotionDelta();
+}
+function motionThresholds(){
+  if(motionSource==="gravity")return {positive:GRAVITY_CORRECT_TRIGGER,negative:GRAVITY_SKIP_TRIGGER,neutral:GRAVITY_NEUTRAL};
+  return {positive:MOTION_CORRECT_TRIGGER_DEG,negative:MOTION_SKIP_TRIGGER_DEG,neutral:MOTION_NEUTRAL_DEG};
 }
 function setActionButtonsLocked(locked){
   byId("correctTerm").disabled=!!locked;
@@ -105,13 +140,13 @@ function onOrientation(event){
   if(Number.isFinite(event.beta))latestBeta=Number(event.beta);
   if(Number.isFinite(event.gamma))latestGamma=Number(event.gamma);
   if(!turnRunning||countdownRunning||motionPermission!=="granted"||!Number.isFinite(baseBeta)||!Number.isFinite(baseGamma))return;
-  var delta=motionDelta(),abs=Math.abs(delta),now=Date.now();
+  var delta=motionDelta(),abs=Math.abs(delta),now=Date.now(),thresholds=motionThresholds();
 
   if(!motionArmed){
     motionCandidate=0;motionCandidateSince=0;
-    if(abs<=MOTION_NEUTRAL_DEG&&actionCooldownRemaining()<=0){
+    if(abs<=thresholds.neutral&&actionCooldownRemaining()<=0){
       motionArmed=true;
-      byId("motionFeedback").textContent="Bereit · jetzt deutlich wippen";
+      byId("motionFeedback").textContent="Bereit · vor = richtig · zurück = überspringen";
     }
     return;
   }
@@ -121,11 +156,9 @@ function onOrientation(event){
     return;
   }
 
-  var positiveThreshold=MOTION_CORRECT_TRIGGER_DEG;
-  var negativeThreshold=MOTION_SKIP_TRIGGER_DEG;
   var direction=0;
-  if(delta>=positiveThreshold)direction=1;
-  else if(delta<=-negativeThreshold)direction=-1;
+  if(delta>=thresholds.positive)direction=1;
+  else if(delta<=-thresholds.negative)direction=-1;
   else{
     motionCandidate=0;motionCandidateSince=0;
     return;
@@ -161,7 +194,7 @@ function startCountdown(){
   countdownRunning=true;turnRunning=false;baseBeta=null;baseGamma=null;motionArmed=false;
   var overlay=byId("countdown"),value=byId("countdownValue"),n=3;overlay.classList.remove("hidden");value.textContent=String(n);
   tone(460,.05);
-  var step=function(){n--;if(n>0){value.textContent=String(n);tone(460+40*(3-n),.05);setTimeout(step,700);return;}value.textContent="LOS";tone(720,.08);setTimeout(function(){overlay.classList.add("hidden");countdownRunning=false;baseBeta=Number.isFinite(latestBeta)?latestBeta:0;baseGamma=Number.isFinite(latestGamma)?latestGamma:0;motionArmed=false;motionCandidate=0;motionCandidateSince=0;actionLockedUntil=0;turnRunning=true;lastTick=Date.now();setActionButtonsLocked(false);updateTimer();timerHandle=setInterval(tickTimer,200);byId("motionFeedback").textContent=motionPermission==="granted"?"Kurz ruhig halten · dann deutlich wippen":"Touch-Tasten bereit";},450);};
+  var step=function(){n--;if(n>0){value.textContent=String(n);tone(460+40*(3-n),.05);setTimeout(step,700);return;}value.textContent="LOS";tone(720,.08);setTimeout(function(){overlay.classList.add("hidden");countdownRunning=false;baseBeta=Number.isFinite(latestBeta)?latestBeta:0;baseGamma=Number.isFinite(latestGamma)?latestGamma:0;lockedScreenAngle=screenAngle();baseGravityZ=Number.isFinite(latestGravityZ)?latestGravityZ:null;motionSource=Number.isFinite(baseGravityZ)?"gravity":"orientation";motionArmed=false;motionCandidate=0;motionCandidateSince=0;actionLockedUntil=0;turnRunning=true;lastTick=Date.now();setActionButtonsLocked(false);updateTimer();timerHandle=setInterval(tickTimer,200);byId("motionFeedback").textContent=motionPermission==="granted"?(motionSource==="gravity"?"Kurz ruhig halten · vor = richtig · zurück = überspringen":"Kurz ruhig halten · Sensor-Fallback aktiv"):"Touch-Tasten bereit";},450);};
   setTimeout(step,700);
 }
 function tickTimer(){if(!turnRunning)return;var now=Date.now(),elapsed=(now-lastTick)/1000;if(elapsed<.18)return;var whole=Math.floor(elapsed);if(whole<1)return;remaining=Math.max(0,remaining-whole);lastTick+=whole*1000;updateTimer();if(remaining<=0)endTurn("timer");}
