@@ -1,0 +1,24 @@
+{
+  "name": "Imposter Games Prototype",
+  "short_name": "Imposter Proto",
+  "description": "Isolierter Prototyp von Imposter Games.",
+  "start_url": "/experiments/prototype/",
+  "scope": "/experiments/prototype/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#292929",
+  "theme_color": "#292929",
+  "icons": [
+    {
+      "src": "/experiments/prototype/circa_impostor_detective_icon_180.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/experiments/prototype/circa_impostor_detective_icon_512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

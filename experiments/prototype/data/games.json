@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "platformVersion": "73",
+  "games": [
+    {
+      "id": "circa-imposter",
+      "title": "Circa Imposter",
+      "icon": "🎯",
+      "description": "Alle schätzen – aber eine Person bekommt eine andere Frage.",
+      "meta": "3–12 Spieler · Schätzen & täuschen",
+      "path": "games/circa-imposter/"
+    },
+    {
+      "id": "classic-imposter",
+      "title": "Klassisches Imposter",
+      "icon": "🎭",
+      "description": "Alle kennen dasselbe geheime Wort – außer dem Imposter.",
+      "meta": "3–12 Spieler · Wort & Hinweis",
+      "path": "games/classic-imposter/"
+    }
+  ]
+}
