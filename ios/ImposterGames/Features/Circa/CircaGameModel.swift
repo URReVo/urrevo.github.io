@@ -206,6 +206,7 @@ final class CircaGameModel: ObservableObject {
         currentGuess = 0
         phase = .question
         SoundService.shared.handoff(enabled: store.data.preferences.sound)
+        if store.data.preferences.haptics { HapticsService.shared.impact() }
     }
 
     func saveGuess() {
