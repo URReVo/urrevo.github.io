@@ -404,9 +404,11 @@ private struct HomeGameCard: View {
             }
 
             Text(game.title)
-                .font(.system(size: 21, weight: .black, design: .rounded))
+                .font(.system(size: 20, weight: .black, design: .rounded))
                 .foregroundStyle(AppTheme.text)
                 .lineLimit(2)
+                .minimumScaleFactor(0.82)
+                .fixedSize(horizontal: false, vertical: true)
                 .padding(.top, 16)
 
             Text(game.subtitle)
