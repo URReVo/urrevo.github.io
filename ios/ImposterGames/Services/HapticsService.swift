@@ -15,6 +15,11 @@ final class HapticsService {
         guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }
         engine = try? CHHapticEngine()
         engine?.isAutoShutdownEnabled = true
+        engine?.resetHandler = { [weak self] in
+            Task { @MainActor in
+                _ = self?.startCoreHaptics()
+            }
+        }
     }
 
     func prepare() {
@@ -22,6 +27,7 @@ final class HapticsService {
         correctGenerator.prepare()
         skipGenerator.prepare()
         selectionGenerator.prepare()
+        impactGenerator.prepare()
     }
 
     func correct() {
@@ -48,7 +54,7 @@ final class HapticsService {
 
     func impact() {
         if !playTransient(intensity: 1.0, sharpness: 0.55) {
-            impactGenerator.impactOccurred(intensity: 0.92)
+            impactGenerator.impactOccurred(intensity: 1.0)
             impactGenerator.prepare()
         }
     }
