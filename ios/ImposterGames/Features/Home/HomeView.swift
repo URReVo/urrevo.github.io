@@ -4,8 +4,8 @@ struct HomeView: View {
     let repository: ContentRepository
     @ObservedObject var store: AppStore
     @Binding var selectedTab: Int
+    let onOpenGame: (GameDefinition.Kind) -> Void
 
-    @State private var path: [GameDefinition.Kind] = []
     @State private var selectedPreset: QuickPreset?
     @State private var selectedSession: GameSession?
     @State private var showPresetEditor = false
@@ -16,7 +16,7 @@ struct HomeView: View {
     ]
 
     var body: some View {
-        NavigationStack(path: $path) {
+        NavigationStack {
             ZStack {
                 AppTheme.background.ignoresSafeArea()
 
@@ -52,9 +52,6 @@ struct HomeView: View {
                 }
             }
             .toolbar(.hidden, for: .navigationBar)
-            .navigationDestination(for: GameDefinition.Kind.self) { kind in
-                destination(for: kind)
-            }
         }
         .sheet(item: $selectedPreset) { preset in
             presetSheet(preset)
@@ -361,11 +358,17 @@ struct HomeView: View {
     }
 
     private func openGame(_ kind: GameDefinition.Kind) {
-        path.append(kind)
+        if store.data.preferences.sound {
+            SoundService.shared.selection(enabled: true)
+        }
+        if store.data.preferences.haptics {
+            HapticsService.shared.selection()
+        }
+        onOpenGame(kind)
     }
 
     private func routeSessionGame(_ game: String?) {
-        path.append(game == "classic" ? .classic : .circa)
+        onOpenGame(game == "classic" ? .classic : .circa)
     }
 
     @ViewBuilder
