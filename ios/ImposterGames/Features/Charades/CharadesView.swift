@@ -31,6 +31,7 @@ struct CharadesView: View {
         }
         .navigationTitle("Scharade")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar(model.phase == .playing || model.phase == .countdown ? .hidden : .visible, for: .navigationBar)
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
                 Button {
@@ -176,6 +177,14 @@ struct CharadesView: View {
                 .foregroundStyle(AppTheme.muted)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 26)
+
+            Text("Nach vorne: Richtig · zur Stirn zurück: Überspringen. Danach wieder in die Mittelposition.")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(AppTheme.muted)
+                .multilineTextAlignment(.center)
+                .padding(12)
+                .frame(maxWidth: .infinity)
+                .background(AppTheme.card, in: RoundedRectangle(cornerRadius: 15))
 
             Spacer()
 
