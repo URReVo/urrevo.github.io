@@ -4,10 +4,16 @@ struct RootView: View {
     @ObservedObject var store: AppStore
     private let repository = ContentRepository()
     @State private var selectedTab = 0
+    @State private var activeGame: GameDefinition.Kind?
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            HomeView(repository: repository, store: store, selectedTab: $selectedTab)
+            HomeView(
+                repository: repository,
+                store: store,
+                selectedTab: $selectedTab,
+                onOpenGame: { activeGame = $0 }
+            )
                 .tag(0)
                 .tabItem {
                     Label("Spiele", systemImage: "gamecontroller.fill")
@@ -32,5 +38,20 @@ struct RootView: View {
                 }
         }
         .tint(AppTheme.accent)
+        .fullScreenCover(
+            isPresented: Binding(
+                get: { activeGame != nil },
+                set: { if !$0 { activeGame = nil } }
+            )
+        ) {
+            if let activeGame {
+                GameHostView(
+                    kind: activeGame,
+                    repository: repository,
+                    store: store,
+                    onDismiss: { self.activeGame = nil }
+                )
+            }
+        }
     }
 }
