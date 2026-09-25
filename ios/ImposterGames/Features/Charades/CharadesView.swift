@@ -124,10 +124,10 @@ struct CharadesView: View {
                         .foregroundStyle(AppTheme.charades)
 
                     VStack(alignment: .leading, spacing: 3) {
-                        Text("Native Sensorik + Haptik")
+                        Text("Wippen + Tasten")
                             .font(.subheadline.weight(.bold))
                             .foregroundStyle(AppTheme.text)
-                        Text("Core Motion erkennt beide Wipprichtungen. Nach jeder Wertung gelten 3 Sekunden Sperre und Neutralposition.")
+                        Text("Eine Wertung braucht eine deutliche Bewegung. Danach sind Wippen und Tasten 3 Sekunden gesperrt. Touch bleibt der Fallback.")
                             .font(.caption)
                             .foregroundStyle(AppTheme.muted)
                     }
@@ -142,7 +142,7 @@ struct CharadesView: View {
                 }
 
                 PrimaryGameButton(
-                    title: "Partie starten · \(model.availableCount) Begriffe",
+                    title: "Partie starten",
                     tint: AppTheme.charades,
                     enabled: model.availableCount > 0,
                     action: { model.startParty() }
@@ -171,7 +171,7 @@ struct CharadesView: View {
                 .font(.title2.weight(.black))
                 .foregroundStyle(AppTheme.charades)
 
-            Text("Display nach außen. Nach vorne wippen = Richtig, zur Stirn zurück = Überspringen.")
+            Text("Du bist dran. Halte das Handy gleich mit dem Display nach außen an deine Stirn.")
                 .font(.body)
                 .foregroundStyle(AppTheme.muted)
                 .multilineTextAlignment(.center)
@@ -179,7 +179,7 @@ struct CharadesView: View {
 
             Spacer()
 
-            PrimaryGameButton(title: "Runde starten", tint: AppTheme.charades, action: model.beginTurn)
+            PrimaryGameButton(title: "Sensor aktivieren & starten", tint: AppTheme.charades, action: model.beginTurn)
         }
         .padding(16)
         .padding(.bottom, 12)
@@ -203,108 +203,198 @@ struct CharadesView: View {
     }
 
     private var playView: some View {
+        GeometryReader { geometry in
+            Group {
+                if geometry.size.width > geometry.size.height {
+                    landscapePlayView
+                } else {
+                    portraitPlayView
+                }
+            }
+            .frame(width: geometry.size.width, height: geometry.size.height)
+        }
+        .padding(12)
+    }
+
+    private var portraitPlayView: some View {
         VStack(spacing: 10) {
-            HStack {
+            playMetaBar
+            playerIdentity
+            termCard
+            motionBar
+            actionButtons
+        }
+    }
+
+    private var landscapePlayView: some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 12) {
                 Text("\(model.remaining)s")
-                    .font(.subheadline.weight(.black))
+                    .font(.system(size: 30, weight: .black, design: .rounded))
                     .foregroundStyle(AppTheme.text)
 
-                Spacer()
+                playerIdentity
 
                 Text("✓ \(model.correct) · ↷ \(model.skipped)")
-                    .font(.caption.weight(.black))
+                    .font(.subheadline.weight(.black))
                     .foregroundStyle(AppTheme.muted)
+
+                Spacer()
 
                 Button("Beenden") {
                     model.finishTurn()
                 }
-                .font(.caption.weight(.bold))
+                .font(.subheadline.weight(.bold))
                 .foregroundStyle(AppTheme.accent)
             }
+            .frame(width: 118, alignment: .leading)
 
-            VStack(spacing: 4) {
-                Text(model.currentPlayer?.avatar ?? "😎")
-                Text(model.currentPlayer?.name ?? "Spieler")
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(AppTheme.muted)
-            }
+            termCard
 
-            VStack(spacing: 12) {
-                Text(model.currentTerm?.cat.uppercased() ?? "KATEGORIE")
-                    .font(.caption2.weight(.black))
-                    .tracking(1)
-                    .foregroundStyle(AppTheme.charades.opacity(0.85))
-
-                Text(model.currentTerm?.term ?? "…")
-                    .font(.system(size: 48, weight: .black, design: .rounded))
-                    .minimumScaleFactor(0.42)
-                    .multilineTextAlignment(.center)
-                    .foregroundStyle(AppTheme.text)
-                    .padding(.horizontal, 8)
-
-                Text(model.motion.statusText)
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(AppTheme.muted)
-                    .multilineTextAlignment(.center)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .padding(20)
-            .background(
-                LinearGradient(
-                    colors: [AppTheme.charades.opacity(0.15), AppTheme.card],
-                    startPoint: .top,
-                    endPoint: .bottom
-                ),
-                in: RoundedRectangle(cornerRadius: 30, style: .continuous)
-            )
-            .overlay {
-                RoundedRectangle(cornerRadius: 30, style: .continuous)
-                    .stroke(Color.white.opacity(0.08))
-            }
-
-            HStack {
+            VStack(spacing: 10) {
                 Text(model.motion.isAvailable ? "Core Motion aktiv" : "Touch-Fallback")
                     .font(.caption2.weight(.bold))
                     .foregroundStyle(AppTheme.muted)
-
-                Spacer()
+                    .multilineTextAlignment(.center)
 
                 Button(model.motion.directionsFlipped ? "↕ Getauscht" : "↕ Richtung tauschen") {
                     model.flipMotionDirection()
                 }
                 .font(.caption2.weight(.bold))
                 .foregroundStyle(AppTheme.charades)
-            }
 
-            HStack(spacing: 9) {
-                Button {
-                    model.applyTouch(.skipped)
-                } label: {
-                    Label("Überspringen", systemImage: "arrow.uturn.forward")
-                        .font(.subheadline.weight(.black))
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 58)
-                        .foregroundStyle(AppTheme.text)
-                        .background(AppTheme.danger.opacity(0.15), in: RoundedRectangle(cornerRadius: 16))
-                }
-                .disabled(model.motion.isLocked)
-
-                Button {
-                    model.applyTouch(.correct)
-                } label: {
-                    Label("Richtig", systemImage: "checkmark")
-                        .font(.subheadline.weight(.black))
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 58)
-                        .foregroundStyle(Color.black.opacity(0.84))
-                        .background(AppTheme.charades, in: RoundedRectangle(cornerRadius: 16))
-                }
-                .disabled(model.motion.isLocked)
+                Spacer(minLength: 4)
+                actionButtonsVertical
             }
-            .buttonStyle(.plain)
+            .frame(width: 178)
         }
-        .padding(16)
-        .padding(.bottom, 10)
+    }
+
+    private var playMetaBar: some View {
+        HStack {
+            Text("\(model.remaining)s")
+                .font(.subheadline.weight(.black))
+                .foregroundStyle(AppTheme.text)
+
+            Spacer()
+
+            Text("✓ \(model.correct) · ↷ \(model.skipped)")
+                .font(.caption.weight(.black))
+                .foregroundStyle(AppTheme.muted)
+
+            Button("Beenden") {
+                model.finishTurn()
+            }
+            .font(.caption.weight(.bold))
+            .foregroundStyle(AppTheme.accent)
+        }
+    }
+
+    private var playerIdentity: some View {
+        VStack(spacing: 3) {
+            Text(model.currentPlayer?.avatar ?? "😎")
+                .font(.title2)
+            Text(model.currentPlayer?.name ?? "Spieler")
+                .font(.caption.weight(.bold))
+                .foregroundStyle(AppTheme.muted)
+                .lineLimit(1)
+        }
+    }
+
+    private var termCard: some View {
+        VStack(spacing: 12) {
+            Text(model.currentTerm?.cat.uppercased() ?? "KATEGORIE")
+                .font(.caption2.weight(.black))
+                .tracking(1)
+                .foregroundStyle(AppTheme.charades.opacity(0.85))
+
+            Text(model.currentTerm?.term ?? "…")
+                .font(.system(size: 48, weight: .black, design: .rounded))
+                .minimumScaleFactor(0.35)
+                .lineLimit(4)
+                .multilineTextAlignment(.center)
+                .foregroundStyle(AppTheme.text)
+                .padding(.horizontal, 8)
+
+            Text(model.motion.statusText)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(AppTheme.muted)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(18)
+        .background(
+            LinearGradient(
+                colors: [AppTheme.charades.opacity(0.15), AppTheme.card],
+                startPoint: .top,
+                endPoint: .bottom
+            ),
+            in: RoundedRectangle(cornerRadius: 28, style: .continuous)
+        )
+        .overlay {
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .stroke(Color.white.opacity(0.08))
+        }
+    }
+
+    private var motionBar: some View {
+        HStack {
+            Text(model.motion.isAvailable ? "Core Motion aktiv" : "Touch-Fallback")
+                .font(.caption2.weight(.bold))
+                .foregroundStyle(AppTheme.muted)
+
+            Spacer()
+
+            Button(model.motion.directionsFlipped ? "↕ Getauscht" : "↕ Richtung tauschen") {
+                model.flipMotionDirection()
+            }
+            .font(.caption2.weight(.bold))
+            .foregroundStyle(AppTheme.charades)
+        }
+    }
+
+    private var actionButtons: some View {
+        HStack(spacing: 9) {
+            skipButton
+            correctButton
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var actionButtonsVertical: some View {
+        VStack(spacing: 9) {
+            skipButton
+            correctButton
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var skipButton: some View {
+        Button {
+            model.applyTouch(.skipped)
+        } label: {
+            Text("Überspringen")
+                .font(.subheadline.weight(.black))
+                .frame(maxWidth: .infinity)
+                .frame(height: 56)
+                .foregroundStyle(AppTheme.text)
+                .background(AppTheme.danger.opacity(0.15), in: RoundedRectangle(cornerRadius: 16))
+        }
+        .disabled(model.motion.isLocked)
+    }
+
+    private var correctButton: some View {
+        Button {
+            model.applyTouch(.correct)
+        } label: {
+            Text("Richtig")
+                .font(.subheadline.weight(.black))
+                .frame(maxWidth: .infinity)
+                .frame(height: 56)
+                .foregroundStyle(Color.black.opacity(0.84))
+                .background(AppTheme.charades, in: RoundedRectangle(cornerRadius: 16))
+        }
+        .disabled(model.motion.isLocked)
     }
 
     private var turnResultView: some View {
@@ -392,7 +482,7 @@ struct CharadesView: View {
                 Button {
                     model.backToSetup()
                 } label: {
-                    Text("Setup")
+                    Text("Spieler & Kategorien")
                         .font(.headline.weight(.bold))
                         .frame(maxWidth: .infinity)
                         .frame(height: 54)
@@ -401,7 +491,7 @@ struct CharadesView: View {
                 }
                 .buttonStyle(.plain)
 
-                PrimaryGameButton(title: "Gleiche Gruppe", tint: AppTheme.charades, action: model.sameGroupAgain)
+                PrimaryGameButton(title: "Noch eine Partie", tint: AppTheme.charades, action: model.sameGroupAgain)
             }
         }
         .padding(16)
