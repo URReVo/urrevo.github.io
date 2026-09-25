@@ -87,7 +87,7 @@ struct ClassicView: View {
                 )
 
                 VStack(alignment: .leading, spacing: 10) {
-                    SectionEyebrow(text: "OPTIONEN")
+                    SectionEyebrow(text: "IMPOSTOR-OPTIONEN")
 
                     Toggle(isOn: Binding(
                         get: { model.hintEnabled },
@@ -146,7 +146,7 @@ struct ClassicView: View {
                 }
 
                 PrimaryGameButton(
-                    title: "Starten · \(model.availableCount) Wörter",
+                    title: "Spiel starten",
                     tint: AppTheme.classic,
                     enabled: model.availableCount > 0,
                     action: model.startParty
@@ -196,7 +196,7 @@ struct ClassicView: View {
 
             Spacer()
 
-            PrimaryGameButton(title: "Meine Rolle anzeigen", tint: AppTheme.classic, action: model.openRole)
+            PrimaryGameButton(title: "Ich bin bereit", tint: AppTheme.classic, action: model.openRole)
         }
         .padding(16)
         .padding(.bottom, 12)
@@ -224,7 +224,9 @@ struct ClassicView: View {
                 SectionEyebrow(text: model.currentIsImpostor ? "DEINE ROLLE" : "GEHEIMES WORT")
                 Text(model.currentIsImpostor ? "DU BIST DER IMPOSTOR" : (model.current?.word ?? ""))
                     .font(.system(size: model.currentIsImpostor ? 32 : 46, weight: .black, design: .rounded))
-                    .minimumScaleFactor(0.5)
+                    .minimumScaleFactor(0.55)
+                    .lineLimit(nil)
+                    .fixedSize(horizontal: false, vertical: true)
                     .multilineTextAlignment(.center)
                     .foregroundStyle(model.currentIsImpostor ? AppTheme.danger : AppTheme.text)
                     .padding(.horizontal, 8)
@@ -260,7 +262,7 @@ struct ClassicView: View {
             Spacer()
 
             PrimaryGameButton(
-                title: model.activeIndex < model.players.count - 1 ? "Verstanden · weitergeben" : "Verstanden · Runde starten",
+                title: "Verstanden",
                 tint: AppTheme.classic,
                 action: model.roleDone
             )
@@ -320,7 +322,7 @@ struct ClassicView: View {
 
             Spacer()
 
-            PrimaryGameButton(title: "Impostor aufdecken", tint: AppTheme.classic, action: model.reveal)
+            PrimaryGameButton(title: "Auflösung", tint: AppTheme.classic, action: model.reveal)
         }
         .padding(16)
         .padding(.bottom, 12)
@@ -358,7 +360,7 @@ struct ClassicView: View {
                 Button {
                     model.leaveToSetup()
                 } label: {
-                    Text("Setup")
+                    Text("Zum Start")
                         .font(.headline.weight(.bold))
                         .frame(maxWidth: .infinity)
                         .frame(height: 54)
