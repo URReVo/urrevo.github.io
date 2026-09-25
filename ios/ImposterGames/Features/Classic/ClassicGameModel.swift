@@ -172,6 +172,7 @@ final class ClassicGameModel: ObservableObject {
         guard phase == .handoff else { return }
         phase = .role
         SoundService.shared.handoff(enabled: store.data.preferences.sound)
+        if store.data.preferences.haptics { HapticsService.shared.impact() }
     }
 
     func roleDone() {
@@ -179,6 +180,7 @@ final class ClassicGameModel: ObservableObject {
         if activeIndex < players.count - 1 {
             activeIndex += 1
             phase = .handoff
+            if store.data.preferences.haptics { HapticsService.shared.selection() }
             if store.data.preferences.haptics { HapticsService.shared.selection() }
         } else {
             phase = .discussion
