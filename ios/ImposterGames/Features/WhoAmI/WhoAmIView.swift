@@ -63,7 +63,7 @@ struct WhoAmIView: View {
                     Text("Wer bin ich?")
                         .font(.system(size: 31, weight: .black, design: .rounded))
                         .foregroundStyle(AppTheme.text)
-                    Text("Jeder sieht die Begriffe der anderen – nur den eigenen nicht.")
+                    Text("Du siehst die Begriffe der anderen – nur deinen eigenen nicht.")
                         .font(.subheadline)
                         .foregroundStyle(AppTheme.muted)
                         .multilineTextAlignment(.center)
@@ -92,7 +92,7 @@ struct WhoAmIView: View {
                 }
 
                 PrimaryGameButton(
-                    title: "Runde starten · \(model.availableCount) Begriffe",
+                    title: "Begriffe verteilen",
                     tint: AppTheme.whoAmI,
                     enabled: model.availableCount >= model.players.count,
                     action: { model.startRound() }
@@ -129,7 +129,7 @@ struct WhoAmIView: View {
 
             Spacer()
 
-            PrimaryGameButton(title: "Begriffe anzeigen", tint: AppTheme.whoAmI, action: model.showViewer)
+            PrimaryGameButton(title: "Ich bin bereit", tint: AppTheme.whoAmI, action: model.showViewer)
         }
         .padding(16)
         .padding(.bottom, 12)
@@ -151,7 +151,7 @@ struct WhoAmIView: View {
                 Spacer()
             }
 
-            Text("Merke dir die Begriffe der anderen.")
+            Text("Dein eigener Begriff bleibt verborgen.")
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(AppTheme.muted)
 
@@ -169,6 +169,8 @@ struct WhoAmIView: View {
                                     .foregroundStyle(AppTheme.muted)
                                 Text(own ? "???" : assignment.term.term)
                                     .font(.headline.weight(.black))
+                                    .lineLimit(nil)
+                                    .fixedSize(horizontal: false, vertical: true)
                                     .foregroundStyle(own ? AppTheme.whoAmI : AppTheme.text)
                             }
                             Spacer()
@@ -202,10 +204,10 @@ struct WhoAmIView: View {
 
             Text("❓")
                 .font(.system(size: 80))
-            Text("Los geht’s")
+            Text("Alle haben geschaut.")
                 .font(.system(size: 36, weight: .black, design: .rounded))
                 .foregroundStyle(AppTheme.text)
-            Text("Fragt reihum Ja-/Nein-Fragen und findet heraus, welcher Begriff euch zugeordnet wurde.")
+            Text("Fragt, ratet und diskutiert jetzt miteinander. Die App greift nicht in eure Runde ein.")
                 .font(.body)
                 .foregroundStyle(AppTheme.muted)
                 .multilineTextAlignment(.center)
@@ -214,7 +216,7 @@ struct WhoAmIView: View {
             PanelCard {
                 VStack(spacing: 6) {
                     SectionEyebrow(text: "REGEL")
-                    Text("Den eigenen Begriff nicht verraten – auch nicht aus Versehen.")
+                    Text("Öffnet die Auflösung erst, wenn ihr fertig seid.")
                         .font(.subheadline.weight(.bold))
                         .foregroundStyle(AppTheme.text)
                         .multilineTextAlignment(.center)
@@ -224,7 +226,7 @@ struct WhoAmIView: View {
 
             Spacer()
 
-            PrimaryGameButton(title: "Alle Begriffe aufdecken", tint: AppTheme.whoAmI, action: model.revealAll)
+            PrimaryGameButton(title: "Auflösen", tint: AppTheme.whoAmI, action: model.revealAll)
         }
         .padding(16)
         .padding(.bottom, 12)
@@ -233,7 +235,7 @@ struct WhoAmIView: View {
     private var resultView: some View {
         VStack(spacing: 14) {
             SectionEyebrow(text: "AUFLÖSUNG")
-            Text("Wer war wer?")
+            Text("Das wart ihr.")
                 .font(.system(size: 30, weight: .black, design: .rounded))
                 .foregroundStyle(AppTheme.text)
 
@@ -264,7 +266,7 @@ struct WhoAmIView: View {
                 Button {
                     model.backToSetup()
                 } label: {
-                    Text("Setup")
+                    Text("Spieler & Kategorien")
                         .font(.headline.weight(.bold))
                         .frame(maxWidth: .infinity)
                         .frame(height: 54)
