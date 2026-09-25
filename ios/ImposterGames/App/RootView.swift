@@ -38,6 +38,9 @@ struct RootView: View {
                 }
         }
         .tint(AppTheme.accent)
+        .onAppear {
+            HapticsService.shared.prepare()
+        }
         .fullScreenCover(
             isPresented: Binding(
                 get: { activeGame != nil },
