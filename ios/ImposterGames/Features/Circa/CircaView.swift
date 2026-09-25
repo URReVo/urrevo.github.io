@@ -83,7 +83,7 @@ struct CircaView: View {
                 )
 
                 VStack(alignment: .leading, spacing: 10) {
-                    SectionEyebrow(text: "SCHWIERIGKEIT")
+                    SectionEyebrow(text: "IMPOSTOR-SCHWIERIGKEIT")
                     HStack(spacing: 7) {
                         difficultyButton("leicht", title: "Leicht")
                         difficultyButton("mittel", title: "Mittel")
@@ -113,7 +113,7 @@ struct CircaView: View {
                     Button {
                         showStats = true
                     } label: {
-                        Label("Statistik", systemImage: "chart.bar.fill")
+                        Label("Statistiken", systemImage: "chart.bar.fill")
                             .font(.subheadline.weight(.bold))
                             .frame(maxWidth: .infinity)
                             .frame(height: 50)
@@ -123,7 +123,7 @@ struct CircaView: View {
                     .buttonStyle(.plain)
 
                     PrimaryGameButton(
-                        title: "Starten · \(model.availableCount) Fragen",
+                        title: "Spiel starten",
                         tint: AppTheme.circa,
                         enabled: model.availableCount > 0,
                         action: model.startParty
@@ -231,8 +231,10 @@ struct CircaView: View {
                     .tracking(1)
                     .foregroundStyle(AppTheme.circa)
                 Text(model.currentQuestionText)
-                    .font(.system(size: 29, weight: .black, design: .rounded))
-                    .minimumScaleFactor(0.55)
+                    .font(.system(size: 27, weight: .black, design: .rounded))
+                    .minimumScaleFactor(0.58)
+                    .lineLimit(nil)
+                    .fixedSize(horizontal: false, vertical: true)
                     .multilineTextAlignment(.center)
                     .foregroundStyle(AppTheme.text)
                     .padding(.horizontal, 8)
@@ -280,7 +282,7 @@ struct CircaView: View {
             }
             .padding(.horizontal, 4)
 
-            PrimaryGameButton(title: "Schätzung speichern", tint: AppTheme.circa, action: model.saveGuess)
+            PrimaryGameButton(title: "Schätzung übernehmen", tint: AppTheme.circa, action: model.saveGuess)
         }
         .padding(16)
         .padding(.bottom, 10)
@@ -432,7 +434,7 @@ struct CircaView: View {
                         Button {
                             model.leaveToSetup()
                         } label: {
-                            Text("Setup")
+                            Text("Zum Start")
                                 .font(.headline.weight(.bold))
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 52)
