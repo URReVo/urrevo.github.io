@@ -165,6 +165,7 @@ final class CharadesGameModel: ObservableObject {
             return
         }
 
+        if store.data.preferences.haptics { HapticsService.shared.impact() }
         runCountdown()
     }
 
@@ -184,7 +185,7 @@ final class CharadesGameModel: ObservableObject {
             if store.data.preferences.haptics { HapticsService.shared.correct() }
         case .skipped:
             skipped += 1
-            SoundService.shared.selection(enabled: store.data.preferences.sound)
+            SoundService.shared.warning(enabled: store.data.preferences.sound)
             if store.data.preferences.haptics { HapticsService.shared.skipped() }
         }
 
