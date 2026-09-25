@@ -108,6 +108,7 @@ final class WhoAmIGameModel: ObservableObject {
         guard phase == .handoff else { return }
         phase = .viewer
         SoundService.shared.handoff(enabled: store.data.preferences.sound)
+        if store.data.preferences.haptics { HapticsService.shared.impact() }
     }
 
     func finishViewer() {
