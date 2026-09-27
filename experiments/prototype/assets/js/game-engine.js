@@ -560,6 +560,7 @@ function classicPickWord(){
   impIndex=selectImpostor();
   active=0;
   round++;
+  if(experimentAppState&&experimentAppState.setActiveSessionGame)experimentAppState.setActiveSessionGame("classic","Runde "+round,true);
   classicResolved=false;
   classicDiscussionStarter=Math.floor(randomUnit()*players.length);
   updateToolbar();
@@ -1606,6 +1607,7 @@ function pickRound(){
   rememberQuestion(current);
   impIndex=selectImpostor();
   active=0;round++;
+  if(experimentAppState&&experimentAppState.setActiveSessionGame)experimentAppState.setActiveSessionGame("circa","Runde "+round,true);
   updateToolbar();
   diagLog("Runde","R"+round+" · "+current.qid+" · "+current.cat+" · "+diagDifficultyName(current));
   return true;
