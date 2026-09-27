@@ -76,3 +76,5 @@ Die Statistik-Karten haben zusätzlich feste Bezeichnungen oberhalb jeder Kennza
 - Die PWA erfasst sichtbare Vordergrundzeit geräteweit: App insgesamt sowie getrennt für alle fünf Spielmodi.
 - Hintergrundzeit, Lockscreen und lange inaktive Browser-Gaps werden nicht als Spielzeit gewertet.
 - Spielzeit wird im Statistikbereich in Minuten bzw. Stunden angezeigt und ist Bestandteil des V3-Backups.
+
+- Spielzeit-Herzschlag korrigiert: Der aktive Zeitstempel bleibt während einer sichtbaren Seite erhalten; gespeicherte oder importierte Laufzeitstempel werden beim Neustart weiterhin verworfen.

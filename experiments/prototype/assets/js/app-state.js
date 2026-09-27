@@ -62,6 +62,8 @@ function normalizeUsage(src){
   var out=baseUsage();out.appMs=Math.max(0,Number(src.appMs)||0);
   var games=src.games&&typeof src.games==="object"&&!Array.isArray(src.games)?src.games:{};
   GAME_IDS.forEach(function(game){out.games[game]=Math.max(0,Number(games[game])||0);});
+  out.lastTickAt=Number(src.lastTickAt)>0?Number(src.lastTickAt):null;
+  out.activeGame=GAME_IDS.indexOf(src.activeGame)!==-1?src.activeGame:null;
   return out;
 }
 function defaults(){
@@ -1039,6 +1041,7 @@ async function importSnapshot(input){
     },
     imports:src.imports&&typeof src.imports==="object"&&!Array.isArray(src.imports)?clone(src.imports):{}
   };
+  imported.usage.lastTickAt=null;imported.usage.activeGame=null;
   imported.imports.restoredFromBackupAt=now();
   imported.imports.v72DetailBackfillV1=true;
 
