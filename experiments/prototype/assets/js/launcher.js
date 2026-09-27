@@ -11,6 +11,14 @@ var statsScope="profile";
 var launcherAudioCtx=null;
 var circaMetadataItems=null;
 var circaMetadataPromise=null;
+var GAME_META={
+  circa:{title:"Circa",full:"Circa Imposter",icon:"🎯",path:"games/circa-imposter/",min:3},
+  classic:{title:"Classic",full:"Klassisches Imposter",icon:"🎭",path:"games/classic-imposter/",min:3},
+  whoami:{title:"Wer bin ich?",full:"Wer bin ich?",icon:"❓",path:"games/who-am-i/",min:2},
+  charades:{title:"Scharade",full:"Scharade",icon:"🎬",path:"games/charades/",min:2},
+  personal:{title:"Persönlich",full:"Persönlicher Impostor",icon:"💬",path:"games/personal-impostor/",min:3}
+};
+function gameMeta(game){return GAME_META[game]||GAME_META.circa;}
 
 function byId(id){return document.getElementById(id);}
 function launcherSoundEnabled(){
@@ -82,9 +90,20 @@ function fmtDuration(start,end){
   return h+" Std."+(m?" "+m+" Min.":"");
 }
 function sessionGame(session){
-  if(session&&session.lastGame)return session.lastGame;
+  if(session&&GAME_META[session.lastGame])return session.lastGame;
   var rounds=session&&Array.isArray(session.rounds)?session.rounds:[];
-  return rounds.length&&rounds[rounds.length-1].game==="classic"?"classic":"circa";
+  var last=rounds.length?rounds[rounds.length-1].game:null;
+  return GAME_META[last]?last:"circa";
+}
+function gameCounts(session){
+  var counts={circa:0,classic:0,whoami:0,charades:0,personal:0};
+  (session&&session.rounds||[]).forEach(function(r){if(Object.prototype.hasOwnProperty.call(counts,r.game))counts[r.game]++;});
+  return counts;
+}
+function gameMixText(session){
+  var counts=gameCounts(session),parts=[];
+  Object.keys(counts).forEach(function(game){if(counts[game])parts.push(counts[game]+"× "+gameMeta(game).title);});
+  return parts.length?parts.join(" · "):"Noch keine Runde";
 }
 function sessionLaunchProfileIds(session){
   if(!session)return [];
@@ -107,10 +126,10 @@ function activeProfilesForLaunch(session){
 function launchSessionGroup(session){
   if(!session||!store.setLaunchGroup)return false;
   var ids=activeProfilesForLaunch(session);
-  if(ids.length<3)return false;
+  var game=sessionGame(session),meta=gameMeta(game);
+  if(ids.length<meta.min)return false;
   store.setLaunchGroup(ids);
-  var game=sessionGame(session);
-  navigateWithSound(game==="classic"?"games/classic-imposter/":"games/circa-imposter/");
+  navigateWithSound(meta.path);
   return true;
 }
 function updateGreeting(){
@@ -228,22 +247,30 @@ function sessionRoundLabel(r){
     var circa=(r.category||"Circa")+(r.difficulty?" · "+r.difficulty:"");
     return circa+(r.qid?" · "+r.qid:"");
   }
-  var classic=r.category||"Classic";
-  if(r.word)classic+=" · "+r.word;
-  return classic+(r.wid?" · "+r.wid:"");
+  if(r.game==="classic"){
+    var classic=r.category||"Classic";
+    if(r.word)classic+=" · "+r.word;
+    return classic+(r.wid?" · "+r.wid:"");
+  }
+  if(r.game==="whoami")return (r.category||"Alle")+" · "+((r.players||[]).length)+" Begriffe";
+  if(r.game==="charades"){
+    var correct=0,skipped=0;(r.players||[]).forEach(function(p){correct+=Number(p.correct)||0;skipped+=Number(p.skipped)||0;});
+    return correct+" richtig · "+skipped+" übersprungen";
+  }
+  if(r.game==="personal")return "Fragepaar "+(r.qid||"");
+  return gameMeta(r.game).title;
 }
 function renderSessionSheet(session){
   if(!session)return;
   selectedSession=session;
   byId("sessionSheetTitle").textContent=(session.endedAt?"Session · ":"Aktuelle Session · ")+fmtDateTime(session.startedAt);
 
-  var c=(session.rounds||[]).filter(function(r){return r.game==="circa";}).length;
-  var k=(session.rounds||[]).length-c;
   var meta=byId("sessionMeta");meta.textContent="";
+  var gamesUsed=Object.values(gameCounts(session)).filter(function(n){return n>0;}).length;
   [
-    {value:fmtDuration(session.startedAt,session.endedAt),label:"Dauer"},
+    {value:fmtDuration(session.startedAt,session.endedAt),label:"Session-Dauer"},
     {value:(session.rounds||[]).length,label:(session.rounds||[]).length===1?"Runde":"Runden"},
-    {value:c&&k?c+" / "+k:c?c+" Circa":k?k+" Classic":"–",label:c&&k?"Circa / Classic":"Spielmix"}
+    {value:gamesUsed||"–",label:gamesUsed===1?"Spielmodus":"Spielmodi"}
   ].forEach(function(item){
     var card=document.createElement("div");card.className="sessionMetaItem";
     var strong=document.createElement("strong");strong.textContent=item.value;
@@ -281,7 +308,7 @@ function renderSessionSheet(session){
   (session.rounds||[]).forEach(function(r,i){
     var row=document.createElement("div");
     var nr=document.createElement("span");nr.textContent="R"+(i+1);
-    var game=document.createElement("strong");game.textContent=r.game==="circa"?"Circa":"Classic";
+    var game=document.createElement("strong");game.textContent=gameMeta(r.game).title;
     var detail=document.createElement("small");detail.textContent=sessionRoundLabel(r);
     row.appendChild(nr);row.appendChild(game);row.appendChild(detail);rounds.appendChild(row);
   });
@@ -292,7 +319,7 @@ function renderSessionSheet(session){
   var replay=byId("replaySession");
   var replayable=!!session.endedAt&&activeProfilesForLaunch(session).length>=3;
   replay.classList.toggle("hidden",!replayable);
-  replay.textContent="Noch einmal mit dieser Gruppe · "+(sessionGame(session)==="classic"?"Classic":"Circa");
+  replay.textContent="Noch einmal mit dieser Gruppe · "+gameMeta(sessionGame(session)).title;
   replay.onclick=function(){launchSessionGroup(session);};
 
   byId("sessionNote").textContent=session.endedAt?"Abgeschlossene Session · Awards und Runden bleiben lokal gespeichert.":"Diese Session läuft noch. Beim Beenden werden die Awards berechnet.";
@@ -304,13 +331,12 @@ function renderSessionHistory(sessions){
     var empty=document.createElement("div");empty.className="emptyState";empty.textContent="Noch keine abgeschlossene Session. Beendete Sessions erscheinen hier automatisch.";box.appendChild(empty);return;
   }
   sessions.slice(0,10).forEach(function(session){
-    var c=session.rounds.filter(function(r){return r.game==="circa";}).length;
-    var k=session.rounds.length-c;
+    var counts=gameCounts(session),used=Object.keys(counts).filter(function(k){return counts[k]>0;});
     var b=document.createElement("button");b.type="button";b.className="historySession";
-    var icon=document.createElement("span");icon.className="historySessionIcon";icon.textContent=c&&k?"🎲":c?"🎯":"🎭";
+    var icon=document.createElement("span");icon.className="historySessionIcon";icon.textContent=used.length>1?"🎲":used.length?gameMeta(used[0]).icon:"🟢";
     var main=document.createElement("span");main.className="historySessionMain";
     var title=document.createElement("strong");title.textContent=fmtDateTime(session.endedAt||session.startedAt);
-    var detail=document.createElement("span");detail.textContent=c+"× Circa · "+k+"× Classic · "+session.profileIds.length+" Spieler";
+    var detail=document.createElement("span");detail.textContent=gameMixText(session)+" · "+session.profileIds.length+" Spieler";
     main.appendChild(title);main.appendChild(detail);
     var meta=document.createElement("span");meta.className="historySessionMeta";
     var rounds=document.createElement("strong");rounds.textContent=session.rounds.length+" "+(session.rounds.length===1?"Runde":"Runden");
@@ -324,15 +350,18 @@ function renderSessionHistory(sessions){
 function renderSessions(){
   var active=store.getActiveSession();
   byId("activeSessionBlock").classList.toggle("hidden",!active);
-  byId("sessionStatusPill").textContent=active?"Session läuft · "+active.rounds.length+" Runden":"Keine Session aktiv";
+  byId("sessionStatusPill").textContent=active?"Session läuft · "+fmtDuration(active.startedAt,null):"Keine Session aktiv";
   if(active){
+    var currentGame=sessionGame(active),currentMeta=gameMeta(currentGame);
     byId("activeSessionTitle").textContent="Seit "+fmtTime(active.startedAt)+" · "+fmtDuration(active.startedAt,null);
-    byId("activeSessionMain").textContent=active.rounds.length+" "+(active.rounds.length===1?"Runde":"Runden");
-    var names=(active.profileIds||[]).map(profileName).slice(0,3);
-    byId("activeSessionSub").textContent=(names.length?names.join(", "):active.profileIds.length+" Spieler")+(active.profileIds.length>3?" +"+(active.profileIds.length-3):"");
+    byId("activeSessionMain").textContent=currentMeta.full+" · "+active.rounds.length+" "+(active.rounds.length===1?"Runde":"Runden");
+    byId("activeSessionCard").querySelector(".sessionIcon").textContent=currentMeta.icon;
+    var roundAge=active.gameStartedAt?fmtDuration(active.gameStartedAt,null):"–";
+    var activity=active.activity?active.activity+" · ":"";
+    byId("activeSessionSub").textContent=activity+"aktuell seit "+roundAge;
     var cont=byId("continueSession");
-    cont.textContent="Session fortsetzen · "+(sessionGame(active)==="classic"?"Classic":"Circa");
-    cont.disabled=activeProfilesForLaunch(active).length<3;
+    cont.textContent="Session fortsetzen · "+currentMeta.title;
+    cont.disabled=activeProfilesForLaunch(active).length<currentMeta.min;
   }
   var sessions=store.getSessions().filter(function(s){return !!s.endedAt;});
   var last=sessions[0]||null;
@@ -340,9 +369,7 @@ function renderSessions(){
   if(last){
     byId("lastSessionTitle").textContent=fmtDateTime(last.endedAt);
     byId("lastSessionMain").textContent=last.rounds.length+" "+(last.rounds.length===1?"Runde":"Runden")+" · "+last.profileIds.length+" Spieler";
-    var c=last.rounds.filter(function(r){return r.game==="circa";}).length;
-    var k=last.rounds.length-c;
-    byId("lastSessionSub").textContent=fmtDuration(last.startedAt,last.endedAt)+" · "+c+"× Circa · "+k+"× Classic";
+    byId("lastSessionSub").textContent=fmtDuration(last.startedAt,last.endedAt)+" · "+gameMixText(last);
     byId("openLastSession").onclick=function(){uiSound("tap");renderSessionSheet(last);};
     byId("lastSessionCard").onclick=function(){uiSound("tap");renderSessionSheet(last);};
   }
@@ -361,6 +388,16 @@ function renderStats(){
   byId("totalRounds").textContent=st.rounds||0;
   byId("circaRounds").textContent=st.circaRounds||0;
   byId("classicRounds").textContent=st.classicRounds||0;
+  byId("whoamiRounds").textContent=st.whoamiRounds||0;
+  byId("charadesRounds").textContent=st.charadesRounds||0;
+  byId("personalRounds").textContent=st.personalRounds||0;
+  byId("impostorCount").textContent=st.impostor||0;
+  byId("personalImpostorCount").textContent=st.personalImpostor||0;
+  byId("charadesCorrect").textContent=st.charadesCorrect||0;
+  byId("charadesSkipped").textContent=st.charadesSkipped||0;
+  var charadesTurns=Number(st.charadesTurns)||0;
+  byId("charadesAverage").textContent=charadesTurns?(Number(st.charadesCorrect||0)/charadesTurns).toLocaleString("de-DE",{minimumFractionDigits:1,maximumFractionDigits:1}):"0,0";
+  byId("charadesBestTurn").textContent=st.charadesBestTurn||0;
   var migrationStatus=store.getMigrationStatus?store.getMigrationStatus():{};
   if(personal){
     var personalPerfect=Number(st.perfect)||0;
@@ -373,10 +410,19 @@ function renderStats(){
   byId("categoryCount").textContent=cats.length+" / 10";
   var cq=Array.isArray(st.circaQids)?st.circaQids.length:0;
   var cw=Array.isArray(st.classicWids)?st.classicWids.length:0;
+  var wi=Array.isArray(st.whoamiTermIds)?st.whoamiTermIds.length:0;
+  var ch=Array.isArray(st.charadesTermIds)?st.charadesTermIds.length:0;
+  var pq=Array.isArray(st.personalQids)?st.personalQids.length:0;
   byId("circaProgress").textContent=Math.round(cq/520*100)+"%";
   byId("classicProgress").textContent=Math.round(cw/250*100)+"%";
+  byId("whoamiProgress").textContent=Math.round(wi/275*100)+"%";
+  byId("charadesProgress").textContent=Math.round(ch/300*100)+"%";
+  byId("personalProgress").textContent=Math.round(pq/89*100)+"%";
   byId("circaProgressSub").textContent=cq+" / 520 Circa";
   byId("classicProgressSub").textContent=cw+" / 250 Classic";
+  byId("whoamiProgressSub").textContent=wi+" / 275 Begriffe";
+  byId("charadesProgressSub").textContent=ch+" / 300 Begriffe";
+  byId("personalProgressSub").textContent=pq+" / 89 Fragen";
 
   var sessions=store.getSessions().filter(function(session){
     if(!session.endedAt)return false;
@@ -619,6 +665,7 @@ window.addEventListener("pageshow",function(){renderAll();renderMigrationChoice(
 document.addEventListener("visibilitychange",function(){if(!document.hidden){renderAll();renderMigrationChoice();}});
 
 renderAll();
+setInterval(function(){if(store.getActiveSession&&store.getActiveSession())renderSessions();},30000);
 hydrateCircaMetadata();
 renderMigrationChoice();
 })();

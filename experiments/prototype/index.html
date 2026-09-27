@@ -137,9 +137,12 @@
       <small id="statsScopeSub">Runden des ausgewählten Profils</small>
     </section>
 
-    <div class="statGrid twoCol">
+    <div class="statGrid gameProgressGrid">
       <div class="statCard"><strong id="circaProgress">0%</strong><span id="circaProgressSub">0 / 520 Circa</span></div>
       <div class="statCard"><strong id="classicProgress">0%</strong><span id="classicProgressSub">0 / 250 Classic</span></div>
+      <div class="statCard"><strong id="whoamiProgress">0%</strong><span id="whoamiProgressSub">0 / 275 Begriffe</span></div>
+      <div class="statCard"><strong id="charadesProgress">0%</strong><span id="charadesProgressSub">0 / 300 Begriffe</span></div>
+      <div class="statCard"><strong id="personalProgress">0%</strong><span id="personalProgressSub">0 / 89 Fragen</span></div>
     </div>
 
     <section class="sectionBlock">
@@ -147,8 +150,25 @@
       <div class="metricList">
         <div><span>🎯 Circa Imposter</span><strong id="circaRounds">0</strong></div>
         <div><span>🎭 Klassisches Imposter</span><strong id="classicRounds">0</strong></div>
-        <div><span>🎯 Perfekte Schätzungen</span><strong id="perfectCount">0</strong></div>
-        <div><span>🗺️ Kategorien gespielt</span><strong id="categoryCount">0 / 10</strong></div>
+        <div><span>❓ Wer bin ich?</span><strong id="whoamiRounds">0</strong></div>
+        <div><span>🎬 Scharade</span><strong id="charadesRounds">0</strong></div>
+        <div><span>💬 Persönlicher Impostor</span><strong id="personalRounds">0</strong></div>
+      </div>
+    </section>
+
+    <section class="sectionBlock">
+      <div class="sectionHeading"><div><div class="eyebrow">PERFORMANCE</div><h2>Deine Zahlen</h2></div></div>
+      <div class="statGrid twoCol modeStatsGrid">
+        <div class="statCard"><strong id="impostorCount">0</strong><span>× Impostor insgesamt</span></div>
+        <div class="statCard"><strong id="personalImpostorCount">0</strong><span>× Persönlicher Impostor</span></div>
+        <div class="statCard"><strong id="charadesCorrect">0</strong><span>Scharade richtig</span></div>
+        <div class="statCard"><strong id="charadesSkipped">0</strong><span>Scharade übersprungen</span></div>
+        <div class="statCard"><strong id="charadesAverage">0,0</strong><span>Ø richtig je Scharade-Runde</span></div>
+        <div class="statCard"><strong id="charadesBestTurn">0</strong><span>Bestwert in einer Runde</span></div>
+      </div>
+      <div class="metricList compactMetrics">
+        <div><span>🎯 Perfekte Circa-Schätzungen</span><strong id="perfectCount">0</strong></div>
+        <div><span>🗺️ Circa-Kategorien gespielt</span><strong id="categoryCount">0 / 10</strong></div>
       </div>
     </section>
 

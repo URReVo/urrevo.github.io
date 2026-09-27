@@ -105,3 +105,13 @@ select,
   .gameCard.personal{min-height:154px}
   .gameCard.personal .gameTitle{font-size:22px}
 }
+
+/* Prototype five-game statistics */
+.gameProgressGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.gameProgressGrid .statCard:last-child{grid-column:1/-1}
+.modeStatsGrid{margin-top:0}
+.compactMetrics{margin-top:9px}
+@media(min-width:560px){
+  .gameProgressGrid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .gameProgressGrid .statCard:last-child{grid-column:auto}
+}
