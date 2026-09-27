@@ -57,3 +57,11 @@ Eigene Presets speichern im Prototyp jetzt eine vollständige Spielkonfiguration
 - Persönlicher Impostor: Spieler ohne künstliche Kategorien
 
 Die Statistik-Karten haben zusätzlich feste Bezeichnungen oberhalb jeder Kennzahl, damit der Wert ohne Kontextwechsel verständlich bleibt.
+
+## Audit 2026-09-27
+
+- Presets ohne feste Profile überschreiben jetzt auch bei bereits gespeicherten Spielern zuverlässig die Spielerzahl.
+- Scharade fragt vor dem Stoppen von Timer/Sensor nach, ob die Partie wirklich verlassen werden soll.
+- Wer bin ich? und Persönlicher Impostor warnen vor dem Verlassen einer laufenden Runde.
+- Web Audio der drei neuen Modi wird nach echtem Touch sowie nach App-/Tab-Rückkehr wieder aufgenommen, analog zu Circa/Classic.
+- Scharade synchronisiert zusätzlich den zugänglichen Sound-Button-Text.
