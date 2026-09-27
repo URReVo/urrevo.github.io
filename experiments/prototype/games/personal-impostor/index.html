@@ -74,9 +74,9 @@
     </div>
     <label class="personalAnswerLabel" for="answerInput">DEINE ANTWORT</label>
     <div class="personalAnswerWrap">
-      <input id="answerInput" type="text" maxlength="40" autocomplete="off" enterkeyhint="done" placeholder="Antwort eingeben">
-      <span id="answerUnit"></span>
+      <textarea id="answerInput" maxlength="180" rows="2" autocomplete="off" placeholder="Antwort frei eingeben"></textarea>
     </div>
+    <div id="answerFormat" class="personalAnswerHint">Freitext ist immer erlaubt.</div>
     <div id="answerError" class="notice" aria-live="polite"></div>
     <button id="saveAnswer" type="button" class="full personalBottomButton">Antwort speichern</button>
   </section>
@@ -92,18 +92,20 @@
   </section>
 
   <section id="result" class="hidden gameScreen personalResultScreen">
-    <div class="personalResultHero">
-      <div id="resultAvatar" class="personalResultAvatar">🥷</div>
-      <div class="sectionEyebrow">IMPOSTOR</div>
-      <h2 id="resultName">Spieler</h2>
-    </div>
-    <div class="personalRevealCard normal">
-      <div class="sectionEyebrow">NORMALE FRAGE</div>
-      <strong id="normalQuestion"></strong>
-    </div>
-    <div class="personalRevealCard impostor">
-      <div class="sectionEyebrow">IMPOSTOR-FRAGE</div>
-      <strong id="impostorQuestion"></strong>
+    <div class="personalResultContent">
+      <div class="personalResultHero personalRevealItem">
+        <div id="resultAvatar" class="personalResultAvatar">🥷</div>
+        <div class="sectionEyebrow">IMPOSTOR</div>
+        <h2 id="resultName">Spieler</h2>
+      </div>
+      <div class="personalRevealCard normal personalRevealItem">
+        <div class="sectionEyebrow">NORMALE FRAGE</div>
+        <strong id="normalQuestion"></strong>
+      </div>
+      <div class="personalRevealCard impostor personalRevealItem">
+        <div class="sectionEyebrow">IMPOSTOR-FRAGE</div>
+        <strong id="impostorQuestion"></strong>
+      </div>
     </div>
     <div class="personalResultActions">
       <button id="backSetup" type="button" class="full secondary">Zum Start</button>
