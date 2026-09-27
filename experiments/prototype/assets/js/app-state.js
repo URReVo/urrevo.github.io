@@ -5,7 +5,7 @@ var KEY="imposterGames.prototype.appState.v1";
 var LEGACY_KEY="imposterGames.prototype.appState.legacy";
 var MAX_SESSIONS=50;
 var BACKUP_FORMAT="imposter-games-prototype-backup";
-var BACKUP_VERSION=2;
+var BACKUP_VERSION=3;
 var GAME_STORAGE_PREFIX="imposterGames.prototype.game.";
 var GAME_STORAGE_KEYS=[
   "circa.players.v1","classic.players.v1",
@@ -15,6 +15,7 @@ var GAME_STORAGE_KEYS=[
   "classic.deck.v1","classic.hint.v1","classic.timer.v1",
   "whoami.players.v1","whoami.categories.v1","whoami.deck.v1",
   "charades.players.v1","charades.categories.v1","charades.deck.v1","charades.timer.v1","charades.motionFlip.v2",
+  "personal.players.v1","personal.deck.v1",
   "v72Migration.v1"
 ];
 var DEFAULT_AVATARS=["😎","🕵️","🥷","🤠","👻","🤖","🦊","🐼","🐸","🦁","🐙","🦄"];
@@ -261,7 +262,7 @@ function load(){
   if(!data.imports||typeof data.imports!=="object")data.imports={v72MigrationCompleted:true,v72ProfileChoicePending:false};
   if(typeof data.imports.v72MigrationCompleted!=="boolean")data.imports.v72MigrationCompleted=true;
   if(typeof data.imports.v72ProfileChoicePending!=="boolean")data.imports.v72ProfileChoicePending=false;
-  /* Prototype storage is isolated: never import/backfill production or V72 data automatically. */
+  /* Prototype stays isolated: never import/backfill live or V72 data automatically. */
 
   return data;
 }
@@ -786,17 +787,48 @@ function restoreGameStorage(snapshot){
     }
   }catch(e){}
 }
-function importSnapshot(input){
+function canonicalBackupJson(value){
+  if(value===null)return "null";
+  if(Array.isArray(value))return "["+value.map(function(item){return canonicalBackupJson(item===undefined?null:item);}).join(",")+"]";
+  if(typeof value==="object"){
+    return "{"+Object.keys(value).sort().filter(function(key){
+      return value[key]!==undefined&&typeof value[key]!=="function";
+    }).map(function(key){
+      return JSON.stringify(key)+":"+canonicalBackupJson(value[key]);
+    }).join(",")+"}";
+  }
+  return JSON.stringify(value);
+}
+function backupIntegrityPayload(src){
+  return {
+    format:src.format,
+    formatVersion:Number(src.formatVersion),
+    exportedAt:src.exportedAt||null,
+    data:src.data,
+    gameStorage:src.gameStorage&&typeof src.gameStorage==="object"&&!Array.isArray(src.gameStorage)?src.gameStorage:{}
+  };
+}
+async function backupSha256(src){
+  var cryptoApi=(window&&window.crypto)||crypto;
+  if(!cryptoApi||!cryptoApi.subtle||typeof cryptoApi.subtle.digest!=="function"||typeof TextEncoder==="undefined")throw new Error("sha256-unavailable");
+  var bytes=new TextEncoder().encode(canonicalBackupJson(backupIntegrityPayload(src)));
+  var digest=await cryptoApi.subtle.digest("SHA-256",bytes);
+  return Array.from(new Uint8Array(digest)).map(function(byte){return byte.toString(16).padStart(2,"0");}).join("");
+}
+async function importSnapshot(input){
   var src=input,gameStorage=null;
   if(typeof src==="string"){try{src=JSON.parse(src);}catch(e){return {ok:false,reason:"json"};}}
   if(!src||typeof src!=="object"||Array.isArray(src))return {ok:false,reason:"shape"};
-  if(src.format){
-    if(src.format!==BACKUP_FORMAT)return {ok:false,reason:"format"};
-    var version=Number(src.formatVersion);
-    if(!Number.isFinite(version)||version<1||version>BACKUP_VERSION)return {ok:false,reason:"version"};
-    gameStorage=src.gameStorage&&typeof src.gameStorage==="object"&&!Array.isArray(src.gameStorage)?src.gameStorage:null;
-    src=src.data;
-  }
+  if(src.format!==BACKUP_FORMAT)return {ok:false,reason:"format"};
+  var version=Number(src.formatVersion);
+  if(version!==BACKUP_VERSION)return {ok:false,reason:"version"};
+  var integrity=src.integrity;
+  if(!integrity||integrity.algorithm!=="SHA-256"||typeof integrity.sha256!=="string"||!/^[a-f0-9]{64}$/i.test(integrity.sha256))return {ok:false,reason:"integrity"};
+  var actualHash="";
+  try{actualHash=await backupSha256(src);}catch(e){return {ok:false,reason:"integrity-unavailable"};}
+  if(actualHash.toLowerCase()!==integrity.sha256.toLowerCase())return {ok:false,reason:"integrity"};
+  gameStorage=src.gameStorage&&typeof src.gameStorage==="object"&&!Array.isArray(src.gameStorage)?src.gameStorage:null;
+  src=src.data;
   if(!src||typeof src!=="object"||Array.isArray(src))return {ok:false,reason:"shape"};
   if(!Array.isArray(src.profiles)||!src.profiles.length)return {ok:false,reason:"profiles"};
 
@@ -915,14 +947,20 @@ function reset(){
   save();
 }
 function snapshot(){return clone(data);}
-function createBackup(){
-  return {
+async function createBackup(){
+  var backup={
     format:BACKUP_FORMAT,
     formatVersion:BACKUP_VERSION,
     exportedAt:now(),
     data:snapshot(),
     gameStorage:snapshotGameStorage()
   };
+  backup.integrity={
+    algorithm:"SHA-256",
+    canonical:"sorted-json-v1",
+    sha256:await backupSha256(backup)
+  };
+  return backup;
 }
 
 save();

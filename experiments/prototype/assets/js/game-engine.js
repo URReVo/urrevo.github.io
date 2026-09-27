@@ -2338,7 +2338,7 @@ function leaveGame(){
 
 
 /* -------------------------- hidden diagnostics -------------------------- */
-var diagSessionKey="ci.prototype.diag.session.v1";
+var diagSessionKey="ci.diag.session.v1";
 var diagTapTimes=[];
 var diagFailures=0;
 var diagLockedUntil=0;

@@ -1,7 +1,7 @@
 "use strict";
 
 const RELEASE="73";
-const CACHE_REVISION="prototype-r16";
+const CACHE_REVISION="prototype-r17";
 const BASE="/experiments/prototype";
 const CACHE_PREFIX="imposter-games-prototype-";
 const CACHE_NAME=CACHE_PREFIX+"v"+RELEASE+"-"+CACHE_REVISION;
@@ -20,15 +20,19 @@ const CORE_URLS=[
   versioned("/assets/css/who-am-i.css"),
   versioned("/assets/js/charades.js"),
   versioned("/assets/css/charades.css"),
+  versioned("/assets/js/personal-impostor.js"),
+  versioned("/assets/css/personal-impostor.css"),
   BASE+"/data/games.json",
   BASE+"/data/circa-questions.json",
   BASE+"/data/classic-words.json",
   BASE+"/data/who-am-i.json",
   BASE+"/data/charades.json",
+  BASE+"/data/personal-impostor.json",
   BASE+"/games/circa-imposter/",
   BASE+"/games/classic-imposter/",
   BASE+"/games/who-am-i/",
   BASE+"/games/charades/",
+  BASE+"/games/personal-impostor/",
   BASE+"/circa_impostor_detective_icon_180.png",
   BASE+"/circa_impostor_detective_icon_512.png"
 ];
@@ -43,7 +47,9 @@ const NAV_FALLBACKS={
   [BASE+"/games/who-am-i/"]:BASE+"/games/who-am-i/",
   [BASE+"/games/who-am-i/index.html"]:BASE+"/games/who-am-i/",
   [BASE+"/games/charades/"]:BASE+"/games/charades/",
-  [BASE+"/games/charades/index.html"]:BASE+"/games/charades/"
+  [BASE+"/games/charades/index.html"]:BASE+"/games/charades/",
+  [BASE+"/games/personal-impostor/"]:BASE+"/games/personal-impostor/",
+  [BASE+"/games/personal-impostor/index.html"]:BASE+"/games/personal-impostor/"
 };
 
 const DATA_PATHS=new Set([
@@ -51,7 +57,8 @@ const DATA_PATHS=new Set([
   BASE+"/data/circa-questions.json",
   BASE+"/data/classic-words.json",
   BASE+"/data/who-am-i.json",
-  BASE+"/data/charades.json"
+  BASE+"/data/charades.json",
+  BASE+"/data/personal-impostor.json"
 ]);
 
 self.addEventListener("install",event=>{
@@ -72,9 +79,7 @@ self.addEventListener("activate",event=>{
   event.waitUntil(
     caches.keys()
       .then(keys=>Promise.all(
-        keys
-          .filter(key=>key.startsWith(CACHE_PREFIX)&&key!==CACHE_NAME)
-          .map(key=>caches.delete(key))
+        keys.filter(key=>key.startsWith(CACHE_PREFIX)&&key!==CACHE_NAME).map(key=>caches.delete(key))
       ))
       .then(()=>self.clients.claim())
   );
@@ -82,8 +87,7 @@ self.addEventListener("activate",event=>{
 
 async function cacheFirst(request,fallbackKey){
   const cache=await caches.open(CACHE_NAME);
-  const cached=(await cache.match(request))||
-               (fallbackKey?await cache.match(fallbackKey):null);
+  const cached=(await cache.match(request))||(fallbackKey?await cache.match(fallbackKey):null);
   if(cached)return cached;
   return fetch(request);
 }
@@ -91,21 +95,17 @@ async function cacheFirst(request,fallbackKey){
 self.addEventListener("fetch",event=>{
   const request=event.request;
   if(request.method!=="GET")return;
-
   const url=new URL(request.url);
   if(url.origin!==self.location.origin)return;
-
   if(request.mode==="navigate"){
     const fallback=NAV_FALLBACKS[url.pathname];
     if(!fallback)return;
     event.respondWith(cacheFirst(request,fallback));
     return;
   }
-
   if(DATA_PATHS.has(url.pathname)){
     event.respondWith(cacheFirst(request,url.pathname));
     return;
   }
-
   event.respondWith(cacheFirst(request,null));
 });

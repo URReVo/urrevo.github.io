@@ -1,7 +1,7 @@
 {
   "name": "Imposter Games Prototype",
   "short_name": "Imposter Proto",
-  "description": "Isolierter Prototyp von Imposter Games.",
+  "description": "Isolierter Prototyp von Imposter Games mit fünf spielbaren Modi.",
   "start_url": "/experiments/prototype/",
   "scope": "/experiments/prototype/",
   "display": "standalone",

@@ -2,7 +2,6 @@
 "use strict";
 
 var activeRegistration=null;
-var prototypeScope="/experiments/prototype/";
 
 function statusElement(){
   return document.getElementById("offlineStatus");
@@ -58,11 +57,11 @@ function registerOfflineSupport(){
     return;
   }
 
-  navigator.serviceWorker.register(prototypeScope+"service-worker.js",{
-    scope:prototypeScope,
+  navigator.serviceWorker.register("/experiments/prototype/service-worker.js",{
+    scope:"/experiments/prototype/",
     updateViaCache:"none"
   }).then(watchRegistration).catch(function(){
-    navigator.serviceWorker.register(prototypeScope+"service-worker.js",{scope:prototypeScope})
+    navigator.serviceWorker.register("/experiments/prototype/service-worker.js",{scope:"/experiments/prototype/"})
       .then(watchRegistration)
       .catch(function(){setOfflineStatus("Offline nicht verfügbar","error");});
   });

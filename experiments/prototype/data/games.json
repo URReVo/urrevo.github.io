@@ -33,6 +33,14 @@
       "description": "Handy an die Stirn, Begriff erklären lassen und per Wippen weiterschalten.",
       "meta": "2–12 Spieler · Timer & Bewegung",
       "path": "games/charades/"
+    },
+    {
+      "id": "personal-impostor",
+      "title": "Persönlicher Impostor",
+      "icon": "💬",
+      "description": "Alle beantworten persönliche Fragen – der Impostor bekommt heimlich eine ganz andere Frage.",
+      "meta": "3–12 Spieler · Antworten & bluffen",
+      "path": "games/personal-impostor/"
     }
   ]
 }

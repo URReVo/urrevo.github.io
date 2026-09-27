@@ -81,7 +81,7 @@ select,
 }
 
 
-/* Prototype: four-game launcher grid */
+/* Four-game launcher grid */
 .gameCard.whoami,.gameCard.charades{grid-column:auto;min-height:214px}
 .gameCard.whoami{
   background:radial-gradient(circle at 92% 8%,rgba(132,101,255,.18),transparent 34%),linear-gradient(150deg,#33303d,#242329)
@@ -91,3 +91,17 @@ select,
 }
 .gameCard.whoami .gameTitle,.gameCard.charades .gameTitle{margin-top:18px}
 .gameCard.whoami .gameAction,.gameCard.charades .gameAction{padding-top:18px}
+
+/* Prototype-only fifth game */
+.gameCard.personal{
+  grid-column:1/-1;
+  min-height:162px;
+  background:radial-gradient(circle at 92% 8%,rgba(225,92,177,.19),transparent 35%),linear-gradient(150deg,#3a3039,#272329)
+}
+.gameCard.personal .gameTitle{margin-top:15px;font-size:25px}
+.gameCard.personal .gameAction{padding-top:13px}
+.gameCard.personal .gameAction span{color:#e98cc8}
+@media(max-width:390px){
+  .gameCard.personal{min-height:154px}
+  .gameCard.personal .gameTitle{font-size:22px}
+}
