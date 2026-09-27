@@ -196,9 +196,10 @@ function experimentRecordClassic(){
 }
 function experimentApplyLaunchPreset(){
   if(!experimentAppState)return;
-  var preset=experimentAppState.consumeLaunchPreset(gameMode);
+  var preset=experimentAppState.consumeLaunchPreset(gameMode),presetProfiles=[];
   if(preset){
-    count=Math.max(3,Math.min(12,Number(preset.playerCount)||count));
+    if(Array.isArray(preset.profileIds))presetProfiles=preset.profileIds.map(function(id){return experimentAppState.getProfileById(id);}).filter(function(p){return p&&!p.deletedAt;});
+    count=presetProfiles.length?Math.max(3,Math.min(12,presetProfiles.length)):Math.max(3,Math.min(12,Number(preset.playerCount)||count));
     if(Array.isArray(preset.categories)&&preset.categories.length)selectedCategories=preset.categories.slice();
     if(gameMode==="classic"){
       classicHintEnabled=preset.hint!==false;
@@ -213,7 +214,7 @@ function experimentApplyLaunchPreset(){
   }
 
   var launchGroup=experimentAppState.consumeLaunchGroup?experimentAppState.consumeLaunchGroup():null;
-  var preferred=launchGroup&&launchGroup.length?launchGroup:experimentAppState.getPreferredPlayers(count);
+  var preferred=presetProfiles.length?presetProfiles:(launchGroup&&launchGroup.length?launchGroup:experimentAppState.getPreferredPlayers(count));
   if(launchGroup&&launchGroup.length)count=Math.max(3,Math.min(12,launchGroup.length));
   if(preferred.length){
     savedPlayerNames=[];savedPlayerProfileIds=[];avatarSelections=[];

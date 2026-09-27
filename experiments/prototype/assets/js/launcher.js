@@ -6,6 +6,15 @@ if(!store)return;
 
 var selectedAvatar="😎";
 var selectedPreset=null;
+var presetSelectedProfileIds=[];
+var presetSelectedCategories=["Alle"];
+var PRESET_CATEGORIES={
+  circa:["Allgemein","Geografie","Technik","Natur","Alltag","Sport","Auto","Essen","Popkultur","Spicy 🌶️"],
+  classic:["Allgemein","Alltag","Auto","Essen","Geografie","Natur","Popkultur","Spicy 🌶️","Sport","Technik"],
+  whoami:["Film & Serien","Games & Figuren","Personen & Geschichte","Tiere","Berufe","Fahrzeuge","Orte & Reisen","Essen & Trinken","Marken & Technik","Sport & Freizeit","Alltag & Objekte"],
+  charades:["Tiere","Berufe","Film & Serien","Personen & Figuren","Alltag & Objekte","Essen & Trinken","Fahrzeuge","Orte & Reisen","Sport & Freizeit","Aktionen & Situationen","Musik & Bühne","Technik & Internet"],
+  personal:[]
+};
 var selectedSession=null;
 var statsScope="profile";
 var launcherAudioCtx=null;
@@ -219,28 +228,81 @@ function renderPresets(){
     b.addEventListener("click",function(){uiSound("tap");openPreset(p);});box.appendChild(b);
   });
 }
+function presetProfileNames(p){
+  return (Array.isArray(p&&p.profileIds)?p.profileIds:[]).map(function(id){var profile=store.getProfileById(id);return profile&&!profile.deletedAt?profile.name:null;}).filter(Boolean);
+}
 function openPreset(p){
   selectedPreset=p;
   byId("presetTitle").textContent=p.name;
-  byId("presetGame").textContent=p.game==="classic"?"Klassisches Imposter":"Circa Imposter";
-  byId("presetDetail").textContent=p.summary||"";
+  byId("presetGame").textContent=gameMeta(p.game).icon+" "+gameMeta(p.game).full;
+  var names=presetProfileNames(p);
+  byId("presetDetail").textContent=(p.summary||"")+(names.length?" · "+names.join(", "):"");
   byId("deletePreset").classList.toggle("hidden",!!p.builtIn);
   openSheet("presetSheet");
 }
+function presetMinPlayers(game){return game==="whoami"||game==="charades"?2:3;}
+function renderPresetPlayersSummary(){
+  var profiles=presetSelectedProfileIds.map(function(id){return store.getProfileById(id);}).filter(function(p){return p&&!p.deletedAt;});
+  presetSelectedProfileIds=profiles.map(function(p){return p.id;});
+  byId("presetPlayersSummary").textContent=profiles.length?profiles.map(function(p){return p.name;}).join(", "):"Noch keine Spieler ausgewählt";
+}
+function renderPresetCategories(){
+  var game=byId("presetGameInput").value,box=byId("presetCategoryChoices"),available=PRESET_CATEGORIES[game]||[];
+  box.textContent="";
+  byId("presetCategoriesBlock").classList.toggle("hidden",game==="personal");
+  if(game==="personal"){presetSelectedCategories=[];byId("presetCategorySummary").textContent="Keine Kategorien in diesem Modus";return;}
+  var choices=["Alle"].concat(available);
+  if(!presetSelectedCategories.length)presetSelectedCategories=["Alle"];
+  presetSelectedCategories=presetSelectedCategories.filter(function(cat){return choices.indexOf(cat)!==-1;});
+  if(!presetSelectedCategories.length)presetSelectedCategories=["Alle"];
+  choices.forEach(function(cat){
+    var button=document.createElement("button");button.type="button";button.className="presetChoice"+(presetSelectedCategories.indexOf(cat)!==-1?" selected":"");button.textContent=cat;button.dataset.category=cat;box.appendChild(button);
+  });
+  byId("presetCategorySummary").textContent=presetSelectedCategories[0]==="Alle"?"Alle Kategorien":presetSelectedCategories.length+" Kategorien ausgewählt";
+}
 function renderPresetEditorMode(){
-  var classic=byId("presetGameInput").value==="classic";
-  byId("circaPresetFields").classList.toggle("hidden",classic);
-  byId("classicPresetFields").classList.toggle("hidden",!classic);
+  var game=byId("presetGameInput").value;
+  byId("circaPresetFields").classList.toggle("hidden",game!=="circa");
+  byId("classicPresetFields").classList.toggle("hidden",game!=="classic");
+  byId("charadesPresetFields").classList.toggle("hidden",game!=="charades");
+  renderPresetCategories();
+  renderPresetPlayersSummary();
+  byId("presetEditorStatus").textContent="";
+}
+function chooseDefaultPresetPlayers(game){
+  var profiles=store.getProfiles(),min=presetMinPlayers(game),wanted=Math.min(Math.max(min,4),profiles.length);
+  presetSelectedProfileIds=profiles.slice(0,wanted).map(function(p){return p.id;});
 }
 function openPresetEditor(){
   byId("presetNameInput").value="";
   byId("presetGameInput").value="circa";
-  byId("presetPlayersInput").value="4";
-  byId("presetCategoryInput").value="Alle";
   byId("presetDifficultyInput").value="mittel";
   byId("presetHintInput").checked=true;
   byId("presetTimerInput").value="180";
+  byId("presetCharadesTimerInput").value="60";
+  presetSelectedCategories=["Alle"];
+  chooseDefaultPresetPlayers("circa");
   renderPresetEditorMode();openSheet("presetEditorSheet");
+}
+function renderPresetPlayerPicker(){
+  var game=byId("presetGameInput").value,profiles=store.getProfiles(),box=byId("presetPlayersList"),min=presetMinPlayers(game);
+  box.textContent="";
+  byId("presetPlayersHint").textContent="Wähle mindestens "+min+" Profile für "+gameMeta(game).full+".";
+  profiles.forEach(function(p){
+    var selected=presetSelectedProfileIds.indexOf(p.id)!==-1;
+    var b=document.createElement("button");b.type="button";b.className="presetPlayerPick"+(selected?" selected":"");b.dataset.profileId=p.id;
+    var av=document.createElement("span");av.className="presetPlayerPickAvatar";av.textContent=p.avatar||"😎";
+    var text=document.createElement("span");text.className="presetPlayerPickText";var strong=document.createElement("strong");strong.textContent=p.name;var small=document.createElement("small");small.textContent=selected?"Spielt mit":"Nicht ausgewählt";text.append(strong,small);
+    var check=document.createElement("span");check.className="presetPlayerCheck";check.textContent="✓";
+    b.append(av,text,check);box.appendChild(b);
+  });
+  byId("presetPlayersStatus").textContent=profiles.length<min?"Es sind erst "+profiles.length+" Profile angelegt. Lege im Spieler-Tab mindestens "+min+" an.":presetSelectedProfileIds.length+" ausgewählt";
+}
+function openPresetPlayers(){
+  closeSheets();renderPresetPlayerPicker();openSheet("presetPlayersSheet");
+}
+function backToPresetEditor(){
+  closeSheets();renderPresetPlayersSummary();openSheet("presetEditorSheet");
 }
 function sessionRoundLabel(r){
   if(r.game==="circa"){
@@ -418,11 +480,11 @@ function renderStats(){
   byId("whoamiProgress").textContent=Math.round(wi/275*100)+"%";
   byId("charadesProgress").textContent=Math.round(ch/300*100)+"%";
   byId("personalProgress").textContent=Math.round(pq/100*100)+"%";
-  byId("circaProgressSub").textContent=cq+" / 520 Circa";
-  byId("classicProgressSub").textContent=cw+" / 250 Classic";
-  byId("whoamiProgressSub").textContent=wi+" / 275 Begriffe";
-  byId("charadesProgressSub").textContent=ch+" / 300 Begriffe";
-  byId("personalProgressSub").textContent=pq+" / 100 Fragen";
+  byId("circaProgressSub").textContent=cq+" / 520 gespielt";
+  byId("classicProgressSub").textContent=cw+" / 250 gespielt";
+  byId("whoamiProgressSub").textContent=wi+" / 275 gesehen";
+  byId("charadesProgressSub").textContent=ch+" / 300 gewertet";
+  byId("personalProgressSub").textContent=pq+" / 100 gespielt";
 
   var sessions=store.getSessions().filter(function(session){
     if(!session.endedAt)return false;
@@ -505,10 +567,6 @@ function renderMigrationChoice(){
   openSheet("migrationSheet");
 }
 
-for(var i=3;i<=12;i++){
-  var opt=document.createElement("option");opt.value=String(i);opt.textContent=String(i);byId("presetPlayersInput").appendChild(opt);
-}
-
 document.querySelectorAll(".tab").forEach(function(tab){tab.addEventListener("click",function(){
   var target=tab.getAttribute("data-view");
   if(!tab.classList.contains("active"))uiSound("tap");
@@ -518,7 +576,38 @@ byId("profileButton").addEventListener("click",function(){uiSound("tap");setView
 byId("settingsShortcut").addEventListener("click",function(){uiSound("tap");setView("settings");});
 byId("addPlayer").addEventListener("click",function(){uiSound("tap");openProfileEditor(null);});
 byId("addPreset").addEventListener("click",function(){uiSound("tap");openPresetEditor();});
-byId("presetGameInput").addEventListener("change",renderPresetEditorMode);
+byId("presetGameInput").addEventListener("change",function(){
+  var game=this.value;
+  presetSelectedCategories=game==="personal"?[]:["Alle"];
+  var min=presetMinPlayers(game);
+  if(presetSelectedProfileIds.length<min)chooseDefaultPresetPlayers(game);
+  renderPresetEditorMode();
+});
+byId("presetPlayersButton").addEventListener("click",function(){uiSound("tap");openPresetPlayers();});
+byId("presetCategoryChoices").addEventListener("click",function(event){
+  var button=event.target.closest("[data-category]");if(!button)return;
+  var cat=button.dataset.category;
+  if(cat==="Alle")presetSelectedCategories=["Alle"];
+  else{
+    presetSelectedCategories=presetSelectedCategories.filter(function(x){return x!=="Alle";});
+    var idx=presetSelectedCategories.indexOf(cat);
+    if(idx===-1)presetSelectedCategories.push(cat);else presetSelectedCategories.splice(idx,1);
+    if(!presetSelectedCategories.length)presetSelectedCategories=["Alle"];
+  }
+  uiSound("tap");renderPresetCategories();
+});
+byId("presetPlayersList").addEventListener("click",function(event){
+  var button=event.target.closest("[data-profile-id]");if(!button)return;
+  var id=button.dataset.profileId,idx=presetSelectedProfileIds.indexOf(id);
+  if(idx===-1){if(presetSelectedProfileIds.length<12)presetSelectedProfileIds.push(id);}else presetSelectedProfileIds.splice(idx,1);
+  uiSound("tap");renderPresetPlayerPicker();
+});
+byId("presetPlayersDone").addEventListener("click",function(){
+  var min=presetMinPlayers(byId("presetGameInput").value);
+  if(presetSelectedProfileIds.length<min){byId("presetPlayersStatus").textContent="Bitte mindestens "+min+" Spieler auswählen.";return;}
+  uiSound("confirm");backToPresetEditor();
+});
+byId("presetPlayersCancel").addEventListener("click",backToPresetEditor);
 
 byId("saveProfile").addEventListener("click",function(){
   var id=byId("profileId").value;
@@ -552,23 +641,28 @@ byId("deleteProfile").addEventListener("click",function(){
 });
 
 byId("savePreset").addEventListener("click",function(){
-  var game=byId("presetGameInput").value;
+  var game=byId("presetGameInput").value,min=presetMinPlayers(game);
+  if(presetSelectedProfileIds.length<min){
+    byId("presetEditorStatus").textContent="Wähle mindestens "+min+" Spielerprofile aus.";
+    return;
+  }
   store.savePreset({
     name:byId("presetNameInput").value||"Eigenes Preset",
-    icon:"⭐️",
+    icon:gameMeta(game).icon,
     game:game,
-    playerCount:Number(byId("presetPlayersInput").value),
-    categories:[game==="classic"?"Alle":byId("presetCategoryInput").value],
+    playerCount:presetSelectedProfileIds.length,
+    profileIds:presetSelectedProfileIds.slice(),
+    categories:game==="personal"?[]:presetSelectedCategories.slice(),
     difficulty:byId("presetDifficultyInput").value,
     hint:byId("presetHintInput").checked,
-    timer:Number(byId("presetTimerInput").value)
+    timer:game==="charades"?Number(byId("presetCharadesTimerInput").value):Number(byId("presetTimerInput").value)
   });
   uiSound("confirm");closeSheets();renderAll();
 });
 byId("presetOpenGame").addEventListener("click",function(){
   if(!selectedPreset)return;
   store.setLaunchPreset(selectedPreset);
-  navigateWithSound(selectedPreset.game==="classic"?"games/classic-imposter/":"games/circa-imposter/");
+  navigateWithSound(gameMeta(selectedPreset.game).path);
 });
 byId("deletePreset").addEventListener("click",function(){
   if(!selectedPreset||selectedPreset.builtIn)return;

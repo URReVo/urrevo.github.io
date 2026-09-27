@@ -42,3 +42,18 @@ Im Prototyp werden jetzt alle fünf Spiele in derselben Session-Historie erfasst
 - Persönlicher Impostor: gespielte Fragepaare und Impostor-Einsätze
 - Achievements u. a. für alle fünf Modi, Scharade-Leistungen, Impostor-Häufigkeit und lange Sessions
 - Session-Awards berücksichtigen zusätzlich Scharade-Leistungen
+
+## Presets V2
+
+Eigene Presets speichern im Prototyp jetzt eine vollständige Spielkonfiguration:
+
+- alle fünf Spielmodi auswählbar
+- konkrete lokale Spielerprofile statt nur einer Spielerzahl
+- beliebige Mehrfachauswahl von Kategorien; `Alle` bleibt exklusiv
+- Circa: Schwierigkeit
+- Classic: Hinweis + Diskussionstimer
+- Scharade: Kategorien + Zeit pro Spieler
+- Wer bin ich?: Kategorien
+- Persönlicher Impostor: Spieler ohne künstliche Kategorien
+
+Die Statistik-Karten haben zusätzlich feste Bezeichnungen oberhalb jeder Kennzahl, damit der Wert ohne Kontextwechsel verständlich bleibt.

@@ -138,11 +138,11 @@
     </section>
 
     <div class="statGrid gameProgressGrid">
-      <div class="statCard"><strong id="circaProgress">0%</strong><span id="circaProgressSub">0 / 520 Circa</span></div>
-      <div class="statCard"><strong id="classicProgress">0%</strong><span id="classicProgressSub">0 / 250 Classic</span></div>
-      <div class="statCard"><strong id="whoamiProgress">0%</strong><span id="whoamiProgressSub">0 / 275 Begriffe</span></div>
-      <div class="statCard"><strong id="charadesProgress">0%</strong><span id="charadesProgressSub">0 / 300 Begriffe</span></div>
-      <div class="statCard"><strong id="personalProgress">0%</strong><span id="personalProgressSub">0 / 100 Fragen</span></div>
+      <div class="statCard"><small class="statCardLabel">CIRCA · FRAGEN</small><strong id="circaProgress">0%</strong><span id="circaProgressSub">0 / 520 gespielt</span></div>
+      <div class="statCard"><small class="statCardLabel">CLASSIC · WÖRTER</small><strong id="classicProgress">0%</strong><span id="classicProgressSub">0 / 250 gespielt</span></div>
+      <div class="statCard"><small class="statCardLabel">WER BIN ICH? · BEGRIFFE</small><strong id="whoamiProgress">0%</strong><span id="whoamiProgressSub">0 / 275 gesehen</span></div>
+      <div class="statCard"><small class="statCardLabel">SCHARADE · BEGRIFFE</small><strong id="charadesProgress">0%</strong><span id="charadesProgressSub">0 / 300 gewertet</span></div>
+      <div class="statCard"><small class="statCardLabel">PERSÖNLICH · FRAGEN</small><strong id="personalProgress">0%</strong><span id="personalProgressSub">0 / 100 gespielt</span></div>
     </div>
 
     <section class="sectionBlock">
@@ -159,12 +159,12 @@
     <section class="sectionBlock">
       <div class="sectionHeading"><div><div class="eyebrow">PERFORMANCE</div><h2>Deine Zahlen</h2></div></div>
       <div class="statGrid twoCol modeStatsGrid">
-        <div class="statCard"><strong id="impostorCount">0</strong><span>× Impostor insgesamt</span></div>
-        <div class="statCard"><strong id="personalImpostorCount">0</strong><span>× Persönlicher Impostor</span></div>
-        <div class="statCard"><strong id="charadesCorrect">0</strong><span>Scharade richtig</span></div>
-        <div class="statCard"><strong id="charadesSkipped">0</strong><span>Scharade übersprungen</span></div>
-        <div class="statCard"><strong id="charadesAverage">0,0</strong><span>Ø richtig je Scharade-Runde</span></div>
-        <div class="statCard"><strong id="charadesBestTurn">0</strong><span>Bestwert in einer Runde</span></div>
+        <div class="statCard"><small class="statCardLabel">IMPOSTOR · ALLE MODI</small><strong id="impostorCount">0</strong><span>Rollen als Impostor</span></div>
+        <div class="statCard"><small class="statCardLabel">PERSÖNLICHER IMPOSTOR</small><strong id="personalImpostorCount">0</strong><span>Rollen als Impostor</span></div>
+        <div class="statCard"><small class="statCardLabel">SCHARADE · RICHTIG</small><strong id="charadesCorrect">0</strong><span>Begriffe insgesamt</span></div>
+        <div class="statCard"><small class="statCardLabel">SCHARADE · SKIPS</small><strong id="charadesSkipped">0</strong><span>Begriffe übersprungen</span></div>
+        <div class="statCard"><small class="statCardLabel">SCHARADE · DURCHSCHNITT</small><strong id="charadesAverage">0,0</strong><span>Richtige je Spieler-Runde</span></div>
+        <div class="statCard"><small class="statCardLabel">SCHARADE · BESTWERT</small><strong id="charadesBestTurn">0</strong><span>Richtige in einer Spieler-Runde</span></div>
       </div>
       <div class="metricList compactMetrics">
         <div><span>🎯 Perfekte Circa-Schätzungen</span><strong id="perfectCount">0</strong></div>
@@ -272,32 +272,66 @@
   <button id="deletePreset" class="sheetDangerButton hidden" type="button">Eigenes Preset löschen</button>
 </section>
 
-<section id="presetEditorSheet" class="bottomSheet hidden" aria-modal="true" role="dialog" aria-labelledby="presetEditorTitle">
+<section id="presetEditorSheet" class="bottomSheet hidden presetEditorSheet" aria-modal="true" role="dialog" aria-labelledby="presetEditorTitle">
   <div class="sheetHandle"></div>
   <div class="sheetHeader">
     <div><div class="eyebrow">EIGENES PRESET</div><h2 id="presetEditorTitle">Schnellstart speichern</h2></div>
     <button class="closeSheet" type="button" aria-label="Schließen">×</button>
   </div>
-  <label class="fieldLabel" for="presetNameInput">Name</label>
+
+  <label class="fieldLabel" for="presetNameInput">NAME</label>
   <input id="presetNameInput" class="textInput" type="text" maxlength="22" placeholder="Freitagabend">
-  <div class="formGrid">
-    <label><span>Spiel</span><select id="presetGameInput"><option value="circa">Circa Imposter</option><option value="classic">Klassisches Imposter</option></select></label>
-    <label><span>Spieler</span><select id="presetPlayersInput"></select></label>
+
+  <label class="fieldLabel" for="presetGameInput">SPIEL</label>
+  <select id="presetGameInput" class="selectInput">
+    <option value="circa">🎯 Circa Imposter</option>
+    <option value="classic">🎭 Klassisches Imposter</option>
+    <option value="whoami">❓ Wer bin ich?</option>
+    <option value="charades">🎬 Scharade</option>
+    <option value="personal">💬 Persönlicher Impostor</option>
+  </select>
+
+  <div class="fieldLabel">SPIELER</div>
+  <button id="presetPlayersButton" class="presetConfigButton" type="button">
+    <span><strong>Mitspieler auswählen</strong><small id="presetPlayersSummary">Noch keine Spieler ausgewählt</small></span><span class="chevron">›</span>
+  </button>
+
+  <div id="presetCategoriesBlock">
+    <div class="fieldLabel">KATEGORIEN</div>
+    <div id="presetCategoryChoices" class="presetChoiceGrid" aria-label="Kategorien auswählen"></div>
+    <p id="presetCategorySummary" class="presetInlineHint">Alle Kategorien</p>
   </div>
+
   <div id="circaPresetFields">
-    <label class="fieldLabel" for="presetCategoryInput">Kategorie</label>
-    <select id="presetCategoryInput" class="selectInput">
-      <option>Alle</option><option>Allgemein</option><option>Geografie</option><option>Technik</option><option>Natur</option><option>Alltag</option><option>Sport</option><option>Auto</option><option>Essen</option><option>Popkultur</option><option>Spicy 🌶️</option>
-    </select>
-    <label class="fieldLabel" for="presetDifficultyInput">Schwierigkeit</label>
+    <label class="fieldLabel" for="presetDifficultyInput">SCHWIERIGKEIT</label>
     <select id="presetDifficultyInput" class="selectInput"><option value="leicht">Leicht</option><option value="mittel" selected>Mittel</option><option value="schwer">Schwer</option><option value="zufaellig">Zufall</option></select>
   </div>
+
   <div id="classicPresetFields" class="hidden">
-    <label class="primaryProfileRow"><input id="presetHintInput" type="checkbox" checked> <span>Imposter-Hinweis aktiv</span></label>
-    <label class="fieldLabel" for="presetTimerInput">Timer</label>
+    <label class="primaryProfileRow"><input id="presetHintInput" type="checkbox" checked> <span>Impostor-Hinweis aktiv</span></label>
+    <label class="fieldLabel" for="presetTimerInput">DISKUSSIONS-TIMER</label>
     <select id="presetTimerInput" class="selectInput"><option value="0">Aus</option><option value="60">1:00</option><option value="90">1:30</option><option value="120">2:00</option><option value="150">2:30</option><option value="180" selected>3:00</option><option value="210">3:30</option><option value="240">4:00</option><option value="270">4:30</option><option value="300">5:00</option></select>
   </div>
+
+  <div id="charadesPresetFields" class="hidden">
+    <label class="fieldLabel" for="presetCharadesTimerInput">ZEIT PRO SPIELER</label>
+    <select id="presetCharadesTimerInput" class="selectInput"><option value="30">0:30</option><option value="45">0:45</option><option value="60" selected>1:00</option><option value="90">1:30</option><option value="120">2:00</option></select>
+  </div>
+
+  <p id="presetEditorStatus" class="inlineStatus presetEditorStatus" aria-live="polite"></p>
   <button id="savePreset" class="primaryButton" type="button">Preset speichern</button>
+</section>
+
+<section id="presetPlayersSheet" class="bottomSheet hidden" aria-modal="true" role="dialog" aria-labelledby="presetPlayersTitle">
+  <div class="sheetHandle"></div>
+  <div class="sheetHeader">
+    <div><div class="eyebrow">PRESET · SPIELER</div><h2 id="presetPlayersTitle">Wer spielt mit?</h2></div>
+    <button id="presetPlayersCancel" type="button" class="closeSheet" aria-label="Zurück">×</button>
+  </div>
+  <p id="presetPlayersHint" class="presetSheetDetail">Wähle die Profile aus, die beim Schnellstart direkt geladen werden sollen.</p>
+  <div id="presetPlayersList" class="presetPlayerPicker"></div>
+  <p id="presetPlayersStatus" class="inlineStatus" aria-live="polite"></p>
+  <button id="presetPlayersDone" class="primaryButton" type="button">Auswahl übernehmen</button>
 </section>
 
 <section id="sessionSheet" class="bottomSheet hidden" aria-modal="true" role="dialog" aria-labelledby="sessionSheetTitle">

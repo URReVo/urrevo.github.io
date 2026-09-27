@@ -609,26 +609,42 @@ function setPreference(key,value){
 }
 function builtInPresets(){
   return [
-    {id:"builtin-quick",builtIn:true,name:"Schnelle Runde",icon:"⚡️",game:"circa",playerCount:4,categories:["Alle"],difficulty:"zufaellig",summary:"Circa · 4 Spieler · Zufall"},
-    {id:"builtin-party",builtIn:true,name:"Party",icon:"🥳",game:"classic",playerCount:6,categories:["Alle"],hint:true,timer:180,summary:"Classic · 6 Spieler · 3 Min."},
-    {id:"builtin-spicy",builtIn:true,name:"Spicy",icon:"🌶️",game:"circa",playerCount:5,categories:["Spicy 🌶️"],difficulty:"mittel",summary:"Circa · 5 Spieler · Spicy"}
+    {id:"builtin-quick",builtIn:true,name:"Schnelle Runde",icon:"⚡️",game:"circa",playerCount:4,profileIds:[],categories:["Alle"],difficulty:"zufaellig",summary:"Circa · 4 Spieler · Zufall"},
+    {id:"builtin-party",builtIn:true,name:"Party",icon:"🥳",game:"classic",playerCount:6,profileIds:[],categories:["Alle"],hint:true,timer:180,summary:"Classic · 6 Spieler · 3 Min."},
+    {id:"builtin-spicy",builtIn:true,name:"Spicy",icon:"🌶️",game:"circa",playerCount:5,profileIds:[],categories:["Spicy 🌶️"],difficulty:"mittel",summary:"Circa · 5 Spieler · Spicy"},
+    {id:"builtin-charades",builtIn:true,name:"Scharade 60",icon:"🎬",game:"charades",playerCount:4,profileIds:[],categories:["Alle"],timer:60,summary:"Scharade · 4 Spieler · 60 Sek."},
+    {id:"builtin-personal",builtIn:true,name:"Persönlich",icon:"💬",game:"personal",playerCount:4,profileIds:[],categories:[],summary:"Persönlich · 4 Spieler"}
   ];
 }
 function getPresets(){return builtInPresets().concat(clone(data.presets));}
 function savePreset(input){
+  input=input||{};
+  var game=GAME_IDS.indexOf(input.game)!==-1?input.game:"circa";
+  var minPlayers=(game==="whoami"||game==="charades")?2:3;
+  var profileIds=[];
+  (Array.isArray(input.profileIds)?input.profileIds:[]).forEach(function(id){if(profileById(id)&&profileIds.indexOf(id)===-1&&profileIds.length<12)profileIds.push(id);});
+  var playerCount=profileIds.length||Math.max(minPlayers,Math.min(12,Number(input.playerCount)||4));
+  var categories=game==="personal"?[]:(Array.isArray(input.categories)&&input.categories.length?input.categories.map(String).slice(0,20):["Alle"]);
+  if(categories.indexOf("Alle")!==-1)categories=["Alle"];
+  var allowedClassicTimers=[0,60,90,120,150,180,210,240,270,300];
+  var allowedCharadesTimers=[30,45,60,90,120];
   var p={
     id:input.id&&String(input.id).indexOf("custom-")===0?input.id:uid("custom"),
     builtIn:false,
     name:String(input.name||"Eigenes Preset").trim().slice(0,22)||"Eigenes Preset",
-    icon:String(input.icon||"⭐️").slice(0,8),
-    game:input.game==="classic"?"classic":"circa",
-    playerCount:Math.max(3,Math.min(12,Number(input.playerCount)||4)),
-    categories:Array.isArray(input.categories)&&input.categories.length?input.categories.slice(0,10):["Alle"],
+    icon:String(input.icon||({circa:"🎯",classic:"🎭",whoami:"❓",charades:"🎬",personal:"💬"}[game]||"⭐️")).slice(0,8),
+    game:game,
+    playerCount:playerCount,
+    profileIds:profileIds,
+    categories:categories,
     difficulty:["leicht","mittel","schwer","zufaellig"].indexOf(input.difficulty)!==-1?input.difficulty:"mittel",
     hint:input.hint!==false,
-    timer:[0,60,90,120,150,180,210,240,270,300].indexOf(Number(input.timer))!==-1?Number(input.timer):0
+    timer:game==="charades"?(allowedCharadesTimers.indexOf(Number(input.timer))!==-1?Number(input.timer):60):(allowedClassicTimers.indexOf(Number(input.timer))!==-1?Number(input.timer):0)
   };
-  p.summary=p.game==="classic"?"Classic · "+p.playerCount+" Spieler"+(p.timer?" · "+Math.round(p.timer/60)+" Min.":""):"Circa · "+p.playerCount+" Spieler · "+(p.categories[0]||"Alle");
+  var label={circa:"Circa",classic:"Classic",whoami:"Wer bin ich?",charades:"Scharade",personal:"Persönlich"}[game];
+  var categoryText=!p.categories.length?"":p.categories[0]==="Alle"?" · Alle":p.categories.length===1?" · "+p.categories[0]:" · "+p.categories.length+" Kat.";
+  var optionText=game==="circa"?" · "+(p.difficulty==="zufaellig"?"Zufall":p.difficulty):game==="classic"&&p.timer?" · "+Math.round(p.timer/60)+" Min.":game==="charades"?" · "+p.timer+" Sek.":"";
+  p.summary=label+" · "+p.playerCount+" Spieler"+categoryText+optionText;
   var idx=data.presets.findIndex(function(x){return x.id===p.id;});
   if(idx>=0)data.presets[idx]=p;else data.presets.push(p);
   save();return clone(p);
