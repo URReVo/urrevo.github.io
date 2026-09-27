@@ -50,10 +50,20 @@ function readAnswer(){
   if(!raw)return {ok:false,message:"Bitte gib zuerst deine Antwort ein."};
   if(spec.type==="text")return {ok:true,value:cleanAnswer(raw)};
   if(spec.type==="time")return /^([01]\d|2[0-3]):[0-5]\d$/.test(raw)?{ok:true,value:raw}:{ok:false,message:"Bitte gib eine gültige Uhrzeit ein."};
+  if(!/^\d+(?:[.,]\d+)?$/.test(raw))return {ok:false,message:"Bitte gib nur eine Zahl ein."};
   var value=Number(raw.replace(",","."));
   if(!Number.isFinite(value))return {ok:false,message:"Bitte gib nur eine Zahl ein."};
   if(spec.min!==undefined&&spec.min!==null&&value<Number(spec.min))return {ok:false,message:"Der Wert muss mindestens "+spec.min+" sein."};
   if(spec.max!==undefined&&spec.max!==null&&value>Number(spec.max))return {ok:false,message:"Der Wert darf höchstens "+spec.max+" sein."};
+  var step=Number(spec.step);
+  if(Number.isFinite(step)&&step>0){
+    var base=spec.min!==undefined&&spec.min!==null?Number(spec.min):0;
+    var units=(value-base)/step;
+    if(Math.abs(units-Math.round(units))>1e-8){
+      if(step===1)return {ok:false,message:"Bitte gib eine ganze Zahl ein."};
+      return {ok:false,message:"Bitte in "+String(step).replace(".",",")+"er-Schritten antworten."};
+    }
+  }
   return {ok:true,value:String(value)};
 }
 function formatAnswer(value){

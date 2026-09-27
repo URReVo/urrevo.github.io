@@ -65,3 +65,5 @@ Die Statistik-Karten haben zusätzlich feste Bezeichnungen oberhalb jeder Kennza
 - Wer bin ich? und Persönlicher Impostor warnen vor dem Verlassen einer laufenden Runde.
 - Web Audio der drei neuen Modi wird nach echtem Touch sowie nach App-/Tab-Rückkehr wieder aufgenommen, analog zu Circa/Classic.
 - Scharade synchronisiert zusätzlich den zugänglichen Sound-Button-Text.
+
+- Numerische Antworten respektieren jetzt auch den definierten Schritt: Ganzzahlen bleiben ganzzahlig, 1–10 und Prozent akzeptieren keine Zwischenwerte, Stunden können z. B. 0,5-Schritte nutzen.
