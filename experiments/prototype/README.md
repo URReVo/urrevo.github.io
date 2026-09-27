@@ -67,3 +67,12 @@ Die Statistik-Karten haben zusätzlich feste Bezeichnungen oberhalb jeder Kennza
 - Scharade synchronisiert zusätzlich den zugänglichen Sound-Button-Text.
 
 - Numerische Antworten respektieren jetzt auch den definierten Schritt: Ganzzahlen bleiben ganzzahlig, 1–10 und Prozent akzeptieren keine Zwischenwerte, Stunden können z. B. 0,5-Schritte nutzen.
+
+## Multi-Game-Presets und Spielzeit
+
+- Eigene Presets können jetzt mehrere Spielmodi gleichzeitig enthalten.
+- Jedes ausgewählte Spiel besitzt innerhalb des Presets seine eigene Kategorie-/Timer-/Schwierigkeitskonfiguration.
+- Beim Öffnen eines Multi-Game-Presets wird der gewünschte Modus direkt aus dem Preset gewählt.
+- Die PWA erfasst sichtbare Vordergrundzeit geräteweit: App insgesamt sowie getrennt für alle fünf Spielmodi.
+- Hintergrundzeit, Lockscreen und lange inaktive Browser-Gaps werden nicht als Spielzeit gewertet.
+- Spielzeit wird im Statistikbereich in Minuten bzw. Stunden angezeigt und ist Bestandteil des V3-Backups.

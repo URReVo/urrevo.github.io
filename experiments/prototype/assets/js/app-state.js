@@ -54,6 +54,16 @@ function baseStats(){
     circaQids:[],classicWids:[],whoamiTermIds:[],charadesTermIds:[],personalQids:[],categories:[]
   };
 }
+function baseUsage(){
+  return {appMs:0,games:{circa:0,classic:0,whoami:0,charades:0,personal:0},lastTickAt:null,activeGame:null};
+}
+function normalizeUsage(src){
+  src=src&&typeof src==="object"&&!Array.isArray(src)?src:{};
+  var out=baseUsage();out.appMs=Math.max(0,Number(src.appMs)||0);
+  var games=src.games&&typeof src.games==="object"&&!Array.isArray(src.games)?src.games:{};
+  GAME_IDS.forEach(function(game){out.games[game]=Math.max(0,Number(games[game])||0);});
+  return out;
+}
 function defaults(){
   var id=uid("player");
   return {
@@ -64,6 +74,7 @@ function defaults(){
     profileStats:{},
     profileArchive:{},
     stats:baseStats(),
+    usage:baseUsage(),
     sessions:[],
     activeSessionId:null,
     achievements:{},
@@ -253,6 +264,9 @@ function load(){
   if(!data.stats||typeof data.stats!=="object")data.stats=baseStats();
   ["circaQids","classicWids","whoamiTermIds","charadesTermIds","personalQids","categories"].forEach(function(k){if(!Array.isArray(data.stats[k]))data.stats[k]=[];});
   ["rounds","circaRounds","classicRounds","whoamiRounds","charadesRounds","personalRounds","impostor","personalImpostor","perfectEstimates","charadesCorrect","charadesSkipped","charadesTurns","charadesBestTurn","charadesCleanTurns"].forEach(function(k){data.stats[k]=Math.max(0,Number(data.stats[k])||0);});
+  data.usage=normalizeUsage(data.usage);
+  /* A persisted heartbeat is never trusted after a reload; page lifecycle code starts a fresh foreground interval. */
+  data.usage.lastTickAt=null;data.usage.activeGame=null;
   if(!Array.isArray(data.sessions))data.sessions=[];
   data.sessions.forEach(function(session){
     (session&&Array.isArray(session.rounds)?session.rounds:[]).forEach(function(round){
@@ -598,6 +612,41 @@ function getProfileAchievements(id){
     return {id:def.id,icon:def.icon,title:def.title,text:def.text,unlocked:!!def.done(),progress:def.progress()};
   });
 }
+function usageCommit(ts){
+  data.usage=normalizeUsage(data.usage);
+  var last=Number(data.usage.lastTickAt);
+  if(last>0){
+    var delta=Math.max(0,Number(ts)-last);
+    /* Heartbeats run every 15 s. Ignore long gaps so background/sleep time is never counted. */
+    if(delta>0&&delta<=60000){
+      data.usage.appMs+=delta;
+      if(GAME_IDS.indexOf(data.usage.activeGame)!==-1)data.usage.games[data.usage.activeGame]+=delta;
+    }
+  }
+}
+function trackUsage(game){
+  var ts=Date.now();usageCommit(ts);
+  data.usage.lastTickAt=ts;
+  data.usage.activeGame=GAME_IDS.indexOf(game)!==-1?game:null;
+  save();return true;
+}
+function pauseUsage(){
+  var ts=Date.now();usageCommit(ts);
+  data.usage.lastTickAt=null;data.usage.activeGame=null;
+  save();return true;
+}
+function getUsageStats(){
+  var out=normalizeUsage(data.usage),last=Number(data.usage&&data.usage.lastTickAt);
+  if(last>0){
+    var delta=Math.max(0,Date.now()-last);
+    if(delta>0&&delta<=60000){
+      out.appMs+=delta;
+      if(GAME_IDS.indexOf(data.usage.activeGame)!==-1)out.games[data.usage.activeGame]+=delta;
+    }
+  }
+  out.lastTickAt=null;out.activeGame=null;
+  return clone(out);
+}
 function getStats(){return clone(data.stats);}
 function getProfileStats(id){return clone(data.profileStats[id]||baseProfileStats());}
 function getSessions(){return clone(data.sessions.slice().reverse());}
@@ -609,42 +658,63 @@ function setPreference(key,value){
 }
 function builtInPresets(){
   return [
-    {id:"builtin-quick",builtIn:true,name:"Schnelle Runde",icon:"⚡️",game:"circa",playerCount:4,profileIds:[],categories:["Alle"],difficulty:"zufaellig",summary:"Circa · 4 Spieler · Zufall"},
-    {id:"builtin-party",builtIn:true,name:"Party",icon:"🥳",game:"classic",playerCount:6,profileIds:[],categories:["Alle"],hint:true,timer:180,summary:"Classic · 6 Spieler · 3 Min."},
-    {id:"builtin-spicy",builtIn:true,name:"Spicy",icon:"🌶️",game:"circa",playerCount:5,profileIds:[],categories:["Spicy 🌶️"],difficulty:"mittel",summary:"Circa · 5 Spieler · Spicy"},
-    {id:"builtin-charades",builtIn:true,name:"Scharade 60",icon:"🎬",game:"charades",playerCount:4,profileIds:[],categories:["Alle"],timer:60,summary:"Scharade · 4 Spieler · 60 Sek."},
-    {id:"builtin-personal",builtIn:true,name:"Persönlich",icon:"💬",game:"personal",playerCount:4,profileIds:[],categories:[],summary:"Persönlich · 4 Spieler"}
+    {id:"builtin-quick",builtIn:true,name:"Schnelle Runde",icon:"⚡️",game:"circa",games:["circa"],playerCount:4,profileIds:[],categories:["Alle"],difficulty:"zufaellig",summary:"Circa · 4 Spieler · Zufall"},
+    {id:"builtin-party",builtIn:true,name:"Party",icon:"🥳",game:"classic",games:["classic"],playerCount:6,profileIds:[],categories:["Alle"],hint:true,timer:180,summary:"Classic · 6 Spieler · 3 Min."},
+    {id:"builtin-spicy",builtIn:true,name:"Spicy",icon:"🌶️",game:"circa",games:["circa"],playerCount:5,profileIds:[],categories:["Spicy 🌶️"],difficulty:"mittel",summary:"Circa · 5 Spieler · Spicy"},
+    {id:"builtin-charades",builtIn:true,name:"Scharade 60",icon:"🎬",game:"charades",games:["charades"],playerCount:4,profileIds:[],categories:["Alle"],timer:60,summary:"Scharade · 4 Spieler · 60 Sek."},
+    {id:"builtin-personal",builtIn:true,name:"Persönlich",icon:"💬",game:"personal",games:["personal"],playerCount:4,profileIds:[],categories:[],summary:"Persönlich · 4 Spieler"}
   ];
 }
 function getPresets(){return builtInPresets().concat(clone(data.presets));}
-function savePreset(input){
-  input=input||{};
-  var game=GAME_IDS.indexOf(input.game)!==-1?input.game:"circa";
-  var minPlayers=(game==="whoami"||game==="charades")?2:3;
-  var profileIds=[];
-  (Array.isArray(input.profileIds)?input.profileIds:[]).forEach(function(id){if(profileById(id)&&profileIds.indexOf(id)===-1&&profileIds.length<12)profileIds.push(id);});
-  var playerCount=profileIds.length||Math.max(minPlayers,Math.min(12,Number(input.playerCount)||4));
+function presetGames(input){
+  var games=[];
+  (Array.isArray(input&&input.games)?input.games:[input&&input.game]).forEach(function(game){
+    if(GAME_IDS.indexOf(game)!==-1&&games.indexOf(game)===-1)games.push(game);
+  });
+  return games.length?games:["circa"];
+}
+function sanitizePresetConfig(game,input){
+  input=input&&typeof input==="object"?input:{};
   var categories=game==="personal"?[]:(Array.isArray(input.categories)&&input.categories.length?input.categories.map(String).slice(0,20):["Alle"]);
   if(categories.indexOf("Alle")!==-1)categories=["Alle"];
-  var allowedClassicTimers=[0,60,90,120,150,180,210,240,270,300];
-  var allowedCharadesTimers=[30,45,60,90,120];
+  var classicTimers=[0,60,90,120,150,180,210,240,270,300],charadesTimers=[30,45,60,90,120];
+  return {
+    categories:categories,
+    difficulty:["leicht","mittel","schwer","zufaellig"].indexOf(input.difficulty)!==-1?input.difficulty:"mittel",
+    hint:input.hint!==false,
+    timer:game==="charades"?(charadesTimers.indexOf(Number(input.timer))!==-1?Number(input.timer):60):(classicTimers.indexOf(Number(input.timer))!==-1?Number(input.timer):0)
+  };
+}
+function savePreset(input){
+  input=input||{};
+  var games=presetGames(input),game=games[0],requiredMin=2;
+  games.forEach(function(id){requiredMin=Math.max(requiredMin,(id==="whoami"||id==="charades")?2:3);});
+  var profileIds=[];
+  (Array.isArray(input.profileIds)?input.profileIds:[]).forEach(function(id){if(profileById(id)&&profileIds.indexOf(id)===-1&&profileIds.length<12)profileIds.push(id);});
+  var playerCount=profileIds.length||Math.max(requiredMin,Math.min(12,Number(input.playerCount)||4));
+  var rawConfigs=input.gameConfigs&&typeof input.gameConfigs==="object"&&!Array.isArray(input.gameConfigs)?input.gameConfigs:{};
+  var configs={};
+  games.forEach(function(id){
+    var source=rawConfigs[id]||(id===input.game?input:{});
+    configs[id]=sanitizePresetConfig(id,source);
+  });
+  var primary=configs[game];
   var p={
     id:input.id&&String(input.id).indexOf("custom-")===0?input.id:uid("custom"),
     builtIn:false,
     name:String(input.name||"Eigenes Preset").trim().slice(0,22)||"Eigenes Preset",
-    icon:String(input.icon||({circa:"🎯",classic:"🎭",whoami:"❓",charades:"🎬",personal:"💬"}[game]||"⭐️")).slice(0,8),
-    game:game,
-    playerCount:playerCount,
-    profileIds:profileIds,
-    categories:categories,
-    difficulty:["leicht","mittel","schwer","zufaellig"].indexOf(input.difficulty)!==-1?input.difficulty:"mittel",
-    hint:input.hint!==false,
-    timer:game==="charades"?(allowedCharadesTimers.indexOf(Number(input.timer))!==-1?Number(input.timer):60):(allowedClassicTimers.indexOf(Number(input.timer))!==-1?Number(input.timer):0)
+    icon:String(input.icon||(games.length>1?"🎮":({circa:"🎯",classic:"🎭",whoami:"❓",charades:"🎬",personal:"💬"}[game]||"⭐️"))).slice(0,8),
+    game:game,games:games,gameConfigs:configs,
+    playerCount:playerCount,profileIds:profileIds,
+    categories:primary.categories,difficulty:primary.difficulty,hint:primary.hint,timer:primary.timer
   };
-  var label={circa:"Circa",classic:"Classic",whoami:"Wer bin ich?",charades:"Scharade",personal:"Persönlich"}[game];
-  var categoryText=!p.categories.length?"":p.categories[0]==="Alle"?" · Alle":p.categories.length===1?" · "+p.categories[0]:" · "+p.categories.length+" Kat.";
-  var optionText=game==="circa"?" · "+(p.difficulty==="zufaellig"?"Zufall":p.difficulty):game==="classic"&&p.timer?" · "+Math.round(p.timer/60)+" Min.":game==="charades"?" · "+p.timer+" Sek.":"";
-  p.summary=label+" · "+p.playerCount+" Spieler"+categoryText+optionText;
+  var labels={circa:"Circa",classic:"Classic",whoami:"Wer bin ich?",charades:"Scharade",personal:"Persönlich"};
+  if(games.length>1)p.summary=games.length+" Spiele · "+p.playerCount+" Spieler";
+  else{
+    var categoryText=!p.categories.length?"":p.categories[0]==="Alle"?" · Alle":p.categories.length===1?" · "+p.categories[0]:" · "+p.categories.length+" Kat.";
+    var optionText=game==="circa"?" · "+(p.difficulty==="zufaellig"?"Zufall":p.difficulty):game==="classic"&&p.timer?" · "+Math.round(p.timer/60)+" Min.":game==="charades"?" · "+p.timer+" Sek.":"";
+    p.summary=labels[game]+" · "+p.playerCount+" Spieler"+categoryText+optionText;
+  }
   var idx=data.presets.findIndex(function(x){return x.id===p.id;});
   if(idx>=0)data.presets[idx]=p;else data.presets.push(p);
   save();return clone(p);
@@ -955,6 +1025,7 @@ async function importSnapshot(input){
     profileStats:sanitizeImportedProfileStats(src.profileStats),
     profileArchive:archive,
     stats:sanitizeImportedStats(src.stats),
+    usage:normalizeUsage(src.usage),
     sessions:sanitizeImportedSessions(src.sessions),
     activeSessionId:null,
     achievements:src.achievements&&typeof src.achievements==="object"&&!Array.isArray(src.achievements)?clone(src.achievements):{},
@@ -1079,6 +1150,9 @@ window.CIAppState={
   getActiveSession:getActiveSession,
   getStats:getStats,
   getProfileStats:getProfileStats,
+  getUsageStats:getUsageStats,
+  trackUsage:trackUsage,
+  pauseUsage:pauseUsage,
   getAchievements:getAchievements,
   getProfileAchievements:getProfileAchievements,
   getPreferences:getPreferences,

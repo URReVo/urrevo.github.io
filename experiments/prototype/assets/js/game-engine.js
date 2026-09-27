@@ -3270,6 +3270,12 @@ if(!window.PointerEvent){
 }
 }
 
+if(experimentAppState&&experimentAppState.trackUsage){
+  experimentAppState.trackUsage(gameMode);
+  setInterval(function(){if(!document.hidden)experimentAppState.trackUsage(gameMode);},15000);
+  window.addEventListener("pagehide",function(){if(experimentAppState.pauseUsage)experimentAppState.pauseUsage();});
+  document.addEventListener("visibilitychange",function(){if(document.hidden){if(experimentAppState.pauseUsage)experimentAppState.pauseUsage();}else experimentAppState.trackUsage(gameMode);});
+}
 migrateV72GameStorageOnce();
 if(gameMode==="circa"&&experimentAppState&&experimentAppState.applyCircaQuestionMetadata){
   experimentAppState.applyCircaQuestionMetadata(bank);

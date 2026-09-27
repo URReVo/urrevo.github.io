@@ -156,6 +156,22 @@
       </div>
     </section>
 
+    <section class="sectionBlock usageStatsBlock">
+      <div class="sectionHeading">
+        <div><div class="eyebrow">SPIELZEIT</div><h2>Zeit in der App</h2></div>
+        <span class="sectionHint">geräteweit</span>
+      </div>
+      <div class="usageTotalCard"><span>⏱️ App insgesamt</span><strong id="usageTotal">0 Min.</strong></div>
+      <div class="metricList usageMetricList">
+        <div><span>🎯 Circa Imposter</span><strong id="usageCirca">0 Min.</strong></div>
+        <div><span>🎭 Klassisches Imposter</span><strong id="usageClassic">0 Min.</strong></div>
+        <div><span>❓ Wer bin ich?</span><strong id="usageWhoami">0 Min.</strong></div>
+        <div><span>🎬 Scharade</span><strong id="usageCharades">0 Min.</strong></div>
+        <div><span>💬 Persönlicher Impostor</span><strong id="usagePersonal">0 Min.</strong></div>
+      </div>
+      <p class="presetInlineHint">Gezählt wird nur, solange die PWA sichtbar im Vordergrund ist.</p>
+    </section>
+
     <section class="sectionBlock">
       <div class="sectionHeading"><div><div class="eyebrow">PERFORMANCE</div><h2>Deine Zahlen</h2></div></div>
       <div class="statGrid twoCol modeStatsGrid">
@@ -267,7 +283,8 @@
   </div>
   <div id="presetGame" class="presetSheetGame"></div>
   <p id="presetDetail" class="presetSheetDetail"></p>
-  <p class="prototypeNote">Spielerzahl und Spieleinstellungen werden beim Start direkt vorausgefüllt.</p>
+  <p class="prototypeNote">Spieler und die jeweilige Spielkonfiguration werden beim Start direkt vorausgefüllt.</p>
+  <div id="presetLaunchChoices" class="presetLaunchChoices hidden" aria-label="Spiel aus Preset starten"></div>
   <button id="presetOpenGame" class="primaryButton" type="button">Mit Preset starten</button>
   <button id="deletePreset" class="sheetDangerButton hidden" type="button">Eigenes Preset löschen</button>
 </section>
@@ -282,14 +299,14 @@
   <label class="fieldLabel" for="presetNameInput">NAME</label>
   <input id="presetNameInput" class="textInput" type="text" maxlength="22" placeholder="Freitagabend">
 
-  <label class="fieldLabel" for="presetGameInput">SPIEL</label>
-  <select id="presetGameInput" class="selectInput">
-    <option value="circa">🎯 Circa Imposter</option>
-    <option value="classic">🎭 Klassisches Imposter</option>
-    <option value="whoami">❓ Wer bin ich?</option>
-    <option value="charades">🎬 Scharade</option>
-    <option value="personal">💬 Persönlicher Impostor</option>
+  <div class="fieldLabel">SPIELE</div>
+  <div id="presetGameChoices" class="presetChoiceGrid presetGameChoices" aria-label="Spiele zum Preset hinzufügen"></div>
+  <p class="presetInlineHint">Du kannst mehrere Spiele hinzufügen. Die Einstellungen werden pro Spiel gespeichert.</p>
+  <select id="presetGameInput" class="hidden" aria-hidden="true" tabindex="-1">
+    <option value="circa">Circa</option><option value="classic">Classic</option><option value="whoami">Wer bin ich?</option><option value="charades">Scharade</option><option value="personal">Persönlich</option>
   </select>
+  <div id="presetGameConfigTabs" class="presetGameConfigTabs" aria-label="Spiel konfigurieren"></div>
+  <p id="presetGameConfigHint" class="presetInlineHint">Einstellungen für Circa Imposter</p>
 
   <div class="fieldLabel">SPIELER</div>
   <button id="presetPlayersButton" class="presetConfigButton" type="button">

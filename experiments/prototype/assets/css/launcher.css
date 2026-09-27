@@ -133,3 +133,15 @@ select,
 .presetPlayerPickText{display:flex;flex-direction:column}.presetPlayerPickText strong{font-size:12px}.presetPlayerPickText small{margin-top:3px;color:#7e8087;font-size:8px}
 .presetPlayerCheck{width:25px;height:25px;border-radius:9px;border:1px solid rgba(255,255,255,.10);display:grid;place-items:center;color:transparent;background:#2d2e33;font-weight:950}
 .presetPlayerPick.selected .presetPlayerCheck{color:#171717;background:var(--accent);border-color:transparent}
+
+/* Multi-game presets + usage stats */
+.presetGameChoices{margin-bottom:4px}
+.presetGameConfigTabs{display:flex;gap:7px;overflow-x:auto;padding:7px 0 2px;scrollbar-width:none}
+.presetGameConfigTabs::-webkit-scrollbar{display:none}
+.presetGameTab{flex:0 0 auto;min-height:34px;padding:0 11px;border:1px solid rgba(255,255,255,.07);border-radius:11px;background:#232428;color:#8f9198;font-size:9px;font-weight:900}
+.presetGameTab.active{border-color:rgba(243,154,50,.5);background:rgba(243,154,50,.12);color:#edbd84}
+.presetLaunchChoices{display:grid;gap:8px;margin-top:12px}
+.presetLaunchButton{min-height:50px;border:1px solid rgba(255,255,255,.07);border-radius:15px;background:#25262a;color:var(--text);font-size:11px;font-weight:900;text-align:left;padding:0 14px}
+.usageTotalCard{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding:14px 15px;margin-bottom:8px;border:1px solid var(--border);border-radius:17px;background:#202125}
+.usageTotalCard span{color:#989aa1;font-size:10px;font-weight:800}.usageTotalCard strong{font-size:21px;white-space:nowrap}
+.usageMetricList strong{font-variant-numeric:tabular-nums}

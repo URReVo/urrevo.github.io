@@ -121,5 +121,11 @@ if(window.PointerEvent)document.addEventListener("pointerdown",function(){if(sou
 else document.addEventListener("touchstart",function(){if(soundEnabled)ensureAudio();},{passive:true,capture:true});
 window.addEventListener("pageshow",restoreExistingAudio);
 document.addEventListener("visibilitychange",function(){if(!document.hidden)restoreExistingAudio();});
+if(appState&&appState.trackUsage){
+  appState.trackUsage("personal");
+  setInterval(function(){if(!document.hidden)appState.trackUsage("personal");},15000);
+  window.addEventListener("pagehide",function(){if(appState.pauseUsage)appState.pauseUsage();});
+  document.addEventListener("visibilitychange",function(){if(document.hidden){if(appState.pauseUsage)appState.pauseUsage();}else appState.trackUsage("personal");});
+}
 show("setup");document.body.classList.remove("booting");document.body.removeAttribute("aria-busy");
 })();

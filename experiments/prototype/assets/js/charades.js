@@ -237,5 +237,11 @@ else document.addEventListener("touchstart",function(){if(soundEnabled)ensureAud
 window.addEventListener("pageshow",restoreExistingAudio);
 document.addEventListener("visibilitychange",function(){if(document.hidden&&turnRunning)endTurn("hidden");else if(!document.hidden)restoreExistingAudio();});
 
+if(appState&&appState.trackUsage){
+  appState.trackUsage("charades");
+  setInterval(function(){if(!document.hidden)appState.trackUsage("charades");},15000);
+  window.addEventListener("pagehide",function(){if(appState.pauseUsage)appState.pauseUsage();});
+  document.addEventListener("visibilitychange",function(){if(document.hidden){if(appState.pauseUsage)appState.pauseUsage();}else appState.trackUsage("charades");});
+}
 show("setup");document.body.classList.remove("booting");document.body.removeAttribute("aria-busy");
 })();
