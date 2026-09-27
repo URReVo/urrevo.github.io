@@ -18,7 +18,7 @@ Zusätzlich zu den vier produktiven Modi enthält der Prototyp den neuen Modus *
 - danach werden nur alle Antworten gemeinsam gezeigt
 - keine Abstimmung in der App
 - Auflösung zeigt Impostor, normale Frage und Impostor-Frage
-- 89 kuratierte Fragepaare im ersten Prototyp-Pool
+- 100 kuratierte Fragepaare im Prototyp-Pool, davon 11 echte Freitext-Paare
 
 ## Isolation
 
@@ -31,3 +31,14 @@ Zusätzlich zu den vier produktiven Modi enthält der Prototyp den neuen Modus *
 - keine automatische Übernahme von V72- oder Produktionsdaten
 
 Die Produktivseite im Repository-Root bleibt durch diese Änderungen unangetastet.
+
+## Gemeinsame Sessions und Statistik
+
+Im Prototyp werden jetzt alle fünf Spiele in derselben Session-Historie erfasst.
+
+- aktive Session zeigt aktuellen Spielmodus, Laufzeit und aktuellen Spielstatus
+- Wer bin ich?: Runden und verteilte Begriffe
+- Scharade: richtige / übersprungene Begriffe, Durchschnitt und persönlicher Bestwert
+- Persönlicher Impostor: gespielte Fragepaare und Impostor-Einsätze
+- Achievements u. a. für alle fünf Modi, Scharade-Leistungen, Impostor-Häufigkeit und lange Sessions
+- Session-Awards berücksichtigen zusätzlich Scharade-Leistungen

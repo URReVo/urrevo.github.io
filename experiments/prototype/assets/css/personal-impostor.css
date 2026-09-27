@@ -12,8 +12,12 @@
 .personalQuestionCard h2{margin:9px 0 8px;max-width:560px;font-size:clamp(25px,7.2vw,34px);line-height:1.08;letter-spacing:-.55px}.personalQuestionCard p{margin:0;max-width:450px;color:#85878e;font-size:10px;line-height:1.45}
 .personalAnswerLabel{color:#898b91;font-size:9px;font-weight:950;letter-spacing:.9px;margin:4px 2px 0}
 .personalAnswerWrap{display:block;min-height:74px;border:1px solid rgba(255,255,255,.08);border-radius:17px;background:#202125;overflow:hidden}
-.personalAnswerWrap textarea{display:block;min-width:0;width:100%;height:74px;resize:none;border:0;outline:0;background:transparent;color:#fff;padding:13px 15px;font:700 17px/1.3 -apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}
-.personalAnswerWrap textarea::placeholder{color:#62646a;font-size:14px;font-weight:700}
+.personalAnswerWrap{position:relative}
+.personalAnswerWrap input,.personalAnswerWrap textarea{display:block;min-width:0;width:100%;height:74px;border:0;outline:0;background:transparent;color:#fff;padding:13px 15px;font:700 17px/1.3 -apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}
+.personalAnswerWrap textarea{resize:none}
+.personalAnswerWrap input[type="number"],.personalAnswerWrap input[type="time"]{padding-right:76px;font-size:22px}
+.personalAnswerWrap input::placeholder,.personalAnswerWrap textarea::placeholder{color:#62646a;font-size:14px;font-weight:700}
+.personalAnswerUnitBadge{position:absolute;right:13px;top:50%;transform:translateY(-50%);max-width:62px;color:#e9a8d2;font-size:10px;font-weight:900;text-align:right;pointer-events:none}
 .personalAnswerHint{margin:-3px 2px 0;color:#777980;font-size:9px;font-weight:750;line-height:1.35}
 .personalBottomButton{flex:0 0 auto;margin-top:auto!important;min-height:50px}
 .personalAnswersHeader{margin:0 2px 8px}.personalAnswersHeader h2{margin:4px 0 4px;font-size:27px}.personalAnswersHeader p{margin:0;color:#85878e;font-size:11px;line-height:1.45}

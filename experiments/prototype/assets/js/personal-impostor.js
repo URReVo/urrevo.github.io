@@ -8,13 +8,59 @@ var appState=window.CIAppState||null;
 var preferences=appState&&appState.getPreferences?appState.getPreferences():{sound:true,haptics:true,animations:true};
 var soundEnabled=preferences.sound!==false,audioCtx=null,bank=[];
 var count=3,players=[],savedPlayerNames=[],savedPlayerProfileIds=[],avatarSelections=[];
-var currentPair=null,impostorIndex=0,activeIndex=0,answers=[],round=0,impostorCounts=[],lastImpostor=-1;
+var currentPair=null,impostorIndex=0,activeIndex=0,answers=[],round=0,impostorCounts=[],lastImpostor=-1,currentRoundKey=null;
 var revealRunning=false,revealTimers=[];
 var sections=["setup","handoff","question","answers","result"];
 function storageGet(key,fallback){try{var raw=localStorage.getItem(key);return raw===null?fallback:JSON.parse(raw);}catch(e){return fallback;}}
 function storageSet(key,value){try{localStorage.setItem(key,JSON.stringify(value));return true;}catch(e){return false;}}
 function cleanName(v){return String(v==null?"":v).trim().slice(0,24);}
 function cleanAnswer(v){return String(v==null?"":v).trim().replace(/\s+/g," ").slice(0,180);}
+function answerSpec(item){
+  var type=item&&item.answerType||"";
+  if(type)return {type:type,min:item.min,max:item.max,step:item.step,unit:item.unit||""};
+  var unit=String(item&&item.unit||"");
+  if(unit==="Uhrzeit")return {type:"time",unit:""};
+  if(unit==="1–10")return {type:"rating",min:1,max:10,step:1,unit:"1–10"};
+  if(unit==="%")return {type:"percent",min:0,max:100,step:1,unit:"%"};
+  if(unit==="€")return {type:"number",min:0,step:.01,unit:"€"};
+  if(unit==="Stunden")return {type:"number",min:0,step:.5,unit:unit};
+  return {type:"integer",min:0,step:1,unit:unit};
+}
+function renderAnswerControl(){
+  var wrap=byId("answerControl"),spec=answerSpec(currentPair);wrap.innerHTML="";
+  var control;
+  if(spec.type==="text"){
+    control=document.createElement("textarea");control.rows=2;control.maxLength=180;control.placeholder="Antwort frei eingeben";
+  }else if(spec.type==="time"){
+    control=document.createElement("input");control.type="time";control.step=300;
+  }else{
+    control=document.createElement("input");control.type="number";control.inputMode=spec.step&&spec.step<1?"decimal":"numeric";control.placeholder=spec.type==="rating"?"1 bis 10":"Zahl eingeben";
+    if(spec.min!==undefined&&spec.min!==null)control.min=String(spec.min);
+    if(spec.max!==undefined&&spec.max!==null)control.max=String(spec.max);
+    if(spec.step!==undefined&&spec.step!==null)control.step=String(spec.step);
+  }
+  control.id="answerInput";control.autocomplete="off";wrap.appendChild(control);
+  if(spec.unit&&spec.type!=="text"){var badge=document.createElement("span");badge.className="personalAnswerUnitBadge";badge.textContent=spec.unit;wrap.appendChild(badge);}
+  byId("answerFormat").textContent=spec.type==="text"?"Freie Antwort":spec.type==="time"?"Uhrzeit eingeben":spec.type==="rating"?"Nur eine Zahl von 1 bis 10":spec.type==="percent"?"Nur eine Zahl von 0 bis 100":"Nur Zahlen · "+(spec.unit||"numerische Antwort");
+}
+function readAnswer(){
+  var input=byId("answerInput"),spec=answerSpec(currentPair);if(!input)return {ok:false};
+  var raw=String(input.value||"").trim();
+  if(!raw)return {ok:false,message:"Bitte gib zuerst deine Antwort ein."};
+  if(spec.type==="text")return {ok:true,value:cleanAnswer(raw)};
+  if(spec.type==="time")return /^([01]\d|2[0-3]):[0-5]\d$/.test(raw)?{ok:true,value:raw}:{ok:false,message:"Bitte gib eine gültige Uhrzeit ein."};
+  var value=Number(raw.replace(",","."));
+  if(!Number.isFinite(value))return {ok:false,message:"Bitte gib nur eine Zahl ein."};
+  if(spec.min!==undefined&&spec.min!==null&&value<Number(spec.min))return {ok:false,message:"Der Wert muss mindestens "+spec.min+" sein."};
+  if(spec.max!==undefined&&spec.max!==null&&value>Number(spec.max))return {ok:false,message:"Der Wert darf höchstens "+spec.max+" sein."};
+  return {ok:true,value:String(value)};
+}
+function formatAnswer(value){
+  var spec=answerSpec(currentPair);
+  if(spec.type==="text"||spec.type==="time")return String(value);
+  var num=Number(value),text=Number.isFinite(num)?num.toLocaleString("de-DE",{maximumFractionDigits:2}):String(value);
+  return text+(spec.unit?" "+spec.unit:"");
+}
 function motionEnabled(){return preferences.animations!==false&&!(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches);}
 function clearRevealTimers(){while(revealTimers.length)clearTimeout(revealTimers.pop());revealRunning=false;var screen=byId("answers");if(screen)screen.classList.remove("revealRunning");var button=byId("reveal");if(button){button.disabled=false;button.textContent="Auflösung";}}
 function randomUnit(){try{if(window.crypto&&window.crypto.getRandomValues){var a=new Uint32Array(1);window.crypto.getRandomValues(a);return a[0]/4294967296;}}catch(e){}return Math.random();}
@@ -36,12 +82,12 @@ function drawPair(){var used=storageGet(STORAGE_DECK,[]);if(!Array.isArray(used)
 function resetFairness(){impostorCounts=Array(players.length).fill(0);lastImpostor=-1;}
 function selectImpostor(){if(impostorCounts.length!==players.length)resetFairness();var min=Math.min.apply(null,impostorCounts),candidates=[];for(var i=0;i<impostorCounts.length;i++)if(impostorCounts[i]===min)candidates.push(i);if(candidates.length>1&&lastImpostor!==-1)candidates=candidates.filter(function(i){return i!==lastImpostor;});var chosen=candidates[randomIndex(candidates.length)];impostorCounts[chosen]++;lastImpostor=chosen;return chosen;}
 function startParty(){var result=collectPlayers();if(!result.ok){byId("error").textContent=result.message;return;}byId("error").textContent="";resetFairness();round=0;startRound(true);}
-function startRound(useExisting){clearRevealTimers();if(!useExisting&&players.length<3){startParty();return;}var pair=drawPair();if(!pair){byId("error").textContent="Keine Fragepaare verfügbar.";show("setup");return;}currentPair=pair;impostorIndex=selectImpostor();activeIndex=0;answers=Array(players.length).fill("");round++;showHandoff();sound("start");pulse(8);}
-function showHandoff(){var p=players[activeIndex];byId("handoffAvatar").textContent=p.avatar;byId("handoffName").textContent=p.name;show("handoff");}
-function showQuestion(){var p=players[activeIndex],isImpostor=activeIndex===impostorIndex;byId("questionAvatar").textContent=p.avatar;byId("questionName").textContent=p.name;byId("questionProgress").textContent=(activeIndex+1)+"/"+players.length;byId("questionText").textContent=isImpostor?currentPair.impostor:currentPair.normal;byId("answerFormat").textContent=currentPair.unit?"Freitext ist immer erlaubt · Orientierung: "+currentPair.unit:"Freitext ist immer erlaubt.";byId("answerInput").value="";byId("answerError").textContent="";show("question");sound("tap");pulse(6);setTimeout(function(){try{byId("answerInput").focus({preventScroll:true});}catch(e){try{byId("answerInput").focus();}catch(e2){}}},180);}
-function saveAnswer(){var answer=cleanAnswer(byId("answerInput").value);if(!answer){byId("answerError").textContent="Bitte gib zuerst deine Antwort ein.";pulse(12);return;}answers[activeIndex]=answer;byId("answerError").textContent="";sound("save");pulse(7);if(activeIndex<players.length-1){activeIndex++;showHandoff();}else renderAnswers();}
-function renderAnswers(){clearRevealTimers();var box=byId("answersList");box.innerHTML="";players.forEach(function(player,index){var row=document.createElement("div");row.className="personalAnswerRow";row.dataset.playerIndex=String(index);var av=document.createElement("div");av.className="personalAnswerAvatar";av.textContent=player.avatar;var info=document.createElement("div");info.className="personalAnswerInfo";var name=document.createElement("span");name.textContent=player.name;var value=document.createElement("strong");value.textContent=answers[index];info.append(name,value);var mark=document.createElement("div");mark.className="impostorX";mark.textContent="×";row.append(av,info,mark);box.appendChild(row);});show("answers");sound("start");pulse(9);}
-function showResolution(){var impostor=players[impostorIndex],screen=byId("result");byId("resultAvatar").textContent=impostor.avatar;byId("resultName").textContent=impostor.name+" war der Impostor";byId("normalQuestion").textContent=currentPair.normal;byId("impostorQuestion").textContent=currentPair.impostor;screen.classList.remove("revealSequence");screen.querySelectorAll(".personalRevealItem").forEach(function(el){el.classList.remove("revealed");});show("result");if(!motionEnabled()){screen.querySelectorAll(".personalRevealItem").forEach(function(el){el.classList.add("revealed");});revealRunning=false;return;}screen.classList.add("revealSequence");var items=screen.querySelectorAll(".personalRevealItem");for(var i=0;i<items.length;i++){(function(el,delay){revealTimers.push(setTimeout(function(){el.classList.add("revealed");sound("save");},delay));})(items[i],120+i*260);}revealTimers.push(setTimeout(function(){screen.classList.remove("revealSequence");revealRunning=false;},120+items.length*260+420));}
+function startRound(useExisting){clearRevealTimers();if(!useExisting&&players.length<3){startParty();return;}var pair=drawPair();if(!pair){byId("error").textContent="Keine Fragepaare verfügbar.";show("setup");return;}currentPair=pair;impostorIndex=selectImpostor();activeIndex=0;answers=Array(players.length).fill("");round++;currentRoundKey="personal_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,7);if(appState&&appState.beginSession){appState.beginSession(players);if(appState.setActiveSessionGame)appState.setActiveSessionGame("personal","Runde "+round,true);}showHandoff();sound("start");pulse(8);}
+function showHandoff(){var p=players[activeIndex];byId("handoffAvatar").textContent=p.avatar;byId("handoffName").textContent=p.name;if(appState&&appState.setActiveSessionGame)appState.setActiveSessionGame("personal","Runde "+round+" · Spieler "+(activeIndex+1)+"/"+players.length,false);show("handoff");}
+function showQuestion(){var p=players[activeIndex],isImpostor=activeIndex===impostorIndex;byId("questionAvatar").textContent=p.avatar;byId("questionName").textContent=p.name;byId("questionProgress").textContent=(activeIndex+1)+"/"+players.length;byId("questionText").textContent=isImpostor?currentPair.impostor:currentPair.normal;renderAnswerControl();byId("answerError").textContent="";show("question");sound("tap");pulse(6);setTimeout(function(){var input=byId("answerInput");try{input&&input.focus({preventScroll:true});}catch(e){try{input&&input.focus();}catch(e2){}}},180);}
+function saveAnswer(){var parsed=readAnswer();if(!parsed.ok){byId("answerError").textContent=parsed.message||"Bitte gib zuerst deine Antwort ein.";pulse(12);return;}answers[activeIndex]=parsed.value;byId("answerError").textContent="";sound("save");pulse(7);if(activeIndex<players.length-1){activeIndex++;showHandoff();}else renderAnswers();}
+function renderAnswers(){clearRevealTimers();var box=byId("answersList");box.innerHTML="";players.forEach(function(player,index){var row=document.createElement("div");row.className="personalAnswerRow";row.dataset.playerIndex=String(index);var av=document.createElement("div");av.className="personalAnswerAvatar";av.textContent=player.avatar;var info=document.createElement("div");info.className="personalAnswerInfo";var name=document.createElement("span");name.textContent=player.name;var value=document.createElement("strong");value.textContent=formatAnswer(answers[index]);info.append(name,value);var mark=document.createElement("div");mark.className="impostorX";mark.textContent="×";row.append(av,info,mark);box.appendChild(row);});show("answers");sound("start");pulse(9);}
+function showResolution(){var impostor=players[impostorIndex],screen=byId("result");if(appState&&appState.recordRound&&currentRoundKey){appState.recordRound({game:"personal",roundKey:currentRoundKey,qid:currentPair.id,unit:currentPair.unit||"",players:players.map(function(player,index){return {profileId:player.profileId,name:player.name,avatar:player.avatar,role:index===impostorIndex?"impostor":"normal",answer:answers[index]};})});currentRoundKey=null;}byId("resultAvatar").textContent=impostor.avatar;byId("resultName").textContent=impostor.name+" war der Impostor";byId("normalQuestion").textContent=currentPair.normal;byId("impostorQuestion").textContent=currentPair.impostor;screen.classList.remove("revealSequence");screen.querySelectorAll(".personalRevealItem").forEach(function(el){el.classList.remove("revealed");});show("result");if(!motionEnabled()){screen.querySelectorAll(".personalRevealItem").forEach(function(el){el.classList.add("revealed");});revealRunning=false;return;}screen.classList.add("revealSequence");var items=screen.querySelectorAll(".personalRevealItem");for(var i=0;i<items.length;i++){(function(el,delay){revealTimers.push(setTimeout(function(){el.classList.add("revealed");sound("save");},delay));})(items[i],120+i*260);}revealTimers.push(setTimeout(function(){screen.classList.remove("revealSequence");revealRunning=false;},120+items.length*260+420));}
 function reveal(){if(revealRunning)return;revealRunning=true;var screen=byId("answers"),button=byId("reveal"),rows=byId("answersList").querySelectorAll(".personalAnswerRow");screen.classList.add("revealRunning");button.disabled=true;button.textContent="Wer ist es…?";for(var i=0;i<rows.length;i++){rows[i].classList.add("dimmed");rows[i].classList.remove("focused","impostorCaught");}var impostorRow=byId("answersList").querySelector('[data-player-index="'+impostorIndex+'"]');if(!motionEnabled()){if(impostorRow){impostorRow.classList.remove("dimmed");impostorRow.classList.add("focused","impostorCaught");}sound("reveal");pulse(14);revealTimers.push(setTimeout(showResolution,520));return;}var order=[];for(var j=0;j<players.length;j++)if(j!==impostorIndex)order.push(j);for(var oi=order.length-1;oi>0;oi--){var oj=randomIndex(oi+1),tmp=order[oi];order[oi]=order[oj];order[oj]=tmp;}var steps=Math.min(3,order.length);for(var s=0;s<steps;s++){(function(idx,delay){revealTimers.push(setTimeout(function(){for(var z=0;z<rows.length;z++)rows[z].classList.remove("focused");var candidate=byId("answersList").querySelector('[data-player-index="'+idx+'"]');if(candidate){candidate.classList.remove("dimmed");candidate.classList.add("focused");}tone(250+delay*.25,.055,0);},delay));})(order[s],260+s*260);}var finalDelay=260+steps*260+140;revealTimers.push(setTimeout(function(){for(var z=0;z<rows.length;z++){rows[z].classList.add("dimmed");rows[z].classList.remove("focused");}if(impostorRow){impostorRow.classList.remove("dimmed");impostorRow.classList.add("focused","impostorCaught");}button.textContent="Auflösung…";sound("reveal");pulse(14);},finalDelay));revealTimers.push(setTimeout(showResolution,finalDelay+900));}
 function backSetup(){clearRevealTimers();show("setup");window.scrollTo(0,0);}
 function toggleSound(){soundEnabled=!soundEnabled;if(appState&&appState.setPreference)appState.setPreference("sound",soundEnabled);preferences.sound=soundEnabled;syncSound();if(soundEnabled)sound("tap");}

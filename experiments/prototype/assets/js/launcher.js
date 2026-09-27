@@ -417,12 +417,12 @@ function renderStats(){
   byId("classicProgress").textContent=Math.round(cw/250*100)+"%";
   byId("whoamiProgress").textContent=Math.round(wi/275*100)+"%";
   byId("charadesProgress").textContent=Math.round(ch/300*100)+"%";
-  byId("personalProgress").textContent=Math.round(pq/89*100)+"%";
+  byId("personalProgress").textContent=Math.round(pq/100*100)+"%";
   byId("circaProgressSub").textContent=cq+" / 520 Circa";
   byId("classicProgressSub").textContent=cw+" / 250 Classic";
   byId("whoamiProgressSub").textContent=wi+" / 275 Begriffe";
   byId("charadesProgressSub").textContent=ch+" / 300 Begriffe";
-  byId("personalProgressSub").textContent=pq+" / 89 Fragen";
+  byId("personalProgressSub").textContent=pq+" / 100 Fragen";
 
   var sessions=store.getSessions().filter(function(session){
     if(!session.endedAt)return false;
