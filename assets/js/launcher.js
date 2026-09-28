@@ -30,6 +30,17 @@ var GAME_META={
   personal:{title:"Persönlich",full:"Persönlicher Impostor",icon:"💬",path:"games/personal-impostor/",min:3}
 };
 function gameMeta(game){return GAME_META[game]||GAME_META.circa;}
+function categoryLock(game,category){return store.getCategoryLock?store.getCategoryLock(game,category):null;}
+function openCategoryProgress(game,category){
+  if(window.CIAppUI&&window.CIAppUI.openCategoryUnlock)return window.CIAppUI.openCategoryUnlock(game,category);
+  return false;
+}
+function firstLockedPresetCategory(preset){
+  var categories=Array.isArray(preset&&preset.categories)?preset.categories:[];
+  if(categories.indexOf("Alle")!==-1)return null;
+  for(var i=0;i<categories.length;i++)if(categoryLock(preset.game,categories[i]))return categories[i];
+  return null;
+}
 function formatUsage(ms){
   var minutes=Math.floor(Math.max(0,Number(ms)||0)/60000);
   if(minutes<1)return Number(ms)>0?"<1 Min.":"0 Min.";
@@ -270,12 +281,22 @@ function openProfileEditor(id,returnTarget){
 function renderPresets(){
   var box=byId("presetScroller");box.textContent="";
   store.getPresets().forEach(function(p){
-    var b=document.createElement("button");b.type="button";b.className="presetCard";
+    var lockedCategory=firstLockedPresetCategory(p);
+    var b=document.createElement("button");b.type="button";b.className="presetCard"+(lockedCategory?" locked":"");
     var icon=document.createElement("span");icon.className="presetEmoji";icon.textContent=p.icon||"⭐️";
     var name=document.createElement("strong");name.textContent=p.name;
-    var small=document.createElement("small");small.textContent=p.summary||"Schnellstart";
+    var small=document.createElement("small");
+    if(lockedCategory){
+      var lock=categoryLock(p.game,lockedCategory);
+      small.textContent="🔒 "+(lock&&lock.title?lock.title:"Bonus-Kategorie")+" · "+(lock&&lock.challenge?lock.challenge.progress:"");
+      b.setAttribute("aria-label",p.name+" gesperrt");
+    }else small.textContent=p.summary||"Schnellstart";
     b.appendChild(icon);b.appendChild(name);b.appendChild(small);
-    b.addEventListener("click",function(){uiSound("tap");openPreset(p);});box.appendChild(b);
+    b.addEventListener("click",function(){
+      uiSound("tap");
+      if(lockedCategory){openCategoryProgress(p.game,lockedCategory);return;}
+      openPreset(p);
+    });box.appendChild(b);
   });
 }
 function presetProfileNames(p){
@@ -309,12 +330,21 @@ function renderPresetCategories(){
   if(game==="personal"){presetSelectedCategories=[];byId("presetCategorySummary").textContent="Keine Kategorien in diesem Modus";return;}
   var choices=["Alle"].concat(available);
   if(!presetSelectedCategories.length)presetSelectedCategories=["Alle"];
-  presetSelectedCategories=presetSelectedCategories.filter(function(cat){return choices.indexOf(cat)!==-1;});
+  presetSelectedCategories=presetSelectedCategories.filter(function(cat){return choices.indexOf(cat)!==-1&&(cat==="Alle"||!categoryLock(game,cat));});
   if(!presetSelectedCategories.length)presetSelectedCategories=["Alle"];
   choices.forEach(function(cat){
-    var button=document.createElement("button");button.type="button";button.className="presetChoice"+(presetSelectedCategories.indexOf(cat)!==-1?" selected":"");button.textContent=cat;button.dataset.category=cat;box.appendChild(button);
+    var lock=cat==="Alle"?null:categoryLock(game,cat);
+    var button=document.createElement("button");button.type="button";
+    button.className="presetChoice"+(presetSelectedCategories.indexOf(cat)!==-1?" selected":"")+(lock?" locked":"");
+    button.textContent=cat;button.dataset.category=cat;
+    if(lock){
+      button.dataset.locked="1";
+      button.title=lock.title+" · "+lock.challenge.progress;
+      button.setAttribute("aria-label",cat+" gesperrt · "+lock.challenge.progress);
+    }
+    box.appendChild(button);
   });
-  byId("presetCategorySummary").textContent=presetSelectedCategories[0]==="Alle"?"Alle Kategorien":presetSelectedCategories.length+" Kategorien ausgewählt";
+  byId("presetCategorySummary").textContent=presetSelectedCategories[0]==="Alle"?"Alle freigeschalteten Kategorien":presetSelectedCategories.length+" Kategorien ausgewählt";
 }
 function renderPresetEditorMode(){
   var game=byId("presetGameInput").value;
@@ -617,6 +647,42 @@ function renderStats(){
     card.appendChild(icon);card.appendChild(text);card.appendChild(state);box.appendChild(card);
   });
 }
+function renderCategoryProgress(){
+  if(!store.getCategoryProgress)return;
+  var progress=store.getCategoryProgress(),packs=progress.packs||[],tickets=progress.tickets||{};
+  var unlocked=packs.filter(function(pack){return pack.unlocked;}).length;
+  byId("categoryProgressHint").textContent=unlocked+" / "+packs.length+" frei";
+  byId("categoryTicketCount").textContent=String(tickets.available||0);
+  byId("categoryTicketNext").textContent=tickets.nextThreshold
+    ?("Nächste freie Freischaltung bei "+tickets.nextThreshold+" Gesamtrunden · noch "+tickets.roundsToNext+".")
+    :"Alle freien Freischaltungen wurden verdient.";
+
+  var box=byId("categoryProgressList");box.textContent="";
+  packs.forEach(function(pack){
+    var card=document.createElement(pack.unlocked?"div":"button");
+    if(!pack.unlocked)card.type="button";
+    card.className="categoryProgressCard"+(pack.unlocked?" unlocked":" locked");
+    var icon=document.createElement("span");icon.className="categoryProgressIcon";icon.textContent=pack.icon||"🔒";
+    var text=document.createElement("div");text.className="categoryProgressText";
+    var title=document.createElement("strong");title.textContent=pack.title;
+    var sub=document.createElement("span");
+    if(pack.unlocked)sub.textContent=pack.method==="ticket"?"Mit freier Wahl freigeschaltet":"Challenge geschafft";
+    else sub.textContent=pack.challenge.title+" · "+pack.challenge.progress;
+    text.append(title,sub);
+    var state=document.createElement("span");state.className="categoryProgressState";state.textContent=pack.unlocked?"✓":Math.round(pack.challenge.ratio*100)+"%";
+    card.append(icon,text,state);
+    if(!pack.unlocked){
+      var representative=null,game=null;
+      Object.keys(pack.categories||{}).some(function(key){
+        var list=pack.categories[key]||[];
+        if(list.length){game=key;representative=list[0];return true;}
+        return false;
+      });
+      if(game&&representative)card.addEventListener("click",function(){uiSound("tap");openCategoryProgress(game,representative);});
+    }
+    box.appendChild(card);
+  });
+}
 function renderSettings(){
   var p=store.getPreferences();
   byId("settingSound").checked=p.sound!==false;
@@ -625,8 +691,11 @@ function renderSettings(){
   document.documentElement.classList.toggle("reduceExperimentMotion",p.animations===false);
 }
 function renderAll(){
-  renderHeader();renderPlayers();renderPresets();renderSessions();renderStats();renderSettings();
+  renderHeader();renderPlayers();renderPresets();renderSessions();renderStats();renderCategoryProgress();renderSettings();
 }
+window.addEventListener("ci:category-unlocked",function(){
+  renderPresets();renderPresetCategories();renderCategoryProgress();
+});
 window.CILauncherRefresh=function(){
   renderAll();
   hydrateCircaMetadata();
@@ -699,7 +768,10 @@ byId("presetGameInput").addEventListener("change",function(){
 byId("presetPlayersButton").addEventListener("click",function(){uiSound("tap");openPresetPlayers();});
 byId("presetCategoryChoices").addEventListener("click",function(event){
   var button=event.target.closest("[data-category]");if(!button)return;
-  var cat=button.dataset.category;
+  var cat=button.dataset.category,game=byId("presetGameInput").value;
+  if(button.dataset.locked==="1"){
+    uiSound("tap");openCategoryProgress(game,cat);return;
+  }
   if(cat==="Alle")presetSelectedCategories=["Alle"];
   else{
     presetSelectedCategories=presetSelectedCategories.filter(function(x){return x!=="Alle";});
@@ -780,6 +852,8 @@ byId("savePreset").addEventListener("click",function(){
 });
 byId("presetOpenGame").addEventListener("click",function(){
   if(!selectedPreset||this.disabled)return;
+  var lockedCategory=firstLockedPresetCategory(selectedPreset);
+  if(lockedCategory){openCategoryProgress(selectedPreset.game,lockedCategory);return;}
   store.setLaunchPreset(selectedPreset);
   navigateWithSound(gameMeta(selectedPreset.game).path);
 });
