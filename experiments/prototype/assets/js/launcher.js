@@ -414,16 +414,16 @@ function renderMotivationHero(){
   if(active){
     var meta=gameMeta(sessionGame(active));
     byId("heroEyebrow").textContent="PARTY LÄUFT";
-    byId("homeTitle").textContent=meta.full+" läuft";
+    byId("homeTitle").textContent=meta.full+" ist live";
     byId("heroSubtitle").textContent=(active.profileIds||[]).length+" Spieler · "+active.rounds.length+" "+(active.rounds.length===1?"Runde":"Runden")+" · "+fmtDuration(active.startedAt,null);
     byId("heroPrimaryIcon").textContent=meta.icon;
     byId("heroPrimaryText").textContent="Session fortsetzen";
     heroPrimary.classList.remove("hidden");
     heroPrimary.onclick=function(){launchSessionGroup(active);};
   }else{
-    byId("heroEyebrow").textContent="IMPOSTER GAMES";
-    byId("homeTitle").textContent="Bereit für die nächste Runde?";
-    byId("heroSubtitle").textContent=last?"Letzter Spieleabend: "+last.rounds.length+" Runden · "+fmtDuration(last.startedAt,last.endedAt):"Wähle ein Spiel oder starte mit einem Preset.";
+    byId("heroEyebrow").textContent="PARTY MODE";
+    byId("homeTitle").textContent="Was geht heute?";
+    byId("heroSubtitle").textContent=last?"Zuletzt: "+last.rounds.length+" Runden · "+fmtDuration(last.startedAt,last.endedAt):"Fünf Spiele. Eine Crew. Such dir das Chaos aus.";
     if(last&&activeProfilesForLaunch(last).length>=gameMeta(sessionGame(last)).min){
       byId("heroPrimaryIcon").textContent="↻";
       byId("heroPrimaryText").textContent="Letzte Gruppe nochmal";
