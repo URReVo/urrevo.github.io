@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="circa_impostor_detective_icon_180.png">
 <link rel="icon" type="image/png" sizes="180x180" href="circa_impostor_detective_icon_180.png">
 <link rel="stylesheet" href="assets/css/launcher.css?v=74">
-<title>Imposter Games · V74R3</title>
+<title>Imposter Games · V74R4</title>
 </head>
 <body>
 <main class="appShell">
@@ -24,7 +24,10 @@
         </span>
         <span class="chevron">›</span>
       </button>
-      <button id="settingsShortcut" class="roundButton" type="button" aria-label="Einstellungen öffnen">⚙️</button>
+      <div class="homeHeaderActions">
+        <button id="launcherDevOpen" class="roundButton launcherDevOnly hidden launcherDevShortcut" type="button" aria-label="Launcher DEV Tools öffnen">DEV</button>
+        <button id="settingsShortcut" class="roundButton" type="button" aria-label="Einstellungen öffnen">⚙️</button>
+      </div>
     </header>
 
     <section class="heroPanel">
@@ -33,7 +36,7 @@
         <h1 id="homeTitle">Was spielen wir?</h1>
         <p>Direkt starten oder eine vorbereitete Runde wählen.</p>
       </div>
-      <div class="heroMark" aria-hidden="true">🎭</div>
+      <div id="launcherDevTrigger" class="heroMark" aria-hidden="true">🎭</div>
     </section>
 
     <section class="statusRow" aria-label="App-Status">
@@ -240,7 +243,7 @@
     </section>
 
     <div class="aboutCard">
-      <strong>Imposter Games · V74R3</strong>
+      <strong>Imposter Games · V74R4</strong>
       <span>Lokale Profile, Presets, Sessions und persönliche Statistik</span>
       <small>Deine Daten bleiben lokal auf diesem Gerät und können als Backup exportiert werden.</small>
     </div>
@@ -380,8 +383,110 @@
   <p class="prototypeNote">Deine bisherigen V72-Daten bleiben als Sicherheitskopie unverändert auf dem Gerät.</p>
 </section>
 
+
+<div id="launcherDevGateOverlay" class="launcherDevOverlay hidden" aria-hidden="true">
+  <section class="launcherDevGate" role="dialog" aria-modal="true" aria-labelledby="launcherDevGateTitle">
+    <div class="launcherDevHeader">
+      <div><div class="eyebrow">LAUNCHER DEV</div><h2 id="launcherDevGateTitle">Zugriff</h2></div>
+      <button id="launcherDevGateClose" type="button" class="launcherDevClose" aria-label="Schließen">×</button>
+    </div>
+    <p class="launcherDevHint">Geschützter Bereich.</p>
+    <input id="launcherDevPin" class="launcherDevPin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" aria-label="PIN">
+    <div id="launcherDevGateError" class="launcherDevStatus" aria-live="polite"></div>
+    <div class="launcherDevActions">
+      <button id="launcherDevGateCancel" type="button" class="launcherDevButton secondary">Abbrechen</button>
+      <button id="launcherDevGateSubmit" type="button" class="launcherDevButton primary">Entsperren</button>
+    </div>
+  </section>
+</div>
+
+<div id="launcherDevPanelOverlay" class="launcherDevOverlay hidden" aria-hidden="true">
+  <section class="launcherDevPanel" role="dialog" aria-modal="true" aria-labelledby="launcherDevPanelTitle">
+    <div class="launcherDevHeader launcherDevStickyHeader">
+      <div><div class="eyebrow">LAUNCHER</div><h2 id="launcherDevPanelTitle">DEV Tools</h2></div>
+      <div class="launcherDevHeaderActions">
+        <button id="launcherDevRefresh" type="button" class="launcherDevMini">↻</button>
+        <button id="launcherDevPanelClose" type="button" class="launcherDevClose" aria-label="Schließen">×</button>
+      </div>
+    </div>
+
+    <div id="launcherDevSummary" class="launcherDevSummary"></div>
+
+    <section class="launcherDevSection">
+      <div class="launcherDevSectionHead"><div><span>STATISTIK</span><strong>Werte bearbeiten</strong></div></div>
+      <label class="launcherDevField launcherDevScopeField">
+        <span>Bereich</span>
+        <select id="launcherDevScope"></select>
+      </label>
+      <p id="launcherDevScopeHint" class="launcherDevHint"></p>
+      <div id="launcherDevStatsGrid" class="launcherDevStatsGrid"></div>
+      <div class="launcherDevActions three">
+        <button id="launcherDevSaveStats" type="button" class="launcherDevButton primary">Werte speichern</button>
+        <button id="launcherDevFillProgress" type="button" class="launcherDevButton secondary">Content 100 %</button>
+        <button id="launcherDevClearProgress" type="button" class="launcherDevButton secondary">Content leeren</button>
+      </div>
+      <details class="launcherDevDetails">
+        <summary>Alle Statistik-Rohdaten bearbeiten</summary>
+        <textarea id="launcherDevStatsJson" rows="12" spellcheck="false" aria-label="Statistik JSON"></textarea>
+        <div class="launcherDevActions">
+          <button id="launcherDevSaveJson" type="button" class="launcherDevButton primary">JSON übernehmen</button>
+          <button id="launcherDevResetStats" type="button" class="launcherDevButton danger">Statistik auf 0</button>
+        </div>
+      </details>
+    </section>
+
+    <section class="launcherDevSection">
+      <div class="launcherDevSectionHead"><div><span>SPIELZEIT</span><strong>Minuten setzen</strong></div></div>
+      <div class="launcherDevStatsGrid">
+        <label class="launcherDevField"><span>App gesamt</span><input id="launcherDevUsageApp" type="number" min="0" step="0.1"></label>
+        <label class="launcherDevField"><span>Circa</span><input id="launcherDevUsageCirca" type="number" min="0" step="0.1"></label>
+        <label class="launcherDevField"><span>Classic</span><input id="launcherDevUsageClassic" type="number" min="0" step="0.1"></label>
+        <label class="launcherDevField"><span>Wer bin ich?</span><input id="launcherDevUsageWhoami" type="number" min="0" step="0.1"></label>
+        <label class="launcherDevField"><span>Scharade</span><input id="launcherDevUsageCharades" type="number" min="0" step="0.1"></label>
+        <label class="launcherDevField"><span>Persönlich</span><input id="launcherDevUsagePersonal" type="number" min="0" step="0.1"></label>
+      </div>
+      <button id="launcherDevSaveUsage" type="button" class="launcherDevButton primary full">Spielzeit speichern</button>
+    </section>
+
+    <section class="launcherDevSection">
+      <div class="launcherDevSectionHead">
+        <div><span>ACHIEVEMENTS</span><strong>Freigaben simulieren</strong></div>
+        <small id="launcherDevAchievementHint"></small>
+      </div>
+      <div class="launcherDevActions three">
+        <button id="launcherDevUnlockAll" type="button" class="launcherDevButton primary">Alle frei</button>
+        <button id="launcherDevLockAll" type="button" class="launcherDevButton secondary">Alle sperren</button>
+        <button id="launcherDevAutoAll" type="button" class="launcherDevButton secondary">Alle Auto</button>
+      </div>
+      <div id="launcherDevAchievements" class="launcherDevAchievements"></div>
+    </section>
+
+    <section class="launcherDevSection">
+      <div class="launcherDevSectionHead"><div><span>SESSIONS</span><strong>Verlauf verwalten</strong></div></div>
+      <p id="launcherDevActiveSession" class="launcherDevHint"></p>
+      <div class="launcherDevActions">
+        <button id="launcherDevEndSession" type="button" class="launcherDevButton secondary">Aktive Session beenden</button>
+        <button id="launcherDevClearSessions" type="button" class="launcherDevButton danger">Alle Sessions löschen</button>
+      </div>
+      <div id="launcherDevSessions" class="launcherDevSessions"></div>
+    </section>
+
+    <section class="launcherDevSection">
+      <div class="launcherDevSectionHead"><div><span>WERKZEUGE</span><strong>Diagnose</strong></div></div>
+      <div class="launcherDevActions">
+        <button id="launcherDevCopyState" type="button" class="launcherDevButton secondary">State kopieren</button>
+        <button id="launcherDevLock" type="button" class="launcherDevButton danger">DEV sperren</button>
+      </div>
+      <p class="launcherDevHint">Statistik- und Session-Manipulationen sind absichtlich dauerhaft. Achievement-Freigaben liegen separat im DEV-State und können mit „Auto“ entfernt werden.</p>
+    </section>
+
+    <div id="launcherDevStatus" class="launcherDevStatus launcherDevPanelStatus" aria-live="polite"></div>
+  </section>
+</div>
+
 <script src="assets/js/app-state.js?v=74"></script>
 <script src="assets/js/launcher.js?v=74"></script>
+<script src="assets/js/launcher-dev.js?v=74"></script>
 <script src="assets/js/pwa.js?v=74"></script>
 </body>
 </html>
