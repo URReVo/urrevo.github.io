@@ -590,6 +590,10 @@ function renderSettings(){
 function renderAll(){
   renderHeader();renderPlayers();renderPresets();renderSessions();renderStats();renderSettings();
 }
+window.CILauncherRefresh=function(){
+  renderAll();
+  hydrateCircaMetadata();
+};
 function hydrateCircaMetadata(){
   if(!store.applyCircaQuestionMetadata)return Promise.resolve(false);
   if(circaMetadataItems){
