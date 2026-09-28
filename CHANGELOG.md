@@ -42,6 +42,8 @@
 - Die Importprüfung validiert zusätzlich Kategorie-Freischaltungen: unbekannte Packs/Methoden werden abgelehnt, Ticket-Unlocks dürfen die anhand der Gesamtrunden verdienten Tickets nicht überschreiten, Popkultur muss die Spielvielfalt und Technik die erforderliche Unique-Content-Menge belegen. Beim sessionbasierten Spicy-Unlock wird die begrenzte 50-Session-Historie berücksichtigt: Ein sichtbarer 10-Runden-Abend gilt als Beleg; fehlt er, bleibt der Unlock nur plausibel, wenn die Lifetime-Runden zeigen, dass ältere Runden bereits aus der gespeicherten Historie gefallen sind.
 - Manipulierte Backups werden auch dann abgelehnt, wenn nach der Änderung eine neue korrekte SHA-256-Prüfsumme berechnet wurde. Bei Ablehnung bleiben App-State, Game-Storage und lokaler Integrity-Checkpoint unverändert.
 - Produktionsstand auf **V74R22** / Offline-Cache **r22** angehoben.
+- V74R23 behebt den verbliebenen iOS/PWA-Tastatur-Viewport-Fehler beim Persönlichen Impostor. Nach Texteingaben wird die aktive Spielhöhe nicht mehr allein aus `100dvh` abgeleitet, sondern mit `visualViewport.height` synchronisiert. Resize-/Scroll-/Focus-Hooks sowie gestaffelte Nachmessungen über die Tastatur-Schließanimation stellen sicher, dass Frage-, Handoff- und Folgescreens wieder bis zur unteren Safe-Area reichen.
+- Produktionsstand auf **V74R23** / Offline-Cache **r23** angehoben.
 
 
 ## V73
