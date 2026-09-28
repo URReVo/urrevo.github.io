@@ -1,7 +1,7 @@
 "use strict";
 
 const RELEASE="74";
-const CACHE_REVISION="r22-baseline";
+const CACHE_REVISION="r23-baseline";
 const BASE="/experiments/prototype";
 const CACHE_PREFIX="imposter-games-prototype-";
 const CACHE_NAME=CACHE_PREFIX+"v"+RELEASE+"-"+CACHE_REVISION;
