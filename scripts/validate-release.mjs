@@ -913,6 +913,18 @@ assert(crewState.getCrews().length===2,"different profile combination did not cr
 assert(crewState.getCrew(crewIds).stats.sessions===4,"different crew polluted original Party-Pass history");
 assert(crewState.getCrew(otherCrewIds).stats.sessions===1,"second crew history missing");
 
+const reorderedCrew=crewState.getCrew([crewP3,crewP1.id,crewP2]);
+assert(reorderedCrew&&reorderedCrew.key===crewState.getCrew(crewIds).key&&reorderedCrew.stats.sessions===4,"same crew in different profile order created a different Party-Pass");
+beginCrewSession([crewP3,crewP1.id,crewP2]);
+crewState.endSession();
+assert(crewState.getCrew(crewIds).stats.sessions===4&&crewState.getCrews().length===2,"empty crew session changed Party-Pass history");
+const archivedLevelBefore=crewState.getProfileLevel(crewP3);
+assert(crewState.deleteProfile(crewP3)===true,"crew member deletion failed");
+const archivedCrew=crewState.getCrew(crewIds),archivedLevelAfter=crewState.getProfileLevel(crewP3);
+assert(archivedCrew&&archivedCrew.members.some(member=>member.id===crewP3&&member.name==="Crew Three"),"deleted crew member lost archived Party-Pass identity");
+assert(archivedCrew.stats.sessions===4&&archivedCrew.selectedChallenge.id==="all-games","deleted crew member changed shared history or selected goal");
+assert(archivedLevelBefore&&archivedLevelAfter&&archivedLevelAfter.xp===archivedLevelBefore.xp&&archivedLevelAfter.level===archivedLevelBefore.level,"deleted profile lost personal level history");
+
 const crewReload=auditStore(crewMem);
 assert(crewReload.getCrew(crewIds).selectedChallenge.id==="all-games","crew goal choice did not survive reload");
 assert(crewReload.getCrew(crewIds).stats.rounds===7,"crew history did not backfill from stored sessions after reload");
