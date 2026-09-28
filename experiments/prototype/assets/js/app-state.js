@@ -540,7 +540,7 @@ function achievementDefs(){
     {id:"charades-100",icon:"🗣️",title:"100 Begriffe später",text:"100 Scharade-Begriffe richtig erraten",done:function(){return data.stats.charadesCorrect>=100;},progress:function(){return Math.min(100,data.stats.charadesCorrect)+"/100";}},
     {id:"charades-10",icon:"⚡️",title:"Zehnerlauf",text:"10 richtige Begriffe in einer Scharade-Runde",done:function(){return data.stats.charadesBestTurn>=10;},progress:function(){return Math.min(10,data.stats.charadesBestTurn)+"/10";}},
     {id:"charades-clean",icon:"✨",title:"Saubere Runde",text:"Mindestens 5 richtige Begriffe ohne Überspringen",done:function(){return data.stats.charadesCleanTurns>=1;},progress:function(){return data.stats.charadesCleanTurns>=1?"1/1":"0/1";}},
-    {id:"charades-clean-5",icon:"💎",title:"Makellos",text:"5 Scharade-Runden mit mindestens 5 richtigen und keinem Skip",done:function(){return data.stats.charadesCleanTurns>=5;},progress:function(){return Math.min(5,data.stats.charadesCleanTurns)+"/5";}},
+    {id:"charades-clean-5",icon:"💎",title:"Makellos",text:"5 Scharade-Spieler-Runden mit mindestens 5 richtigen und keinem Skip",done:function(){return data.stats.charadesCleanTurns>=5;},progress:function(){return Math.min(5,data.stats.charadesCleanTurns)+"/5";}},
 
     {id:"collector-100",icon:"🗃️",title:"Sammler",text:"100 unterschiedliche Fragen, Wörter oder Begriffe erleben",done:function(){return uniqueContentCount(data.stats)>=100;},progress:function(){return Math.min(100,uniqueContentCount(data.stats))+"/100";}},
     {id:"marathon",icon:"🕐",title:"Marathon",text:"Eine Session mindestens 60 Minuten spielen",done:hourSessionDone,progress:function(){return hourSessionDone()?"1/1":"0/1";}},
