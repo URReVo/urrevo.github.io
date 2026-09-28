@@ -2,8 +2,6 @@
 
 Der Prototyp ist wieder ein **sauberer Spiegel des aktuellen Produktivstands V74R22**.
 
-Basis-main beim Reset: `27d604d692f61b1a855fcc00b90c9753004f0fb3`
-
 URL: `/experiments/prototype/`
 
 ## Zweck
