@@ -12,102 +12,113 @@
 <link rel="stylesheet" href="assets/css/launcher.css?v=74">
 <link rel="stylesheet" href="assets/css/app-ui.css?v=74">
 <link rel="stylesheet" href="assets/css/party-makeover.css?v=74p2">
-<title>Imposter Games Party Lab · V74R22</title>
+<link rel="stylesheet" href="assets/css/party-launcher-p3.css?v=74p3">
+<title>Imposter Games Party Lab · P3</title>
 </head>
-<body class="party-makeover party-launcher">
+<body class="party-makeover party-launcher party-launcher-p3">
 <main class="appShell">
   <section id="view-home" class="view active" aria-labelledby="homeTitle">
-    <header class="homeHeader">
-      <button id="profileButton" class="profileButton" type="button" aria-label="Spieler öffnen">
-        <span id="headerAvatar" class="profileAvatar">😎</span>
-        <span class="profileText">
-          <span id="greeting" class="profileGreeting">Willkommen</span>
+    <header class="partyCommandBar">
+      <button id="profileButton" class="partyIdentity" type="button" aria-label="Crew öffnen">
+        <span id="headerAvatar" class="partyIdentityAvatar">😎</span>
+        <span class="partyIdentityCopy">
+          <small id="greeting">Willkommen</small>
           <strong id="headerName">Spieler</strong>
-          <span id="headerLevel" class="profileLevelMini">LVL 1 · Neuling</span>
+          <span id="headerLevel">LVL 1 · Neuling</span>
         </span>
-        <span class="chevron">›</span>
+        <span class="partyIdentityArrow" aria-hidden="true">↗</span>
       </button>
-      <div class="homeHeaderActions">
-        <button id="launcherDevOpen" class="roundButton launcherDevOnly hidden launcherDevShortcut" type="button" aria-label="Launcher DEV Tools öffnen">DEV</button>
-        <button id="settingsShortcut" class="roundButton" type="button" aria-label="Einstellungen öffnen">⚙️</button>
+
+      <button id="launcherDevTrigger" class="partySigil" type="button" aria-label="Imposter Games">
+        <span class="partySigilMask">◉</span>
+        <span class="partySigilText">IG</span>
+      </button>
+
+      <div class="partyCommandActions">
+        <button id="launcherDevOpen" class="partyCommandButton launcherDevOnly hidden launcherDevShortcut" type="button" aria-label="Launcher DEV Tools öffnen">DEV</button>
+        <button id="settingsShortcut" class="partyCommandButton" type="button" aria-label="Einstellungen öffnen">⚙</button>
       </div>
     </header>
 
-    <section class="sectionBlock partyGameHub">
-          <div class="sectionHeading">
-            <div><div class="eyebrow">SPIELE</div><h2>Was spielen wir?</h2></div>
-            <button id="surpriseGame" class="textButton surpriseGameButton" type="button">🎲 Entscheiden</button>
-          </div>
-          <div class="gameGrid">
-            <a class="gameCard circa" data-game-card="circa" href="games/circa-imposter/">
-              <div class="gameCardAura" aria-hidden="true"></div>
-              <div class="gameTop"><span class="gameIcon">🎯</span><span class="gameBadge">SCHÄTZEN</span></div>
-              <div class="gameTitle">Circa<br>Imposter</div>
-              <div class="gameSub">3–12 Spieler</div>
-              <div class="gameCardProgress" aria-hidden="true"><i id="gameProgress-circa"></i></div>
-              <div id="gameMeta-circa" class="gameProgressMeta">Noch keine Runde gespielt</div>
-              <div class="gameAction"><strong id="gameAction-circa">Spielen</strong><span>›</span></div>
-            </a>
-            <a class="gameCard classic" data-game-card="classic" href="games/classic-imposter/">
-              <div class="gameCardAura" aria-hidden="true"></div>
-              <div class="gameTop"><span class="gameIcon">🎭</span><span class="gameBadge">KLASSISCH</span></div>
-              <div class="gameTitle">Klassisches<br>Imposter</div>
-              <div class="gameSub">3–12 Spieler</div>
-              <div class="gameCardProgress" aria-hidden="true"><i id="gameProgress-classic"></i></div>
-              <div id="gameMeta-classic" class="gameProgressMeta">Noch keine Runde gespielt</div>
-              <div class="gameAction"><strong id="gameAction-classic">Spielen</strong><span>›</span></div>
-            </a>
-            <a class="gameCard whoami" data-game-card="whoami" href="games/who-am-i/">
-              <div class="gameCardAura" aria-hidden="true"></div>
-              <div class="gameTop"><span class="gameIcon">❓</span><span class="gameBadge">RATEN</span></div>
-              <div class="gameTitle">Wer bin ich?</div>
-              <div class="gameSub">2–12 Spieler · Gemeinsam raten</div>
-              <div class="gameCardProgress" aria-hidden="true"><i id="gameProgress-whoami"></i></div>
-              <div id="gameMeta-whoami" class="gameProgressMeta">Noch keine Runde gespielt</div>
-              <div class="gameAction"><strong id="gameAction-whoami">Spielen</strong><span>›</span></div>
-            </a>
-            <a class="gameCard charades" data-game-card="charades" href="games/charades/">
-              <div class="gameCardAura" aria-hidden="true"></div>
-              <div class="gameTop"><span class="gameIcon">🎬</span><span class="gameBadge">STIRN</span></div>
-              <div class="gameTitle">Scharade</div>
-              <div class="gameSub">2–12 Spieler · Erklären &amp; raten</div>
-              <div class="gameCardProgress" aria-hidden="true"><i id="gameProgress-charades"></i></div>
-              <div id="gameMeta-charades" class="gameProgressMeta">Noch keine Runde gespielt</div>
-              <div class="gameAction"><strong id="gameAction-charades">Spielen</strong><span>›</span></div>
-            </a>
-            <a class="gameCard personal" data-game-card="personal" href="games/personal-impostor/">
-              <div class="gameCardAura" aria-hidden="true"></div>
-              <div class="gameTop"><span class="gameIcon">💬</span><span class="gameBadge">PERSÖNLICH</span></div>
-              <div class="gameTitle">Persönlicher Impostor</div>
-              <div class="gameSub">3–12 Spieler · Antworten &amp; bluffen</div>
-              <div class="gameCardProgress" aria-hidden="true"><i id="gameProgress-personal"></i></div>
-              <div id="gameMeta-personal" class="gameProgressMeta">Noch keine Runde gespielt</div>
-              <div class="gameAction"><strong id="gameAction-personal">Spielen</strong><span>›</span></div>
-            </a>
-          </div>
-        </section>
-
-    <section id="homeHero" class="heroPanel">
-      <div class="heroCopy">
-        <div id="heroEyebrow" class="eyebrow">IMPOSTER GAMES</div>
-        <h1 id="homeTitle">Bereit für die nächste Runde?</h1>
-        <p id="heroSubtitle">Wähle ein Spiel oder starte dort weiter, wo ihr aufgehört habt.</p>
-        <button id="heroPrimary" class="heroPrimary hidden" type="button"><span id="heroPrimaryIcon">▶</span><strong id="heroPrimaryText">Weiterspielen</strong><span>›</span></button>
-        <button id="heroGoal" class="heroGoal" type="button">
-          <span id="heroGoalIcon" class="heroGoalIcon">⭐</span>
-          <span class="heroGoalCopy"><small id="heroGoalLabel">NÄCHSTES ZIEL</small><strong id="heroGoalTitle">Dein nächstes Level</strong><span id="heroGoalMeta">Noch 20 XP</span></span>
-          <span class="heroGoalProgress" aria-hidden="true"><i id="heroGoalFill"></i></span>
+    <section class="partyTonight" aria-labelledby="homeTitle">
+      <div class="partyTonightTop">
+        <div>
+          <div id="heroEyebrow" class="partyKicker">IMPOSTER GAMES</div>
+          <h1 id="homeTitle">Bereit für die nächste Runde?</h1>
+        </div>
+        <button id="surpriseGame" class="partyChaosButton" type="button">
+          <span aria-hidden="true">✦</span><strong>Zufall</strong>
         </button>
       </div>
-      <div id="launcherDevTrigger" class="heroMark" aria-hidden="true">🎭</div>
+      <p id="heroSubtitle">Wähle ein Spiel oder starte mit einem Preset.</p>
+      <div class="partyStatusLine" aria-label="App-Status">
+        <span id="offlineStatus" class="partyStatusChip">Offline wird vorbereitet …</span>
+        <span id="sessionStatusPill" class="partyStatusChip">Keine Session aktiv</span>
+      </div>
     </section>
 
-    <section class="statusRow" aria-label="App-Status">
-      <div id="offlineStatus" class="statusPill mutedPill">Offline wird vorbereitet …</div>
-      <div id="sessionStatusPill" class="statusPill mutedPill">Keine Session aktiv</div>
+    <section class="partyArena" aria-label="Spiele">
+      <a class="gameCard partyGameTile partyGameTile--circa" data-game-card="circa" href="games/circa-imposter/">
+        <span class="partyTileWash" aria-hidden="true"></span>
+        <span class="partyTileHeader"><span class="partyTileCode">01 · SCHÄTZEN</span><span class="partyTileIcon">🎯</span></span>
+        <span class="partyTileBody"><strong class="gameTitle">Circa<br>Imposter</strong><span class="gameSub">3–12 Spieler</span></span>
+        <span class="partyTileFoot"><strong id="gameAction-circa">Spielen</strong><span class="partyTileArrow">↗</span></span>
+        <span class="gameCardProgress" aria-hidden="true"><i id="gameProgress-circa"></i></span>
+        <span id="gameMeta-circa" class="gameProgressMeta">Noch keine Runde gespielt</span>
+      </a>
+
+      <a class="gameCard partyGameTile partyGameTile--classic" data-game-card="classic" href="games/classic-imposter/">
+        <span class="partyTileWash" aria-hidden="true"></span>
+        <span class="partyTileHeader"><span class="partyTileCode">02 · VERDACHT</span><span class="partyTileIcon">🎭</span></span>
+        <span class="partyTileBody"><strong class="gameTitle">Classic</strong><span class="gameSub">Wort · Bluff · Diskussion</span></span>
+        <span class="partyTileFoot"><strong id="gameAction-classic">Spielen</strong><span class="partyTileArrow">↗</span></span>
+        <span class="gameCardProgress" aria-hidden="true"><i id="gameProgress-classic"></i></span>
+        <span id="gameMeta-classic" class="gameProgressMeta">Noch keine Runde gespielt</span>
+      </a>
+
+      <a class="gameCard partyGameTile partyGameTile--whoami" data-game-card="whoami" href="games/who-am-i/">
+        <span class="partyTileWash" aria-hidden="true"></span>
+        <span class="partyTileHeader"><span class="partyTileCode">03 · RATEN</span><span class="partyTileIcon">?</span></span>
+        <span class="partyTileBody"><strong class="gameTitle">Wer<br>bin ich?</strong><span class="gameSub">2–12 Spieler</span></span>
+        <span class="partyTileFoot"><strong id="gameAction-whoami">Spielen</strong><span class="partyTileArrow">↗</span></span>
+        <span class="gameCardProgress" aria-hidden="true"><i id="gameProgress-whoami"></i></span>
+        <span id="gameMeta-whoami" class="gameProgressMeta">Noch keine Runde gespielt</span>
+      </a>
+
+      <a class="gameCard partyGameTile partyGameTile--charades" data-game-card="charades" href="games/charades/">
+        <span class="partyTileWash" aria-hidden="true"></span>
+        <span class="partyTileHeader"><span class="partyTileCode">04 · ACTION</span><span class="partyTileIcon">↕</span></span>
+        <span class="partyTileBody"><strong class="gameTitle">Scharade</strong><span class="gameSub">Stirn hoch. Los.</span></span>
+        <span class="partyTileFoot"><strong id="gameAction-charades">Spielen</strong><span class="partyTileArrow">↗</span></span>
+        <span class="gameCardProgress" aria-hidden="true"><i id="gameProgress-charades"></i></span>
+        <span id="gameMeta-charades" class="gameProgressMeta">Noch keine Runde gespielt</span>
+      </a>
+
+      <a class="gameCard partyGameTile partyGameTile--personal" data-game-card="personal" href="games/personal-impostor/">
+        <span class="partyTileWash" aria-hidden="true"></span>
+        <span class="partyTileHeader"><span class="partyTileCode">05 · SOCIAL</span><span class="partyTileIcon">💬</span></span>
+        <span class="partyTileBody"><strong class="gameTitle">Persönlicher<br>Impostor</strong><span class="gameSub">Antworten · Bluffen · Kennen</span></span>
+        <span class="partyTileFoot"><strong id="gameAction-personal">Spielen</strong><span class="partyTileArrow">↗</span></span>
+        <span class="gameCardProgress" aria-hidden="true"><i id="gameProgress-personal"></i></span>
+        <span id="gameMeta-personal" class="gameProgressMeta">Noch keine Runde gespielt</span>
+      </a>
     </section>
 
-    
+    <section id="homeHero" class="partyLiveDeck">
+      <div class="partyLiveDeckHead">
+        <span class="partyLivePulse" aria-hidden="true"></span>
+        <div><small>DEIN ABEND</small><strong>Live &amp; Fortschritt</strong></div>
+      </div>
+      <button id="heroPrimary" class="partyResume hidden" type="button">
+        <span id="heroPrimaryIcon">▶</span><strong id="heroPrimaryText">Weiterspielen</strong><span>↗</span>
+      </button>
+      <button id="heroGoal" class="partyGoal" type="button">
+        <span id="heroGoalIcon" class="partyGoalIcon">⭐</span>
+        <span class="partyGoalCopy"><small id="heroGoalLabel">NÄCHSTES ZIEL</small><strong id="heroGoalTitle">Dein nächstes Level</strong><span id="heroGoalMeta">Noch 20 XP</span></span>
+        <span class="partyGoalMeter" aria-hidden="true"><i id="heroGoalFill"></i></span>
+        <span class="partyGoalArrow" aria-hidden="true">↗</span>
+      </button>
+    </section>
 
     <section class="sectionBlock">
       <div class="sectionHeading">
@@ -342,15 +353,15 @@
 
 <nav class="tabBar" aria-label="App-Bereiche">
   <button class="tab active" type="button" data-view="home">
-    <span class="tabIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 10.8 12 3l9 7.8v9.7a.5.5 0 0 1-.5.5H15v-6H9v6H3.5a.5.5 0 0 1-.5-.5z"/></svg></span><small>Home</small>
+    <span class="tabIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 10.8 12 3l9 7.8v9.7a.5.5 0 0 1-.5.5H15v-6H9v6H3.5a.5.5 0 0 1-.5-.5z"/></svg></span><small>Party</small>
   </button>
   <button class="tab" type="button" data-view="profile">
-    <span class="tabIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8.2 11.1a3.6 3.6 0 1 0 0-7.2 3.6 3.6 0 0 0 0 7.2Zm7.8-.8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM2.8 20.2v-1.4c0-3 2.4-5.4 5.4-5.4s5.4 2.4 5.4 5.4v1.4m.6-7.1c.6-.3 1.2-.4 1.8-.4 2.9 0 5.2 2.3 5.2 5.2v2.3"/></svg></span><small>Spieler</small>
+    <span class="tabIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8.2 11.1a3.6 3.6 0 1 0 0-7.2 3.6 3.6 0 0 0 0 7.2Zm7.8-.8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM2.8 20.2v-1.4c0-3 2.4-5.4 5.4-5.4s5.4 2.4 5.4 5.4v1.4m.6-7.1c.6-.3 1.2-.4 1.8-.4 2.9 0 5.2 2.3 5.2 5.2v2.3"/></svg></span><small>Crew</small>
   </button>
   <button class="tab" type="button" data-view="stats">
-    <span class="tabIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20V11m6 9V4m6 16v-6m4 6H2"/></svg></span><small>Statistik</small>
+    <span class="tabIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20V11m6 9V4m6 16v-6m4 6H2"/></svg></span><small>Stats</small>
   </button>
-  <button class="tab" type="button" data-view="settings"><span class="tabEmoji" aria-hidden="true">⚙</span><small>Einstellungen</small></button>
+  <button class="tab" type="button" data-view="settings"><span class="tabEmoji" aria-hidden="true">⚙</span><small>Setup</small></button>
 </nav>
 
 <div id="sheetBackdrop" class="sheetBackdrop hidden" aria-hidden="true"></div>
@@ -626,5 +637,6 @@
 <script src="assets/js/launcher.js?v=74"></script>
 <script src="assets/js/launcher-dev.js?v=74"></script>
 <script src="assets/js/party-makeover.js?v=74p2"></script>
+<script src="assets/js/party-launcher-p3.js?v=74p3"></script>
 </body>
 </html>
