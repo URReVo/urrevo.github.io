@@ -215,7 +215,7 @@ assert(prototypePersonalSource.includes('PREFIX="imposterGames.prototype.game.pe
 assert(!prototypePersonalSource.includes('PREFIX="imposterGames.v74.game.personal."'),"prototype Personal must not use production storage");
 assert(!html["index.html"].includes("APP-SHELL TEST"),"production launcher still contains experiment badge");
 assert(launcherCss.includes("padding:calc(18px + var(--safeTop)) 16px 26px"),"launcher safe-area top padding missing");
-assert(sw.includes('const CACHE_REVISION="r2"'),"V74 cache revision mismatch");
+assert(sw.includes('const CACHE_REVISION="r3"'),"V74 cache revision mismatch");
 assert(appStateSource.includes("var BACKUP_VERSION=3"),"backup format v3 missing");
 assert(engineSource.includes("experimentRecordCirca(null);"),"Circa shared base-round recording missing");
 assert(engineSource.includes("impostorEscaped:outcome===true?true:outcome===false?false:null"),"Circa unresolved outcome state missing");
@@ -229,12 +229,15 @@ assert(html["games/personal-impostor/index.html"].includes("100 Fragepaare"),"Pe
 assert(!html["games/personal-impostor/index.html"].includes("89 Fragepaare"),"Personal stale question count remains");
 assert(html["index.html"].includes("IMPOSTOR · GESAMT"),"launcher Impostor aggregate label mismatch");
 assert(html["index.html"].includes("DAVON · PERSÖNLICH"),"launcher Personal Impostor label mismatch");
-assert(html["index.html"].includes("Profile, Presets, Sessions, Statistik, Spielzeit"),"launcher backup/reset copy missing V74R2 data scope");
+assert(html["index.html"].includes("Profile, Presets, Sessions, Statistik, Spielzeit"),"launcher backup/reset copy missing V74R3 data scope");
 assert(launcherSource.includes("function launcherSoundEnabled()"),"launcher sound preference guard missing");
 assert(launcherSource.includes("function uiSound(kind)"),"launcher UI sound generator missing");
 assert(launcherSource.includes("function navigateWithSound(href)"),"launcher start-sound navigation missing");
 assert(launcherSource.includes("store.getPreferences().sound!==false"),"launcher sound is not tied to global preference");
 assert(launcherSource.includes("function renderUsageStats()"),"launcher playtime statistics missing");
+assert(launcherSource.includes("function achievementRequiredAmount(id)"),"achievement requirement sorter missing");
+assert(launcherSource.includes("function sortAchievementsByRequirement(items)"),"achievement sorting helper missing");
+assert(launcherSource.includes("achievementData=sortAchievementsByRequirement(achievementData);"),"achievement list is not sorted by requirement");
 assert(appStateSource.includes("function trackUsage(game)"),"foreground playtime tracking missing");
 assert(appStateSource.includes("function getUsageStats()"),"playtime stats API missing");
 assert(appStateSource.includes("function profileMatchesName(profile,lower)"),"profile alias matching helper missing");
