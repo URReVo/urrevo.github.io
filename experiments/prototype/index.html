@@ -33,6 +33,60 @@
       </div>
     </header>
 
+    <section class="sectionBlock partyGameHub">
+          <div class="sectionHeading">
+            <div><div class="eyebrow">SPIELE</div><h2>Was spielen wir?</h2></div>
+            <button id="surpriseGame" class="textButton surpriseGameButton" type="button">🎲 Entscheiden</button>
+          </div>
+          <div class="gameGrid">
+            <a class="gameCard circa" data-game-card="circa" href="games/circa-imposter/">
+              <div class="gameCardAura" aria-hidden="true"></div>
+              <div class="gameTop"><span class="gameIcon">🎯</span><span class="gameBadge">SCHÄTZEN</span></div>
+              <div class="gameTitle">Circa<br>Imposter</div>
+              <div class="gameSub">3–12 Spieler</div>
+              <div class="gameCardProgress" aria-hidden="true"><i id="gameProgress-circa"></i></div>
+              <div id="gameMeta-circa" class="gameProgressMeta">Noch keine Runde gespielt</div>
+              <div class="gameAction"><strong id="gameAction-circa">Spielen</strong><span>›</span></div>
+            </a>
+            <a class="gameCard classic" data-game-card="classic" href="games/classic-imposter/">
+              <div class="gameCardAura" aria-hidden="true"></div>
+              <div class="gameTop"><span class="gameIcon">🎭</span><span class="gameBadge">KLASSISCH</span></div>
+              <div class="gameTitle">Klassisches<br>Imposter</div>
+              <div class="gameSub">3–12 Spieler</div>
+              <div class="gameCardProgress" aria-hidden="true"><i id="gameProgress-classic"></i></div>
+              <div id="gameMeta-classic" class="gameProgressMeta">Noch keine Runde gespielt</div>
+              <div class="gameAction"><strong id="gameAction-classic">Spielen</strong><span>›</span></div>
+            </a>
+            <a class="gameCard whoami" data-game-card="whoami" href="games/who-am-i/">
+              <div class="gameCardAura" aria-hidden="true"></div>
+              <div class="gameTop"><span class="gameIcon">❓</span><span class="gameBadge">RATEN</span></div>
+              <div class="gameTitle">Wer bin ich?</div>
+              <div class="gameSub">2–12 Spieler · Gemeinsam raten</div>
+              <div class="gameCardProgress" aria-hidden="true"><i id="gameProgress-whoami"></i></div>
+              <div id="gameMeta-whoami" class="gameProgressMeta">Noch keine Runde gespielt</div>
+              <div class="gameAction"><strong id="gameAction-whoami">Spielen</strong><span>›</span></div>
+            </a>
+            <a class="gameCard charades" data-game-card="charades" href="games/charades/">
+              <div class="gameCardAura" aria-hidden="true"></div>
+              <div class="gameTop"><span class="gameIcon">🎬</span><span class="gameBadge">STIRN</span></div>
+              <div class="gameTitle">Scharade</div>
+              <div class="gameSub">2–12 Spieler · Erklären &amp; raten</div>
+              <div class="gameCardProgress" aria-hidden="true"><i id="gameProgress-charades"></i></div>
+              <div id="gameMeta-charades" class="gameProgressMeta">Noch keine Runde gespielt</div>
+              <div class="gameAction"><strong id="gameAction-charades">Spielen</strong><span>›</span></div>
+            </a>
+            <a class="gameCard personal" data-game-card="personal" href="games/personal-impostor/">
+              <div class="gameCardAura" aria-hidden="true"></div>
+              <div class="gameTop"><span class="gameIcon">💬</span><span class="gameBadge">PERSÖNLICH</span></div>
+              <div class="gameTitle">Persönlicher Impostor</div>
+              <div class="gameSub">3–12 Spieler · Antworten &amp; bluffen</div>
+              <div class="gameCardProgress" aria-hidden="true"><i id="gameProgress-personal"></i></div>
+              <div id="gameMeta-personal" class="gameProgressMeta">Noch keine Runde gespielt</div>
+              <div class="gameAction"><strong id="gameAction-personal">Spielen</strong><span>›</span></div>
+            </a>
+          </div>
+        </section>
+
     <section id="homeHero" class="heroPanel">
       <div class="heroCopy">
         <div id="heroEyebrow" class="eyebrow">IMPOSTER GAMES</div>
@@ -53,59 +107,7 @@
       <div id="sessionStatusPill" class="statusPill mutedPill">Keine Session aktiv</div>
     </section>
 
-    <section class="sectionBlock">
-      <div class="sectionHeading">
-        <div><div class="eyebrow">SPIELE</div><h2>Deine Spiele</h2></div>
-        <button id="surpriseGame" class="textButton surpriseGameButton" type="button">🎲 Entscheiden</button>
-      </div>
-      <div class="gameGrid">
-        <a class="gameCard circa" data-game-card="circa" href="games/circa-imposter/">
-          <div class="gameCardAura" aria-hidden="true"></div>
-          <div class="gameTop"><span class="gameIcon">🎯</span><span class="gameBadge">SCHÄTZEN</span></div>
-          <div class="gameTitle">Circa<br>Imposter</div>
-          <div class="gameSub">3–12 Spieler</div>
-          <div class="gameCardProgress" aria-hidden="true"><i id="gameProgress-circa"></i></div>
-          <div id="gameMeta-circa" class="gameProgressMeta">Noch keine Runde gespielt</div>
-          <div class="gameAction"><strong id="gameAction-circa">Spielen</strong><span>›</span></div>
-        </a>
-        <a class="gameCard classic" data-game-card="classic" href="games/classic-imposter/">
-          <div class="gameCardAura" aria-hidden="true"></div>
-          <div class="gameTop"><span class="gameIcon">🎭</span><span class="gameBadge">KLASSISCH</span></div>
-          <div class="gameTitle">Klassisches<br>Imposter</div>
-          <div class="gameSub">3–12 Spieler</div>
-          <div class="gameCardProgress" aria-hidden="true"><i id="gameProgress-classic"></i></div>
-          <div id="gameMeta-classic" class="gameProgressMeta">Noch keine Runde gespielt</div>
-          <div class="gameAction"><strong id="gameAction-classic">Spielen</strong><span>›</span></div>
-        </a>
-        <a class="gameCard whoami" data-game-card="whoami" href="games/who-am-i/">
-          <div class="gameCardAura" aria-hidden="true"></div>
-          <div class="gameTop"><span class="gameIcon">❓</span><span class="gameBadge">RATEN</span></div>
-          <div class="gameTitle">Wer bin ich?</div>
-          <div class="gameSub">2–12 Spieler · Gemeinsam raten</div>
-          <div class="gameCardProgress" aria-hidden="true"><i id="gameProgress-whoami"></i></div>
-          <div id="gameMeta-whoami" class="gameProgressMeta">Noch keine Runde gespielt</div>
-          <div class="gameAction"><strong id="gameAction-whoami">Spielen</strong><span>›</span></div>
-        </a>
-        <a class="gameCard charades" data-game-card="charades" href="games/charades/">
-          <div class="gameCardAura" aria-hidden="true"></div>
-          <div class="gameTop"><span class="gameIcon">🎬</span><span class="gameBadge">STIRN</span></div>
-          <div class="gameTitle">Scharade</div>
-          <div class="gameSub">2–12 Spieler · Erklären &amp; raten</div>
-          <div class="gameCardProgress" aria-hidden="true"><i id="gameProgress-charades"></i></div>
-          <div id="gameMeta-charades" class="gameProgressMeta">Noch keine Runde gespielt</div>
-          <div class="gameAction"><strong id="gameAction-charades">Spielen</strong><span>›</span></div>
-        </a>
-        <a class="gameCard personal" data-game-card="personal" href="games/personal-impostor/">
-          <div class="gameCardAura" aria-hidden="true"></div>
-          <div class="gameTop"><span class="gameIcon">💬</span><span class="gameBadge">PERSÖNLICH</span></div>
-          <div class="gameTitle">Persönlicher Impostor</div>
-          <div class="gameSub">3–12 Spieler · Antworten &amp; bluffen</div>
-          <div class="gameCardProgress" aria-hidden="true"><i id="gameProgress-personal"></i></div>
-          <div id="gameMeta-personal" class="gameProgressMeta">Noch keine Runde gespielt</div>
-          <div class="gameAction"><strong id="gameAction-personal">Spielen</strong><span>›</span></div>
-        </a>
-      </div>
-    </section>
+    
 
     <section class="sectionBlock">
       <div class="sectionHeading">
