@@ -75,3 +75,14 @@
   .personalSharedQuestionCard{padding:20px 15px}.personalSharedQuestionCard strong{font-size:27px}
   .personalAnswerRow{grid-template-columns:40px 1fr}.personalAnswerAvatar{width:40px;height:40px}
 }
+
+
+/* V74R23 iOS keyboard viewport recovery
+   Safari can leave 100dvh temporarily stuck at the keyboard-reduced height.
+   Personal Impostor tracks visualViewport explicitly so bottom actions return
+   to the real screen edge after the answer keyboard closes. */
+body[data-game="personal-impostor"].game-active .app{
+  height:var(--personal-viewport-height,100dvh)!important;
+  max-height:var(--personal-viewport-height,100dvh)!important;
+  min-height:0!important;
+}
