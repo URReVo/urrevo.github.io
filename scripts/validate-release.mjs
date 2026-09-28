@@ -204,7 +204,7 @@ const readme=read("README.md");
 assert(!readme.includes("\\n"),"README contains literal \\n text");
 assert(["Circa Imposter","Klassisches Imposter","Wer bin ich?","Scharade","Persönlicher Impostor"].every(name=>readme.includes(name)),"README must describe the five-game app");
 const changelog=read("CHANGELOG.md");
-assert(changelog.includes("V74R6")&&changelog.includes("Offline-Cache **r6**"),"V74R6 changelog entry missing");
+assert(changelog.includes("V74R7")&&changelog.includes("Offline-Cache **r7**"),"V74R7 changelog entry missing");
 
 const appStateSource=read("assets/js/app-state.js");
 const launcherSource=read("assets/js/launcher.js");
@@ -261,7 +261,7 @@ assert(prototypePersonalSource.includes('PREFIX="imposterGames.prototype.game.pe
 assert(!prototypePersonalSource.includes('PREFIX="imposterGames.v74.game.personal."'),"prototype Personal must not use production storage");
 assert(!html["index.html"].includes("APP-SHELL TEST"),"production launcher still contains experiment badge");
 assert(launcherCss.includes("padding:calc(18px + var(--safeTop)) 16px 26px"),"launcher safe-area top padding missing");
-assert(sw.includes('const CACHE_REVISION="r6"'),"V74 cache revision mismatch");
+assert(sw.includes('const CACHE_REVISION="r7"'),"V74 cache revision mismatch");
 assert(sw.includes('versioned("/assets/js/launcher-dev.js")'),"service worker launcher DEV cache missing");
 assert(appStateSource.includes("var BACKUP_VERSION=3"),"backup format v3 missing");
 assert(engineSource.includes("experimentRecordCirca(null);"),"Circa shared base-round recording missing");
@@ -276,7 +276,7 @@ assert(html["games/personal-impostor/index.html"].includes("100 Fragepaare"),"Pe
 assert(!html["games/personal-impostor/index.html"].includes("89 Fragepaare"),"Personal stale question count remains");
 assert(html["index.html"].includes("IMPOSTOR · GESAMT"),"launcher Impostor aggregate label mismatch");
 assert(html["index.html"].includes("DAVON · PERSÖNLICH"),"launcher Personal Impostor label mismatch");
-assert(html["index.html"].includes("Profile, Presets, Sessions, Statistik, Spielzeit"),"launcher backup/reset copy missing V74R6 data scope");
+assert(html["index.html"].includes("Profile, Presets, Sessions, Statistik, Spielzeit"),"launcher backup/reset copy missing V74R7 data scope");
 assert(html["index.html"].includes('id="launcherDevTrigger"'),"launcher DEV trigger missing");
 assert(html["index.html"].includes('id="launcherDevPanelOverlay"'),"launcher DEV panel missing");
 assert(launcherCss.includes(".launcherDevOverlay")&&launcherCss.includes(".launcherDevAchievements"),"launcher DEV styles missing");
@@ -305,6 +305,25 @@ assert(launcherDevSource.includes("fillContentProgress"),"launcher DEV content p
 assert(launcherSource.includes("window.CILauncherRefresh"),"launcher DEV refresh bridge missing");
 assert(html["index.html"].includes('id="sessionMiniBar"'),"launcher persistent session mini bar missing");
 assert(launcherSource.includes("function installSheetSwipe()"),"launcher sheet swipe gesture missing");
+assert(launcherSource.includes("function shouldDismissSheetSwipe("),"launcher swipe decision helper missing");
+{
+  const start=launcherSource.indexOf("function shouldDismissSheetSwipe(");
+  const end=launcherSource.indexOf("function installSheetSwipe()",start);
+  assert(start>=0&&end>start,"launcher swipe helper extraction failed");
+  const swipeFn=new Function(launcherSource.slice(start,end)+";return shouldDismissSheetSwipe;")();
+  assert(swipeFn(84,900,5)===true,"slow long swipe should dismiss");
+  assert(swipeFn(34,55,3)===true,"fast flick should dismiss");
+  assert(swipeFn(40,600,2)===false,"short slow swipe should snap back");
+  assert(swipeFn(18,20,1)===false,"tiny flick should not dismiss");
+  assert(swipeFn(60,80,80)===false,"horizontal swipe should not dismiss");
+  assert(swipeFn(-100,100,0)===false,"upward swipe should not dismiss");
+}
+assert(launcherSource.includes('sheet.addEventListener("pointerdown",begin)'),"sheet/header swipe binding missing");
+assert(launcherSource.includes('target.closest(".sheetHeader")'),"sheet header drag zone missing");
+assert(launcherSource.includes('sheet.classList.add("sheetSwipeSnapBack")'),"sheet snap-back state missing");
+assert(launcherSource.includes('style.removeProperty("--sheet-backdrop-alpha")'),"sheet backdrop reset missing");
+assert(launcherCss.includes(".sheetHandle::after")&&launcherCss.includes("width:72px;height:28px"),"sheet touch target enlargement missing");
+assert(launcherCss.includes(".bottomSheet.sheetDragging")&&launcherCss.includes(".bottomSheet.sheetSwipeDismiss"),"sheet drag transition states missing");
 assert(launcherSource.includes('if(!sheet||sheet.id==="migrationSheet")return;'),"mandatory migration sheet must not be swipe-dismissable");
 assert(launcherSource.includes('sheet.id==="presetPlayersSheet"')&&launcherSource.includes('profileEditorReturnTarget==="preset"'),"nested sheet swipe navigation guards missing");
 assert(launcherSource.includes('view.classList.add(motion)'),"launcher directional view transition missing");
