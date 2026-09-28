@@ -217,3 +217,26 @@ body.sheetOpen{overflow:hidden}
 .bottomSheet.sheetDragging{transition:none!important;animation:none!important;user-select:none;-webkit-user-select:none}
 .bottomSheet.sheetSwipeSnapBack{transition:transform 175ms cubic-bezier(.2,.75,.25,1)!important}
 .bottomSheet.sheetSwipeDismiss{transition:transform 145ms cubic-bezier(.35,.05,.8,.45)!important}
+
+
+/* V74R8 category progression */
+.presetCard.locked{border-style:dashed;opacity:.78}
+.categoryTicketSummary{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:12px 13px;border-radius:15px;background:#232428;border:1px solid rgba(255,255,255,.055)
+}
+.categoryTicketSummary span{font-size:10px;color:#b5b7bb}.categoryTicketSummary strong{font-size:18px;color:#efb574}
+.categoryProgressList{display:grid;gap:8px;margin-top:10px}
+.categoryProgressCard{
+  width:100%;min-height:62px;padding:10px 11px;border-radius:16px;
+  border:1px solid rgba(255,255,255,.06);background:#232428;color:var(--text);
+  display:grid;grid-template-columns:42px minmax(0,1fr) auto;gap:10px;align-items:center;text-align:left
+}
+button.categoryProgressCard{cursor:pointer}
+.categoryProgressCard.locked{border-style:dashed}
+.categoryProgressCard.unlocked{background:linear-gradient(145deg,#26272b,#222327);border-color:rgba(243,154,50,.16)}
+.categoryProgressIcon{width:42px;height:42px;border-radius:13px;background:#34353a;display:grid;place-items:center;font-size:22px}
+.categoryProgressText{display:flex;flex-direction:column;min-width:0}
+.categoryProgressText strong{font-size:11px}.categoryProgressText span{margin-top:4px;color:#85878d;font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.categoryProgressState{font-size:10px;font-weight:950;color:#efb574}
+.categoryProgressCard.unlocked .categoryProgressState{font-size:18px;color:#a9c8a3}
