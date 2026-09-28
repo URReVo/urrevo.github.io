@@ -1,0 +1,121 @@
+name: Prototype P3 audit
+on:
+  push:
+    branches: ["prototype/party-makeover-p3-shell"]
+    paths-ignore:
+      - "experiments/prototype/audit-p3/**"
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+
+      - name: Static validation
+        run: |
+          node scripts/audit-full.mjs
+          node scripts/validate-release.mjs
+          node scripts/test-progress-integrity.mjs
+          node scripts/validate-ios-readiness.mjs
+
+      - name: Install browser driver
+        run: npm install --no-save puppeteer-core@24.17.0
+
+      - name: Start local server
+        run: |
+          python3 -m http.server 8080 --bind 127.0.0.1 > /tmp/p3-http.log 2>&1 &
+          sleep 2
+
+      - name: Audit P3 launcher
+        run: |
+          CHROME="$(command -v google-chrome || command -v chromium-browser || command -v chromium || true)"
+          test -n "$CHROME"
+          export CHROME
+          cat > p3-audit.mjs <<'NODE'
+          import puppeteer from "puppeteer-core";
+          import fs from "node:fs";
+          const root="http://127.0.0.1:8080/experiments/prototype/";
+          const out="experiments/prototype/audit-p3";
+          fs.rmSync(out,{recursive:true,force:true});
+          fs.mkdirSync(out,{recursive:true});
+          const browser=await puppeteer.launch({headless:true,executablePath:process.env.CHROME,args:["--no-sandbox","--disable-gpu"]});
+          const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+          async function home(name,width,height){
+            const page=await browser.newPage();
+            const errors=[];
+            page.on("pageerror",e=>errors.push("pageerror: "+e.message));
+            page.on("console",m=>{if(m.type()==="error")errors.push("console: "+m.text());});
+            await page.setViewport({width,height,deviceScaleFactor:1,isMobile:true,hasTouch:true});
+            await page.goto(root,{waitUntil:"networkidle0",timeout:30000});
+            await sleep(500);
+            const audit=await page.evaluate(()=>{
+              const cards=[...document.querySelectorAll("[data-game-card]")].map(el=>{
+                const r=el.getBoundingClientRect();return {game:el.dataset.gameCard,top:r.top,bottom:r.bottom,left:r.left,right:r.right};
+              });
+              const dock=document.querySelector(".tabBar")?.getBoundingClientRect();
+              return {
+                viewport:[innerWidth,innerHeight],
+                doc:[document.documentElement.scrollWidth,document.documentElement.scrollHeight],
+                cards,
+                dock:dock?{top:dock.top,bottom:dock.bottom}:null,
+                command:!!document.querySelector(".partyCommandBar"),
+                arena:!!document.querySelector(".partyArena"),
+                live:!!document.querySelector(".partyLiveDeck")
+              };
+            });
+            console.log("HOME",name,JSON.stringify(audit));
+            if(errors.length)throw new Error(name+" JS errors: "+errors.join(" | "));
+            if(audit.doc[0]>audit.viewport[0]+2)throw new Error(name+" horizontal overflow");
+            if(audit.cards.length!==5)throw new Error(name+" does not expose all five games");
+            if(!audit.command||!audit.arena||!audit.live)throw new Error(name+" P3 shell missing");
+            const visibleBottom=audit.dock?audit.dock.top:audit.viewport[1];
+            for(const card of audit.cards){
+              if(card.top<0||card.bottom>visibleBottom+1)throw new Error(name+" game tile obscured: "+card.game+" bottom="+card.bottom+" dockTop="+visibleBottom);
+            }
+            await page.screenshot({path:`${out}/${name}.png`,fullPage:false});
+            await page.click("#surpriseGame");
+            await sleep(120);
+            const chosen=await page.$$eval(".gameCard.chosenPulse",els=>els.length);
+            if(chosen!==1)throw new Error(name+" random picker feedback broken");
+            await page.close();
+          }
+
+          await home("home-375x667",375,667);
+          await home("home-390x844",390,844);
+          await home("home-402x874",402,874);
+          await home("home-430x932",430,932);
+
+          const page=await browser.newPage();
+          const errors=[];
+          page.on("pageerror",e=>errors.push(e.message));
+          await page.setViewport({width:402,height:874,deviceScaleFactor:1,isMobile:true,hasTouch:true});
+          await page.goto(root,{waitUntil:"networkidle0",timeout:30000});
+          await sleep(400);
+          for(const view of ["profile","stats","settings"]){
+            await page.click('[data-view="'+view+'"]');
+            await sleep(250);
+            const active=await page.$eval("#view-"+view,el=>el.classList.contains("active"));
+            if(!active)throw new Error("tab navigation failed for "+view);
+            await page.screenshot({path:`${out}/${view}-402x874.png`,fullPage:false});
+          }
+          if(errors.length)throw new Error("secondary view JS errors: "+errors.join(" | "));
+          await browser.close();
+          NODE
+          node p3-audit.mjs
+          rm p3-audit.mjs
+
+      - name: Commit audit screenshots
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add experiments/prototype/audit-p3
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: add P3 visual audit screenshots [skip ci]"
+          git push origin HEAD:prototype/party-makeover-p3-shell
