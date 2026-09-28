@@ -294,6 +294,9 @@ assert(appStateSource.includes('DEV_STORAGE_KEY="imposterGames.devState.v1"'),"l
 assert(appStateSource.includes("function devPatchStats(")&&appStateSource.includes("function devReplaceStats("),"launcher DEV statistics APIs missing");
 assert(appStateSource.includes("function devSetUsage("),"launcher DEV usage API missing");
 assert(appStateSource.includes("function devSetAchievementOverride("),"launcher DEV achievement API missing");
+assert(appStateSource.includes("function devSetCategoryPackOverride(")&&appStateSource.includes("function devClearCategoryPackOverrides("),"launcher DEV category progression APIs missing");
+assert(html["index.html"].includes('id="launcherDevCategoryPacks"'),"launcher DEV category progression panel missing");
+assert(launcherDevSource.includes("function renderCategoryPacks()")&&launcherDevSource.includes("store.devSetCategoryPackOverride"),"launcher DEV category progression controls missing");
 assert(appStateSource.includes("function devClearSessions("),"launcher DEV session API missing");
 assert(launcherDevSource.includes('var SESSION_KEY="ci.diag.session.v1"'),"launcher DEV session unlock key mismatch");
 assert(launcherDevSource.includes('salt:b64Bytes("2vIOc2m/dMogebMxv2A8YA==")'),"launcher DEV PIN salt mismatch");
@@ -738,6 +741,15 @@ devState.devSetAchievementOverride("hundred-rounds",false,null);
 assert(devState.getAchievements().find(a=>a.id==="hundred-rounds").unlocked===false,"DEV achievement lock override failed");
 devState.devSetAchievementOverride("hundred-rounds",null,null);
 assert(devState.getAchievements().find(a=>a.id==="hundred-rounds").unlocked===false,"DEV achievement auto override reset failed");
+devState.devSetCategoryPackOverride("popculture",true);
+let devPack=devState.getCategoryProgress().packs.find(pack=>pack.id==="popculture");
+assert(devPack.unlocked===true&&devPack.actualUnlocked===false&&devPack.devOverride===true,"DEV category unlock override failed");
+devState.devSetCategoryPackOverride("popculture",false);
+devPack=devState.getCategoryProgress().packs.find(pack=>pack.id==="popculture");
+assert(devPack.unlocked===false&&devPack.devOverride===false,"DEV category lock override failed");
+devState.devSetCategoryPackOverride("popculture",null);
+devPack=devState.getCategoryProgress().packs.find(pack=>pack.id==="popculture");
+assert(devPack.unlocked===false&&devPack.devOverride===null,"DEV category auto override reset failed");
 
 const emptyMem=auditStorage();
 const emptyState=auditStore(emptyMem);
