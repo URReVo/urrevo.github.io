@@ -30,7 +30,8 @@
 - Vor jeder neuen Runde in Circa, Classic, Wer bin ich?, Scharade und Persönlicher Impostor wird der Checkpoint geprüft. Direkte LocalStorage-Manipulationen an Fortschritt, Kategorien oder progressionsrelevanten Sessiondaten werden auf den letzten gültigen Stand zurückgesetzt; ein bereits initialisierter, aber fehlender/ungültiger Checkpoint wird nicht still neu akzeptiert.
 - DEV-Statistik-/Session-Manipulationen bleiben vom echten Fortschritt getrennt und werden beim nächsten echten Rundenstart nicht als vertrauenswürdiger Checkpoint übernommen. Backup V3 bleibt portabel; vor einem Export wird der lokale Checkpoint geprüft, beim bewussten Import wird der importierte Stand neu lokal versiegelt.
 - Automatisierte R17-Regressionstests decken Erst-Migration, 51 Sessions bei weiterhin maximal 50 gespeicherten Sessions, manipulierte globale/Profil-Statistik, gefälschte Kategorie-Unlocks, manipulierte Sessionrunden und anschließenden legitimen Fortschritt ab.
-- Produktionsstand auf **V74R17** / Offline-Cache **r17** angehoben.
+- V74R18 korrigiert die Aktionsbuttons des Persönlichen Impostors nach dem Circa-Muster: keine separat fixierten Safe-Area-Buttons mehr, sondern Flexbox-Verankerung innerhalb des jeweiligen Spielscreens. Primäraktionen verwenden wieder die gemeinsamen 48-px-Abmessungen; die beiden Ergebnisaktionen bleiben auch auf schmalen iPhones nebeneinander wie bei Circa.
+- Produktionsstand auf **V74R18** / Offline-Cache **r18** angehoben.
 
 
 ## V73
