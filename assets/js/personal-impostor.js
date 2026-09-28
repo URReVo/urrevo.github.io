@@ -19,6 +19,32 @@ var count=3,players=[],savedPlayerNames=[],savedPlayerProfileIds=[],avatarSelect
 var currentPair=null,impostorIndex=0,activeIndex=0,answers=[],round=0,impostorCounts=[],lastImpostor=-1,currentRoundKey=null;
 var revealRunning=false,revealTimers=[],sharedQuestionRevealed=false,roundStartPending=false;
 var sections=["setup","handoff","question","questionReveal","answers","result"];
+var personalViewportSettleTimers=[];
+function answerFieldActive(){
+  var active=document.activeElement;
+  return !!(active&&active.id==="answerInput");
+}
+function personalViewportHeight(){
+  var vv=window.visualViewport;
+  var height=vv&&Number.isFinite(vv.height)&&vv.height>0?vv.height:window.innerHeight;
+  return Math.max(1,Math.round(Number(height)||0));
+}
+function syncPersonalViewportHeight(){
+  var height=personalViewportHeight();
+  if(height>0)document.documentElement.style.setProperty("--personal-viewport-height",height+"px");
+}
+function clearPersonalViewportSettleTimers(){
+  personalViewportSettleTimers.forEach(function(timer){clearTimeout(timer);});
+  personalViewportSettleTimers=[];
+}
+function settlePersonalViewport(){
+  clearPersonalViewportSettleTimers();
+  syncPersonalViewportHeight();
+  try{requestAnimationFrame(syncPersonalViewportHeight);}catch(e){}
+  [80,180,320,520,760].forEach(function(delay){
+    personalViewportSettleTimers.push(setTimeout(syncPersonalViewportHeight,delay));
+  });
+}
 function storageGet(key,fallback){try{var raw=localStorage.getItem(key);return raw===null?fallback:JSON.parse(raw);}catch(e){return fallback;}}
 function storageSet(key,value){try{localStorage.setItem(key,JSON.stringify(value));return true;}catch(e){return false;}}
 function cleanName(v){return String(v==null?"":v).trim().slice(0,24);}
@@ -90,17 +116,23 @@ function tone(freq,duration,delay){var ctx=ensureAudio();if(!ctx)return;try{var 
 function sound(kind){if(kind==="start"){tone(420,.055,0);tone(650,.075,.055);}else if(kind==="save"){tone(560,.045,0);}else if(kind==="reveal"){tone(470,.065,0);tone(760,.095,.065);}else tone(520,.04,0);}
 function syncSound(){byId("soundOnIcon").classList.toggle("hidden",!soundEnabled);byId("soundOffIcon").classList.toggle("hidden",soundEnabled);byId("soundToggle").setAttribute("aria-pressed",soundEnabled?"true":"false");byId("soundToggle").setAttribute("aria-label",soundEnabled?"Sound ausschalten":"Sound einschalten");}
 function resetPersonalViewport(delayed){
-  function reset(){
+  function resetScroll(){
     try{window.scrollTo(0,0);}catch(e){}
     try{document.documentElement.scrollTop=0;document.body.scrollTop=0;}catch(e){}
   }
-  reset();
-  try{requestAnimationFrame(reset);}catch(e){}
-  if(delayed)setTimeout(reset,320);
+  syncPersonalViewportHeight();
+  resetScroll();
+  try{requestAnimationFrame(function(){syncPersonalViewportHeight();resetScroll();});}catch(e){}
+  if(delayed){
+    [80,180,320,520,760].forEach(function(delay){
+      setTimeout(function(){syncPersonalViewportHeight();resetScroll();},delay);
+    });
+  }
 }
 function dismissAnswerKeyboard(){
   var input=byId("answerInput");
   try{if(input&&input.blur)input.blur();}catch(e){}
+  settlePersonalViewport();
 }
 function show(id){
   sections.forEach(function(name){byId(name).classList.toggle("hidden",name!==id);});
@@ -172,11 +204,29 @@ if(window.PointerEvent)document.addEventListener("pointerdown",function(){if(sou
 else document.addEventListener("touchstart",function(){if(soundEnabled)ensureAudio();},{passive:true,capture:true});
 window.addEventListener("pageshow",restoreExistingAudio);
 document.addEventListener("visibilitychange",function(){if(!document.hidden)restoreExistingAudio();});
+if(window.visualViewport){
+  window.visualViewport.addEventListener("resize",syncPersonalViewportHeight,{passive:true});
+  window.visualViewport.addEventListener("scroll",syncPersonalViewportHeight,{passive:true});
+}
+window.addEventListener("resize",syncPersonalViewportHeight,{passive:true});
+window.addEventListener("orientationchange",settlePersonalViewport,{passive:true});
+document.addEventListener("focusin",function(event){
+  if(event.target&&event.target.id==="answerInput"){
+    document.body.classList.add("personalKeyboardOpen");
+    syncPersonalViewportHeight();
+  }
+});
+document.addEventListener("focusout",function(event){
+  if(event.target&&event.target.id==="answerInput"){
+    document.body.classList.remove("personalKeyboardOpen");
+    settlePersonalViewport();
+  }
+});
 if(appState&&appState.trackUsage){
   appState.trackUsage("personal");
   setInterval(function(){if(!document.hidden)appState.trackUsage("personal");},15000);
   window.addEventListener("pagehide",function(){if(appState.pauseUsage)appState.pauseUsage();});
   document.addEventListener("visibilitychange",function(){if(document.hidden){if(appState.pauseUsage)appState.pauseUsage();}else appState.trackUsage("personal");});
 }
-show("setup");document.body.classList.remove("booting");document.body.removeAttribute("aria-busy");
+syncPersonalViewportHeight();show("setup");document.body.classList.remove("booting");document.body.removeAttribute("aria-busy");
 })();
