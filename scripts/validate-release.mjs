@@ -204,7 +204,7 @@ const readme=read("README.md");
 assert(!readme.includes("\\n"),"README contains literal \\n text");
 assert(["Circa Imposter","Klassisches Imposter","Wer bin ich?","Scharade","Persönlicher Impostor"].every(name=>readme.includes(name)),"README must describe the five-game app");
 const changelog=read("CHANGELOG.md");
-assert(changelog.includes("V74R8")&&changelog.includes("Offline-Cache **r8**"),"V74R8 changelog entry missing");
+assert(changelog.includes("V74R9")&&changelog.includes("Offline-Cache **r9**"),"V74R9 changelog entry missing");
 
 const appStateSource=read("assets/js/app-state.js");
 const launcherSource=read("assets/js/launcher.js");
@@ -261,7 +261,7 @@ assert(prototypePersonalSource.includes('PREFIX="imposterGames.prototype.game.pe
 assert(!prototypePersonalSource.includes('PREFIX="imposterGames.v74.game.personal."'),"prototype Personal must not use production storage");
 assert(!html["index.html"].includes("APP-SHELL TEST"),"production launcher still contains experiment badge");
 assert(launcherCss.includes("padding:calc(18px + var(--safeTop)) 16px 26px"),"launcher safe-area top padding missing");
-assert(sw.includes('const CACHE_REVISION="r8"'),"V74 cache revision mismatch");
+assert(sw.includes('const CACHE_REVISION="r9"'),"V74 cache revision mismatch");
 assert(sw.includes('versioned("/assets/js/launcher-dev.js")'),"service worker launcher DEV cache missing");
 assert(appStateSource.includes("var BACKUP_VERSION=3"),"backup format v3 missing");
 assert(engineSource.includes("experimentRecordCirca(null);"),"Circa shared base-round recording missing");
@@ -276,7 +276,7 @@ assert(html["games/personal-impostor/index.html"].includes("100 Fragepaare"),"Pe
 assert(!html["games/personal-impostor/index.html"].includes("89 Fragepaare"),"Personal stale question count remains");
 assert(html["index.html"].includes("IMPOSTOR · GESAMT"),"launcher Impostor aggregate label mismatch");
 assert(html["index.html"].includes("DAVON · PERSÖNLICH"),"launcher Personal Impostor label mismatch");
-assert(html["index.html"].includes("Profile, Presets, Sessions, Statistik, Spielzeit"),"launcher backup/reset copy missing V74R8 data scope");
+assert(html["index.html"].includes("Profile, Presets, Sessions, Statistik, Spielzeit"),"launcher backup/reset copy missing V74R9 data scope");
 assert(html["index.html"].includes('id="launcherDevTrigger"'),"launcher DEV trigger missing");
 assert(html["index.html"].includes('id="launcherDevPanelOverlay"'),"launcher DEV panel missing");
 assert(launcherCss.includes(".launcherDevOverlay")&&launcherCss.includes(".launcherDevAchievements"),"launcher DEV styles missing");
@@ -359,6 +359,19 @@ assert(pwaSource.includes('["Mini-Session","mini-session"]'),"launcher mini-sess
 assert(pwaSource.includes('closeDevPanelForPreview()'),"DEV visual previews must close overlays before display");
 assert(appStateSource.includes('new CustomEvent("ci:achievement-unlocked"'),"achievement unlock event missing");
 assert(appStateSource.includes("emitAchievementUnlocks(unlocked)"),"achievement unlock dispatch not wired");
+assert(appStateSource.includes("function buildRoundFeedback(")&&appStateSource.includes("function buildSessionFeedback("),"motivational feedback engine missing");
+assert(appStateSource.includes('new CustomEvent("ci:motivational-feedback"'),"motivational feedback event missing");
+assert(appStateSource.includes("function nearAchievementFeedback("),"near-achievement feedback missing");
+assert(appStateSource.includes("function previousCircaBest("),"Circa personal-record feedback missing");
+assert(appStateSource.includes('progress:def.progress()'),"achievement unlock payload must include completed progress");
+assert(pwaSource.includes("var feedbackQueue=[]")&&pwaSource.includes("function queueFeedback("),"central feedback queue missing");
+assert(pwaSource.includes("function feedbackSound(level)"),"tiered feedback sound missing");
+assert(pwaSource.includes("function feedbackHero(item)"),"hero feedback presentation missing");
+assert(pwaSource.includes('window.addEventListener("ci:motivational-feedback"'),"motivational feedback listener missing");
+assert(pwaSource.includes('["Feedback · klein","feedback-1"]')&&pwaSource.includes('["Feedback · mittel","feedback-2"]')&&pwaSource.includes('["Feedback · Hero","feedback-3"]'),"DEV feedback-level previews missing");
+assert(pwaSource.includes('["Session-Finale","feedback-session"]'),"DEV session-final feedback preview missing");
+assert(appUiCss.includes(".ciToastFeedback1")&&appUiCss.includes(".ciToastFeedback2"),"tiered feedback toast styles missing");
+assert(appUiCss.includes(".ciFeedbackHero")&&appUiCss.includes("@keyframes ciFeedbackHeroIn"),"feedback hero animation missing");
 assert(appStateSource.includes("var CATEGORY_TICKET_THRESHOLDS=[8,20,40]"),"category unlock thresholds mismatch");
 assert(["popculture","tech","spicy"].every(id=>appStateSource.includes('id:"'+id+'"')),"category progression pack definitions missing");
 assert(appStateSource.includes("function getCategoryProgress()")&&appStateSource.includes("function unlockCategoryPack("),"category progression APIs missing");
@@ -537,11 +550,12 @@ function auditStorage(seedEntries=[]){
     }
   };
 }
-function auditStore(holder){
+function auditStore(holder,eventSink){
   let tick=0;
   const crypto={getRandomValues(arr){tick++;for(let i=0;i<arr.length;i++)arr[i]=tick*1000+i;return arr;},subtle:globalThis.crypto.subtle};
-  const win={crypto};
-  return new Function("window","localStorage","crypto",appStateSource+";return window.CIAppState;")(win,holder.storage,crypto);
+  class AuditCustomEvent{constructor(type,init){this.type=type;this.detail=init&&init.detail;}}
+  const win={crypto,dispatchEvent(event){if(Array.isArray(eventSink))eventSink.push(event);return true;}};
+  return new Function("window","localStorage","crypto","CustomEvent",appStateSource+";return window.CIAppState;")(win,holder.storage,crypto,AuditCustomEvent);
 }
 const v73Storage=auditStorage([
   ["imposterGames.v73.game.circa.deckProgress.v1",JSON.stringify({"Allgemein::mittel":[questions.items[0].qid]})],
@@ -620,6 +634,78 @@ auditState.recordRound(auditClassic);
 auditSession=auditState.getActiveSession();
 assert(auditState.getStats().rounds===2&&auditState.getStats().classicRounds===1,"Classic round idempotency failed");
 assert(auditSession.rounds.length===2,"session contains duplicate round records");
+
+/* V74R9 motivational-feedback audit: priorities, records, milestones, near goals and session finale. */
+const feedbackMem=auditStorage(),feedbackEvents=[];
+const feedbackState=auditStore(feedbackMem,feedbackEvents);
+const feedbackP1=feedbackState.getProfiles()[0];
+feedbackState.updateProfile(feedbackP1.id,{name:"Feedback One",avatar:"😎"});
+const feedbackP2=feedbackState.addProfile({name:"Feedback Two",avatar:"🦊"});
+const feedbackP3=feedbackState.addProfile({name:"Feedback Three",avatar:"🐼"});
+const feedbackPlayers=[feedbackP1.id,feedbackP2,feedbackP3];
+feedbackState.beginSession(feedbackPlayers.map(id=>({profileId:id,name:id})));
+function feedbackRoundPlayers(errors){
+  return feedbackPlayers.map(function(id,index){
+    return {profileId:id,role:index===2?"impostor":"normal",error:errors[index],closest:index===0};
+  });
+}
+feedbackState.recordRound({roundKey:"fb-c1",game:"circa",category:"Allgemein",qid:"fb-q1",players:feedbackRoundPlayers([10,20,30])});
+feedbackEvents.length=0;
+feedbackState.recordRound({
+  roundKey:"fb-c2",game:"circa",category:"Allgemein",qid:"fb-q2",
+  players:[
+    {profileId:feedbackP1.id,role:"normal",error:0,perfect:true,closest:true},
+    {profileId:feedbackP2,role:"normal",error:15},
+    {profileId:feedbackP3,role:"impostor",error:25}
+  ]
+});
+const perfectAchievementIndex=feedbackEvents.findIndex(event=>event.type==="ci:achievement-unlocked"&&(event.detail.items||[]).some(item=>item.id==="perfect"));
+const firstPerfectFeedbackIndex=feedbackEvents.findIndex(event=>event.type==="ci:motivational-feedback");
+assert(perfectAchievementIndex>=0,"first perfect estimate did not unlock achievement");
+assert(firstPerfectFeedbackIndex<0||perfectAchievementIndex<firstPerfectFeedbackIndex,"achievement feedback must take priority over secondary round feedback");
+assert((feedbackEvents.find(event=>event.type==="ci:achievement-unlocked").detail.items.find(item=>item.id==="perfect")||{}).progress==="1/1","achievement unlock feedback lost completed progress");
+const firstPerfectRoundFeedback=feedbackEvents.filter(event=>event.type==="ci:motivational-feedback").flatMap(event=>event.detail.items||[]);
+assert(!firstPerfectRoundFeedback.some(item=>item.title==="Punktlandung!"),"first perfect estimate duplicated achievement hero feedback");
+
+feedbackEvents.length=0;
+feedbackState.recordRound({
+  roundKey:"fb-c3",game:"circa",category:"Allgemein",qid:"fb-q3",
+  players:[
+    {profileId:feedbackP1.id,role:"normal",error:0,perfect:true,closest:true},
+    {profileId:feedbackP2,role:"normal",error:14},
+    {profileId:feedbackP3,role:"impostor",error:24}
+  ]
+});
+let feedbackItems=feedbackEvents.filter(event=>event.type==="ci:motivational-feedback").flatMap(event=>event.detail.items||[]);
+assert(feedbackItems.some(item=>item.title==="Punktlandung!"&&item.intensity===3),"repeat perfect estimate did not trigger level-3 hero feedback");
+assert(!feedbackEvents.some(event=>event.type==="ci:achievement-unlocked"&&(event.detail.items||[]).some(item=>item.id==="perfect")),"repeat perfect estimate re-unlocked achievement");
+
+feedbackEvents.length=0;
+feedbackState.recordRound({roundKey:"fb-r4",game:"classic",category:"Allgemein",wid:"fb-w4",players:feedbackPlayers.map((id,index)=>({profileId:id,role:index===2?"impostor":"normal"}))});
+feedbackState.recordRound({roundKey:"fb-r5",game:"classic",category:"Allgemein",wid:"fb-w5",impostorEscaped:null,players:feedbackPlayers.map((id,index)=>({profileId:id,role:index===2?"impostor":"normal"}))});
+feedbackItems=feedbackEvents.filter(event=>event.type==="ci:motivational-feedback").flatMap(event=>event.detail.items||[]);
+assert(feedbackItems.some(item=>item.title==="5. Runde der Session"&&item.intensity===1),"five-round session milestone feedback missing");
+
+feedbackEvents.length=0;
+const roundsBeforeEscape=feedbackState.getStats().rounds;
+feedbackState.recordRound({roundKey:"fb-r5",game:"classic",category:"Allgemein",wid:"fb-w5",impostorEscaped:true,players:feedbackPlayers.map((id,index)=>({profileId:id,role:index===2?"impostor":"normal"}))});
+feedbackItems=feedbackEvents.filter(event=>event.type==="ci:motivational-feedback").flatMap(event=>event.detail.items||[]);
+assert(feedbackItems.some(item=>item.title==="Unentdeckt!"&&item.intensity===2),"late impostor outcome feedback missing");
+assert(feedbackState.getStats().rounds===roundsBeforeEscape,"late impostor outcome feedback double-counted round");
+
+feedbackEvents.length=0;
+for(let i=6;i<=9;i++){
+  feedbackState.recordRound({roundKey:"fb-r"+i,game:"classic",category:"Allgemein",wid:"fb-w"+i,players:feedbackPlayers.map((id,index)=>({profileId:id,role:index===2?"impostor":"normal"}))});
+}
+feedbackItems=feedbackEvents.filter(event=>event.type==="ci:motivational-feedback").flatMap(event=>event.detail.items||[]);
+assert(feedbackItems.some(item=>item.title==="Fast geschafft · Warmgelaufen"&&item.message.includes("9/10")),"near-achievement 9/10 feedback missing");
+
+feedbackEvents.length=0;
+const feedbackEnded=feedbackState.endSession();
+feedbackItems=feedbackEvents.filter(event=>event.type==="ci:motivational-feedback").flatMap(event=>event.detail.items||[]);
+assert(feedbackEnded&&feedbackEnded.rounds.length===9,"feedback audit session round count mismatch");
+assert(feedbackItems.some(item=>item.type==="session-end"&&item.intensity===2),"session-end feedback missing");
+assert(feedbackItems.every(item=>item.intensity>=1&&item.intensity<=3),"feedback intensity outside 1..3");
 
 /* V74R8 category progression audit: autonomy, challenge paths, persistence and no lock bypass. */
 const progressionMem=auditStorage();
