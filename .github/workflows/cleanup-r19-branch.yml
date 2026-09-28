@@ -1,0 +1,15 @@
+name: Cleanup temporary R19 branch
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete temporary branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh api --method DELETE "repos/$GH_REPO/git/refs/heads/v74r19-personal-action-alignment"
