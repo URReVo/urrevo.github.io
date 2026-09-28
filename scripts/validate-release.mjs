@@ -19,6 +19,22 @@ const launcherBuild="V"+release+String(cacheRevision).toUpperCase();
 
 const htmlFiles=["index.html","games/circa-imposter/index.html","games/classic-imposter/index.html","games/who-am-i/index.html","games/charades/index.html","games/personal-impostor/index.html"];
 const html=Object.fromEntries(htmlFiles.map(p=>[p,read(p)]));
+const normalizeContentText=value=>String(value||"")
+  .toLocaleLowerCase("de-DE")
+  .normalize("NFKD")
+  .replace(/[\u0300-\u036f]/g,"")
+  .replace(/[^a-z0-9äöüß]+/g," ")
+  .trim()
+  .replace(/\s+/g," ");
+const assertUniqueNormalized=(items,selector,label)=>{
+  const seen=new Map();
+  for(const item of items){
+    const value=normalizeContentText(selector(item));
+    assert(value,label+" contains empty normalized content");
+    if(seen.has(value))fail(label+" duplicate: "+value);
+    seen.set(value,true);
+  }
+};
 
 for(const [file,source] of Object.entries(html)){
   assert(!source.includes("\\n"),file+" contains literal \\n text");
@@ -42,6 +58,7 @@ for(const file of ["games/circa-imposter/index.html","games/classic-imposter/ind
 assert(html["index.html"].includes("launcher.css?v="+release),"launcher.css version mismatch");
 assert(html["index.html"].includes("app-state.js?v="+release),"launcher app-state version mismatch");
 assert(html["index.html"].includes("launcher.js?v="+release),"launcher.js version mismatch");
+assert(html["index.html"].includes("launcher-dev.js?v="+release),"launcher DEV JS version mismatch");
 assert(html["index.html"].includes("pwa.js?v="+release),"launcher pwa version mismatch");
 for(const file of ["games/circa-imposter/index.html","games/classic-imposter/index.html"]){
   assert(html[file].includes("app-state.js?v="+release),file+" app-state version mismatch");
@@ -105,11 +122,13 @@ for(const item of questions.items){
   if(!difficultyCoverage[item.cat])difficultyCoverage[item.cat]={leicht:0,mittel:0,schwer:0};
   difficultyCoverage[item.cat][level]++;
   assert(Number(item.normalValue)!==0&&Number(item.impValue)!==0,"zero target value "+item.qid);
-  assert(String(item.normal).trim().toLocaleLowerCase("de-DE")!==String(item.imp).trim().toLocaleLowerCase("de-DE"),"identical Circa questions "+item.qid);
+  assert(normalizeContentText(item.normal)!==normalizeContentText(item.imp),"identical Circa questions "+item.qid);
 }
 for(const [cat,counts] of Object.entries(difficultyCoverage)){
   for(const level of ["leicht","mittel","schwer"])assert(counts[level]>0,"no "+level+" Circa questions in "+cat);
 }
+assertUniqueNormalized(questions.items,item=>item.normal,"Circa normal questions");
+assertUniqueNormalized(questions.items,item=>item.imp,"Circa impostor questions");
 
 assert(Number(words.count)===words.items.length,"Classic count mismatch");
 const wids=words.items.map(x=>x.wid);
@@ -118,6 +137,13 @@ const wordNames=words.items.map(x=>String(x.word).toLocaleLowerCase("de-DE"));
 const hints=words.items.map(x=>String(x.hint).toLocaleLowerCase("de-DE"));
 assert(new Set(wordNames).size===wordNames.length,"duplicate Classic word");
 assert(new Set(hints).size===hints.length,"duplicate Classic hint");
+assertUniqueNormalized(words.items,item=>item.word,"Classic words");
+assertUniqueNormalized(words.items,item=>item.hint,"Classic hints");
+for(const item of words.items){
+  const word=normalizeContentText(item.word),hint=normalizeContentText(item.hint);
+  assert(hint&&hint!==word,"Classic hint equals answer "+item.wid);
+  assert(word.length<3||!(" "+hint+" ").includes(" "+word+" "),"Classic hint reveals answer "+item.wid);
+}
 
 assert(Number(who.count)===who.items.length,"WhoAmI count mismatch");
 assert(who.items.length===275,"WhoAmI production term count mismatch");
@@ -125,6 +151,7 @@ const whoIds=who.items.map(x=>String(x.id));
 const whoTerms=who.items.map(x=>String(x.term).toLocaleLowerCase("de-DE"));
 assert(new Set(whoIds).size===whoIds.length,"duplicate WhoAmI id");
 assert(new Set(whoTerms).size===whoTerms.length,"duplicate WhoAmI term");
+assertUniqueNormalized(who.items,item=>item.term,"WhoAmI terms");
 assert(Array.isArray(who.categories)&&who.categories.length===11,"WhoAmI category count mismatch");
 for(const category of who.categories){
   const actual=who.items.filter(item=>item.cat===category.name).length;
@@ -137,6 +164,7 @@ const charadesIds=charades.items.map(x=>String(x.id));
 const charadesTerms=charades.items.map(x=>String(x.term).toLocaleLowerCase("de-DE"));
 assert(new Set(charadesIds).size===charadesIds.length,"duplicate Scharade id");
 assert(new Set(charadesTerms).size===charadesTerms.length,"duplicate Scharade term");
+assertUniqueNormalized(charades.items,item=>item.term,"Scharade terms");
 assert(Array.isArray(charades.categories)&&charades.categories.length===12,"Scharade category count mismatch");
 for(const category of charades.categories){
   const actual=charades.items.filter(item=>item.cat===category.name).length;
@@ -147,6 +175,8 @@ assert(Number(personal.count)===personal.items.length,"Personal count mismatch")
 assert(personal.items.length===100,"Personal production pair count mismatch");
 const personalIds=personal.items.map(x=>String(x.id));
 assert(new Set(personalIds).size===personalIds.length,"duplicate Personal id");
+assertUniqueNormalized(personal.items,item=>item.normal,"Personal normal questions");
+assertUniqueNormalized(personal.items,item=>item.impostor,"Personal impostor questions");
 for(const item of personal.items){
   assert(item.id&&item.normal&&item.impostor&&item.answerType,"malformed Personal item "+item.id);
   assert(item.normal!==item.impostor,"identical Personal questions "+item.id);
@@ -165,6 +195,7 @@ assert(["Circa Imposter","Klassisches Imposter","Wer bin ich?","Scharade","Pers�
 
 const appStateSource=read("assets/js/app-state.js");
 const launcherSource=read("assets/js/launcher.js");
+const launcherDevSource=read("assets/js/launcher-dev.js");
 const launcherCss=read("assets/css/launcher.css");
 const gameCss=read("assets/css/game.css");
 const engineSource=read("assets/js/game-engine.js");
@@ -174,7 +205,7 @@ const charadesSource=read("assets/js/charades.js");
 const charadesCss=read("assets/css/charades.css");
 const personalSource=read("assets/js/personal-impostor.js");
 const personalCss=read("assets/css/personal-impostor.css");
-for(const [name,source] of [["app-state",appStateSource],["launcher",launcherSource],["game-engine",engineSource],["who-am-i",whoSource],["charades",charadesSource],["personal-impostor",personalSource]]){
+for(const [name,source] of [["app-state",appStateSource],["launcher",launcherSource],["launcher-dev",launcherDevSource],["game-engine",engineSource],["who-am-i",whoSource],["charades",charadesSource],["personal-impostor",personalSource]]){
   try{new Function(source);}catch(error){fail(name+" syntax error: "+error.message);}
 }
 assert(appStateSource.includes('var KEY="imposterGames.appState.v1"'),"production app-state key missing");
@@ -215,7 +246,8 @@ assert(prototypePersonalSource.includes('PREFIX="imposterGames.prototype.game.pe
 assert(!prototypePersonalSource.includes('PREFIX="imposterGames.v74.game.personal."'),"prototype Personal must not use production storage");
 assert(!html["index.html"].includes("APP-SHELL TEST"),"production launcher still contains experiment badge");
 assert(launcherCss.includes("padding:calc(18px + var(--safeTop)) 16px 26px"),"launcher safe-area top padding missing");
-assert(sw.includes('const CACHE_REVISION="r3"'),"V74 cache revision mismatch");
+assert(sw.includes('const CACHE_REVISION="r4"'),"V74 cache revision mismatch");
+assert(sw.includes('versioned("/assets/js/launcher-dev.js")'),"service worker launcher DEV cache missing");
 assert(appStateSource.includes("var BACKUP_VERSION=3"),"backup format v3 missing");
 assert(engineSource.includes("experimentRecordCirca(null);"),"Circa shared base-round recording missing");
 assert(engineSource.includes("impostorEscaped:outcome===true?true:outcome===false?false:null"),"Circa unresolved outcome state missing");
@@ -229,7 +261,9 @@ assert(html["games/personal-impostor/index.html"].includes("100 Fragepaare"),"Pe
 assert(!html["games/personal-impostor/index.html"].includes("89 Fragepaare"),"Personal stale question count remains");
 assert(html["index.html"].includes("IMPOSTOR · GESAMT"),"launcher Impostor aggregate label mismatch");
 assert(html["index.html"].includes("DAVON · PERSÖNLICH"),"launcher Personal Impostor label mismatch");
-assert(html["index.html"].includes("Profile, Presets, Sessions, Statistik, Spielzeit"),"launcher backup/reset copy missing V74R3 data scope");
+assert(html["index.html"].includes("Profile, Presets, Sessions, Statistik, Spielzeit"),"launcher backup/reset copy missing V74R4 data scope");
+assert(html["index.html"].includes('id="launcherDevTrigger"'),"launcher DEV trigger missing");
+assert(html["index.html"].includes('id="launcherDevPanelOverlay"'),"launcher DEV panel missing");
 assert(launcherSource.includes("function launcherSoundEnabled()"),"launcher sound preference guard missing");
 assert(launcherSource.includes("function uiSound(kind)"),"launcher UI sound generator missing");
 assert(launcherSource.includes("function navigateWithSound(href)"),"launcher start-sound navigation missing");
@@ -240,6 +274,19 @@ assert(launcherSource.includes("function sortAchievementsByRequirement(items)"),
 assert(launcherSource.includes("achievementData=sortAchievementsByRequirement(achievementData);"),"achievement list is not sorted by requirement");
 assert(appStateSource.includes("function trackUsage(game)"),"foreground playtime tracking missing");
 assert(appStateSource.includes("function getUsageStats()"),"playtime stats API missing");
+assert(appStateSource.includes('DEV_STORAGE_KEY="imposterGames.devState.v1"'),"launcher DEV state namespace missing");
+assert(appStateSource.includes("function devPatchStats(")&&appStateSource.includes("function devReplaceStats("),"launcher DEV statistics APIs missing");
+assert(appStateSource.includes("function devSetUsage("),"launcher DEV usage API missing");
+assert(appStateSource.includes("function devSetAchievementOverride("),"launcher DEV achievement API missing");
+assert(appStateSource.includes("function devClearSessions("),"launcher DEV session API missing");
+assert(launcherDevSource.includes('var SESSION_KEY="ci.diag.session.v1"'),"launcher DEV session unlock key mismatch");
+assert(launcherDevSource.includes('salt:b64Bytes("2vIOc2m/dMogebMxv2A8YA==")'),"launcher DEV PIN salt mismatch");
+assert(launcherDevSource.includes('b64Bytes("YkZr4kQ14jp6eIv00xAYKCr265VTIWWuWiQCWQtN2B0=")'),"launcher DEV PIN hash mismatch");
+assert(launcherDevSource.includes("tapTimes.length>=7"),"launcher DEV seven-tap trigger missing");
+assert(launcherDevSource.includes("store.devSetAchievementOverride"),"launcher DEV achievement controls missing");
+assert(launcherDevSource.includes("store.devReplaceStats"),"launcher DEV raw statistics editor missing");
+assert(launcherDevSource.includes("fillContentProgress"),"launcher DEV content progress tool missing");
+assert(launcherSource.includes("window.CILauncherRefresh"),"launcher DEV refresh bridge missing");
 assert(appStateSource.includes("function profileMatchesName(profile,lower)"),"profile alias matching helper missing");
 assert(appStateSource.includes('if(game==="circa"&&round.category)addUnique(st.categories,round.category);'),"profile Circa category guard missing");
 assert(appStateSource.includes('if(game==="circa"&&round.category)addUnique(data.stats.categories,round.category);'),"global Circa category guard missing");
@@ -407,6 +454,15 @@ const auditC=auditState.addProfile({name:"Chris",avatar:"🤠"});
 assert(auditState.updateProfile(auditA,{name:"LEON",avatar:"🐼"})===false,"duplicate profile rename was accepted");
 const auditMProfile=auditState.getProfileById(auditM.id);
 assert(!auditMProfile.aliases.includes("Spieler"),"generic placeholder leaked into profile aliases");
+assert(auditState.updateProfile(auditM.id,{name:"Marlon Neu",avatar:"😎"})===true,"second profile rename failed");
+const profileCountBeforeAlias=auditState.getProfiles().length;
+assert(auditState.ensureProfileForPlayer({name:"Marlon",avatar:"😎"})===auditM.id,"profile alias did not resolve to renamed profile");
+assert(auditState.getProfiles().length===profileCountBeforeAlias,"profile alias resolution created a duplicate profile");
+const auditTemp=auditState.addProfile({name:"Temp",avatar:"🤖"});
+const auditPreset=auditState.savePreset({name:"Audit",game:"circa",profileIds:[auditM.id,auditL,auditTemp],categories:["Alle"],difficulty:"mittel"});
+assert(auditState.deleteProfile(auditTemp)===true,"temporary profile deletion failed");
+const cleanedPreset=auditState.getPresets().find(p=>p.id===auditPreset.id);
+assert(cleanedPreset&&cleanedPreset.profileIds.length===2&&cleanedPreset.playerCount===2,"deleted profile remained in custom preset");
 
 auditState.beginSession([
   {profileId:auditM.id,name:"Marlon",avatar:"😎"},
@@ -452,6 +508,39 @@ auditState.recordRound(auditClassic);
 auditSession=auditState.getActiveSession();
 assert(auditState.getStats().rounds===2&&auditState.getStats().classicRounds===1,"Classic round idempotency failed");
 assert(auditSession.rounds.length===2,"session contains duplicate round records");
+
+const categoryMem=auditStorage();
+const categoryState=auditStore(categoryMem);
+const categoryP1=categoryState.getProfiles()[0];
+categoryState.updateProfile(categoryP1.id,{name:"Cat One",avatar:"😎"});
+const categoryP2=categoryState.addProfile({name:"Cat Two",avatar:"🦊"});
+categoryState.beginSession([{profileId:categoryP1.id,name:"Cat One"},{profileId:categoryP2,name:"Cat Two"}]);
+categoryState.recordRound({
+  roundKey:"audit-whoami",game:"whoami",category:"Film & Serien",
+  players:[{profileId:categoryP1.id,termId:who.items[0].id},{profileId:categoryP2,termId:who.items[1].id}]
+});
+categoryState.recordRound({
+  roundKey:"audit-charades",game:"charades",category:"Tiere",
+  players:[{profileId:categoryP1.id,correct:1,skipped:0,termIds:[charades.items[0].id]},{profileId:categoryP2,correct:1,skipped:0,termIds:[charades.items[1].id]}]
+});
+assert(categoryState.getStats().categories.length===0,"non-Circa rounds polluted Circa category statistics");
+categoryState.devPatchStats("global",null,{circaQids:[questions.items[0].qid],categories:["Film & Serien","Tiere",questions.items[0].cat]});
+categoryState.applyCircaQuestionMetadata(questions.items);
+assert(categoryState.getStats().categories.length===1&&categoryState.getStats().categories[0]===questions.items[0].cat,"Circa category repair failed");
+
+const devMem=auditStorage();
+const devState=auditStore(devMem);
+const devProfile=devState.getProfiles()[0];
+assert(devState.devPatchStats("global",null,{rounds:42,circaRounds:17}).rounds===42,"DEV global statistics patch failed");
+assert(devState.devPatchStats("profile",devProfile.id,{rounds:9,charadesCorrect:33}).charadesCorrect===33,"DEV profile statistics patch failed");
+const devUsage=devState.devSetUsage({appMs:600000,games:{circa:300000,classic:120000}});
+assert(devUsage.appMs===600000&&devUsage.games.circa===300000,"DEV usage update failed");
+devState.devSetAchievementOverride("hundred-rounds",true,null);
+assert(devState.getAchievements().find(a=>a.id==="hundred-rounds").unlocked===true,"DEV achievement unlock override failed");
+devState.devSetAchievementOverride("hundred-rounds",false,null);
+assert(devState.getAchievements().find(a=>a.id==="hundred-rounds").unlocked===false,"DEV achievement lock override failed");
+devState.devSetAchievementOverride("hundred-rounds",null,null);
+assert(devState.getAchievements().find(a=>a.id==="hundred-rounds").unlocked===false,"DEV achievement auto override reset failed");
 
 const emptyMem=auditStorage();
 const emptyState=auditStore(emptyMem);
