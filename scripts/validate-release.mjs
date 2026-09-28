@@ -60,6 +60,7 @@ assert(html["index.html"].includes("app-state.js?v="+release),"launcher app-stat
 assert(html["index.html"].includes("launcher.js?v="+release),"launcher.js version mismatch");
 assert(html["index.html"].includes("launcher-dev.js?v="+release),"launcher DEV JS version mismatch");
 assert(html["index.html"].includes("pwa.js?v="+release),"launcher pwa version mismatch");
+for(const file of htmlFiles)assert(html[file].includes("app-ui.css?v="+release),file+" shared app UI stylesheet missing");
 for(const file of ["games/circa-imposter/index.html","games/classic-imposter/index.html"]){
   assert(html[file].includes("app-state.js?v="+release),file+" app-state version mismatch");
   assert(html[file].indexOf("app-state.js?v="+release)<html[file].indexOf("game-engine.js?v="+release),file+" must load app-state before engine");
@@ -89,10 +90,12 @@ assert(html["games/personal-impostor/index.html"].indexOf("app-state.js?v="+rele
 const sw=read("service-worker.js");
 const swRelease=(sw.match(/const RELEASE="([^"]+)"/)||[])[1];
 assert(swRelease===release,"service worker RELEASE mismatch");
-assert(!sw.includes("skipWaiting"),"service worker must not force skipWaiting");
+assert((sw.match(/self\.skipWaiting\(\)/g)||[]).length===1,"service worker explicit update activation mismatch");
+assert(sw.includes('event.data&&event.data.type==="SKIP_WAITING"'),"service worker update activation must require explicit message");
 assert(!sw.includes("localStorage"),"service worker must not touch localStorage");
 assert(sw.includes("caches.delete(CACHE_NAME)"),"failed install cache cleanup missing");
 assert(sw.includes('versioned("/assets/js/app-state.js")'),"service worker app-state cache missing");
+assert(sw.includes('versioned("/assets/css/app-ui.css")'),"service worker shared app UI cache missing");
 
 const circaForbidden=["classicRole","classicDiscussion","classicResult","classicOptions","classicTimerSelect"];
 const classicForbidden=["stats","difficultyControl","question","normalReveal","answers","result","openStats","scrubber"];
@@ -200,12 +203,14 @@ const readme=read("README.md");
 assert(!readme.includes("\\n"),"README contains literal \\n text");
 assert(["Circa Imposter","Klassisches Imposter","Wer bin ich?","Scharade","Persönlicher Impostor"].every(name=>readme.includes(name)),"README must describe the five-game app");
 const changelog=read("CHANGELOG.md");
-assert(changelog.includes("V74R4")&&changelog.includes("Offline-Cache **r4**"),"V74R4 changelog entry missing");
+assert(changelog.includes("V74R5")&&changelog.includes("Offline-Cache **r5**"),"V74R5 changelog entry missing");
 
 const appStateSource=read("assets/js/app-state.js");
 const launcherSource=read("assets/js/launcher.js");
 const launcherDevSource=read("assets/js/launcher-dev.js");
+const pwaSource=read("assets/js/pwa.js");
 const launcherCss=read("assets/css/launcher.css");
+const appUiCss=read("assets/css/app-ui.css");
 const gameCss=read("assets/css/game.css");
 const engineSource=read("assets/js/game-engine.js");
 const whoSource=read("assets/js/who-am-i.js");
@@ -214,7 +219,7 @@ const charadesSource=read("assets/js/charades.js");
 const charadesCss=read("assets/css/charades.css");
 const personalSource=read("assets/js/personal-impostor.js");
 const personalCss=read("assets/css/personal-impostor.css");
-for(const [name,source] of [["app-state",appStateSource],["launcher",launcherSource],["launcher-dev",launcherDevSource],["game-engine",engineSource],["who-am-i",whoSource],["charades",charadesSource],["personal-impostor",personalSource]]){
+for(const [name,source] of [["app-state",appStateSource],["launcher",launcherSource],["launcher-dev",launcherDevSource],["pwa",pwaSource],["game-engine",engineSource],["who-am-i",whoSource],["charades",charadesSource],["personal-impostor",personalSource]]){
   try{new Function(source);}catch(error){fail(name+" syntax error: "+error.message);}
 }
 assert(appStateSource.includes('var KEY="imposterGames.appState.v1"'),"production app-state key missing");
@@ -255,7 +260,7 @@ assert(prototypePersonalSource.includes('PREFIX="imposterGames.prototype.game.pe
 assert(!prototypePersonalSource.includes('PREFIX="imposterGames.v74.game.personal."'),"prototype Personal must not use production storage");
 assert(!html["index.html"].includes("APP-SHELL TEST"),"production launcher still contains experiment badge");
 assert(launcherCss.includes("padding:calc(18px + var(--safeTop)) 16px 26px"),"launcher safe-area top padding missing");
-assert(sw.includes('const CACHE_REVISION="r4"'),"V74 cache revision mismatch");
+assert(sw.includes('const CACHE_REVISION="r5"'),"V74 cache revision mismatch");
 assert(sw.includes('versioned("/assets/js/launcher-dev.js")'),"service worker launcher DEV cache missing");
 assert(appStateSource.includes("var BACKUP_VERSION=3"),"backup format v3 missing");
 assert(engineSource.includes("experimentRecordCirca(null);"),"Circa shared base-round recording missing");
@@ -270,7 +275,7 @@ assert(html["games/personal-impostor/index.html"].includes("100 Fragepaare"),"Pe
 assert(!html["games/personal-impostor/index.html"].includes("89 Fragepaare"),"Personal stale question count remains");
 assert(html["index.html"].includes("IMPOSTOR · GESAMT"),"launcher Impostor aggregate label mismatch");
 assert(html["index.html"].includes("DAVON · PERSÖNLICH"),"launcher Personal Impostor label mismatch");
-assert(html["index.html"].includes("Profile, Presets, Sessions, Statistik, Spielzeit"),"launcher backup/reset copy missing V74R4 data scope");
+assert(html["index.html"].includes("Profile, Presets, Sessions, Statistik, Spielzeit"),"launcher backup/reset copy missing V74R5 data scope");
 assert(html["index.html"].includes('id="launcherDevTrigger"'),"launcher DEV trigger missing");
 assert(html["index.html"].includes('id="launcherDevPanelOverlay"'),"launcher DEV panel missing");
 assert(launcherCss.includes(".launcherDevOverlay")&&launcherCss.includes(".launcherDevAchievements"),"launcher DEV styles missing");
@@ -297,6 +302,19 @@ assert(launcherDevSource.includes("store.devSetAchievementOverride"),"launcher D
 assert(launcherDevSource.includes("store.devReplaceStats"),"launcher DEV raw statistics editor missing");
 assert(launcherDevSource.includes("fillContentProgress"),"launcher DEV content progress tool missing");
 assert(launcherSource.includes("window.CILauncherRefresh"),"launcher DEV refresh bridge missing");
+assert(html["index.html"].includes('id="sessionMiniBar"'),"launcher persistent session mini bar missing");
+assert(launcherSource.includes("function installSheetSwipe()"),"launcher sheet swipe gesture missing");
+assert(launcherSource.includes('view.classList.add(motion)'),"launcher directional view transition missing");
+assert(launcherSource.includes('byId("sessionMiniBar").addEventListener'),"launcher mini-session action missing");
+assert(launcherCss.includes(".sessionMiniBar")&&launcherCss.includes(".view.ciViewForward"),"launcher app-feel styles missing");
+assert(appUiCss.includes(".ciPressable.ciPressed")&&appUiCss.includes(".ciToastHost"),"shared touch/toast styles missing");
+assert(pwaSource.includes("window.CIAppUI="),"shared app UI runtime missing");
+assert(pwaSource.includes("function installInteractionLayer()"),"shared touch interaction layer missing");
+assert(pwaSource.includes("function showUpdateReady(worker)"),"in-app update prompt missing");
+assert(pwaSource.includes('postMessage({type:"SKIP_WAITING"})'),"in-app update activation message missing");
+assert(pwaSource.includes('window.addEventListener("ci:achievement-unlocked"'),"achievement toast listener missing");
+assert(appStateSource.includes('new CustomEvent("ci:achievement-unlocked"'),"achievement unlock event missing");
+assert(appStateSource.includes("emitAchievementUnlocks(unlocked)"),"achievement unlock dispatch not wired");
 assert(appStateSource.includes("function profileMatchesName(profile,lower)"),"profile alias matching helper missing");
 assert(appStateSource.includes('if(game==="circa"&&round.category)addUnique(st.categories,round.category);'),"profile Circa category guard missing");
 assert(appStateSource.includes('if(game==="circa"&&round.category)addUnique(data.stats.categories,round.category);'),"global Circa category guard missing");
