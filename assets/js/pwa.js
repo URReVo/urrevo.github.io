@@ -199,6 +199,18 @@ function handleCategoryUnlock(event){
     },index*520);
   });
 }
+function handleCategoryTicketEarned(event){
+  var items=event&&event.detail&&Array.isArray(event.detail.items)?event.detail.items:[];
+  if(!items.length)return;
+  haptic("success");
+  toast({
+    icon:"🔓",
+    title:"Freie Freischaltung verdient",
+    message:items.length>1?(items.length+" neue Freischaltungen verfügbar."):"Du kannst jetzt selbst ein Bonus-Paket auswählen.",
+    kind:"Progression",
+    duration:4800
+  });
+}
 function categoryGameLabel(game){
   return {circa:"Circa",classic:"Classic",whoami:"Wer bin ich?",charades:"Scharade"}[game]||game;
 }
@@ -471,6 +483,7 @@ installInteractionLayer();
 installDevUiTests();
 window.addEventListener("ci:achievement-unlocked",handleAchievement);
 window.addEventListener("ci:category-unlocked",handleCategoryUnlock);
+window.addEventListener("ci:category-ticket-earned",handleCategoryTicketEarned);
 
 if(document.readyState==="complete")registerOfflineSupport();
 else window.addEventListener("load",registerOfflineSupport,{once:true});
