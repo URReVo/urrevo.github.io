@@ -539,10 +539,7 @@ function computeCrew(profileIds){
   var xp=stats.rounds+stats.sessions*8+stats.awards*3+stats.games.length*5;
   var level=crewLevelInfo(xp),challenges=crewChallengeDefs(stats),stored=data.crewProgress[key]||{};
   var selectedId=stored.selectedChallengeId;
-  if(!challenges.some(function(item){return item.id===selectedId;})){
-    var firstOpen=challenges.find(function(item){return !item.done;});
-    selectedId=firstOpen?firstOpen.id:challenges[0].id;
-  }
+  if(!challenges.some(function(item){return item.id===selectedId;}))selectedId=challenges[0].id;
   var selected=challenges.find(function(item){return item.id===selectedId;})||challenges[0];
   return {
     key:key,profileIds:ids,members:ids.map(crewMember),stats:stats,xp:xp,level:level,
@@ -578,7 +575,7 @@ function buildCrewFeedback(before,after){
       message:after.members.map(function(member){return member.name;}).join(" · "),label:"PARTY-PASS",intensity:2
     });
   }
-  if(before&&after.level.level>before.level.level){
+  if(before&&before.hasHistory&&after.level.level>before.level.level){
     out.push({
       id:"crew-level-"+after.key+"-"+after.level.level,type:"crew",icon:"🔥",title:"Crew-Level "+after.level.level,
       message:after.level.title+" · "+after.stats.rounds+" gemeinsame Runden",label:"CREW LEVEL-UP",intensity:after.level.level>=5?3:2
