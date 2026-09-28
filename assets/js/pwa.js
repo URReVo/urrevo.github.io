@@ -6,6 +6,7 @@ var waitingWorker=null;
 var controllerReloadPending=false;
 var lastOnlineState=navigator.onLine;
 var toastHost=null;
+var DEV_SESSION_KEY="ci.diag.session.v1";
 
 function statusElement(){return document.getElementById("offlineStatus");}
 function preferences(){
@@ -188,6 +189,10 @@ function closeDevPanelForPreview(){
   if(gamePanel&&!gamePanel.classList.contains("hidden")){
     gamePanel.classList.add("hidden");gamePanel.setAttribute("aria-hidden","true");
   }
+  var sharedGamePanel=document.getElementById("ciSharedDevPanelOverlay");
+  if(sharedGamePanel&&!sharedGamePanel.classList.contains("hidden")){
+    sharedGamePanel.classList.add("hidden");sharedGamePanel.setAttribute("aria-hidden","true");
+  }
   var launcherPanel=document.getElementById("launcherDevPanelOverlay");
   if(launcherPanel&&!launcherPanel.classList.contains("hidden")){
     launcherPanel.classList.add("hidden");launcherPanel.setAttribute("aria-hidden","true");
@@ -257,26 +262,55 @@ function devTestButton(label,action,className){
   if(className)button.className=className;
   return button;
 }
+function devSessionUnlocked(){
+  try{return sessionStorage.getItem(DEV_SESSION_KEY)==="1";}catch(e){return false;}
+}
+function buildGameDevTestCard(){
+  var card=document.createElement("div");card.id="ciDevUiTests";card.className="devCard devWide";
+  var title=document.createElement("div");title.className="devCardTitle";title.textContent="APP-FEEL TESTS";
+  var buttons=document.createElement("div");buttons.className="devButtonGrid";
+  [
+    ["Achievement anzeigen","achievement"],
+    ["3 Achievements","achievement-stack"],
+    ["Erfolgs-Toast","success"],
+    ["Offline-Hinweis","offline"],
+    ["Update-Hinweis","update"],
+    ["Haptik testen","haptic"]
+  ].forEach(function(item){buttons.appendChild(devTestButton(item[0],item[1],"secondary"));});
+  var note=document.createElement("div");note.className="devQuestionMeta";
+  note.textContent="Vorschauen nutzen die echten Produktions-UI-Pfade, verändern aber keine Statistik oder Achievement-Freischaltung.";
+  card.append(title,buttons,note);
+  return card;
+}
+function installSharedGameDevEntry(){
+  if(!document.body||!document.body.dataset||!document.body.dataset.game||document.getElementById("devPanelOverlay")||!devSessionUnlocked())return;
+  var toolbar=document.querySelector(".gameTopbar .toolbarActions");
+  if(!toolbar||document.getElementById("ciSharedDevOpen"))return;
+
+  var open=document.createElement("button");
+  open.id="ciSharedDevOpen";open.type="button";open.className="iconButton devToolbarButton";
+  open.textContent="DEV";open.setAttribute("aria-label","App-Feel DEV Tests öffnen");open.title="DEV";
+
+  var overlay=document.createElement("div");overlay.id="ciSharedDevPanelOverlay";overlay.className="devOverlay hidden";overlay.setAttribute("aria-hidden","true");
+  var sheet=document.createElement("div");sheet.className="devSheet";sheet.setAttribute("role","dialog");sheet.setAttribute("aria-modal","true");sheet.setAttribute("aria-labelledby","ciSharedDevTitle");
+  var header=document.createElement("div");header.className="devSheetHeader";
+  var title=document.createElement("div");title.id="ciSharedDevTitle";title.className="devSheetTitle";title.textContent="DEV Tools · App-Feel";
+  var close=document.createElement("button");close.type="button";close.className="devClose";close.textContent="✕";close.setAttribute("aria-label","Schließen");
+  header.append(title,close);
+  var grid=document.createElement("div");grid.className="devGrid";grid.appendChild(buildGameDevTestCard());
+  sheet.append(header,grid);overlay.appendChild(sheet);document.body.appendChild(overlay);toolbar.appendChild(open);
+
+  function closePanel(){overlay.classList.add("hidden");overlay.setAttribute("aria-hidden","true");}
+  open.addEventListener("click",function(){overlay.classList.remove("hidden");overlay.setAttribute("aria-hidden","false");});
+  close.addEventListener("click",closePanel);
+  overlay.addEventListener("click",function(event){if(event.target===overlay)closePanel();});
+  document.addEventListener("keydown",function(event){if(event.key==="Escape"&&!overlay.classList.contains("hidden"))closePanel();});
+}
 function installDevUiTests(){
-  if(document.getElementById("ciDevUiTests")||document.getElementById("ciLauncherDevUiTests"))return;
+  if(document.getElementById("ciDevUiTests")||document.getElementById("ciLauncherDevUiTests")){installSharedGameDevEntry();return;}
 
   var gameGrid=document.querySelector("#devPanelOverlay .devGrid");
-  if(gameGrid){
-    var card=document.createElement("div");card.id="ciDevUiTests";card.className="devCard devWide";
-    var title=document.createElement("div");title.className="devCardTitle";title.textContent="APP-FEEL TESTS";
-    var buttons=document.createElement("div");buttons.className="devButtonGrid";
-    [
-      ["Achievement anzeigen","achievement"],
-      ["3 Achievements","achievement-stack"],
-      ["Erfolgs-Toast","success"],
-      ["Offline-Hinweis","offline"],
-      ["Update-Hinweis","update"],
-      ["Haptik testen","haptic"]
-    ].forEach(function(item){buttons.appendChild(devTestButton(item[0],item[1],"secondary"));});
-    var note=document.createElement("div");note.className="devQuestionMeta";
-    note.textContent="Vorschauen nutzen die echten Produktions-UI-Pfade, verändern aber keine Statistik oder Achievement-Freischaltung.";
-    card.append(title,buttons,note);gameGrid.appendChild(card);
-  }
+  if(gameGrid)gameGrid.appendChild(buildGameDevTestCard());
 
   var launcherPanel=document.querySelector("#launcherDevPanelOverlay .launcherDevPanel");
   if(launcherPanel){
@@ -302,6 +336,7 @@ function installDevUiTests(){
     if(toolsSection)launcherPanel.insertBefore(section,toolsSection);else launcherPanel.appendChild(section);
   }
 
+  installSharedGameDevEntry();
   document.addEventListener("click",function(event){
     var button=event.target&&event.target.closest?event.target.closest("[data-ci-dev-ui-test]"):null;
     if(!button)return;
