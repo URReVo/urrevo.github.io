@@ -204,7 +204,7 @@ const readme=read("README.md");
 assert(!readme.includes("\\n"),"README contains literal \\n text");
 assert(["Circa Imposter","Klassisches Imposter","Wer bin ich?","Scharade","Persönlicher Impostor"].every(name=>readme.includes(name)),"README must describe the five-game app");
 const changelog=read("CHANGELOG.md");
-assert(changelog.includes("V74R9")&&changelog.includes("Offline-Cache **r9**"),"V74R9 changelog entry missing");
+assert(changelog.includes("V74R10")&&changelog.includes("Offline-Cache **r10**"),"V74R10 changelog entry missing");
 
 const appStateSource=read("assets/js/app-state.js");
 const launcherSource=read("assets/js/launcher.js");
@@ -261,7 +261,7 @@ assert(prototypePersonalSource.includes('PREFIX="imposterGames.prototype.game.pe
 assert(!prototypePersonalSource.includes('PREFIX="imposterGames.v74.game.personal."'),"prototype Personal must not use production storage");
 assert(!html["index.html"].includes("APP-SHELL TEST"),"production launcher still contains experiment badge");
 assert(launcherCss.includes("padding:calc(18px + var(--safeTop)) 16px 26px"),"launcher safe-area top padding missing");
-assert(sw.includes('const CACHE_REVISION="r9"'),"V74 cache revision mismatch");
+assert(sw.includes('const CACHE_REVISION="r10"'),"V74 cache revision mismatch");
 assert(sw.includes('versioned("/assets/js/launcher-dev.js")'),"service worker launcher DEV cache missing");
 assert(appStateSource.includes("var BACKUP_VERSION=3"),"backup format v3 missing");
 assert(engineSource.includes("experimentRecordCirca(null);"),"Circa shared base-round recording missing");
@@ -276,7 +276,7 @@ assert(html["games/personal-impostor/index.html"].includes("100 Fragepaare"),"Pe
 assert(!html["games/personal-impostor/index.html"].includes("89 Fragepaare"),"Personal stale question count remains");
 assert(html["index.html"].includes("IMPOSTOR · GESAMT"),"launcher Impostor aggregate label mismatch");
 assert(html["index.html"].includes("DAVON · PERSÖNLICH"),"launcher Personal Impostor label mismatch");
-assert(html["index.html"].includes("Profile, Presets, Sessions, Statistik, Spielzeit"),"launcher backup/reset copy missing V74R9 data scope");
+assert(html["index.html"].includes("Profile, Presets, Sessions, Crews, Statistik, Spielzeit"),"launcher backup/reset copy missing V74R10 data scope");
 assert(html["index.html"].includes('id="launcherDevTrigger"'),"launcher DEV trigger missing");
 assert(html["index.html"].includes('id="launcherDevPanelOverlay"'),"launcher DEV panel missing");
 assert(launcherCss.includes(".launcherDevOverlay")&&launcherCss.includes(".launcherDevAchievements"),"launcher DEV styles missing");
@@ -375,6 +375,18 @@ assert(pwaSource.includes('["Feedback · klein","feedback-1"]')&&pwaSource.inclu
 assert(pwaSource.includes('["Session-Finale","feedback-session"]'),"DEV session-final feedback preview missing");
 assert(appUiCss.includes(".ciToastFeedback1")&&appUiCss.includes(".ciToastFeedback2"),"tiered feedback toast styles missing");
 assert(appUiCss.includes(".ciFeedbackHero")&&appUiCss.includes("@keyframes ciFeedbackHeroIn"),"feedback hero animation missing");
+assert(appStateSource.includes("function computeCrew(")&&appStateSource.includes("function getCrews()")&&appStateSource.includes("function setCrewChallenge("),"Party-Pass state APIs missing");
+assert(appStateSource.includes("function crewLevelInfo(")&&appStateSource.includes("function crewChallengeDefs("),"crew level/challenge model missing");
+assert(appStateSource.includes("function buildCrewFeedback("),"crew feedback integration missing");
+assert(appStateSource.includes("getCrew:getCrew")&&appStateSource.includes("getCrews:getCrews")&&appStateSource.includes("setCrewChallenge:setCrewChallenge"),"Party-Pass APIs not exported");
+assert(appStateSource.includes("crewProgress:normalizeCrewProgress(src.crewProgress)"),"crew progress backup import missing");
+assert(html["index.html"].includes('id="crewHomeBlock"')&&html["index.html"].includes('id="crewSheet"')&&html["index.html"].includes('id="crewHistoryList"'),"Party-Pass launcher UI missing");
+assert(html["index.html"].includes("Gemeinsamer Fortschritt verfällt nicht"),"non-expiring crew-progress copy missing");
+assert(launcherSource.includes("function renderCrewHome()")&&launcherSource.includes("function renderCrewHistory()")&&launcherSource.includes("function openCrewSheet("),"Party-Pass launcher rendering missing");
+assert(launcherSource.includes("store.setCrewChallenge"),"crew goal choice interaction missing");
+assert(launcherCss.includes(".crewPassCard")&&launcherCss.includes(".crewChallengeChoice")&&launcherCss.includes(".crewMemory"),"Party-Pass visual system missing");
+assert(launcherCss.includes("conic-gradient(#ef9f45 var(--crew-progress)"),"crew level progress ring missing");
+assert(pwaSource.includes('"crew-level"')&&pwaSource.includes('"crew-challenge"'),"DEV crew feedback previews missing");
 assert(appStateSource.includes("var CATEGORY_TICKET_THRESHOLDS=[8,20,40]"),"category unlock thresholds mismatch");
 assert(["popculture","tech","spicy"].every(id=>appStateSource.includes('id:"'+id+'"')),"category progression pack definitions missing");
 assert(appStateSource.includes("function getCategoryProgress()")&&appStateSource.includes("function unlockCategoryPack("),"category progression APIs missing");
@@ -710,6 +722,98 @@ assert(feedbackEnded&&feedbackEnded.rounds.length===9,"feedback audit session ro
 assert(feedbackItems.some(item=>item.type==="session-end"&&item.intensity===2),"session-end feedback missing");
 assert(feedbackItems.every(item=>item.intensity>=1&&item.intensity<=3),"feedback intensity outside 1..3");
 
+/* V74R10 Party-Pass audit: exact-group identity, persistent goal choice, crew memories and feedback. */
+const crewMem=auditStorage(),crewEvents=[];
+const crewState=auditStore(crewMem,crewEvents);
+const crewP1=crewState.getProfiles()[0];
+crewState.updateProfile(crewP1.id,{name:"Crew One",avatar:"😎"});
+const crewP2=crewState.addProfile({name:"Crew Two",avatar:"🦊"});
+const crewP3=crewState.addProfile({name:"Crew Three",avatar:"🐼"});
+const crewIds=[crewP1.id,crewP2,crewP3];
+function beginCrewSession(ids){
+  crewState.beginSession(ids.map(id=>({profileId:id,name:id})));
+}
+function crewPlayers(ids,options={}){
+  return ids.map(function(id,index){
+    return {
+      profileId:id,
+      role:index===ids.length-1?"impostor":"normal",
+      error:options.error?options.error[index]:undefined,
+      correct:options.correct?options.correct[index]:undefined,
+      skipped:options.skipped?options.skipped[index]:undefined,
+      termIds:options.termIds?options.termIds[index]:undefined,
+      termId:options.termId?options.termId[index]:undefined
+    };
+  });
+}
+for(let sessionNo=1;sessionNo<=3;sessionNo++){
+  beginCrewSession(crewIds);
+  crewState.recordRound({
+    roundKey:"crew-classic-"+sessionNo,game:"classic",category:"Allgemein",wid:"crew-w-"+sessionNo,
+    impostorEscaped:sessionNo>1,
+    players:crewPlayers(crewIds)
+  });
+  crewEvents.length=0;
+  crewState.endSession();
+  const crewNow=crewState.getCrew(crewIds);
+  assert(crewNow&&crewNow.stats.sessions===sessionNo,"crew session count mismatch at evening "+sessionNo);
+  assert(crewNow.selectedChallenge.id==="reunion-3","default crew goal changed before explicit choice");
+  if(sessionNo===1){
+    const items=crewEvents.filter(event=>event.type==="ci:motivational-feedback").flatMap(event=>event.detail.items||[]);
+    assert(items.some(item=>item.title==="Neue Crew gestartet"&&item.intensity===2),"first crew evening did not create Party-Pass feedback");
+    assert(!items.some(item=>item.type==="session-end"),"generic session finale should yield to new-crew feedback");
+  }
+  if(sessionNo===3){
+    const items=crewEvents.filter(event=>event.type==="ci:motivational-feedback").flatMap(event=>event.detail.items||[]);
+    assert(crewNow.selectedChallenge.done===true&&crewNow.selectedChallenge.progress==="3/3","reunion crew goal did not complete at third evening");
+    assert(items.some(item=>item.title==="Wiedersehen geschafft"&&item.intensity===3),"completed selected crew challenge did not trigger hero feedback");
+  }
+}
+let crew=crewState.getCrew(crewIds);
+assert(crew.stats.rounds===3&&crew.completedChallenges>=1,"crew cumulative history mismatch");
+assert(crewState.getCrews().length===1,"same profile combination created duplicate crews");
+crew=crewState.setCrewChallenge(crewIds,"all-games");
+assert(crew&&crew.selectedChallenge.id==="all-games","crew goal choice was not applied");
+
+beginCrewSession(crewIds);
+[
+  {game:"circa",roundKey:"crew-circa",qid:"crew-q",category:"Allgemein",players:crewPlayers(crewIds,{error:[4,12,30]})},
+  {game:"whoami",roundKey:"crew-who",category:"Personen & Geschichte",players:crewPlayers(crewIds,{termId:["cw1","cw2","cw3"]})},
+  {game:"charades",roundKey:"crew-char",category:"Tiere",players:crewPlayers(crewIds,{correct:[8,3,1],skipped:[1,0,0],termIds:[["ct1","ct2"],["ct3"],["ct4"]]})},
+  {game:"personal",roundKey:"crew-personal",qid:"crew-p",players:crewPlayers(crewIds)}
+].forEach(round=>crewState.recordRound(round));
+crewEvents.length=0;
+crewState.endSession();
+crew=crewState.getCrew(crewIds);
+let crewFeedback=crewEvents.filter(event=>event.type==="ci:motivational-feedback").flatMap(event=>event.detail.items||[]);
+assert(crew.selectedChallenge.done===true&&crew.selectedChallenge.progress==="5/5","selected all-games crew goal did not complete");
+assert(crewFeedback.some(item=>item.title==="Allrounder geschafft"&&item.intensity===3),"all-games crew challenge feedback missing");
+assert(crew.stats.bestCirca&&crew.stats.bestCirca.error===4,"crew best-Circa memory mismatch");
+assert(crew.stats.bestCharades&&crew.stats.bestCharades.correct===8,"crew Scharade memory mismatch");
+assert(crew.stats.impostorEscapes===2,"crew impostor-escape memory mismatch");
+assert(crew.level.level>=2&&crew.level.progress>=0&&crew.level.progress<=1,"crew level model invalid");
+
+const crewP4=crewState.addProfile({name:"Crew Four",avatar:"🐸"});
+const otherCrewIds=[crewP1.id,crewP2,crewP4];
+beginCrewSession(otherCrewIds);
+crewState.recordRound({roundKey:"crew-other",game:"classic",category:"Allgemein",wid:"crew-other-w",players:crewPlayers(otherCrewIds)});
+crewState.endSession();
+assert(crewState.getCrews().length===2,"different profile combination did not create separate crew");
+assert(crewState.getCrew(crewIds).stats.sessions===4,"different crew polluted original Party-Pass history");
+assert(crewState.getCrew(otherCrewIds).stats.sessions===1,"second crew history missing");
+
+const crewReload=auditStore(crewMem);
+assert(crewReload.getCrew(crewIds).selectedChallenge.id==="all-games","crew goal choice did not survive reload");
+assert(crewReload.getCrew(crewIds).stats.rounds===7,"crew history did not backfill from stored sessions after reload");
+
+const crewBackup=await crewState.createBackup();
+assert(crewBackup.data.crewProgress&&typeof crewBackup.data.crewProgress==="object","Party-Pass progress missing from backup");
+const crewRestoreMem=auditStorage(),crewRestoreState=auditStore(crewRestoreMem);
+const crewRestoreResult=await crewRestoreState.importSnapshot(crewBackup);
+assert(crewRestoreResult.ok,"Party-Pass backup restore failed");
+assert(crewRestoreState.getCrew(crewIds).selectedChallenge.id==="all-games","crew selected goal was not restored from backup");
+assert(crewRestoreState.getCrew(crewIds).stats.sessions===4,"crew sessions were not restored from backup");
+
 /* V74R8 category progression audit: autonomy, challenge paths, persistence and no lock bypass. */
 const progressionMem=auditStorage();
 const progressionState=auditStore(progressionMem);
@@ -860,6 +964,7 @@ const auditBackup=await auditState.createBackup();
 assert(auditBackup.formatVersion===3&&auditBackup.gameStorage,"backup v3 game storage missing");
 assert(auditBackup.integrity&&auditBackup.integrity.algorithm==="SHA-256"&&/^[a-f0-9]{64}$/.test(auditBackup.integrity.sha256),"backup v3 SHA-256 integrity missing");
 assert(auditBackup.data.categoryProgress&&auditBackup.data.categoryProgress.unlocks,"backup v3 category progression missing");
+assert(auditBackup.data.crewProgress&&typeof auditBackup.data.crewProgress==="object","backup v3 crew progress missing");
 
 const tamperedBackup=structuredClone(auditBackup);
 tamperedBackup.data.stats.rounds=Number(tamperedBackup.data.stats.rounds||0)+99;
@@ -879,6 +984,7 @@ assert(JSON.parse(restoreMem.storage.getItem("imposterGames.v74.game.whoami.deck
 assert(JSON.parse(restoreMem.storage.getItem("imposterGames.v74.game.charades.deck.v1")).Alle[0]===charades.items[0].id,"Scharade game progress was not restored");
 assert(JSON.parse(restoreMem.storage.getItem("imposterGames.v74.game.charades.timer.v1"))===60,"Scharade timer was not restored");
 assert(JSON.stringify(restoreState.getCategoryProgress())===JSON.stringify(auditState.getCategoryProgress()),"category progression was not restored from backup");
+assert(JSON.stringify(restoreState.snapshot().crewProgress)===JSON.stringify(auditState.snapshot().crewProgress),"crew progress was not restored from backup");
 
 const downgradedBackup=structuredClone(auditBackup);
 downgradedBackup.formatVersion=2;
