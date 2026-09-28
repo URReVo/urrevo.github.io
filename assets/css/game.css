@@ -17,7 +17,7 @@ html{background-color:var(--bg)}
 body{min-height:100dvh;background-color:var(--bg)}
 button,input{font:inherit}
 button{touch-action:manipulation}
-.hidden{display:none!important}
+.hidden{display:none!important}\nbody.booting .app{visibility:hidden}
 .app{max-width:720px;margin:0 auto;padding:calc(12px + env(safe-area-inset-top)) 16px calc(20px + env(safe-area-inset-bottom))}
 body.game-active{overflow:hidden}
 body.game-active .app{
