@@ -174,6 +174,10 @@ const charadesTerms=charades.items.map(x=>String(x.term).toLocaleLowerCase("de-D
 assert(new Set(charadesIds).size===charadesIds.length,"duplicate Scharade id");
 assert(new Set(charadesTerms).size===charadesTerms.length,"duplicate Scharade term");
 assertUniqueNormalized(charades.items,item=>item.term,"Scharade terms");
+assert(charades.items.every(item=>String(item.term).trim().split(/\s+/).length<=3),"Scharade terms must stay compact concepts, not sentence-like phrases");
+const charadesActionTerms=charades.items.filter(item=>item.cat==="Aktionen & Situationen");
+assert(charadesActionTerms.length===25,"Scharade action category count mismatch");
+assert(charadesActionTerms.every(item=>String(item.term).trim().split(/\s+/).length===1),"Scharade actions must be single terms");
 assert(Array.isArray(charades.categories)&&charades.categories.length===12,"Scharade category count mismatch");
 const charadesCategoryNames=new Set(charades.categories.map(category=>category.name));
 for(const item of charades.items)assert(charadesCategoryNames.has(item.cat),"unknown Scharade category: "+item.cat);
@@ -195,6 +199,12 @@ for(const item of personal.items){
   if(item.answerType==="rating")assert(Number(item.min)===1&&Number(item.max)===10,"invalid Personal rating range "+item.id);
   if(item.answerType==="percent")assert(Number(item.min)===0&&Number(item.max)===100,"invalid Personal percent range "+item.id);
 }
+const retiredVsFirstCar=personal.items.find(item=>item.id==="personal-0008");
+assert(retiredVsFirstCar&&retiredVsFirstCar.impostor.includes("finanziell unabhängig"),"Personal age pair 0008 balance regression");
+const dinnerTimePair=personal.items.find(item=>item.id==="personal-0067");
+assert(dinnerTimePair&&dinnerTimePair.impostor.includes("Abend mit Freunden"),"Personal time pair 0067 balance regression");
+const trustPair=personal.items.find(item=>item.id==="personal-0085");
+assert(trustPair&&trustPair.impostor.includes("neue Menschen"),"Personal rating pair 0085 balance regression");
 
 assert(manifest.start_url==="/"&&manifest.scope==="/","manifest root scope/start mismatch");
 assert(manifest.display==="standalone","manifest display must be standalone");
@@ -204,7 +214,7 @@ const readme=read("README.md");
 assert(!readme.includes("\\n"),"README contains literal \\n text");
 assert(["Circa Imposter","Klassisches Imposter","Wer bin ich?","Scharade","Persönlicher Impostor"].every(name=>readme.includes(name)),"README must describe the five-game app");
 const changelog=read("CHANGELOG.md");
-assert(changelog.includes("V74R15")&&changelog.includes("Offline-Cache **r15**"),"V74R15 changelog entry missing");
+assert(changelog.includes("V74R16")&&changelog.includes("Offline-Cache **r16**"),"V74R16 changelog entry missing");
 
 const appStateSource=read("assets/js/app-state.js");
 const launcherSource=read("assets/js/launcher.js");
@@ -271,13 +281,15 @@ assert(charadesSource.includes('byId("charadesTimeFill")')&&charadesCss.includes
 assert(html["games/personal-impostor/index.html"].includes('id="questionReveal"')&&html["games/personal-impostor/index.html"].includes('id="revealSharedQuestion"'),"R14 Personal shared-question reveal markup missing");
 assert(personalSource.includes('else showSharedQuestionReveal();')&&personalSource.includes("function toggleSharedQuestionReveal()"),"R14 Personal flow must reveal the shared question before answers");
 assert(personalSource.includes('byId("answersSharedQuestion").textContent=currentPair.normal'),"R14 Personal answers must retain the shared question");
+assert(html["games/personal-impostor/index.html"].includes("Anders, aber vergleichbar"),"R16 Personal balancing copy missing");
+assert(!html["games/personal-impostor/index.html"].includes("Absichtlich weit auseinander"),"R16 obsolete Personal distance copy still present");
 assert(personalCss.includes(".personalQuestionRevealScreen:not(.hidden){display:flex}")&&personalCss.includes(".personalEdgeAction{")&&personalCss.includes("position:fixed;z-index:40")&&personalCss.includes("bottom:calc(8px + env(safe-area-inset-bottom))"),"R15 Personal fixed bottom-action layout missing");
 assert(gameCss.includes(".gameScreen:not(.hidden){flex:1 1 0;height:0;min-height:0}")&&gameCss.includes(".confirmButton,.stageButton,.classicRoleButton,.classicResultActions,.resultActions{margin-top:auto!important}"),"R14 shared bottom-action anchoring missing");
 assert(whoCss.includes(".whoViewerScreen .whoBottomButton{margin-top:auto}"),"R14 WhoAmI bottom action anchoring missing");
 assert(!html["index.html"].includes("--profile-progress:0deg"),"R15 launcher avatar must not carry inline progress paint");
 assert(!launcherSource.includes('byId("headerAvatar").style.setProperty("--profile-progress"'),"R15 launcher must not repaint the header avatar with XP progress");
 assert(!launcherCss.includes("conic-gradient(var(--accent) var(--profile-progress")&&launcherCss.includes("background:#37383d;")&&launcherCss.includes("margin-bottom:10px"),"R15 launcher avatar/hero spacing fix missing");
-assert(sw.includes('const CACHE_REVISION="r15"'),"V74 cache revision mismatch");
+assert(sw.includes('const CACHE_REVISION="r16"'),"V74 cache revision mismatch");
 assert(sw.includes('versioned("/assets/js/launcher-dev.js")'),"service worker launcher DEV cache missing");
 assert(appStateSource.includes("var BACKUP_VERSION=3"),"backup format v3 missing");
 assert(engineSource.includes("experimentRecordCirca(null);"),"Circa shared base-round recording missing");
