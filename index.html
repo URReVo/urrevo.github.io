@@ -91,6 +91,29 @@
       <div id="presetScroller" class="presetScroller"></div>
     </section>
 
+    <section id="crewHomeBlock" class="sectionBlock crewHomeBlock hidden">
+      <div class="sectionHeading">
+        <div><div id="crewHomeEyebrow" class="eyebrow">PARTY-PASS</div><h2 id="crewHomeTitle">Eure Crew</h2></div>
+        <button id="crewHomeOpen" class="textButton" type="button">Öffnen</button>
+      </div>
+      <button id="crewHomeCard" class="crewPassCard" type="button">
+        <div class="crewPassTop">
+          <div id="crewHomeAvatars" class="crewAvatarStack" aria-hidden="true"></div>
+          <div class="crewLevelOrb" id="crewHomeLevelOrb"><span>LVL</span><strong id="crewHomeLevel">1</strong></div>
+        </div>
+        <div class="crewPassCopy">
+          <strong id="crewHomeLevelTitle">Neue Crew</strong>
+          <span id="crewHomeMeta">0 gemeinsame Runden</span>
+        </div>
+        <div class="crewLevelTrack" aria-hidden="true"><div id="crewHomeLevelFill" class="crewLevelFill"></div></div>
+        <div class="crewGoalPreview">
+          <span id="crewHomeGoalIcon" class="crewGoalIcon">🤝</span>
+          <div><small>NÄCHSTES CREW-ZIEL</small><strong id="crewHomeGoalTitle">Wiedersehen</strong><span id="crewHomeGoalProgress">0 / 3</span></div>
+          <span class="crewGoalArrow">›</span>
+        </div>
+      </button>
+    </section>
+
     <section id="activeSessionBlock" class="sectionBlock hidden">
       <div class="sectionHeading">
         <div><div class="eyebrow">AKTUELLE SESSION</div><h2 id="activeSessionTitle">Session läuft</h2></div>
@@ -202,6 +225,15 @@
         <div><span>🎯 Perfekte Circa-Schätzungen</span><strong id="perfectCount">0</strong></div>
         <div><span>🗺️ Circa-Kategorien gespielt</span><strong id="categoryCount">0 / 10</strong></div>
       </div>
+    </section>
+
+    <section class="sectionBlock crewHistoryBlock">
+      <div class="sectionHeading">
+        <div><div class="eyebrow">CREWS</div><h2>Party-Pässe</h2></div>
+        <span id="crewHistoryHint" class="sectionHint">0 Crews</span>
+      </div>
+      <p class="presetInlineHint">Gemeinsamer Fortschritt verfällt nicht. Gleiche Profilkombination = dieselbe Crew.</p>
+      <div id="crewHistoryList" class="crewHistoryList"></div>
     </section>
 
     <section class="sectionBlock">
@@ -385,12 +417,41 @@
   <div id="sessionMeta" class="sessionMeta"></div>
   <div class="fieldLabel sessionSectionLabel">Mitgespielt</div>
   <div id="sessionPlayers" class="sessionPlayers"></div>
+  <button id="sessionCrewOpen" class="crewSessionLink hidden" type="button">
+    <span>🤝</span><div><small>PARTY-PASS</small><strong id="sessionCrewLabel">Crew-Level 1</strong></div><span>›</span>
+  </button>
   <div class="fieldLabel sessionSectionLabel">Awards</div>
   <div id="sessionAwards" class="sessionAwards"></div>
   <div class="fieldLabel sessionSectionLabel">Runden</div>
   <div id="roundHistory" class="roundHistory"></div>
   <button id="replaySession" class="primaryButton hidden" type="button">Noch einmal mit dieser Gruppe</button>
   <p id="sessionNote" class="prototypeNote"></p>
+</section>
+
+<section id="crewSheet" class="bottomSheet hidden crewSheet" aria-modal="true" role="dialog" aria-labelledby="crewSheetTitle">
+  <div class="sheetHandle"></div>
+  <div class="sheetHeader">
+    <div><div class="eyebrow">PARTY-PASS</div><h2 id="crewSheetTitle">Eure Crew</h2></div>
+    <button class="closeSheet" type="button" aria-label="Schließen">×</button>
+  </div>
+  <div class="crewSheetHero">
+    <div id="crewSheetAvatars" class="crewAvatarStack large" aria-hidden="true"></div>
+    <div class="crewSheetLevel">
+      <span id="crewSheetLevelTitle">Neue Crew</span>
+      <strong>Level <b id="crewSheetLevel">1</b></strong>
+      <small id="crewSheetLevelMeta">Noch 20 XP bis Level 2</small>
+    </div>
+  </div>
+  <div class="crewLevelTrack large" aria-hidden="true"><div id="crewSheetLevelFill" class="crewLevelFill"></div></div>
+  <div id="crewSheetMembers" class="crewMemberNames"></div>
+  <div id="crewSheetMetrics" class="crewMetrics"></div>
+
+  <div class="fieldLabel crewSheetLabel">Euer nächstes Ziel</div>
+  <p class="crewSheetHint">Wählt selbst, worauf ihr beim nächsten Spieleabend hinarbeiten wollt. Nichts verfällt.</p>
+  <div id="crewChallengeList" class="crewChallengeList"></div>
+
+  <div class="fieldLabel crewSheetLabel">Crew Memories</div>
+  <div id="crewMemoryList" class="crewMemoryList"></div>
 </section>
 
 <section id="migrationSheet" class="bottomSheet hidden migrationSheet" aria-modal="true" role="dialog" aria-labelledby="migrationTitle">
