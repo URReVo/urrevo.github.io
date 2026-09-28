@@ -1,5 +1,18 @@
 # Changelog
 
+## V74 — Fünf Spiele, gemeinsame Statistik und Spielzeit
+
+- **Persönlicher Impostor** aus dem aktuellen Prototypen in Produktion übernommen: 3–12 Spieler, 100 kuratierte Fragepaare, gemischte Antworttypen, gemeinsame Antwortübersicht und animierte Impostor-Auflösung ohne Voting-Screen.
+- Gemeinsame Sessions und Statistik auf alle fünf Spiele erweitert. Wer bin ich?, Scharade und Persönlicher Impostor werden jetzt wie Circa und Classic vollständig im Launcher erfasst.
+- Scharade-Statistiken um richtige und übersprungene Begriffe, Durchschnitt, Bestwert und entsprechende Achievements/Awards ergänzt.
+- Geräteweite Spielzeitmessung ergänzt: App-Gesamtzeit sowie Zeit pro Spiel; nur sichtbare Vordergrundzeit wird gezählt, Hintergrund und Lockscreen nicht.
+- Preset-Editor erweitert: konkrete Profile, Mehrfachkategorien und spielabhängige Optionen; neue Spieler können direkt aus der Preset-Spielerauswahl angelegt und sofort ausgewählt werden.
+- Statistik-Karten mit eindeutigen Bezeichnungen versehen; Achievements für alle fünf Modi, Impostor-Rollen, Scharade-Leistungen und lange Sessions ergänzt.
+- Web-Audio der neueren Modi für iOS/PWA-Foreground-Wechsel gehärtet; Scharade-Abbruchlogik korrigiert.
+- Bestehende V73-Spielstände werden einmalig nach `imposterGames.v74.game.*` kopiert. Die bisherigen `imposterGames.v73.game.*`-Keys bleiben dabei unverändert als Sicherheitskopie bestehen.
+- Produktionsstand auf **V74R1** / Offline-Cache **r1** angehoben.
+
+
 ## V73
 
 - Native iOS auf Funktionsparität zur V73-PWA ausgebaut: Circa, Classic, Wer bin ich? und Scharade sind vollständig in SwiftUI umgesetzt; der letzte Spiel-Platzhalter wurde entfernt.
