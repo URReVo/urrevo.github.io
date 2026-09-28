@@ -2,27 +2,32 @@
 
 Isolierter Design- und UX-Prototyp auf Basis des produktiven **V74R22**-Stands.
 
-Basis-main vor dem Makeover: `a3bc63b49ce06afcc3738e3a67e4280f3201e268`
+Aktuelle P3-Basis: `12faf47c1a6447b8d6bf39dc8eb4a0fa608e4fee`
 
 URL: `/experiments/prototype/`
 
-## Stand P2
+## Stand P3
 
-Der Prototyp ist technisch auf den aktuellen Produktionsumfang gebracht. Enthalten sind alle fünf Spiele, Profile, Presets, Sessions, Statistiken, Spielzeit, persönliche Level, Crew-Level, Achievements, Kategorie-Freischaltungen, Challenges/Tickets, Feedback/Next Goals, DEV-Tools, Progress Integrity V1 und der Strict Backup Import V3 aus V74R22.
+P3 ersetzt den sichtbaren Launcher strukturell. Die vorhandene Daten- und Spiellogik bleibt erhalten, aber der Home-Screen verwendet nicht mehr den alten Aufbau aus Header + Hero + Kartenraster.
 
-## Party Makeover P2
+### Neue Launcher-Struktur
 
-P2 behebt die problematischen Layout-Eingriffe aus P1. In den Spiel-Screens verändert die Makeover-Schicht jetzt primär Farben, Flächen und Akzente; die getestete Produktions-Geometrie für Viewport, Flex-Flächen und Bottom-Actions bleibt maßgeblich.
+- kompakte **Party Command Bar** mit Crew-Profil, App-Sigil und Setup
+- freie dynamische Tonight-Fläche statt großer Standard-Hero-Karte
+- asymmetrische **Game Arena** als echtes 5-Spiele-Mosaik
+- Circa als große Ankerfläche, Classic und Wer bin ich? als kompakte Side-Tiles
+- Scharade und Persönlicher Impostor als eigene untere Arena-Flächen
+- alle fünf Spiele ohne horizontalen Carousel direkt sichtbar
+- Live-/Fortschrittsbereich als kompakter **Live Deck** nach der Spieleauswahl
+- neues schwebendes **Party Dock** für Party, Crew, Stats und Setup
+- Touch-Ripple, Press-Feedback und optionaler Pointer-Depth-Effekt
+- eigene P3-Launcher-CSS/JS-Schicht statt bloßer Farbänderung der alten Komponenten
 
-- alle fünf Spiele wieder **direkt als 2-Spalten-Übersicht sichtbar**; kein horizontaler Spiele-Carousel
-- dynamische Farbwelt je Spiel
-- größere Typografie und weniger „Standard-Overlay“-Anmutung
-- atmosphärische Lichtflächen und subtile Bewegung
-- neu inszenierter Launcher-Hero
-- Navigation und Bottom Sheets optisch modernisiert, aber wieder auf der bewährten Produktions-Geometrie
-- Spiel-Screens visuell akzentuiert, ohne Text-/Kartenfarben oder Action-Positionen pauschal zu überschreiben
-- gemeinsame visuelle Sprache über alle fünf Spiele
-- Safe-Area-, Touch- und Reduced-Motion-Unterstützung
+Die fünf Spiele selbst behalten vorerst die in P2 stabilisierte Spiel-Geometrie. Farben und Atmosphäre bleiben dort modernisiert, ohne Bottom-Actions oder Viewport-Flex erneut zu überschreiben.
+
+## Funktionsumfang
+
+Der Prototyp enthält weiterhin alle fünf Spiele, Profile, Presets, Sessions, Statistiken, Spielzeit, persönliche Level, Crew-Level, Achievements, Kategorie-Freischaltungen, Challenges/Tickets, Feedback/Next Goals, DEV-Tools, Progress Integrity V1 und Strict Backup Import V3.
 
 ## Isolation
 
@@ -38,4 +43,4 @@ Der Prototyp darf Produktionsdaten weder lesen noch überschreiben:
 - Backup-Format: `imposter-games-prototype-backup`
 - keine automatische Übernahme alter Produktions-/V72-Daten
 
-Das Makeover bleibt zunächst im Testbereich. Eine Übernahme nach Produktion erfolgt erst nach separater Freigabe.
+Das Makeover bleibt im Testbereich, bis es separat für Produktion freigegeben wird.
