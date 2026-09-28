@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="circa_impostor_detective_icon_180.png">
 <link rel="icon" type="image/png" sizes="180x180" href="circa_impostor_detective_icon_180.png">
 <link rel="stylesheet" href="assets/css/launcher.css?v=74">
-<title>Imposter Games · V74R1</title>
+<title>Imposter Games · V74R2</title>
 </head>
 <body>
 <main class="appShell">
@@ -174,8 +174,8 @@
     <section class="sectionBlock">
       <div class="sectionHeading"><div><div class="eyebrow">PERFORMANCE</div><h2>Deine Zahlen</h2></div></div>
       <div class="statGrid twoCol modeStatsGrid">
-        <div class="statCard"><small class="statCardLabel">IMPOSTOR · ALLE MODI</small><strong id="impostorCount">0</strong><span>Rollen als Impostor</span></div>
-        <div class="statCard"><small class="statCardLabel">PERSÖNLICHER IMPOSTOR</small><strong id="personalImpostorCount">0</strong><span>Rollen als Impostor</span></div>
+        <div class="statCard"><small class="statCardLabel">IMPOSTOR · GESAMT</small><strong id="impostorCount">0</strong><span>Rollen als Impostor</span></div>
+        <div class="statCard"><small class="statCardLabel">DAVON · PERSÖNLICH</small><strong id="personalImpostorCount">0</strong><span>Rollen als Impostor</span></div>
         <div class="statCard"><small class="statCardLabel">SCHARADE · RICHTIG</small><strong id="charadesCorrect">0</strong><span>Begriffe insgesamt</span></div>
         <div class="statCard"><small class="statCardLabel">SCHARADE · SKIPS</small><strong id="charadesSkipped">0</strong><span>Begriffe übersprungen</span></div>
         <div class="statCard"><small class="statCardLabel">SCHARADE · DURCHSCHNITT</small><strong id="charadesAverage">0,0</strong><span>Richtige je Spieler-Runde</span></div>
@@ -226,21 +226,21 @@
       <div class="sectionHeading"><div><div class="eyebrow">DATEN</div><h2>Verwalten</h2></div></div>
       <div class="settingsGroup">
         <button id="exportData" class="settingAction" type="button">
-          <span><strong>Daten exportieren</strong><small>Backup mit Profilen, Sessions, Statistik, Einstellungen und Spielfortschritt</small></span><span>›</span>
+          <span><strong>Daten exportieren</strong><small>Backup mit Profilen, Presets, Sessions, Statistik, Spielzeit, Einstellungen und Spielfortschritt</small></span><span>›</span>
         </button>
         <button id="importData" class="settingAction" type="button">
           <span><strong>Daten importieren</strong><small>Ein zuvor exportiertes Backup wiederherstellen</small></span><span>›</span>
         </button>
         <input id="importDataFile" class="hiddenFileInput" type="file" accept="application/json,.json" tabindex="-1" aria-hidden="true">
         <button id="resetAppData" class="settingAction danger" type="button">
-          <span><strong>Lokale App-Daten zurücksetzen</strong><small>Profile, Sessions, Statistik und V74-Spielfortschritt löschen</small></span><span>›</span>
+          <span><strong>Lokale App-Daten zurücksetzen</strong><small>Profile, Presets, Sessions, Statistik, Spielzeit und V74-Spielfortschritt löschen</small></span><span>›</span>
         </button>
       </div>
       <p id="dataStatus" class="inlineStatus" aria-live="polite"></p>
     </section>
 
     <div class="aboutCard">
-      <strong>Imposter Games · V74R1</strong>
+      <strong>Imposter Games · V74R2</strong>
       <span>Lokale Profile, Sessions und persönliche Statistik</span>
       <small>Deine Daten bleiben lokal auf diesem Gerät und können als Backup exportiert werden.</small>
     </div>
