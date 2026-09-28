@@ -214,7 +214,7 @@ const readme=read("README.md");
 assert(!readme.includes("\\n"),"README contains literal \\n text");
 assert(["Circa Imposter","Klassisches Imposter","Wer bin ich?","Scharade","Persönlicher Impostor"].every(name=>readme.includes(name)),"README must describe the five-game app");
 const changelog=read("CHANGELOG.md");
-assert(changelog.includes("V74R17")&&changelog.includes("Offline-Cache **r17**"),"V74R17 changelog entry missing");
+assert(changelog.includes("V74R18")&&changelog.includes("Offline-Cache **r18**"),"V74R18 changelog entry missing");
 
 const appStateSource=read("assets/js/app-state.js");
 const launcherSource=read("assets/js/launcher.js");
@@ -284,7 +284,7 @@ assert(personalSource.includes('else showSharedQuestionReveal();')&&personalSour
 assert(personalSource.includes('byId("answersSharedQuestion").textContent=currentPair.normal'),"R14 Personal answers must retain the shared question");
 assert(html["games/personal-impostor/index.html"].includes("Anders, aber vergleichbar"),"R16 Personal balancing copy missing");
 assert(!html["games/personal-impostor/index.html"].includes("Absichtlich weit auseinander"),"R16 obsolete Personal distance copy still present");
-assert(personalCss.includes(".personalQuestionRevealScreen:not(.hidden){display:flex}")&&personalCss.includes(".personalEdgeAction{")&&personalCss.includes("position:fixed;z-index:40")&&personalCss.includes("bottom:calc(8px + env(safe-area-inset-bottom))"),"R15 Personal fixed bottom-action layout missing");
+assert(personalCss.includes(".personalQuestionRevealScreen:not(.hidden){display:flex}")&&personalCss.includes(".personalBottomButton{flex:0 0 48px;min-height:48px;margin-top:auto!important}")&&!personalCss.includes(".personalEdgeAction{")&&!personalCss.includes(".personalEdgeActions{")&&!html["games/personal-impostor/index.html"].includes("personalEdgeAction")&&personalCss.includes(".personalResultActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:0 0 auto;margin-top:6px}"),"R18 Personal actions must follow Circa in-flow bottom anchoring");
 assert(gameCss.includes(".gameScreen:not(.hidden){flex:1 1 0;height:0;min-height:0}")&&gameCss.includes(".confirmButton,.stageButton,.classicRoleButton,.classicResultActions,.resultActions{margin-top:auto!important}"),"R14 shared bottom-action anchoring missing");
 assert(whoCss.includes(".whoViewerScreen .whoBottomButton{margin-top:auto}"),"R14 WhoAmI bottom action anchoring missing");
 assert(!html["index.html"].includes("--profile-progress:0deg"),"R15 launcher avatar must not carry inline progress paint");
