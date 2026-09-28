@@ -32,7 +32,8 @@
 - Automatisierte R17-Regressionstests decken Erst-Migration, 51 Sessions bei weiterhin maximal 50 gespeicherten Sessions, manipulierte globale/Profil-Statistik, gefälschte Kategorie-Unlocks, manipulierte Sessionrunden und anschließenden legitimen Fortschritt ab.
 - V74R18 korrigiert die Aktionsbuttons des Persönlichen Impostors nach dem Circa-Muster: keine separat fixierten Safe-Area-Buttons mehr, sondern Flexbox-Verankerung innerhalb des jeweiligen Spielscreens. Primäraktionen verwenden wieder die gemeinsamen 48-px-Abmessungen; die beiden Ergebnisaktionen bleiben auch auf schmalen iPhones nebeneinander wie bei Circa.
 - V74R19 gleicht die Aktionsbuttons des Persönlichen Impostors technisch vollständig an Circa an: „Antwort speichern“ verwendet nun dieselbe `confirmButton`-Regel, „Richtige Frage aufdecken“ und „Auflösung“ dieselbe `stageButton`-Regel und die Ergebnisaktionen dieselben `grid2 resultActions`-Regeln. Eigene Größen-/Bottom-Regeln wurden entfernt, damit Höhe, Flex-Verankerung und untere Safe-Area-Baseline wirklich identisch sind.
-- Produktionsstand auf **V74R19** / Offline-Cache **r19** angehoben.
+- V74R20 behebt den verbleibenden iOS/PWA-Viewport-Versatz beim Persönlichen Impostor. Anders als Circa setzte dieser Modus bei Screenwechseln den Dokument-Scroll bislang nicht auf `0` zurück. Dadurch konnte ein Scroll-Offset des Setups oder der eingeblendeten Tastatur den gesamten 100-dvh-Spielcontainer nach oben verschieben. Screenwechsel setzen den Viewport nun wie Circa auf den Dokumentanfang zurück; nach einer Antwort wird die Eingabetastatur vor dem Wechsel explizit geschlossen und der Viewport nach der iOS-Tastaturanimation erneut stabilisiert.
+- Produktionsstand auf **V74R20** / Offline-Cache **r20** angehoben.
 
 
 ## V73

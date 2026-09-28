@@ -214,7 +214,7 @@ const readme=read("README.md");
 assert(!readme.includes("\\n"),"README contains literal \\n text");
 assert(["Circa Imposter","Klassisches Imposter","Wer bin ich?","Scharade","Persönlicher Impostor"].every(name=>readme.includes(name)),"README must describe the five-game app");
 const changelog=read("CHANGELOG.md");
-assert(changelog.includes("V74R19")&&changelog.includes("Offline-Cache **r19**"),"V74R19 changelog entry missing");
+assert(changelog.includes("V74R20")&&changelog.includes("Offline-Cache **r20**"),"V74R20 changelog entry missing");
 
 const appStateSource=read("assets/js/app-state.js");
 const launcherSource=read("assets/js/launcher.js");
@@ -288,12 +288,15 @@ assert(personalCss.includes(".personalQuestionRevealScreen:not(.hidden){display:
 assert(html["games/personal-impostor/index.html"].includes('id="saveAnswer" type="button" class="full confirmButton personalBottomButton"'),"R19 Personal save action must use Circa confirmButton");
 assert(html["games/personal-impostor/index.html"].includes('id="revealSharedQuestion" type="button" class="full stageButton personalBottomButton"')&&html["games/personal-impostor/index.html"].includes('id="reveal" type="button" class="full stageButton personalBottomButton"'),"R19 Personal reveal actions must use Circa stageButton");
 assert(html["games/personal-impostor/index.html"].includes('class="grid2 resultActions personalResultActions"'),"R19 Personal result actions must use Circa resultActions/grid2");
+assert(personalSource.includes("function resetPersonalViewport(delayed)")&&personalSource.includes("window.scrollTo(0,0)")&&personalSource.includes("document.documentElement.scrollTop=0;document.body.scrollTop=0"),"R20 Personal viewport reset missing");
+assert(personalSource.includes("function dismissAnswerKeyboard()")&&personalSource.includes("dismissAnswerKeyboard();sound(\"save\")"),"R20 Personal keyboard dismissal before screen change missing");
+assert(personalSource.includes('resetPersonalViewport(id!=="question");'),"R20 Personal screen changes must restore viewport baseline");
 assert(gameCss.includes(".gameScreen:not(.hidden){flex:1 1 0;height:0;min-height:0}")&&gameCss.includes(".confirmButton,.stageButton,.classicRoleButton,.classicResultActions,.resultActions{margin-top:auto!important}"),"R14 shared bottom-action anchoring missing");
 assert(whoCss.includes(".whoViewerScreen .whoBottomButton{margin-top:auto}"),"R14 WhoAmI bottom action anchoring missing");
 assert(!html["index.html"].includes("--profile-progress:0deg"),"R15 launcher avatar must not carry inline progress paint");
 assert(!launcherSource.includes('byId("headerAvatar").style.setProperty("--profile-progress"'),"R15 launcher must not repaint the header avatar with XP progress");
 assert(!launcherCss.includes("conic-gradient(var(--accent) var(--profile-progress")&&launcherCss.includes("background:#37383d;")&&launcherCss.includes("margin-bottom:10px"),"R15 launcher avatar/hero spacing fix missing");
-assert(sw.includes('const CACHE_REVISION="r19"'),"V74 cache revision mismatch");
+assert(sw.includes('const CACHE_REVISION="r20"'),"V74 cache revision mismatch");
 assert(sw.includes('versioned("/assets/js/launcher-dev.js")'),"service worker launcher DEV cache missing");
 assert(appStateSource.includes("var BACKUP_VERSION=3"),"backup format v3 missing");
 assert(appStateSource.includes('INTEGRITY_DB_NAME="imposterGames.progressIntegrity.v1"'),"R17 progress-integrity IndexedDB namespace missing");

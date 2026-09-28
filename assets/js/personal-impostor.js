@@ -89,7 +89,27 @@ function restoreExistingAudio(){if(!soundEnabled||!audioCtx||audioCtx.state==="c
 function tone(freq,duration,delay){var ctx=ensureAudio();if(!ctx)return;try{var start=ctx.currentTime+(delay||0),o=ctx.createOscillator(),g=ctx.createGain();o.type="sine";o.frequency.value=freq||520;g.gain.setValueAtTime(.0001,start);g.gain.exponentialRampToValueAtTime(.032,start+.007);g.gain.exponentialRampToValueAtTime(.0001,start+(duration||.06));o.connect(g);g.connect(ctx.destination);o.start(start);o.stop(start+(duration||.06)+.02);}catch(e){}}
 function sound(kind){if(kind==="start"){tone(420,.055,0);tone(650,.075,.055);}else if(kind==="save"){tone(560,.045,0);}else if(kind==="reveal"){tone(470,.065,0);tone(760,.095,.065);}else tone(520,.04,0);}
 function syncSound(){byId("soundOnIcon").classList.toggle("hidden",!soundEnabled);byId("soundOffIcon").classList.toggle("hidden",soundEnabled);byId("soundToggle").setAttribute("aria-pressed",soundEnabled?"true":"false");byId("soundToggle").setAttribute("aria-label",soundEnabled?"Sound ausschalten":"Sound einschalten");}
-function show(id){sections.forEach(function(name){byId(name).classList.toggle("hidden",name!==id);});var active=id!=="setup";document.body.classList.toggle("game-active",active);byId("gameTopbar").classList.toggle("hidden",!active);if(active)byId("topRound").textContent="R"+Math.max(1,round);}
+function resetPersonalViewport(delayed){
+  function reset(){
+    try{window.scrollTo(0,0);}catch(e){}
+    try{document.documentElement.scrollTop=0;document.body.scrollTop=0;}catch(e){}
+  }
+  reset();
+  try{requestAnimationFrame(reset);}catch(e){}
+  if(delayed)setTimeout(reset,320);
+}
+function dismissAnswerKeyboard(){
+  var input=byId("answerInput");
+  try{if(input&&input.blur)input.blur();}catch(e){}
+}
+function show(id){
+  sections.forEach(function(name){byId(name).classList.toggle("hidden",name!==id);});
+  var active=id!=="setup";
+  document.body.classList.toggle("game-active",active);
+  byId("gameTopbar").classList.toggle("hidden",!active);
+  if(active)byId("topRound").textContent="R"+Math.max(1,round);
+  resetPersonalViewport(id!=="question");
+}
 function renderLoadError(message){document.body.classList.remove("booting");document.body.removeAttribute("aria-busy");var app=byId("app");app.innerHTML="";var box=document.createElement("div");box.className="personalRevealCard";box.style.marginTop="24px";var h=document.createElement("h2");h.textContent="Spiel konnte nicht geladen werden";var p=document.createElement("p");p.textContent=String(message||"Unbekannter Fehler");var a=document.createElement("a");a.href="../../";a.className="gameHubBack";a.textContent="Zurück zu den Spielen";box.append(h,p,a);app.appendChild(box);}
 try{var response=await fetch("../../data/personal-impostor.json",{cache:"no-cache"});if(!response.ok)throw new Error("Fragepaare konnten nicht geladen werden ("+response.status+").");var payload=await response.json();bank=Array.isArray(payload.items)?payload.items:[];if(bank.length<20)throw new Error("Zu wenige Fragepaare in der Datenbank.");}catch(error){renderLoadError(error&&error.message||error);return;}
 function validProfileId(id,name){if(!appState||!id||!appState.getProfileById)return null;var p=appState.getProfileById(id);return p&&cleanName(p.name).toLocaleLowerCase("de-DE")===cleanName(name).toLocaleLowerCase("de-DE")?p.id:null;}
@@ -105,7 +125,7 @@ function startParty(){var result=collectPlayers();if(!result.ok){byId("error").t
 async function startRound(useExisting){clearRevealTimers();if(!useExisting&&players.length<3){startParty();return;}if(!(await validateProgressBeforeRound()))return;var pair=drawPair();if(!pair){byId("error").textContent="Keine Fragepaare verfügbar.";show("setup");return;}currentPair=pair;impostorIndex=selectImpostor();activeIndex=0;answers=Array(players.length).fill("");round++;currentRoundKey="personal_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,7);if(appState&&appState.beginSession){appState.beginSession(players);if(appState.setActiveSessionGame)appState.setActiveSessionGame("personal","Runde "+round,true);}showHandoff();sound("start");pulse(8);}
 function showHandoff(){var p=players[activeIndex];byId("handoffAvatar").textContent=p.avatar;byId("handoffName").textContent=p.name;if(appState&&appState.setActiveSessionGame)appState.setActiveSessionGame("personal","Runde "+round+" · Spieler "+(activeIndex+1)+"/"+players.length,false);show("handoff");}
 function showQuestion(){var p=players[activeIndex],isImpostor=activeIndex===impostorIndex;byId("questionAvatar").textContent=p.avatar;byId("questionName").textContent=p.name;byId("questionProgress").textContent=(activeIndex+1)+"/"+players.length;byId("questionText").textContent=isImpostor?currentPair.impostor:currentPair.normal;renderAnswerControl();byId("answerError").textContent="";show("question");sound("tap");pulse(6);setTimeout(function(){var input=byId("answerInput");try{input&&input.focus({preventScroll:true});}catch(e){try{input&&input.focus();}catch(e2){}}},180);}
-function saveAnswer(){var parsed=readAnswer();if(!parsed.ok){byId("answerError").textContent=parsed.message||"Bitte gib zuerst deine Antwort ein.";pulse(12);return;}answers[activeIndex]=parsed.value;byId("answerError").textContent="";sound("save");pulse(7);if(activeIndex<players.length-1){activeIndex++;showHandoff();}else showSharedQuestionReveal();}
+function saveAnswer(){var parsed=readAnswer();if(!parsed.ok){byId("answerError").textContent=parsed.message||"Bitte gib zuerst deine Antwort ein.";pulse(12);return;}answers[activeIndex]=parsed.value;byId("answerError").textContent="";dismissAnswerKeyboard();sound("save");pulse(7);if(activeIndex<players.length-1){activeIndex++;showHandoff();}else showSharedQuestionReveal();}
 function showSharedQuestionReveal(){
   clearRevealTimers();
   sharedQuestionRevealed=false;
