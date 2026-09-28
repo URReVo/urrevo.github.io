@@ -81,7 +81,7 @@ select,
 }
 
 
-/* Four-game launcher grid */
+/* Five-game launcher grid */
 .gameCard.whoami,.gameCard.charades{grid-column:auto;min-height:214px}
 .gameCard.whoami{
   background:radial-gradient(circle at 92% 8%,rgba(132,101,255,.18),transparent 34%),linear-gradient(150deg,#33303d,#242329)
