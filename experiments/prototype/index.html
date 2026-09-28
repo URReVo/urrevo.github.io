@@ -8,11 +8,13 @@
 <meta name="apple-mobile-web-app-title" content="Imposter Games">
 <meta name="theme-color" content="#292929">
 <link rel="apple-touch-icon" sizes="180x180" href="circa_impostor_detective_icon_180.png">
-<link rel="icon" type="image/png" sizes="180x180" href="../../circa_impostor_detective_icon_180.png">
-<link rel="stylesheet" href="assets/css/launcher.css?v=73">
-<title>Imposter Games Prototyp · V73R14</title>
+<link rel="icon" type="image/png" sizes="180x180" href="circa_impostor_detective_icon_180.png">
+<link rel="stylesheet" href="assets/css/launcher.css?v=74">
+<link rel="stylesheet" href="assets/css/app-ui.css?v=74">
+<link rel="stylesheet" href="assets/css/party-makeover.css?v=74p1">
+<title>Imposter Games Party Lab · V74R22</title>
 </head>
-<body>
+<body class="party-makeover party-launcher" data-party-game="circa">
 <main class="appShell">
   <section id="view-home" class="view active" aria-labelledby="homeTitle">
     <header class="homeHeader">
@@ -21,61 +23,86 @@
         <span class="profileText">
           <span id="greeting" class="profileGreeting">Willkommen</span>
           <strong id="headerName">Spieler</strong>
+          <span id="headerLevel" class="profileLevelMini">LVL 1 · Neuling</span>
         </span>
         <span class="chevron">›</span>
       </button>
-      <button id="settingsShortcut" class="roundButton" type="button" aria-label="Einstellungen öffnen">⚙️</button>
+      <div class="homeHeaderActions">
+        <button id="launcherDevOpen" class="roundButton launcherDevOnly hidden launcherDevShortcut" type="button" aria-label="Launcher DEV Tools öffnen">DEV</button>
+        <button id="settingsShortcut" class="roundButton" type="button" aria-label="Einstellungen öffnen">⚙️</button>
+      </div>
     </header>
 
-    <section class="heroPanel">
-      <div>
-        <div class="eyebrow">IMPOSTER GAMES</div>
-        <h1 id="homeTitle">Was spielen wir?</h1>
-        <p>Direkt starten oder eine vorbereitete Runde wählen.</p>
+    <section id="homeHero" class="heroPanel">
+      <div class="heroCopy">
+        <div id="heroEyebrow" class="eyebrow">IMPOSTER GAMES</div>
+        <h1 id="homeTitle">Bereit für die nächste Runde?</h1>
+        <p id="heroSubtitle">Wähle ein Spiel oder starte dort weiter, wo ihr aufgehört habt.</p>
+        <button id="heroPrimary" class="heroPrimary hidden" type="button"><span id="heroPrimaryIcon">▶</span><strong id="heroPrimaryText">Weiterspielen</strong><span>›</span></button>
+        <button id="heroGoal" class="heroGoal" type="button">
+          <span id="heroGoalIcon" class="heroGoalIcon">⭐</span>
+          <span class="heroGoalCopy"><small id="heroGoalLabel">NÄCHSTES ZIEL</small><strong id="heroGoalTitle">Dein nächstes Level</strong><span id="heroGoalMeta">Noch 20 XP</span></span>
+          <span class="heroGoalProgress" aria-hidden="true"><i id="heroGoalFill"></i></span>
+        </button>
       </div>
-      <div class="heroMark" aria-hidden="true">🎭</div>
+      <div id="launcherDevTrigger" class="heroMark" aria-hidden="true">🎭</div>
     </section>
 
     <section class="statusRow" aria-label="App-Status">
       <div id="offlineStatus" class="statusPill mutedPill">Offline wird vorbereitet …</div>
       <div id="sessionStatusPill" class="statusPill mutedPill">Keine Session aktiv</div>
-      <div class="statusPill mutedPill">Prototyp</div>
     </section>
 
     <section class="sectionBlock">
       <div class="sectionHeading">
         <div><div class="eyebrow">SPIELE</div><h2>Deine Spiele</h2></div>
+        <button id="surpriseGame" class="textButton surpriseGameButton" type="button">🎲 Entscheiden</button>
       </div>
       <div class="gameGrid">
-        <a class="gameCard circa" href="games/circa-imposter/">
+        <a class="gameCard circa" data-game-card="circa" href="games/circa-imposter/">
+          <div class="gameCardAura" aria-hidden="true"></div>
           <div class="gameTop"><span class="gameIcon">🎯</span><span class="gameBadge">SCHÄTZEN</span></div>
           <div class="gameTitle">Circa<br>Imposter</div>
           <div class="gameSub">3–12 Spieler</div>
-          <div class="gameAction">Spielen <span>›</span></div>
+          <div class="gameCardProgress" aria-hidden="true"><i id="gameProgress-circa"></i></div>
+          <div id="gameMeta-circa" class="gameProgressMeta">Noch keine Runde gespielt</div>
+          <div class="gameAction"><strong id="gameAction-circa">Spielen</strong><span>›</span></div>
         </a>
-        <a class="gameCard classic" href="games/classic-imposter/">
+        <a class="gameCard classic" data-game-card="classic" href="games/classic-imposter/">
+          <div class="gameCardAura" aria-hidden="true"></div>
           <div class="gameTop"><span class="gameIcon">🎭</span><span class="gameBadge">KLASSISCH</span></div>
           <div class="gameTitle">Klassisches<br>Imposter</div>
           <div class="gameSub">3–12 Spieler</div>
-          <div class="gameAction">Spielen <span>›</span></div>
+          <div class="gameCardProgress" aria-hidden="true"><i id="gameProgress-classic"></i></div>
+          <div id="gameMeta-classic" class="gameProgressMeta">Noch keine Runde gespielt</div>
+          <div class="gameAction"><strong id="gameAction-classic">Spielen</strong><span>›</span></div>
         </a>
-        <a class="gameCard whoami" href="games/who-am-i/">
+        <a class="gameCard whoami" data-game-card="whoami" href="games/who-am-i/">
+          <div class="gameCardAura" aria-hidden="true"></div>
           <div class="gameTop"><span class="gameIcon">❓</span><span class="gameBadge">RATEN</span></div>
           <div class="gameTitle">Wer bin ich?</div>
           <div class="gameSub">2–12 Spieler · Gemeinsam raten</div>
-          <div class="gameAction">Spielen <span>›</span></div>
+          <div class="gameCardProgress" aria-hidden="true"><i id="gameProgress-whoami"></i></div>
+          <div id="gameMeta-whoami" class="gameProgressMeta">Noch keine Runde gespielt</div>
+          <div class="gameAction"><strong id="gameAction-whoami">Spielen</strong><span>›</span></div>
         </a>
-        <a class="gameCard charades" href="games/charades/">
+        <a class="gameCard charades" data-game-card="charades" href="games/charades/">
+          <div class="gameCardAura" aria-hidden="true"></div>
           <div class="gameTop"><span class="gameIcon">🎬</span><span class="gameBadge">STIRN</span></div>
           <div class="gameTitle">Scharade</div>
           <div class="gameSub">2–12 Spieler · Erklären &amp; raten</div>
-          <div class="gameAction">Spielen <span>›</span></div>
+          <div class="gameCardProgress" aria-hidden="true"><i id="gameProgress-charades"></i></div>
+          <div id="gameMeta-charades" class="gameProgressMeta">Noch keine Runde gespielt</div>
+          <div class="gameAction"><strong id="gameAction-charades">Spielen</strong><span>›</span></div>
         </a>
-        <a class="gameCard personal" href="games/personal-impostor/">
-          <div class="gameTop"><span class="gameIcon">💬</span><span class="gameBadge">NEU · PERSÖNLICH</span></div>
+        <a class="gameCard personal" data-game-card="personal" href="games/personal-impostor/">
+          <div class="gameCardAura" aria-hidden="true"></div>
+          <div class="gameTop"><span class="gameIcon">💬</span><span class="gameBadge">PERSÖNLICH</span></div>
           <div class="gameTitle">Persönlicher Impostor</div>
           <div class="gameSub">3–12 Spieler · Antworten &amp; bluffen</div>
-          <div class="gameAction">Spielen <span>›</span></div>
+          <div class="gameCardProgress" aria-hidden="true"><i id="gameProgress-personal"></i></div>
+          <div id="gameMeta-personal" class="gameProgressMeta">Noch keine Runde gespielt</div>
+          <div class="gameAction"><strong id="gameAction-personal">Spielen</strong><span>›</span></div>
         </a>
       </div>
     </section>
@@ -86,6 +113,29 @@
         <button id="addPreset" class="textButton" type="button">+ Eigenes</button>
       </div>
       <div id="presetScroller" class="presetScroller"></div>
+    </section>
+
+    <section id="crewHomeBlock" class="sectionBlock crewHomeBlock hidden">
+      <div class="sectionHeading">
+        <div><div id="crewHomeEyebrow" class="eyebrow">PARTY-PASS</div><h2 id="crewHomeTitle">Eure Crew</h2></div>
+        <button id="crewHomeOpen" class="textButton" type="button">Öffnen</button>
+      </div>
+      <button id="crewHomeCard" class="crewPassCard" type="button">
+        <div class="crewPassTop">
+          <div id="crewHomeAvatars" class="crewAvatarStack" aria-hidden="true"></div>
+          <div class="crewLevelOrb" id="crewHomeLevelOrb"><span>LVL</span><strong id="crewHomeLevel">1</strong></div>
+        </div>
+        <div class="crewPassCopy">
+          <strong id="crewHomeLevelTitle">Neue Crew</strong>
+          <span id="crewHomeMeta">0 gemeinsame Runden</span>
+        </div>
+        <div class="crewLevelTrack" aria-hidden="true"><div id="crewHomeLevelFill" class="crewLevelFill"></div></div>
+        <div class="crewGoalPreview">
+          <span id="crewHomeGoalIcon" class="crewGoalIcon">🤝</span>
+          <div><small>NÄCHSTES CREW-ZIEL</small><strong id="crewHomeGoalTitle">Wiedersehen</strong><span id="crewHomeGoalProgress">0 / 3</span></div>
+          <span class="crewGoalArrow">›</span>
+        </div>
+      </button>
     </section>
 
     <section id="activeSessionBlock" class="sectionBlock hidden">
@@ -137,6 +187,18 @@
       <small id="statsScopeSub">Runden des ausgewählten Profils</small>
     </section>
 
+    <section id="profileLevelBlock" class="profileLevelCard">
+      <div id="profileLevelOrb" class="profileLevelOrb" aria-hidden="true"><span>LVL</span><strong id="profileLevelNumber">1</strong></div>
+      <div class="profileLevelMain">
+        <div class="profileLevelHeading">
+          <div><small>SPIELER-LEVEL</small><strong id="profileLevelTitle">Neuling</strong></div>
+          <b id="profileLevelXp">0 XP</b>
+        </div>
+        <div class="profileLevelTrack" aria-hidden="true"><i id="profileLevelFill"></i></div>
+        <span id="profileLevelNext">Noch 20 XP bis LVL 2</span>
+      </div>
+    </section>
+
     <div class="statGrid gameProgressGrid">
       <div class="statCard"><small class="statCardLabel">CIRCA · FRAGEN</small><strong id="circaProgress">0%</strong><span id="circaProgressSub">0 / 520 gespielt</span></div>
       <div class="statCard"><small class="statCardLabel">CLASSIC · WÖRTER</small><strong id="classicProgress">0%</strong><span id="classicProgressSub">0 / 250 gespielt</span></div>
@@ -144,6 +206,19 @@
       <div class="statCard"><small class="statCardLabel">SCHARADE · BEGRIFFE</small><strong id="charadesProgress">0%</strong><span id="charadesProgressSub">0 / 300 gewertet</span></div>
       <div class="statCard"><small class="statCardLabel">PERSÖNLICH · FRAGEN</small><strong id="personalProgress">0%</strong><span id="personalProgressSub">0 / 100 gespielt</span></div>
     </div>
+
+    <section class="sectionBlock categoryProgressBlock">
+      <div class="sectionHeading">
+        <div><div class="eyebrow">FORTSCHRITT</div><h2>Bonus-Kategorien</h2></div>
+        <span id="categoryProgressHint" class="sectionHint">0 / 3 frei</span>
+      </div>
+      <div class="categoryTicketSummary">
+        <span>🔓 Freie Freischaltungen</span>
+        <strong id="categoryTicketCount">0</strong>
+      </div>
+      <p id="categoryTicketNext" class="presetInlineHint">Nächste Freischaltung bei 8 Gesamtrunden.</p>
+      <div id="categoryProgressList" class="categoryProgressList"></div>
+    </section>
 
     <section class="sectionBlock">
       <div class="sectionHeading"><div><div class="eyebrow">SPIELE</div><h2>Aufteilung</h2></div></div>
@@ -175,8 +250,8 @@
     <section class="sectionBlock">
       <div class="sectionHeading"><div><div class="eyebrow">PERFORMANCE</div><h2>Deine Zahlen</h2></div></div>
       <div class="statGrid twoCol modeStatsGrid">
-        <div class="statCard"><small class="statCardLabel">IMPOSTOR · ALLE MODI</small><strong id="impostorCount">0</strong><span>Rollen als Impostor</span></div>
-        <div class="statCard"><small class="statCardLabel">PERSÖNLICHER IMPOSTOR</small><strong id="personalImpostorCount">0</strong><span>Rollen als Impostor</span></div>
+        <div class="statCard"><small class="statCardLabel">IMPOSTOR · GESAMT</small><strong id="impostorCount">0</strong><span>Rollen als Impostor</span></div>
+        <div class="statCard"><small class="statCardLabel">DAVON · PERSÖNLICH</small><strong id="personalImpostorCount">0</strong><span>Rollen als Impostor</span></div>
         <div class="statCard"><small class="statCardLabel">SCHARADE · RICHTIG</small><strong id="charadesCorrect">0</strong><span>Begriffe insgesamt</span></div>
         <div class="statCard"><small class="statCardLabel">SCHARADE · SKIPS</small><strong id="charadesSkipped">0</strong><span>Begriffe übersprungen</span></div>
         <div class="statCard"><small class="statCardLabel">SCHARADE · DURCHSCHNITT</small><strong id="charadesAverage">0,0</strong><span>Richtige je Spieler-Runde</span></div>
@@ -186,6 +261,15 @@
         <div><span>🎯 Perfekte Circa-Schätzungen</span><strong id="perfectCount">0</strong></div>
         <div><span>🗺️ Circa-Kategorien gespielt</span><strong id="categoryCount">0 / 10</strong></div>
       </div>
+    </section>
+
+    <section class="sectionBlock crewHistoryBlock">
+      <div class="sectionHeading">
+        <div><div class="eyebrow">CREWS</div><h2>Party-Pässe</h2></div>
+        <span id="crewHistoryHint" class="sectionHint">0 Crews</span>
+      </div>
+      <p class="presetInlineHint">Gemeinsamer Fortschritt verfällt nicht. Gleiche Profilkombination = dieselbe Crew.</p>
+      <div id="crewHistoryList" class="crewHistoryList"></div>
     </section>
 
     <section class="sectionBlock">
@@ -227,26 +311,32 @@
       <div class="sectionHeading"><div><div class="eyebrow">DATEN</div><h2>Verwalten</h2></div></div>
       <div class="settingsGroup">
         <button id="exportData" class="settingAction" type="button">
-          <span><strong>Daten exportieren</strong><small>Backup mit Profilen, Sessions, Statistik, Einstellungen und Spielfortschritt</small></span><span>›</span>
+          <span><strong>Daten exportieren</strong><small>Backup mit Profilen, Presets, Sessions, Crews, Statistik, Spielzeit, Einstellungen und Spielfortschritt</small></span><span>›</span>
         </button>
         <button id="importData" class="settingAction" type="button">
           <span><strong>Daten importieren</strong><small>Ein zuvor exportiertes Backup wiederherstellen</small></span><span>›</span>
         </button>
         <input id="importDataFile" class="hiddenFileInput" type="file" accept="application/json,.json" tabindex="-1" aria-hidden="true">
         <button id="resetAppData" class="settingAction danger" type="button">
-          <span><strong>Lokale App-Daten zurücksetzen</strong><small>Profile, Sessions, Statistik und V73-Spielfortschritt löschen</small></span><span>›</span>
+          <span><strong>Lokale App-Daten zurücksetzen</strong><small>Profile, Presets, Sessions, Crews, Statistik, Spielzeit und V74-Spielfortschritt löschen</small></span><span>›</span>
         </button>
       </div>
       <p id="dataStatus" class="inlineStatus" aria-live="polite"></p>
     </section>
 
     <div class="aboutCard">
-      <strong>Imposter Games · V73R14 · Prototyp</strong>
-      <span>Lokale Profile, Sessions und persönliche Statistik</span>
+      <strong>Imposter Games · V74R22</strong>
+      <span>Lokale Profile, Crews, Presets, Sessions und persönliche Statistik</span>
       <small>Deine Daten bleiben lokal auf diesem Gerät und können als Backup exportiert werden.</small>
     </div>
   </section>
 </main>
+
+<button id="sessionMiniBar" class="sessionMiniBar hidden" type="button" aria-label="Laufende Session fortsetzen">
+  <span id="sessionMiniIcon" class="sessionMiniIcon">🟢</span>
+  <span class="sessionMiniText"><strong id="sessionMiniTitle">Session läuft</strong><small id="sessionMiniSub">Fortsetzen</small></span>
+  <span class="sessionMiniArrow">›</span>
+</button>
 
 <nav class="tabBar" aria-label="App-Bereiche">
   <button class="tab active" type="button" data-view="home">
@@ -360,9 +450,16 @@
     <div><div class="eyebrow">SESSION-ZUSAMMENFASSUNG</div><h2 id="sessionSheetTitle">Session</h2></div>
     <button class="closeSheet" type="button" aria-label="Schließen">×</button>
   </div>
+  <div id="sessionSpotlight" class="sessionSpotlight hidden">
+    <span id="sessionSpotlightIcon" class="sessionSpotlightIcon">✨</span>
+    <div><small id="sessionSpotlightLabel">HIGHLIGHT</small><strong id="sessionSpotlightTitle">Euer Spieleabend</strong><span id="sessionSpotlightMeta"></span></div>
+  </div>
   <div id="sessionMeta" class="sessionMeta"></div>
   <div class="fieldLabel sessionSectionLabel">Mitgespielt</div>
   <div id="sessionPlayers" class="sessionPlayers"></div>
+  <button id="sessionCrewOpen" class="crewSessionLink hidden" type="button">
+    <span>🤝</span><div><small>PARTY-PASS</small><strong id="sessionCrewLabel">Crew-Level 1</strong></div><span>›</span>
+  </button>
   <div class="fieldLabel sessionSectionLabel">Awards</div>
   <div id="sessionAwards" class="sessionAwards"></div>
   <div class="fieldLabel sessionSectionLabel">Runden</div>
@@ -371,18 +468,161 @@
   <p id="sessionNote" class="prototypeNote"></p>
 </section>
 
+<section id="crewSheet" class="bottomSheet hidden crewSheet" aria-modal="true" role="dialog" aria-labelledby="crewSheetTitle">
+  <div class="sheetHandle"></div>
+  <div class="sheetHeader">
+    <div><div class="eyebrow">PARTY-PASS</div><h2 id="crewSheetTitle">Eure Crew</h2></div>
+    <button class="closeSheet" type="button" aria-label="Schließen">×</button>
+  </div>
+  <div class="crewSheetHero">
+    <div id="crewSheetAvatars" class="crewAvatarStack large" aria-hidden="true"></div>
+    <div class="crewSheetLevel">
+      <span id="crewSheetLevelTitle">Neue Crew</span>
+      <strong>Level <b id="crewSheetLevel">1</b></strong>
+      <small id="crewSheetLevelMeta">Noch 20 XP bis Level 2</small>
+    </div>
+  </div>
+  <div class="crewLevelTrack large" aria-hidden="true"><div id="crewSheetLevelFill" class="crewLevelFill"></div></div>
+  <div id="crewSheetMembers" class="crewMemberNames"></div>
+  <div id="crewSheetMetrics" class="crewMetrics"></div>
+
+  <div class="fieldLabel crewSheetLabel">Euer nächstes Ziel</div>
+  <p class="crewSheetHint">Wählt selbst, worauf ihr beim nächsten Spieleabend hinarbeiten wollt. Nichts verfällt.</p>
+  <div id="crewChallengeList" class="crewChallengeList"></div>
+
+  <div class="fieldLabel crewSheetLabel">Crew Memories</div>
+  <div id="crewMemoryList" class="crewMemoryList"></div>
+</section>
+
 <section id="migrationSheet" class="bottomSheet hidden migrationSheet" aria-modal="true" role="dialog" aria-labelledby="migrationTitle">
   <div class="sheetHandle"></div>
   <div class="sheetHeader">
-    <div><div class="eyebrow">V72 → V73</div><h2 id="migrationTitle">Wer bist du?</h2></div>
+    <div><div class="eyebrow">V72 → V74</div><h2 id="migrationTitle">Wer bist du?</h2></div>
   </div>
   <p id="migrationText" class="migrationText">Wir haben vorhandene Spieler übernommen. Wähle dein Profil für den Launcher aus.</p>
   <div id="migrationProfiles" class="migrationProfiles"></div>
   <p class="prototypeNote">Deine bisherigen V72-Daten bleiben als Sicherheitskopie unverändert auf dem Gerät.</p>
 </section>
 
-<script src="assets/js/app-state.js?v=73"></script>
-<script src="assets/js/launcher.js?v=73"></script>
-<script src="assets/js/pwa.js?v=73"></script>
+
+<div id="launcherDevGateOverlay" class="launcherDevOverlay hidden" aria-hidden="true">
+  <section class="launcherDevGate" role="dialog" aria-modal="true" aria-labelledby="launcherDevGateTitle">
+    <div class="launcherDevHeader">
+      <div><div class="eyebrow">LAUNCHER DEV</div><h2 id="launcherDevGateTitle">Zugriff</h2></div>
+      <button id="launcherDevGateClose" type="button" class="launcherDevClose" aria-label="Schließen">×</button>
+    </div>
+    <p class="launcherDevHint">Geschützter Bereich.</p>
+    <input id="launcherDevPin" class="launcherDevPin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" aria-label="PIN">
+    <div id="launcherDevGateError" class="launcherDevStatus" aria-live="polite"></div>
+    <div class="launcherDevActions">
+      <button id="launcherDevGateCancel" type="button" class="launcherDevButton secondary">Abbrechen</button>
+      <button id="launcherDevGateSubmit" type="button" class="launcherDevButton primary">Entsperren</button>
+    </div>
+  </section>
+</div>
+
+<div id="launcherDevPanelOverlay" class="launcherDevOverlay hidden" aria-hidden="true">
+  <section class="launcherDevPanel" role="dialog" aria-modal="true" aria-labelledby="launcherDevPanelTitle">
+    <div class="launcherDevHeader launcherDevStickyHeader">
+      <div><div class="eyebrow">LAUNCHER</div><h2 id="launcherDevPanelTitle">DEV Tools</h2></div>
+      <div class="launcherDevHeaderActions">
+        <button id="launcherDevRefresh" type="button" class="launcherDevMini">↻</button>
+        <button id="launcherDevPanelClose" type="button" class="launcherDevClose" aria-label="Schließen">×</button>
+      </div>
+    </div>
+
+    <div id="launcherDevSummary" class="launcherDevSummary"></div>
+
+    <section class="launcherDevSection">
+      <div class="launcherDevSectionHead"><div><span>STATISTIK</span><strong>Werte bearbeiten</strong></div></div>
+      <label class="launcherDevField launcherDevScopeField">
+        <span>Bereich</span>
+        <select id="launcherDevScope"></select>
+      </label>
+      <p id="launcherDevScopeHint" class="launcherDevHint"></p>
+      <div id="launcherDevStatsGrid" class="launcherDevStatsGrid"></div>
+      <div class="launcherDevActions three">
+        <button id="launcherDevSaveStats" type="button" class="launcherDevButton primary">Werte speichern</button>
+        <button id="launcherDevFillProgress" type="button" class="launcherDevButton secondary">Content 100 %</button>
+        <button id="launcherDevClearProgress" type="button" class="launcherDevButton secondary">Content leeren</button>
+      </div>
+      <details class="launcherDevDetails">
+        <summary>Alle Statistik-Rohdaten bearbeiten</summary>
+        <textarea id="launcherDevStatsJson" rows="12" spellcheck="false" aria-label="Statistik JSON"></textarea>
+        <div class="launcherDevActions">
+          <button id="launcherDevSaveJson" type="button" class="launcherDevButton primary">JSON übernehmen</button>
+          <button id="launcherDevResetStats" type="button" class="launcherDevButton danger">Statistik auf 0</button>
+        </div>
+      </details>
+    </section>
+
+    <section class="launcherDevSection">
+      <div class="launcherDevSectionHead"><div><span>SPIELZEIT</span><strong>Minuten setzen</strong></div></div>
+      <div class="launcherDevStatsGrid">
+        <label class="launcherDevField"><span>App gesamt</span><input id="launcherDevUsageApp" type="number" min="0" step="0.1"></label>
+        <label class="launcherDevField"><span>Circa</span><input id="launcherDevUsageCirca" type="number" min="0" step="0.1"></label>
+        <label class="launcherDevField"><span>Classic</span><input id="launcherDevUsageClassic" type="number" min="0" step="0.1"></label>
+        <label class="launcherDevField"><span>Wer bin ich?</span><input id="launcherDevUsageWhoami" type="number" min="0" step="0.1"></label>
+        <label class="launcherDevField"><span>Scharade</span><input id="launcherDevUsageCharades" type="number" min="0" step="0.1"></label>
+        <label class="launcherDevField"><span>Persönlich</span><input id="launcherDevUsagePersonal" type="number" min="0" step="0.1"></label>
+      </div>
+      <button id="launcherDevSaveUsage" type="button" class="launcherDevButton primary full">Spielzeit speichern</button>
+    </section>
+
+    <section class="launcherDevSection">
+      <div class="launcherDevSectionHead">
+        <div><span>ACHIEVEMENTS</span><strong>Freigaben simulieren</strong></div>
+        <small id="launcherDevAchievementHint"></small>
+      </div>
+      <div class="launcherDevActions three">
+        <button id="launcherDevUnlockAll" type="button" class="launcherDevButton primary">Alle frei</button>
+        <button id="launcherDevLockAll" type="button" class="launcherDevButton secondary">Alle sperren</button>
+        <button id="launcherDevAutoAll" type="button" class="launcherDevButton secondary">Alle Auto</button>
+      </div>
+      <div id="launcherDevAchievements" class="launcherDevAchievements"></div>
+    </section>
+
+    <section class="launcherDevSection">
+      <div class="launcherDevSectionHead">
+        <div><span>KATEGORIEN</span><strong>Progression simulieren</strong></div>
+        <small id="launcherDevCategoryHint">Auto = echter Fortschritt</small>
+      </div>
+      <div class="launcherDevActions three">
+        <button id="launcherDevCategoriesUnlockAll" type="button" class="launcherDevButton primary">Alle frei</button>
+        <button id="launcherDevCategoriesLockAll" type="button" class="launcherDevButton secondary">Alle sperren</button>
+        <button id="launcherDevCategoriesAutoAll" type="button" class="launcherDevButton secondary">Alle Auto</button>
+      </div>
+      <div id="launcherDevCategoryPacks" class="launcherDevAchievements"></div>
+      <p class="launcherDevHint">Nur DEV-Override: Der echte Challenge- und Ticket-Fortschritt bleibt unverändert.</p>
+    </section>
+
+    <section class="launcherDevSection">
+      <div class="launcherDevSectionHead"><div><span>SESSIONS</span><strong>Verlauf verwalten</strong></div></div>
+      <p id="launcherDevActiveSession" class="launcherDevHint"></p>
+      <div class="launcherDevActions">
+        <button id="launcherDevEndSession" type="button" class="launcherDevButton secondary">Aktive Session beenden</button>
+        <button id="launcherDevClearSessions" type="button" class="launcherDevButton danger">Alle Sessions löschen</button>
+      </div>
+      <div id="launcherDevSessions" class="launcherDevSessions"></div>
+    </section>
+
+    <section class="launcherDevSection">
+      <div class="launcherDevSectionHead"><div><span>WERKZEUGE</span><strong>Diagnose</strong></div></div>
+      <div class="launcherDevActions">
+        <button id="launcherDevCopyState" type="button" class="launcherDevButton secondary">State kopieren</button>
+        <button id="launcherDevLock" type="button" class="launcherDevButton danger">DEV sperren</button>
+      </div>
+      <p class="launcherDevHint">Statistik- und Session-Manipulationen sind absichtlich dauerhaft. Achievement- und Kategorie-Overrides liegen separat im DEV-State und können mit „Auto“ entfernt werden.</p>
+    </section>
+
+    <div id="launcherDevStatus" class="launcherDevStatus launcherDevPanelStatus" aria-live="polite"></div>
+  </section>
+</div>
+
+<script src="assets/js/app-state.js?v=74"></script>
+<script src="assets/js/pwa.js?v=74"></script>
+<script src="assets/js/launcher.js?v=74"></script>
+<script src="assets/js/launcher-dev.js?v=74"></script>
+<script src="assets/js/party-makeover.js?v=74p1"></script>
 </body>
 </html>
