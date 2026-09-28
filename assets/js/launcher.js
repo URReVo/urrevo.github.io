@@ -188,15 +188,26 @@ function setView(name){
   window.scrollTo({top:0,behavior:store.getPreferences().animations===false?"auto":"smooth"});
 }
 function openSheet(id){
-  byId("sheetBackdrop").classList.remove("hidden");
-  byId("sheetBackdrop").setAttribute("aria-hidden","false");
-  var sheet=byId(id);sheet.style.removeProperty("--sheet-drag");sheet.classList.remove("hidden");
+  var backdrop=byId("sheetBackdrop");
+  backdrop.style.removeProperty("--sheet-backdrop-alpha");
+  backdrop.classList.remove("hidden");
+  backdrop.setAttribute("aria-hidden","false");
+  var sheet=byId(id);
+  sheet.classList.remove("sheetDragging","sheetSwipeSnapBack","sheetSwipeDismiss");
+  sheet.style.removeProperty("--sheet-drag");
+  sheet.classList.remove("hidden");
   document.body.classList.add("sheetOpen");
 }
 function closeSheets(){
-  byId("sheetBackdrop").classList.add("hidden");
-  byId("sheetBackdrop").setAttribute("aria-hidden","true");
-  document.querySelectorAll(".bottomSheet").forEach(function(sheet){sheet.classList.add("hidden");sheet.style.removeProperty("--sheet-drag");});
+  var backdrop=byId("sheetBackdrop");
+  backdrop.classList.add("hidden");
+  backdrop.setAttribute("aria-hidden","true");
+  backdrop.style.removeProperty("--sheet-backdrop-alpha");
+  document.querySelectorAll(".bottomSheet").forEach(function(sheet){
+    sheet.classList.add("hidden");
+    sheet.classList.remove("sheetDragging","sheetSwipeSnapBack","sheetSwipeDismiss");
+    sheet.style.removeProperty("--sheet-drag");
+  });
   document.body.classList.remove("sheetOpen");
 }
 function profileName(id){
