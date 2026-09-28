@@ -470,9 +470,11 @@ function categoryTicketStatus(){
   for(var i=0;i<CATEGORY_TICKET_THRESHOLDS.length;i++){
     if(rounds<CATEGORY_TICKET_THRESHOLDS[i]){next=CATEGORY_TICKET_THRESHOLDS[i];break;}
   }
+  var banked=Math.max(0,earned-spent);
+  var lockedPacks=CATEGORY_PACKS.filter(function(def){return !data.categoryProgress.unlocks[def.id];}).length;
   return {
     thresholds:CATEGORY_TICKET_THRESHOLDS.slice(),
-    earned:earned,spent:spent,available:Math.max(0,earned-spent),
+    earned:earned,spent:spent,banked:banked,available:Math.min(banked,lockedPacks),
     rounds:rounds,nextThreshold:next,roundsToNext:next===null?0:Math.max(0,next-rounds)
   };
 }
