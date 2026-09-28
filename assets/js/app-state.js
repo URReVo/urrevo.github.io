@@ -84,6 +84,20 @@ function baseStats(){
 function baseUsage(){
   return {appMs:0,games:{circa:0,classic:0,whoami:0,charades:0,personal:0},lastTickAt:null,activeGame:null};
 }
+function baseCrewProgress(){return {};}
+function normalizeCrewProgress(src){
+  var out={};
+  if(!src||typeof src!=="object"||Array.isArray(src))return out;
+  Object.keys(src).slice(0,100).forEach(function(key){
+    var item=src[key];
+    if(!item||typeof item!=="object"||Array.isArray(item))return;
+    var safe={};
+    if(item.selectedChallengeId)safe.selectedChallengeId=String(item.selectedChallengeId).slice(0,80);
+    if(item.updatedAt)safe.updatedAt=String(item.updatedAt).slice(0,80);
+    if(Object.keys(safe).length)out[String(key).slice(0,900)]=safe;
+  });
+  return out;
+}
 function baseCategoryProgress(){return {unlocks:{},ticketNotices:0};}
 function ticketsEarnedForRounds(rounds){
   rounds=Math.max(0,Number(rounds)||0);
@@ -171,6 +185,7 @@ function defaults(){
     stats:baseStats(),
     usage:baseUsage(),
     categoryProgress:baseCategoryProgress(),
+    crewProgress:baseCrewProgress(),
     sessions:[],
     activeSessionId:null,
     achievements:{},
@@ -377,6 +392,7 @@ function load(){
   ["rounds","circaRounds","classicRounds","whoamiRounds","charadesRounds","personalRounds","impostor","personalImpostor","perfectEstimates","charadesCorrect","charadesSkipped","charadesTurns","charadesBestTurn","charadesCleanTurns"].forEach(function(k){data.stats[k]=Math.max(0,Number(data.stats[k])||0);});
   data.usage=normalizeUsage(data.usage);
   data.categoryProgress=normalizeCategoryProgress(data.categoryProgress);
+  data.crewProgress=normalizeCrewProgress(data.crewProgress);
   if(data.categoryProgress.ticketNotices===null)data.categoryProgress.ticketNotices=ticketsEarnedForRounds(data.stats.rounds);
   /* A persisted heartbeat is never trusted after a reload; page lifecycle code starts a fresh foreground interval. */
   data.usage.lastTickAt=null;data.usage.activeGame=null;
@@ -430,6 +446,151 @@ var devState=loadDevState();
 
 function save(){
   try{localStorage.setItem(KEY,JSON.stringify(data));return true;}catch(e){return false;}
+}
+
+function normalizeCrewIds(profileIds){
+  var out=[];
+  (Array.isArray(profileIds)?profileIds:[]).forEach(function(id){
+    id=String(id||"");
+    if(id&&out.indexOf(id)===-1)out.push(id);
+  });
+  out.sort();
+  return out;
+}
+function crewKey(profileIds){
+  var ids=normalizeCrewIds(profileIds);
+  return ids.length>=2?ids.join("~"):"";
+}
+function crewMember(id){
+  var profile=profileById(id)||data.profileArchive[id]||null;
+  return profile?{id:id,name:profile.name||"Spieler",avatar:profile.avatar||"👤"}:{id:id,name:"Ehemaliger Spieler",avatar:"👤"};
+}
+function crewLevelThreshold(level){
+  var n=Math.max(0,Math.floor(Number(level)||1)-1);
+  return 5*n*(n+3);
+}
+function crewLevelInfo(xp){
+  xp=Math.max(0,Math.floor(Number(xp)||0));
+  var level=1;
+  while(level<99&&xp>=crewLevelThreshold(level+1))level++;
+  var start=crewLevelThreshold(level),next=crewLevelThreshold(level+1);
+  var span=Math.max(1,next-start),into=xp-start;
+  var title=level>=10?"Legendäre Runde":level>=7?"Stammcrew":level>=4?"Eingespielt":level>=2?"Auf Kurs":"Neue Crew";
+  return {level:level,title:title,xp:xp,startXp:start,nextXp:next,progress:Math.max(0,Math.min(1,into/span)),remaining:Math.max(0,next-xp)};
+}
+function crewChallengeDefs(stats){
+  return [
+    {id:"reunion-3",icon:"🤝",title:"Wiedersehen",text:"Schließt 3 gemeinsame Spieleabende ab.",current:stats.sessions,target:3},
+    {id:"all-games",icon:"🎲",title:"Allrounder",text:"Spielt gemeinsam alle 5 Spielmodi.",current:stats.games.length,target:5},
+    {id:"charades-30",icon:"🎭",title:"Schauspieltruppe",text:"Erratet gemeinsam 30 Scharade-Begriffe.",current:stats.charadesCorrect,target:30},
+    {id:"escapes-5",icon:"🕵️",title:"Unter Verdacht",text:"Kommt gemeinsam 5× als Impostor davon.",current:stats.impostorEscapes,target:5},
+    {id:"rounds-50",icon:"🔥",title:"Stammrunde",text:"Spielt 50 Runden als dieselbe Crew.",current:stats.rounds,target:50}
+  ].map(function(def){
+    def.current=Math.max(0,Number(def.current)||0);def.target=Math.max(1,Number(def.target)||1);
+    def.done=def.current>=def.target;def.progress=Math.min(def.target,def.current)+"/"+def.target;
+    def.ratio=Math.max(0,Math.min(1,def.current/def.target));
+    def.remaining=Math.max(0,def.target-def.current);
+    return def;
+  });
+}
+function computeCrew(profileIds){
+  var ids=normalizeCrewIds(profileIds),key=crewKey(ids);
+  if(!key)return null;
+  var sessions=(data.sessions||[]).filter(function(session){
+    return !!(session&&session.endedAt&&(session.rounds||[]).length&&crewKey(session.profileIds)===key);
+  });
+  var stats={
+    sessions:sessions.length,rounds:0,games:[],awards:0,charadesCorrect:0,impostorEscapes:0,
+    firstAt:null,lastAt:null,longestSessionRounds:0,longestSessionMs:0,
+    bestCirca:null,wildCirca:null,bestCharades:null,escapeLeader:null
+  };
+  var games={},escapes={};
+  sessions.forEach(function(session){
+    stats.rounds+=(session.rounds||[]).length;
+    stats.awards+=(session.awards||[]).length;
+    stats.longestSessionRounds=Math.max(stats.longestSessionRounds,(session.rounds||[]).length);
+    var startMs=new Date(session.startedAt).getTime(),endMs=new Date(session.endedAt).getTime();
+    if(Number.isFinite(startMs)&&Number.isFinite(endMs))stats.longestSessionMs=Math.max(stats.longestSessionMs,Math.max(0,endMs-startMs));
+    if(!stats.firstAt||new Date(session.startedAt).getTime()<new Date(stats.firstAt).getTime())stats.firstAt=session.startedAt;
+    if(!stats.lastAt||new Date(session.endedAt).getTime()>new Date(stats.lastAt).getTime())stats.lastAt=session.endedAt;
+    (session.rounds||[]).forEach(function(round){
+      games[normalizeGame(round.game)]=true;
+      (round.players||[]).forEach(function(p){
+        if(round.game==="circa"&&Number.isFinite(Number(p.error))){
+          var error=Math.max(0,Number(p.error)),entry={profileId:p.profileId,error:error};
+          if(!stats.bestCirca||error<stats.bestCirca.error)stats.bestCirca=entry;
+          if(!stats.wildCirca||error>stats.wildCirca.error)stats.wildCirca=entry;
+        }
+        if(round.game==="charades"){
+          var correct=Math.max(0,Number(p.correct)||0);
+          stats.charadesCorrect+=correct;
+          if(!stats.bestCharades||correct>stats.bestCharades.correct)stats.bestCharades={profileId:p.profileId,correct:correct};
+        }
+        if(p.role==="impostor"&&round.impostorEscaped===true){
+          stats.impostorEscapes++;
+          escapes[p.profileId]=(escapes[p.profileId]||0)+1;
+        }
+      });
+    });
+  });
+  stats.games=Object.keys(games);
+  var escapeEntries=Object.entries(escapes).sort(function(a,b){return b[1]-a[1];});
+  if(escapeEntries.length)stats.escapeLeader={profileId:escapeEntries[0][0],escapes:escapeEntries[0][1]};
+  var xp=stats.rounds+stats.sessions*8+stats.awards*3+stats.games.length*5;
+  var level=crewLevelInfo(xp),challenges=crewChallengeDefs(stats),stored=data.crewProgress[key]||{};
+  var selectedId=stored.selectedChallengeId;
+  if(!challenges.some(function(item){return item.id===selectedId;})){
+    var firstOpen=challenges.find(function(item){return !item.done;});
+    selectedId=firstOpen?firstOpen.id:challenges[0].id;
+  }
+  var selected=challenges.find(function(item){return item.id===selectedId;})||challenges[0];
+  return {
+    key:key,profileIds:ids,members:ids.map(crewMember),stats:stats,xp:xp,level:level,
+    challenges:challenges,selectedChallenge:selected,
+    completedChallenges:challenges.filter(function(item){return item.done;}).length,
+    hasHistory:sessions.length>0
+  };
+}
+function getCrews(){
+  var seen={},out=[];
+  (data.sessions||[]).forEach(function(session){
+    if(!session||!session.endedAt||!(session.rounds||[]).length)return;
+    var key=crewKey(session.profileIds);if(!key||seen[key])return;seen[key]=true;
+    var crew=computeCrew(session.profileIds);if(crew)out.push(crew);
+  });
+  out.sort(function(a,b){return new Date(b.stats.lastAt||0).getTime()-new Date(a.stats.lastAt||0).getTime();});
+  return clone(out);
+}
+function getCrew(profileIds){var crew=computeCrew(profileIds);return crew?clone(crew):null;}
+function setCrewChallenge(profileIds,challengeId){
+  var crew=computeCrew(profileIds);if(!crew)return null;
+  challengeId=String(challengeId||"");
+  if(!crew.challenges.some(function(item){return item.id===challengeId;}))return null;
+  data.crewProgress[crew.key]={selectedChallengeId:challengeId,updatedAt:now()};
+  save();return getCrew(profileIds);
+}
+function buildCrewFeedback(before,after){
+  if(!after||!after.hasHistory)return [];
+  var out=[],selectedAfter=after.selectedChallenge,selectedBefore=before&&before.selectedChallenge;
+  if(!before||!before.hasHistory){
+    out.push({
+      id:"crew-created-"+after.key,type:"crew",icon:"🤝",title:"Neue Crew gestartet",
+      message:after.members.map(function(member){return member.name;}).join(" · "),label:"PARTY-PASS",intensity:2
+    });
+  }
+  if(before&&after.level.level>before.level.level){
+    out.push({
+      id:"crew-level-"+after.key+"-"+after.level.level,type:"crew",icon:"🔥",title:"Crew-Level "+after.level.level,
+      message:after.level.title+" · "+after.stats.rounds+" gemeinsame Runden",label:"CREW LEVEL-UP",intensity:after.level.level>=5?3:2
+    });
+  }
+  if(selectedAfter&&selectedAfter.done&&(!selectedBefore||!selectedBefore.done)){
+    out.push({
+      id:"crew-challenge-"+after.key+"-"+selectedAfter.id,type:"crew",icon:selectedAfter.icon,title:selectedAfter.title+" geschafft",
+      message:selectedAfter.progress+" · Gemeinsames Ziel erreicht.",label:"CREW-CHALLENGE",intensity:3
+    });
+  }
+  return out.slice(0,2);
 }
 
 function categoryPackDef(id){
@@ -1162,10 +1323,12 @@ function computeAwards(session){
 function endSession(){
   var s=data.activeSessionId&&sessionById(data.activeSessionId);
   if(!s||s.endedAt)return null;
+  var crewBefore=computeCrew(s.profileIds);
   s.endedAt=now();s.awards=computeAwards(s);data.activeSessionId=null;
+  var crewAfter=computeCrew(s.profileIds);
   var categoryUnlocked=evaluateCategoryUnlocks();
   var unlocked=evaluateAchievements();
-  var feedback=buildSessionFeedback(s);
+  var feedback=buildCrewFeedback(crewBefore,crewAfter).concat(buildSessionFeedback(s));
   save();
   emitAchievementUnlocks(unlocked);
   emitCategoryUnlocks(categoryUnlocked);
@@ -1653,6 +1816,7 @@ async function importSnapshot(input){
     stats:sanitizeImportedStats(src.stats),
     usage:normalizeUsage(src.usage),
     categoryProgress:normalizeCategoryProgress(src.categoryProgress),
+    crewProgress:normalizeCrewProgress(src.crewProgress),
     sessions:sanitizeImportedSessions(src.sessions),
     activeSessionId:null,
     achievements:src.achievements&&typeof src.achievements==="object"&&!Array.isArray(src.achievements)?clone(src.achievements):{},
@@ -1793,6 +1957,9 @@ window.CIAppState={
   getStats:getStats,
   getProfileStats:getProfileStats,
   getUsageStats:getUsageStats,
+  getCrew:getCrew,
+  getCrews:getCrews,
+  setCrewChallenge:setCrewChallenge,
   getCategoryProgress:getCategoryProgress,
   isCategoryUnlocked:isCategoryUnlocked,
   getCategoryLock:getCategoryLock,
