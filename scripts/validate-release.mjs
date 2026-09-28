@@ -204,7 +204,7 @@ const readme=read("README.md");
 assert(!readme.includes("\\n"),"README contains literal \\n text");
 assert(["Circa Imposter","Klassisches Imposter","Wer bin ich?","Scharade","Persönlicher Impostor"].every(name=>readme.includes(name)),"README must describe the five-game app");
 const changelog=read("CHANGELOG.md");
-assert(changelog.includes("V74R7")&&changelog.includes("Offline-Cache **r7**"),"V74R7 changelog entry missing");
+assert(changelog.includes("V74R8")&&changelog.includes("Offline-Cache **r8**"),"V74R8 changelog entry missing");
 
 const appStateSource=read("assets/js/app-state.js");
 const launcherSource=read("assets/js/launcher.js");
@@ -261,7 +261,7 @@ assert(prototypePersonalSource.includes('PREFIX="imposterGames.prototype.game.pe
 assert(!prototypePersonalSource.includes('PREFIX="imposterGames.v74.game.personal."'),"prototype Personal must not use production storage");
 assert(!html["index.html"].includes("APP-SHELL TEST"),"production launcher still contains experiment badge");
 assert(launcherCss.includes("padding:calc(18px + var(--safeTop)) 16px 26px"),"launcher safe-area top padding missing");
-assert(sw.includes('const CACHE_REVISION="r7"'),"V74 cache revision mismatch");
+assert(sw.includes('const CACHE_REVISION="r8"'),"V74 cache revision mismatch");
 assert(sw.includes('versioned("/assets/js/launcher-dev.js")'),"service worker launcher DEV cache missing");
 assert(appStateSource.includes("var BACKUP_VERSION=3"),"backup format v3 missing");
 assert(engineSource.includes("experimentRecordCirca(null);"),"Circa shared base-round recording missing");
@@ -276,7 +276,7 @@ assert(html["games/personal-impostor/index.html"].includes("100 Fragepaare"),"Pe
 assert(!html["games/personal-impostor/index.html"].includes("89 Fragepaare"),"Personal stale question count remains");
 assert(html["index.html"].includes("IMPOSTOR · GESAMT"),"launcher Impostor aggregate label mismatch");
 assert(html["index.html"].includes("DAVON · PERSÖNLICH"),"launcher Personal Impostor label mismatch");
-assert(html["index.html"].includes("Profile, Presets, Sessions, Statistik, Spielzeit"),"launcher backup/reset copy missing V74R7 data scope");
+assert(html["index.html"].includes("Profile, Presets, Sessions, Statistik, Spielzeit"),"launcher backup/reset copy missing V74R8 data scope");
 assert(html["index.html"].includes('id="launcherDevTrigger"'),"launcher DEV trigger missing");
 assert(html["index.html"].includes('id="launcherDevPanelOverlay"'),"launcher DEV panel missing");
 assert(launcherCss.includes(".launcherDevOverlay")&&launcherCss.includes(".launcherDevAchievements"),"launcher DEV styles missing");
@@ -356,6 +356,46 @@ assert(pwaSource.includes('["Mini-Session","mini-session"]'),"launcher mini-sess
 assert(pwaSource.includes('closeDevPanelForPreview()'),"DEV visual previews must close overlays before display");
 assert(appStateSource.includes('new CustomEvent("ci:achievement-unlocked"'),"achievement unlock event missing");
 assert(appStateSource.includes("emitAchievementUnlocks(unlocked)"),"achievement unlock dispatch not wired");
+assert(appStateSource.includes("var CATEGORY_TICKET_THRESHOLDS=[8,20,40]"),"category unlock thresholds mismatch");
+assert(["popculture","tech","spicy"].every(id=>appStateSource.includes('id:"'+id+'"')),"category progression pack definitions missing");
+assert(appStateSource.includes("function getCategoryProgress()")&&appStateSource.includes("function unlockCategoryPack("),"category progression APIs missing");
+assert(appStateSource.includes("getCategoryProgress:getCategoryProgress")&&appStateSource.includes("filterUnlockedCategories:filterUnlockedCategories"),"category progression API exports missing");
+assert(appStateSource.includes('new CustomEvent("ci:category-unlocked"'),"category unlock event missing");
+assert(appStateSource.includes('new CustomEvent("ci:category-ticket-earned"'),"category ticket event missing");
+assert(pwaSource.includes("function openCategoryUnlock(game,category)"),"category progression modal missing");
+assert(pwaSource.includes('window.addEventListener("ci:category-unlocked"'),"category unlock feedback listener missing");
+assert(pwaSource.includes('window.addEventListener("ci:category-ticket-earned"'),"category ticket feedback listener missing");
+assert(appUiCss.includes(".categoryCard.locked")&&appUiCss.includes(".ciProgressOverlay"),"category lock/progression styles missing");
+assert(html["index.html"].includes('id="categoryProgressList"')&&html["index.html"].includes('id="categoryTicketCount"'),"launcher category progression UI missing");
+assert(launcherSource.includes("function renderCategoryProgress()"),"launcher category progression renderer missing");
+assert(launcherSource.includes("function firstLockedPresetCategory("),"preset category lock guard missing");
+assert(launcherSource.includes('button.dataset.locked==="1"'),"preset category picker lock guard missing");
+assert(engineSource.includes("allCats=allCats.filter(experimentCategoryUnlocked)"),"Circa 'Alle' must exclude locked categories");
+assert(engineSource.includes("all=all.filter(experimentCategoryUnlocked)"),"Classic 'Alle' must exclude locked categories");
+assert(whoSource.includes("return bank.filter(function(item){return categoryUnlocked(item.cat);})"),"WhoAmI 'Alle' must exclude locked categories");
+assert(charadesSource.includes("return bank.filter(function(item){return categoryUnlocked(item.cat);})"),"Charades 'Alle' must exclude locked categories");
+
+{
+  const categorySets={
+    circa:[...new Set(questions.items.map(item=>item.cat))],
+    classic:[...new Set(words.items.map(item=>item.cat))],
+    whoami:(who.categories||[]).map(item=>typeof item==="string"?item:item.name),
+    charades:(charades.categories||[]).map(item=>typeof item==="string"?item:item.name)
+  };
+  const locked={
+    circa:["Popkultur","Technik","Spicy 🌶️"],
+    classic:["Popkultur","Technik","Spicy 🌶️"],
+    whoami:["Film & Serien","Games & Figuren","Marken & Technik"],
+    charades:["Film & Serien","Musik & Bühne","Technik & Internet"]
+  };
+  for(const game of Object.keys(categorySets)){
+    const total=categorySets[game].length;
+    const open=total-locked[game].length;
+    const ratio=open/total;
+    assert(ratio>=0.65&&ratio<=0.80,game+" initial category availability must stay around 70–75%");
+    assert(locked[game].every(cat=>categorySets[game].includes(cat)),game+" progression references unknown category");
+  }
+}
 assert(appStateSource.includes("function profileMatchesName(profile,lower)"),"profile alias matching helper missing");
 assert(appStateSource.includes('if(game==="circa"&&round.category)addUnique(st.categories,round.category);'),"profile Circa category guard missing");
 assert(appStateSource.includes('if(game==="circa"&&round.category)addUnique(data.stats.categories,round.category);'),"global Circa category guard missing");
@@ -578,6 +618,94 @@ auditSession=auditState.getActiveSession();
 assert(auditState.getStats().rounds===2&&auditState.getStats().classicRounds===1,"Classic round idempotency failed");
 assert(auditSession.rounds.length===2,"session contains duplicate round records");
 
+/* V74R8 category progression audit: autonomy, challenge paths, persistence and no lock bypass. */
+const progressionMem=auditStorage();
+const progressionState=auditStore(progressionMem);
+let progression=progressionState.getCategoryProgress();
+assert(progression.packs.length===3&&progression.packs.every(pack=>!pack.unlocked),"fresh category progression must start with three locked packs");
+assert(progression.tickets.available===0&&progression.tickets.earned===0,"fresh category progression must start without unlock choices");
+assert(progressionState.isCategoryUnlocked("circa","Allgemein")===true,"base Circa category unexpectedly locked");
+assert(progressionState.isCategoryUnlocked("circa","Popkultur")===false,"Popkultur must start locked");
+assert(progressionState.isCategoryUnlocked("whoami","Marken & Technik")===false,"Tech pack must start locked across games");
+assert(JSON.stringify(progressionState.filterUnlockedCategories("circa",["Allgemein","Technik"]))===JSON.stringify(["Allgemein"]),"locked explicit category was not filtered");
+assert(JSON.stringify(progressionState.filterUnlockedCategories("circa",["Alle"]))===JSON.stringify(["Alle"]),"Alle category sentinel must remain stable");
+
+const progP1=progressionState.getProfiles()[0];
+progressionState.updateProfile(progP1.id,{name:"Prog One",avatar:"😎"});
+const progP2=progressionState.addProfile({name:"Prog Two",avatar:"🦊"});
+const progP3=progressionState.addProfile({name:"Prog Three",avatar:"🐼"});
+const progPlayers=[
+  {profileId:progP1.id,role:"normal"},
+  {profileId:progP2,role:"normal"},
+  {profileId:progP3,role:"impostor"}
+];
+progressionState.beginSession([
+  {profileId:progP1.id,name:"Prog One",avatar:"😎"},
+  {profileId:progP2,name:"Prog Two",avatar:"🦊"},
+  {profileId:progP3,name:"Prog Three",avatar:"🐼"}
+]);
+for(let i=0;i<7;i++){
+  progressionState.recordRound({roundKey:"prog-ticket-"+i,game:"classic",category:"Allgemein",wid:"prog-w"+i,players:progPlayers});
+}
+assert(progressionState.getCategoryProgress().tickets.available===0,"unlock choice appeared before 8 rounds");
+progressionState.recordRound({roundKey:"prog-ticket-7",game:"classic",category:"Allgemein",wid:"prog-w7",players:progPlayers});
+progression=progressionState.getCategoryProgress();
+assert(progression.tickets.available===1&&progression.tickets.earned===1,"first free category unlock was not earned at 8 rounds");
+const ticketUnlock=progressionState.unlockCategoryPack("tech","ticket");
+assert(ticketUnlock.ok===true&&progressionState.isCategoryUnlocked("charades","Technik & Internet")===true,"free choice did not unlock tech pack globally");
+assert(progressionState.getCategoryProgress().tickets.available===0,"spent unlock choice remained available");
+
+const varietyMem=auditStorage();
+const varietyState=auditStore(varietyMem);
+const varietyP1=varietyState.getProfiles()[0];
+varietyState.updateProfile(varietyP1.id,{name:"Var One",avatar:"😎"});
+const varietyP2=varietyState.addProfile({name:"Var Two",avatar:"🦊"});
+const varietyP3=varietyState.addProfile({name:"Var Three",avatar:"🐼"});
+const varietyPlayers=[{profileId:varietyP1.id},{profileId:varietyP2},{profileId:varietyP3}];
+varietyState.recordRound({roundKey:"var-c",game:"circa",category:"Allgemein",qid:"var-q",players:varietyPlayers});
+varietyState.recordRound({roundKey:"var-k",game:"classic",category:"Allgemein",wid:"var-w",players:varietyPlayers});
+varietyState.recordRound({roundKey:"var-p",game:"personal",qid:"var-p",players:varietyPlayers});
+assert(varietyState.isCategoryUnlocked("circa","Popkultur")===true,"three-game variety challenge did not unlock Popkultur");
+assert(varietyState.getCategoryProgress().packs.find(pack=>pack.id==="popculture").method==="challenge","challenge unlock method was not persisted");
+
+const collectorMem=auditStorage();
+const collectorState=auditStore(collectorMem);
+collectorState.devPatchStats("global",null,{rounds:5,circaRounds:5,circaQids:Array.from({length:60},(_,i)=>"collector-"+i)});
+assert(collectorState.isCategoryUnlocked("classic","Technik")===true,"60-content challenge did not unlock tech pack");
+assert(collectorState.getCategoryProgress().tickets.spent===0,"challenge unlock consumed a free category choice");
+
+const spicyMem=auditStorage();
+const spicyState=auditStore(spicyMem);
+const spicyP1=spicyState.getProfiles()[0];
+spicyState.updateProfile(spicyP1.id,{name:"Spicy One",avatar:"😎"});
+const spicyP2=spicyState.addProfile({name:"Spicy Two",avatar:"🦊"});
+const spicyP3=spicyState.addProfile({name:"Spicy Three",avatar:"🐼"});
+const spicyPlayers=[{profileId:spicyP1.id},{profileId:spicyP2},{profileId:spicyP3}];
+spicyState.beginSession([
+  {profileId:spicyP1.id,name:"Spicy One"},
+  {profileId:spicyP2,name:"Spicy Two"},
+  {profileId:spicyP3,name:"Spicy Three"}
+]);
+for(let i=0;i<9;i++)spicyState.recordRound({roundKey:"spicy-"+i,game:"classic",category:"Allgemein",wid:"spicy-w"+i,players:spicyPlayers});
+assert(spicyState.isCategoryUnlocked("classic","Spicy 🌶️")===false,"Spicy unlocked before 10 rounds in one session");
+spicyState.recordRound({roundKey:"spicy-9",game:"classic",category:"Allgemein",wid:"spicy-w9",players:spicyPlayers});
+assert(spicyState.isCategoryUnlocked("classic","Spicy 🌶️")===true,"10-round session challenge did not unlock Spicy");
+
+const progressionReload=auditStore(progressionMem);
+assert(progressionReload.isCategoryUnlocked("whoami","Marken & Technik")===true,"category unlock did not survive local-state reload");
+assert(progressionReload.getCategoryProgress().tickets.spent===1,"ticket spend did not survive local-state reload");
+
+/* Simulate a pre-R8 state with rounds but no categoryProgress: earned choices must be restored silently. */
+const legacyProgressSnapshot=progressionReload.snapshot();
+legacyProgressSnapshot.stats.rounds=20;
+legacyProgressSnapshot.stats.circaRounds=20;
+delete legacyProgressSnapshot.categoryProgress;
+const legacyProgressMem=auditStorage([["imposterGames.appState.v1",JSON.stringify(legacyProgressSnapshot)]]);
+const legacyProgressState=auditStore(legacyProgressMem);
+const legacyProgress=legacyProgressState.getCategoryProgress();
+assert(legacyProgress.tickets.earned===2,"pre-R8 rounds did not backfill earned unlock choices");
+assert(legacyProgressState.snapshot().categoryProgress.ticketNotices===2,"pre-R8 ticket notice baseline would cause retroactive spam");
+
 const categoryMem=auditStorage();
 const categoryState=auditStore(categoryMem);
 const categoryP1=categoryState.getProfiles()[0];
@@ -630,6 +758,7 @@ auditMem.storage.setItem("imposterGames.v74.game.charades.timer.v1",JSON.stringi
 const auditBackup=await auditState.createBackup();
 assert(auditBackup.formatVersion===3&&auditBackup.gameStorage,"backup v3 game storage missing");
 assert(auditBackup.integrity&&auditBackup.integrity.algorithm==="SHA-256"&&/^[a-f0-9]{64}$/.test(auditBackup.integrity.sha256),"backup v3 SHA-256 integrity missing");
+assert(auditBackup.data.categoryProgress&&auditBackup.data.categoryProgress.unlocks,"backup v3 category progression missing");
 
 const tamperedBackup=structuredClone(auditBackup);
 tamperedBackup.data.stats.rounds=Number(tamperedBackup.data.stats.rounds||0)+99;
@@ -648,6 +777,7 @@ assert(JSON.parse(restoreMem.storage.getItem("imposterGames.v74.game.circa.compl
 assert(JSON.parse(restoreMem.storage.getItem("imposterGames.v74.game.whoami.deck.v1")).Alle[0]===who.items[0].id,"WhoAmI game progress was not restored");
 assert(JSON.parse(restoreMem.storage.getItem("imposterGames.v74.game.charades.deck.v1")).Alle[0]===charades.items[0].id,"Scharade game progress was not restored");
 assert(JSON.parse(restoreMem.storage.getItem("imposterGames.v74.game.charades.timer.v1"))===60,"Scharade timer was not restored");
+assert(JSON.stringify(restoreState.getCategoryProgress())===JSON.stringify(auditState.getCategoryProgress()),"category progression was not restored from backup");
 
 const downgradedBackup=structuredClone(auditBackup);
 downgradedBackup.formatVersion=2;
