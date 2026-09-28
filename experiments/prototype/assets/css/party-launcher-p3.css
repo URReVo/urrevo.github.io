@@ -1,0 +1,341 @@
+/* Imposter Games · Party Launcher P3
+   New launcher structure. Not a recolor of the legacy home layout. */
+body.party-launcher.party-launcher-p3{
+  --p3-bg:#070912;
+  --p3-panel:#111522;
+  --p3-line:rgba(255,255,255,.09);
+  --p3-text:#f8f8ff;
+  --p3-muted:#8f96aa;
+  --p3-violet:#a98cff;
+  --p3-blue:#6da3ff;
+  --p3-orange:#ffae58;
+  --p3-mint:#58ddc4;
+  --p3-pink:#ff79c9;
+  padding-bottom:calc(92px + var(--safeBottom))!important;
+  background:
+    radial-gradient(640px 420px at 48% -120px,rgba(124,98,255,.18),transparent 65%),
+    linear-gradient(180deg,#0b0e1a 0%,#070912 52%,#05070d 100%)!important;
+}
+body.party-launcher.party-launcher-p3::before{
+  content:"";
+  position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    linear-gradient(rgba(255,255,255,.015) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.015) 1px,transparent 1px);
+  background-size:28px 28px;
+  mask-image:linear-gradient(to bottom,rgba(0,0,0,.7),transparent 72%);
+  -webkit-mask-image:linear-gradient(to bottom,rgba(0,0,0,.7),transparent 72%);
+}
+body.party-launcher.party-launcher-p3 .appShell{
+  max-width:700px;
+  padding:calc(12px + var(--safeTop)) 14px 34px!important;
+}
+body.party-launcher.party-launcher-p3 #view-home{position:relative}
+
+/* Command bar */
+.partyCommandBar{
+  min-height:52px;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 48px minmax(0,1fr);
+  align-items:center;
+  gap:10px;
+  margin-bottom:12px;
+}
+.partyIdentity{
+  min-width:0;border:0;background:transparent;padding:0;
+  display:grid;grid-template-columns:42px minmax(0,1fr) 18px;gap:9px;align-items:center;
+  text-align:left;
+}
+.partyIdentityAvatar{
+  width:42px;height:42px;border-radius:15px;display:grid;place-items:center;
+  font-size:24px;background:linear-gradient(150deg,#252b41,#161a28);
+  border:1px solid rgba(169,140,255,.24);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 10px 24px rgba(0,0,0,.18);
+}
+.partyIdentityCopy{min-width:0;display:flex;flex-direction:column;line-height:1.05}
+.partyIdentityCopy small{font-size:8px;font-weight:850;color:#777f94;letter-spacing:.15px}
+.partyIdentityCopy strong{margin-top:2px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.partyIdentityCopy span{margin-top:3px;font-size:7.5px;font-weight:800;color:#b29eff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.partyIdentityArrow{font-size:14px;color:#686f82}
+.partySigil{
+  position:relative;width:48px;height:48px;border-radius:17px;padding:0;border:1px solid rgba(255,255,255,.09);
+  background:radial-gradient(circle at 35% 28%,rgba(191,168,255,.28),transparent 33%),linear-gradient(145deg,#24283a,#111521);
+  box-shadow:0 12px 30px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.06);
+  overflow:hidden;
+}
+.partySigilMask{position:absolute;inset:0;display:grid;place-items:center;font-size:32px;color:rgba(174,145,255,.16);transform:scale(1.5)}
+.partySigilText{position:relative;z-index:1;font-size:11px;font-weight:1000;letter-spacing:-.4px}
+.partyCommandActions{display:flex;justify-content:flex-end;gap:7px}
+.partyCommandButton{
+  width:42px;height:42px;min-height:42px;padding:0;border-radius:14px;
+  border:1px solid rgba(255,255,255,.08);background:rgba(20,24,36,.72);
+  color:#dfe2ef;font-size:17px;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)
+}
+
+/* Dynamic intro — text in open space, not another hero card. */
+.partyTonight{margin:4px 2px 11px}
+.partyTonightTop{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.partyKicker{font-size:8px;font-weight:1000;letter-spacing:1.45px;color:#9d86ff}
+.partyTonight h1{
+  margin:4px 0 0!important;
+  max-width:290px;
+  font-size:clamp(24px,7vw,31px)!important;
+  line-height:.98!important;
+  letter-spacing:-1.05px!important;
+}
+.partyTonight>p{
+  margin:6px 0 0;color:#9399aa;font-size:10px;line-height:1.35;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:92%;
+}
+.partyChaosButton{
+  flex:0 0 auto;min-height:36px;padding:0 11px;border-radius:999px;
+  border:1px solid rgba(255,174,88,.23);background:rgba(255,174,88,.08);
+  color:#ffc178;display:flex;gap:6px;align-items:center;font-size:9px;
+}
+.partyChaosButton span{font-size:13px}.partyChaosButton strong{font-size:9px}
+.partyStatusLine{display:flex;gap:5px;margin-top:7px;min-width:0}
+.partyStatusChip{
+  min-width:0;max-width:48%;padding:4px 7px;border-radius:999px;
+  border:1px solid rgba(255,255,255,.055);background:rgba(255,255,255,.025);
+  color:#666e82;font-size:7px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+
+/* The new asymmetric game arena */
+body.party-launcher.party-launcher-p3 .partyArena{
+  display:grid!important;
+  grid-template-columns:1.12fr .88fr!important;
+  grid-template-rows:112px 112px 92px!important;
+  grid-template-areas:
+    "circa classic"
+    "circa whoami"
+    "charades personal";
+  gap:8px!important;
+  margin:0!important;
+  padding:0!important;
+}
+body.party-launcher.party-launcher-p3 .partyGameTile{
+  --tile-rgb:109,163,255;
+  position:relative!important;
+  display:flex!important;
+  flex-direction:column!important;
+  min-width:0!important;min-height:0!important;
+  width:auto!important;height:auto!important;
+  margin:0!important;padding:11px!important;
+  border-radius:20px!important;
+  overflow:hidden!important;isolation:isolate;
+  text-decoration:none!important;color:#fff!important;
+  border:1px solid rgba(255,255,255,.09)!important;
+  background:
+    radial-gradient(160px 130px at 100% 0%,rgba(var(--tile-rgb),.25),transparent 65%),
+    linear-gradient(145deg,rgba(30,35,50,.98),rgba(14,17,27,.99))!important;
+  box-shadow:0 16px 38px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.035)!important;
+  transform:translateZ(0);
+  transition:transform .18s cubic-bezier(.2,.8,.2,1),border-color .18s ease,box-shadow .18s ease!important;
+}
+body.party-launcher.party-launcher-p3 .partyGameTile--circa{grid-area:circa;--tile-rgb:109,163,255;border-radius:24px 18px 18px 24px!important}
+body.party-launcher.party-launcher-p3 .partyGameTile--classic{grid-area:classic;--tile-rgb:255,174,88;border-radius:18px 24px 18px 18px!important}
+body.party-launcher.party-launcher-p3 .partyGameTile--whoami{grid-area:whoami;--tile-rgb:169,140,255;border-radius:18px!important}
+body.party-launcher.party-launcher-p3 .partyGameTile--charades{grid-area:charades;--tile-rgb:88,221,196;border-radius:24px 18px 18px 24px!important}
+body.party-launcher.party-launcher-p3 .partyGameTile--personal{grid-area:personal;--tile-rgb:255,121,201;border-radius:18px 18px 24px 18px!important}
+.partyTileWash{
+  position:absolute;z-index:-1;width:150px;height:150px;border-radius:50%;right:-66px;top:-70px;
+  background:radial-gradient(circle,rgba(var(--tile-rgb),.33),transparent 69%);
+  filter:blur(2px);
+}
+.partyGameTile--circa .partyTileWash{width:250px;height:250px;right:-95px;top:-60px;opacity:.9}
+.partyTileHeader{display:flex;align-items:center;justify-content:space-between;gap:7px}
+.partyTileCode{font-size:6.5px;font-weight:1000;letter-spacing:1px;color:rgba(var(--tile-rgb),.9)}
+.partyTileIcon{
+  width:30px;height:30px;display:grid;place-items:center;border-radius:10px;
+  background:rgba(255,255,255,.065);border:1px solid rgba(255,255,255,.07);
+  font-size:17px;line-height:1;
+}
+.partyGameTile--circa .partyTileIcon{
+  width:44px;height:44px;border-radius:15px;font-size:24px;
+  box-shadow:0 0 30px rgba(var(--tile-rgb),.12);
+}
+.partyTileBody{margin-top:auto;display:flex;flex-direction:column;min-width:0}
+body.party-launcher.party-launcher-p3 .partyGameTile .gameTitle{
+  margin:0!important;font-size:17px!important;line-height:.98!important;font-weight:1000!important;letter-spacing:-.5px!important;
+}
+body.party-launcher.party-launcher-p3 .partyGameTile--circa .gameTitle{
+  font-size:28px!important;line-height:.92!important;letter-spacing:-1px!important;
+}
+body.party-launcher.party-launcher-p3 .partyGameTile .gameSub{
+  margin:5px 0 0!important;font-size:7px!important;line-height:1.2!important;font-weight:700!important;color:rgba(230,234,246,.53)!important;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+body.party-launcher.party-launcher-p3 .partyGameTile--circa .gameSub{font-size:8.5px!important}
+.partyTileFoot{margin-top:7px;display:flex;align-items:center;justify-content:space-between;gap:5px}
+.partyTileFoot strong{font-size:8px;color:rgba(245,247,255,.78)}
+.partyTileArrow{font-size:14px;font-weight:900;color:rgb(var(--tile-rgb));line-height:1}
+body.party-launcher.party-launcher-p3 .partyGameTile .gameCardProgress{
+  position:absolute!important;left:11px!important;right:11px!important;bottom:5px!important;
+  width:auto!important;height:2px!important;margin:0!important;border-radius:99px!important;
+  background:rgba(255,255,255,.05)!important;overflow:hidden!important;
+}
+body.party-launcher.party-launcher-p3 .partyGameTile .gameCardProgress i{
+  display:block;height:100%;background:rgb(var(--tile-rgb))!important;opacity:.75;
+}
+body.party-launcher.party-launcher-p3 .partyGameTile .gameProgressMeta{display:none!important}
+body.party-launcher.party-launcher-p3 .partyGameTile:active,
+body.party-launcher.party-launcher-p3 .partyGameTile.isPressed{transform:scale(.975)!important}
+body.party-launcher.party-launcher-p3 .partyGameTile.chosenPulse{
+  animation:p3Chosen .72s cubic-bezier(.16,.82,.24,1)!important;
+}
+@keyframes p3Chosen{
+  0%,100%{transform:none}
+  35%{transform:scale(1.028);border-color:rgba(var(--tile-rgb),.55);box-shadow:0 0 0 3px rgba(var(--tile-rgb),.10),0 20px 50px rgba(0,0,0,.36)}
+  68%{transform:scale(.992)}
+}
+.partyRipple{
+  position:absolute;z-index:5;width:18px;height:18px;border-radius:50%;
+  pointer-events:none;background:rgba(255,255,255,.22);transform:translate(-50%,-50%) scale(0);
+  animation:p3Ripple .52s ease-out forwards;
+}
+@keyframes p3Ripple{to{opacity:0;transform:translate(-50%,-50%) scale(10)}}
+
+/* Dynamic live deck replaces the old giant hero card. */
+body.party-launcher.party-launcher-p3 .partyLiveDeck{
+  position:relative;margin-top:11px;padding:10px;border-radius:18px;
+  border:1px solid rgba(255,255,255,.07);
+  background:linear-gradient(145deg,rgba(19,23,36,.82),rgba(9,12,20,.88));
+  box-shadow:0 12px 30px rgba(0,0,0,.16);
+}
+.partyLiveDeckHead{display:flex;align-items:center;gap:8px;padding:1px 3px 7px}
+.partyLivePulse{width:7px;height:7px;border-radius:50%;background:#74e7c2;box-shadow:0 0 0 4px rgba(116,231,194,.08),0 0 16px rgba(116,231,194,.28)}
+.partyLiveDeckHead div{display:flex;gap:6px;align-items:baseline}
+.partyLiveDeckHead small{font-size:6.5px;font-weight:1000;letter-spacing:1px;color:#6e7689}
+.partyLiveDeckHead strong{font-size:10px;color:#d9ddeb}
+.partyResume{
+  width:100%;min-height:36px;margin:0 0 7px;padding:0 10px;border-radius:11px;
+  border:1px solid rgba(109,163,255,.18);background:rgba(109,163,255,.09);
+  display:grid;grid-template-columns:20px 1fr 20px;align-items:center;text-align:left;
+}
+.partyResume strong{font-size:9px}.partyResume>span:last-child{text-align:right;color:#88b2ff}
+.partyGoal{
+  position:relative;width:100%;min-height:51px;padding:7px 30px 7px 42px;border-radius:12px;
+  border:1px solid rgba(255,255,255,.055);background:rgba(255,255,255,.025);
+  text-align:left;overflow:hidden;
+}
+.partyGoalIcon{position:absolute;left:8px;top:8px;width:29px;height:29px;border-radius:9px;display:grid;place-items:center;background:rgba(169,140,255,.10);font-size:15px}
+.partyGoalCopy{display:flex;flex-direction:column;min-width:0}
+.partyGoalCopy small{font-size:6px;font-weight:1000;letter-spacing:.8px;color:#8a79d4}
+.partyGoalCopy strong{font-size:9px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.partyGoalCopy span{font-size:7px;margin-top:2px;color:#747b8e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.partyGoalMeter{position:absolute;left:42px;right:30px;bottom:4px;height:2px;border-radius:99px;background:rgba(255,255,255,.045);overflow:hidden}
+.partyGoalMeter i{display:block;height:100%;background:linear-gradient(90deg,#7d6cff,#c48cff);border-radius:inherit}
+.partyGoalArrow{position:absolute;right:9px;top:50%;transform:translateY(-50%);font-size:13px;color:#8e96aa}
+
+/* Below-the-fold content becomes a ticket stack instead of old dashboard cards. */
+body.party-launcher.party-launcher-p3 #view-home>.sectionBlock{
+  margin-top:18px!important;padding-top:15px;border-top:1px solid rgba(255,255,255,.055);
+}
+body.party-launcher.party-launcher-p3 #view-home>.sectionBlock .sectionHeading{margin-bottom:9px}
+body.party-launcher.party-launcher-p3 #view-home>.sectionBlock .sectionHeading .eyebrow{color:#7f879a;font-size:7px;letter-spacing:1.2px}
+body.party-launcher.party-launcher-p3 #view-home>.sectionBlock .sectionHeading h2{font-size:17px;letter-spacing:-.35px}
+body.party-launcher.party-launcher-p3 .textButton{padding:5px 8px;border-radius:999px;background:rgba(255,255,255,.035);color:#a993ff;font-size:8px}
+body.party-launcher.party-launcher-p3 .presetScroller{grid-auto-columns:minmax(138px,39%);gap:8px}
+body.party-launcher.party-launcher-p3 .presetCard{
+  min-height:104px;border-radius:17px;
+  background:linear-gradient(145deg,rgba(27,31,44,.92),rgba(14,17,25,.96));
+  border-color:rgba(255,255,255,.07);
+}
+body.party-launcher.party-launcher-p3 .sessionCard,
+body.party-launcher.party-launcher-p3 .crewPassCard{
+  background:linear-gradient(145deg,rgba(27,31,44,.88),rgba(14,17,25,.94));
+  border-color:rgba(255,255,255,.07);
+}
+
+/* Secondary views still use the same data, but now match the new shell. */
+body.party-launcher.party-launcher-p3 .pageHeader{margin-top:5px}
+body.party-launcher.party-launcher-p3 .pageHeader .eyebrow{color:#9380ee}
+body.party-launcher.party-launcher-p3 .pageHeader h1{font-size:29px;letter-spacing:-.9px}
+body.party-launcher.party-launcher-p3 .playerCard,
+body.party-launcher.party-launcher-p3 .statCard,
+body.party-launcher.party-launcher-p3 .bigStat,
+body.party-launcher.party-launcher-p3 .profileLevelCard,
+body.party-launcher.party-launcher-p3 .settingsGroup,
+body.party-launcher.party-launcher-p3 .aboutCard,
+body.party-launcher.party-launcher-p3 .usageTotalCard{
+  background:linear-gradient(145deg,rgba(25,29,42,.88),rgba(13,16,24,.94));
+  border-color:rgba(255,255,255,.07);
+  box-shadow:0 12px 30px rgba(0,0,0,.15);
+}
+
+/* Floating Party Dock */
+body.party-launcher.party-launcher-p3 .tabBar{
+  left:50%!important;right:auto!important;bottom:calc(9px + var(--safeBottom))!important;
+  transform:translateX(-50%)!important;
+  width:min(calc(100% - 24px),520px)!important;
+  min-height:64px!important;padding:6px!important;
+  border:1px solid rgba(255,255,255,.085)!important;border-radius:22px!important;
+  background:rgba(10,13,21,.88)!important;
+  box-shadow:0 22px 56px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.035)!important;
+  backdrop-filter:blur(24px) saturate(1.15)!important;-webkit-backdrop-filter:blur(24px) saturate(1.15)!important;
+}
+body.party-launcher.party-launcher-p3 .tab{
+  min-height:50px!important;border-radius:16px!important;color:#646b7c!important;gap:3px!important;
+  transition:background .18s ease,color .18s ease,transform .18s ease!important;
+}
+body.party-launcher.party-launcher-p3 .tab.active{
+  background:linear-gradient(145deg,rgba(169,140,255,.15),rgba(109,163,255,.07))!important;
+  color:#c8bbff!important;transform:translateY(-1px);
+  box-shadow:inset 0 0 0 1px rgba(169,140,255,.08);
+}
+body.party-launcher.party-launcher-p3 .tab small{font-size:7px!important}
+body.party-launcher.party-launcher-p3 .tabIcon,
+body.party-launcher.party-launcher-p3 .tabEmoji{width:20px;height:20px;font-size:18px}
+
+/* Sheets look like backstage panels */
+body.party-launcher.party-launcher-p3 .sheetBackdrop{background:rgba(2,4,9,.70);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+body.party-launcher.party-launcher-p3 .bottomSheet{
+  width:min(calc(100% - 10px),690px);bottom:5px;border-radius:26px;
+  background:linear-gradient(180deg,#202536,#0f121b);border:1px solid rgba(255,255,255,.09);
+  box-shadow:0 -28px 70px rgba(0,0,0,.48);
+}
+body.party-launcher.party-launcher-p3 .sheetHandle{background:rgba(255,255,255,.18)}
+
+@media(max-width:390px){
+  body.party-launcher.party-launcher-p3 .appShell{padding-left:12px!important;padding-right:12px!important}
+  .partyCommandBar{grid-template-columns:minmax(0,1fr) 44px minmax(0,1fr);gap:7px}
+  .partySigil{width:44px;height:44px;border-radius:15px}
+  .partyIdentityAvatar{width:39px;height:39px;font-size:22px}
+  .partyCommandButton{width:39px;height:39px;min-height:39px}
+  .partyTonight{margin-bottom:9px}
+  .partyTonight h1{font-size:24px!important}
+  body.party-launcher.party-launcher-p3 .partyArena{grid-template-rows:105px 105px 86px!important;gap:7px!important}
+  body.party-launcher.party-launcher-p3 .partyGameTile{padding:9px!important;border-radius:17px!important}
+  body.party-launcher.party-launcher-p3 .partyGameTile--circa{border-radius:21px 16px 16px 21px!important}
+  body.party-launcher.party-launcher-p3 .partyGameTile--classic{border-radius:16px 21px 16px 16px!important}
+  body.party-launcher.party-launcher-p3 .partyGameTile--charades{border-radius:21px 16px 16px 21px!important}
+  body.party-launcher.party-launcher-p3 .partyGameTile--personal{border-radius:16px 16px 21px 16px!important}
+  .partyTileCode{font-size:5.8px}
+  .partyTileIcon{width:27px;height:27px;font-size:15px}
+  .partyGameTile--circa .partyTileIcon{width:39px;height:39px;font-size:21px}
+  body.party-launcher.party-launcher-p3 .partyGameTile .gameTitle{font-size:15.5px!important}
+  body.party-launcher.party-launcher-p3 .partyGameTile--circa .gameTitle{font-size:24px!important}
+  .partyTileFoot{margin-top:5px}.partyTileFoot strong{font-size:7px}
+  body.party-launcher.party-launcher-p3 .partyGameTile .gameSub{font-size:6.3px!important}
+}
+@media(max-height:700px) and (max-width:430px){
+  .partyCommandBar{margin-bottom:7px}
+  .partyTonight{margin-top:0;margin-bottom:7px}
+  .partyTonight h1{font-size:22px!important}
+  .partyTonight>p{display:none}
+  .partyStatusLine{margin-top:5px}
+  body.party-launcher.party-launcher-p3 .partyArena{grid-template-rows:94px 94px 76px!important}
+  body.party-launcher.party-launcher-p3 .partyGameTile--circa .gameTitle{font-size:22px!important}
+  body.party-launcher.party-launcher-p3 .partyGameTile .gameSub{display:none}
+  .partyLiveDeck{margin-top:8px!important;padding:8px!important}
+  .partyLiveDeckHead{padding-bottom:5px}
+  .partyGoal{min-height:45px}
+}
+@media(min-width:600px){
+  body.party-launcher.party-launcher-p3 .partyArena{grid-template-rows:132px 132px 105px!important}
+  body.party-launcher.party-launcher-p3 .partyGameTile--circa .gameTitle{font-size:34px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  body.party-launcher.party-launcher-p3 .partyGameTile,
+  .partyRipple{transition:none!important;animation:none!important}
+}
