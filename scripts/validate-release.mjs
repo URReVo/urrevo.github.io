@@ -261,7 +261,7 @@ assert(prototypePersonalSource.includes('PREFIX="imposterGames.prototype.game.pe
 assert(!prototypePersonalSource.includes('PREFIX="imposterGames.v74.game.personal."'),"prototype Personal must not use production storage");
 assert(!html["index.html"].includes("APP-SHELL TEST"),"production launcher still contains experiment badge");
 assert(launcherCss.includes("padding:calc(18px + var(--safeTop)) 16px 26px"),"launcher safe-area top padding missing");
-assert(sw.includes('const CACHE_REVISION="r11"'),"V74 cache revision mismatch");
+assert(sw.includes('const CACHE_REVISION="r12"'),"V74 cache revision mismatch");
 assert(sw.includes('versioned("/assets/js/launcher-dev.js")'),"service worker launcher DEV cache missing");
 assert(appStateSource.includes("var BACKUP_VERSION=3"),"backup format v3 missing");
 assert(engineSource.includes("experimentRecordCirca(null);"),"Circa shared base-round recording missing");
@@ -276,7 +276,7 @@ assert(html["games/personal-impostor/index.html"].includes("100 Fragepaare"),"Pe
 assert(!html["games/personal-impostor/index.html"].includes("89 Fragepaare"),"Personal stale question count remains");
 assert(html["index.html"].includes("IMPOSTOR · GESAMT"),"launcher Impostor aggregate label mismatch");
 assert(html["index.html"].includes("DAVON · PERSÖNLICH"),"launcher Personal Impostor label mismatch");
-assert(html["index.html"].includes("Profile, Presets, Sessions, Crews, Statistik, Spielzeit"),"launcher backup/reset copy missing V74R11 data scope");
+assert(html["index.html"].includes("Profile, Presets, Sessions, Crews, Statistik, Spielzeit"),"launcher backup/reset copy missing profile/crew data scope");
 assert(html["index.html"].includes('id="launcherDevTrigger"'),"launcher DEV trigger missing");
 assert(html["index.html"].includes('id="launcherDevPanelOverlay"'),"launcher DEV panel missing");
 assert(launcherCss.includes(".launcherDevOverlay")&&launcherCss.includes(".launcherDevAchievements"),"launcher DEV styles missing");
@@ -737,7 +737,7 @@ assert(feedbackEnded&&feedbackEnded.rounds.length===9,"feedback audit session ro
 assert(feedbackItems.some(item=>(item.type==="session-end"||item.type==="crew")&&item.intensity>=2),"session completion feedback missing");
 assert(feedbackItems.every(item=>item.intensity>=1&&item.intensity<=3),"feedback intensity outside 1..3");
 
-/* V74R11 progression harmony audit: personal level, crew level, categories and feedback stay independent. */
+/* V74R12 progression harmony audit: personal level, crew level, categories and feedback stay independent. */
 const harmonyMem=auditStorage(),harmonyEvents=[];
 const harmonyState=auditStore(harmonyMem,harmonyEvents);
 const harmonyP1=harmonyState.getProfiles()[0];
