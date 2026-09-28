@@ -20,10 +20,6 @@ var currentPair=null,impostorIndex=0,activeIndex=0,answers=[],round=0,impostorCo
 var revealRunning=false,revealTimers=[],sharedQuestionRevealed=false,roundStartPending=false;
 var sections=["setup","handoff","question","questionReveal","answers","result"];
 var personalViewportSettleTimers=[];
-function answerFieldActive(){
-  var active=document.activeElement;
-  return !!(active&&active.id==="answerInput");
-}
 function personalViewportHeight(){
   var vv=window.visualViewport;
   var height=vv&&Number.isFinite(vv.height)&&vv.height>0?vv.height:window.innerHeight;
