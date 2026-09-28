@@ -1,0 +1,107 @@
+name: Prototype P2 stage audit
+on:
+  workflow_dispatch:
+  push:
+    branches: ["prototype/party-makeover-p2-audit"]
+    paths:
+      - "experiments/prototype/assets/css/party-makeover.css"
+      - "experiments/prototype/assets/js/party-makeover.js"
+      - "experiments/prototype/games/**"
+      - ".github/workflows/prototype-p2-stage-audit.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  stages:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+      - name: Install browser driver
+        run: npm install --no-save puppeteer-core@24.17.0
+      - name: Start local server
+        run: |
+          python3 -m http.server 8080 --bind 127.0.0.1 > /tmp/prototype-http.log 2>&1 &
+          sleep 2
+      - name: Audit active game stages
+        run: |
+          CHROME="$(command -v google-chrome || command -v chromium-browser || command -v chromium || true)"
+          test -n "$CHROME"
+          export CHROME
+          cat > stage-audit.mjs <<'NODE'
+          import puppeteer from "puppeteer-core";
+          import fs from "node:fs";
+          const base="http://127.0.0.1:8080/experiments/prototype/";
+          const out="experiments/prototype/audit-shots/stages";
+          fs.rmSync(out,{recursive:true,force:true});fs.mkdirSync(out,{recursive:true});
+          const browser=await puppeteer.launch({headless:true,executablePath:process.env.CHROME,args:["--no-sandbox","--disable-gpu"]});
+          const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+          async function open(path,width=402,height=874){
+            const page=await browser.newPage();
+            await page.setViewport({width,height,deviceScaleFactor:1,isMobile:true,hasTouch:true});
+            page.on("pageerror",err=>console.error("PAGEERROR",path,err.message));
+            await page.goto(base+path,{waitUntil:"networkidle0",timeout:30000});
+            await sleep(500);
+            return page;
+          }
+          async function shot(page,name,actionSelector){
+            const audit=await page.evaluate((sel)=>{
+              const visible=[...document.querySelectorAll(".gameScreen")].find(el=>!el.classList.contains("hidden"));
+              const action=sel?document.querySelector(sel):null;
+              const vr=visible?.getBoundingClientRect(), ar=action?.getBoundingClientRect();
+              return {
+                viewport:[innerWidth,innerHeight],
+                document:[document.documentElement.scrollWidth,document.documentElement.scrollHeight],
+                body:[document.body.scrollWidth,document.body.scrollHeight],
+                visible:visible?{id:visible.id,top:vr.top,bottom:vr.bottom,height:vr.height}:null,
+                action:action?{id:action.id,top:ar.top,bottom:ar.bottom,height:ar.height}:null
+              };
+            },actionSelector);
+            console.log("LAYOUT",name,JSON.stringify(audit));
+            if(audit.document[0]>audit.viewport[0]+2)throw new Error(name+": document horizontal overflow");
+            if(audit.action&&(audit.action.bottom>audit.viewport[1]+2||audit.action.top<0))throw new Error(name+": primary action outside viewport");
+            await page.screenshot({path:`${out}/${name}.png`,fullPage:false});
+          }
+          async function click(page,sel,wait=350){await page.waitForSelector(sel,{visible:true,timeout:10000});await page.click(sel);await sleep(wait);}
+
+          let p=await open("games/circa-imposter/");
+          await click(p,"#start",2200);await shot(p,"circa-handoff","#showQuestion");
+          await click(p,"#showQuestion",400);await shot(p,"circa-question","#saveGuess");await p.close();
+
+          p=await open("games/classic-imposter/");
+          await click(p,"#start",2200);await shot(p,"classic-handoff","#showQuestion");
+          await click(p,"#showQuestion",400);await shot(p,"classic-role","#classicRoleDone");await p.close();
+
+          p=await open("games/who-am-i/");
+          await click(p,"#start",700);await shot(p,"whoami-handoff","#showTerms");
+          await click(p,"#showTerms",400);await shot(p,"whoami-viewer","#viewerDone");await p.close();
+
+          p=await open("games/charades/");
+          await click(p,"#start",700);await shot(p,"charades-handoff","#beginTurn");
+          await click(p,"#beginTurn",3600);await shot(p,"charades-play","#correctTerm");await p.close();
+
+          p=await open("games/personal-impostor/");
+          await click(p,"#start",700);await shot(p,"personal-handoff","#showQuestion");
+          await click(p,"#showQuestion",400);await shot(p,"personal-question","#saveAnswer");await p.close();
+
+          p=await open("games/circa-imposter/",375,667);
+          await click(p,"#start",2200);await click(p,"#showQuestion",400);await shot(p,"circa-question-small","#saveGuess");await p.close();
+
+          p=await open("games/personal-impostor/",375,667);
+          await click(p,"#start",700);await click(p,"#showQuestion",400);await shot(p,"personal-question-small","#saveAnswer");await p.close();
+
+          await browser.close();
+          NODE
+          node stage-audit.mjs
+          rm stage-audit.mjs
+      - name: Commit stage screenshots
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add experiments/prototype/audit-shots/stages
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: add P2 stage audit screenshots [skip ci]"
+          git push origin HEAD:prototype/party-makeover-p2-audit
