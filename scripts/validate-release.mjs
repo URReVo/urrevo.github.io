@@ -270,6 +270,12 @@ assert(prototypeCharadesSource.includes('PREFIX="imposterGames.prototype.game.ch
 assert(!prototypeCharadesSource.includes('PREFIX="imposterGames.v74.game.charades."'),"prototype Scharade must not use production storage");
 assert(prototypePersonalSource.includes('PREFIX="imposterGames.prototype.game.personal."'),"prototype Personal namespace lost isolation");
 assert(!prototypePersonalSource.includes('PREFIX="imposterGames.v74.game.personal."'),"prototype Personal must not use production storage");
+assert(!prototypeAppStateSource.includes("circaImpostor.")&&!prototypeAppStateSource.includes("classicImpostor."),"prototype app-state must not contain production legacy storage reads");
+assert(!prototypeEngineSource.includes("circaImpostor.")&&!prototypeEngineSource.includes("classicImpostor."),"prototype game engine must not contain production legacy storage reads");
+const prototypePwaSource=read("experiments/prototype/assets/js/pwa.js");
+const prototypeSwSource=read("experiments/prototype/service-worker.js");
+assert(prototypePwaSource.includes('/experiments/prototype/service-worker.js')&&prototypePwaSource.includes('scope:"/experiments/prototype/"'),"prototype PWA registration lost isolated scope");
+assert(prototypeSwSource.includes('const BASE="/experiments/prototype"')&&prototypeSwSource.includes('CACHE_PREFIX="imposter-games-prototype-"'),"prototype service worker lost isolated base/cache namespace");
 assert(!html["index.html"].includes("APP-SHELL TEST"),"production launcher still contains experiment badge");
 assert(launcherCss.includes("padding:calc(18px + var(--safeTop)) 16px 26px"),"launcher safe-area top padding missing");
 assert(html["index.html"].includes('id="heroGoal"')&&html["index.html"].includes('id="surpriseGame"'),"R13 motivational launcher surfaces missing");

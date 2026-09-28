@@ -293,32 +293,10 @@ function storageSet(key,value){
 function storageRemove(key){
   try{localStorage.removeItem(key);return true;}catch(e){return false;}
 }
-function copyV72Storage(target,sources){
-  try{
-    if(localStorage.getItem(target)!==null)return false;
-    for(var i=0;i<sources.length;i++){
-      var raw=localStorage.getItem(sources[i]);
-      if(raw!==null){localStorage.setItem(target,raw);return true;}
-    }
-  }catch(e){}
-  return false;
-}
-function migrateV72GameStorageOnce(){ storageSet(EXP_STORAGE+"v72Migration.v1",{completed:true,from:"prototype-isolated"}); return;
+function migrateV72GameStorageOnce(){
   var marker=EXP_STORAGE+"v72Migration.v1";
   if(storageGet(marker,null))return;
-  copyV72Storage(EXP_STORAGE+"circa.players.v1",["circaImpostor.players.v1"]);
-  copyV72Storage(EXP_STORAGE+"classic.players.v1",["classicImpostor.players.v1"]);
-  copyV72Storage(EXP_STORAGE+"circa.categories.v1",["circaImpostor.categories.v1"]);
-  copyV72Storage(EXP_STORAGE+"classic.categories.v1",["classicImpostor.categories.v1"]);
-  copyV72Storage(EXP_STORAGE+"circa.deckProgress.v1",["circaImpostor.deckProgress.v5"]);
-  copyV72Storage(EXP_STORAGE+"circa.difficulty.v1",["circaImpostor.difficulty.v1"]);
-  copyV72Storage(EXP_STORAGE+"circa.playerStats.v1",["circaImpostor.playerStats.v1"]);
-  copyV72Storage(EXP_STORAGE+"circa.deviceStats.v1",["circaImpostor.deviceStats.v1"]);
-  copyV72Storage(EXP_STORAGE+"circa.completedQuestions.v1",["circaImpostor.completedQuestions.v1"]);
-  copyV72Storage(EXP_STORAGE+"classic.deck.v1",["classicImpostor.deck.v1","circaImpostor.classicDeck.v1"]);
-  copyV72Storage(EXP_STORAGE+"classic.hint.v1",["classicImpostor.hint.v1","circaImpostor.classicHint.v1"]);
-  copyV72Storage(EXP_STORAGE+"classic.timer.v1",["classicImpostor.timer.v1","circaImpostor.classicTimer.v1"]);
-  storageSet(marker,{completed:true,at:new Date().toISOString(),from:"V72"});
+  storageSet(marker,{completed:true,at:new Date().toISOString(),from:"prototype-isolated"});
 }
 function difficultyRatio(item){
   var a=Math.abs(Number(item.normalValue)),b=Math.abs(Number(item.impValue));

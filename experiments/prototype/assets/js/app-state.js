@@ -201,161 +201,18 @@ function defaults(){
     imports:{legacyCirca:false}
   };
 }
-function readLegacyJson(key,fallback){
-  try{
-    var raw=localStorage.getItem(key);
-    if(!raw)return fallback;
-    var parsed=JSON.parse(raw);
-    return parsed==null?fallback:parsed;
-  }catch(e){return fallback;}
-}
-var PREVIOUS_GAME_STORAGE_PREFIX="imposterGames.prototype.game.";
 function migrateV73GameStorageOnce(){
   var marker=GAME_STORAGE_PREFIX+"v73Migration.v1";
   try{
     if(localStorage.getItem(marker)!==null)return;
-    GAME_STORAGE_KEYS.forEach(function(suffix){
-      if(suffix==="v73Migration.v1")return;
-      var target=GAME_STORAGE_PREFIX+suffix;
-      if(localStorage.getItem(target)!==null)return;
-      var previous=localStorage.getItem(PREVIOUS_GAME_STORAGE_PREFIX+suffix);
-      if(previous!==null)localStorage.setItem(target,previous);
-    });
-    localStorage.setItem(marker,JSON.stringify({completed:true,from:"V73",at:now()}));
+    localStorage.setItem(marker,JSON.stringify({completed:true,from:"prototype-isolated",at:now()}));
   }catch(e){}
 }
-function migrateV72(){ return defaults(); /* prototype isolation: never import production legacy state */
-  var migrated=defaults();
-  var profiles=[],profileStats={},byName={};
-
-  function upsert(name,avatar,legacyStat){
-    name=cleanName(name);
-    if(!name)return null;
-    var key=name.toLocaleLowerCase("de-DE");
-    var existing=byName[key];
-    if(!existing){
-      existing={id:uid("player"),name:name,avatar:String(avatar||"😎").slice(0,8),aliases:[],createdAt:now()};
-      byName[key]=existing;
-      profiles.push(existing);
-      profileStats[existing.id]=baseProfileStats();
-    }else if((!existing.avatar||existing.avatar==="😎")&&avatar){
-      existing.avatar=String(avatar).slice(0,8);
-    }
-    if(legacyStat){
-      var st=profileStats[existing.id];
-      st.rounds=Math.max(st.rounds,Math.max(0,Number(legacyStat.rounds)||0));
-      st.circaRounds=st.rounds;
-      st.impostor=Math.max(st.impostor,Math.max(0,Number(legacyStat.impostor)||0));
-      st.impostorEscapes=Math.max(st.impostorEscapes,Math.max(0,Number(legacyStat.impostorWins)||0));
-      st.closest=Math.max(st.closest,Math.max(0,Number(legacyStat.closest)||0));
-      st.farthest=Math.max(st.farthest,Math.max(0,Number(legacyStat.farthest)||0));
-      st.errorSum=Math.max(st.errorSum,Math.max(0,Number(legacyStat.errorSum)||0));
-      st.errorSamples=Math.max(st.errorSamples,Math.max(0,Number(legacyStat.errorSamples)||0));
-      if(st.rounds>0){
-        if(st.errorSamples>0&&st.errorSum===0)st.perfect=Math.max(st.perfect,st.errorSamples);
-        else st.legacyPerfectUnknown=true;
-      }
-    }
-    return existing;
-  }
-
-  var oldStats=readLegacyJson("circaImpostor.playerStats.v1",{});
-  if(oldStats&&typeof oldStats==="object"&&!Array.isArray(oldStats)){
-    Object.keys(oldStats).forEach(function(key){
-      var item=oldStats[key];
-      if(item&&typeof item==="object")upsert(item.name,item.avatar,item);
-    });
-  }
-
-  ["circaImpostor.players.v1","classicImpostor.players.v1"].forEach(function(storageKey){
-    var saved=readLegacyJson(storageKey,null);
-    var list=saved&&Array.isArray(saved.players)?saved.players:[];
-    list.forEach(function(item){
-      if(item&&typeof item==="object")upsert(item.name,item.avatar,null);
-    });
-  });
-
-  if(profiles.length){
-    migrated.profiles=profiles;
-    migrated.profileStats=profileStats;
-    migrated.selectedProfileId=profiles[0].id;
-    migrated.primaryProfileId=profiles[0].id;
-  }
-
-  var oldDevice=readLegacyJson("circaImpostor.deviceStats.v1",{});
-  var oldRounds=Math.max(0,Number(oldDevice&&oldDevice.roundsPlayed)||0);
-  var oldCompleted=readLegacyJson("circaImpostor.completedQuestions.v1",[]);
-  migrated.stats.rounds=oldRounds;
-  migrated.stats.circaRounds=oldRounds;
-  if(Array.isArray(oldCompleted)){
-    oldCompleted.forEach(function(qid){addUnique(migrated.stats.circaQids,qid);});
-    if(oldRounds>0){
-      profiles.forEach(function(profile){
-        var st=profileStats[profile.id];
-        if(st&&st.circaRounds===oldRounds){
-          oldCompleted.forEach(function(qid){addUnique(st.circaQids,qid);});
-          st.legacyCategoryUnknown=false;
-        }else if(st&&st.circaRounds>0&&oldRounds>st.circaRounds){
-          st.legacyCategoryUnknown=true;
-        }
-      });
-    }
-  }
-
-  var migratedKnownPerfect=0;
-  Object.keys(profileStats).forEach(function(id){migratedKnownPerfect+=Math.max(0,Number(profileStats[id].perfect)||0);});
-  migrated.stats.perfectEstimates=Math.max(migrated.stats.perfectEstimates,migratedKnownPerfect);
-
-  migrated.imports={
-    v72MigrationCompleted:true,
-    v72MigratedAt:now(),
-    v72ProfilesFound:profiles.length,
-    v72ProfileChoicePending:profiles.length>1,
-    v72PerfectUnknown:oldRounds>0
-  };
-  return migrated;
+function migrateV72(){
+  return defaults();
 }
-function backfillV72Details(data){ return; /* prototype isolation: never read production legacy state */
-  if(!data||!data.imports||!data.imports.v72MigrationCompleted||data.imports.v72DetailBackfillV1)return;
-  var oldStats=readLegacyJson("circaImpostor.playerStats.v1",{});
-  var oldDevice=readLegacyJson("circaImpostor.deviceStats.v1",{});
-  var oldCompleted=readLegacyJson("circaImpostor.completedQuestions.v1",[]);
-  var oldRounds=Math.max(0,Number(oldDevice&&oldDevice.roundsPlayed)||0);
-  var byName={};
-  (data.profiles||[]).forEach(function(p){
-    if(p&&p.name)byName[cleanName(p.name).toLocaleLowerCase("de-DE")]=p;
-  });
-  if(oldStats&&typeof oldStats==="object"&&!Array.isArray(oldStats)){
-    Object.keys(oldStats).forEach(function(key){
-      var item=oldStats[key];
-      if(!item||typeof item!=="object")return;
-      var profile=byName[cleanName(item.name).toLocaleLowerCase("de-DE")];
-      if(!profile)return;
-      var st=data.profileStats[profile.id]||baseProfileStats();
-      data.profileStats[profile.id]=st;
-      var legacyRounds=Math.max(0,Number(item.rounds)||0);
-      var errorSamples=Math.max(0,Number(item.errorSamples)||0);
-      var errorSum=Math.max(0,Number(item.errorSum)||0);
-      if(legacyRounds>0){
-        if(errorSamples>0&&errorSum===0)st.perfect=Math.max(Number(st.perfect)||0,errorSamples);
-        else st.legacyPerfectUnknown=true;
-      }
-      if(oldRounds>0&&legacyRounds===oldRounds&&Array.isArray(oldCompleted)){
-        if(!Array.isArray(st.circaQids))st.circaQids=[];
-        oldCompleted.forEach(function(qid){addUnique(st.circaQids,qid);});
-        st.legacyCategoryUnknown=false;
-      }else if(legacyRounds>0&&oldRounds>legacyRounds){
-        st.legacyCategoryUnknown=true;
-      }
-    });
-  }
-  if(oldRounds>0)data.imports.v72PerfectUnknown=true;
-  var knownPerfect=0;
-  Object.keys(data.profileStats||{}).forEach(function(id){
-    knownPerfect+=Math.max(0,Number(data.profileStats[id]&&data.profileStats[id].perfect)||0);
-  });
-  data.stats.perfectEstimates=Math.max(Math.max(0,Number(data.stats.perfectEstimates)||0),knownPerfect);
-  data.imports.v72DetailBackfillV1=true;
+function backfillV72Details(data){
+  return;
 }
 function load(){
   var data=null,hadStoredState=false;
