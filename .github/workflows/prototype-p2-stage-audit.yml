@@ -104,4 +104,5 @@ jobs:
           git add experiments/prototype/audit-shots/stages
           git diff --cached --quiet && exit 0
           git commit -m "chore: add P2 stage audit screenshots [skip ci]"
+          git pull --rebase origin prototype/party-makeover-p2-audit
           git push origin HEAD:prototype/party-makeover-p2-audit
