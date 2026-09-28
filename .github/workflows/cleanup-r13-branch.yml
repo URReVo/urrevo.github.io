@@ -1,0 +1,20 @@
+name: Cleanup R13 branch
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/cleanup-r13-branch.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete R13 development branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh api --method DELETE "repos/$GH_REPO/git/refs/heads/v74r13-design-feel"
