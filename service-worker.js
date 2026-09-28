@@ -1,7 +1,7 @@
 "use strict";
 
-const RELEASE="73";
-const CACHE_REVISION="r14";
+const RELEASE="74";
+const CACHE_REVISION="r1";
 const CACHE_PREFIX="imposter-games-";
 const CACHE_NAME=CACHE_PREFIX+"v"+RELEASE+"-"+CACHE_REVISION;
 const versioned=path=>path+"?v="+RELEASE;
@@ -19,30 +19,36 @@ const CORE_URLS=[
   versioned("/assets/css/who-am-i.css"),
   versioned("/assets/js/charades.js"),
   versioned("/assets/css/charades.css"),
+  versioned("/assets/js/personal-impostor.js"),
+  versioned("/assets/css/personal-impostor.css"),
   "/data/games.json",
   "/data/circa-questions.json",
   "/data/classic-words.json",
   "/data/who-am-i.json",
   "/data/charades.json",
+  "/data/personal-impostor.json",
   "/games/circa-imposter/",
   "/games/classic-imposter/",
   "/games/who-am-i/",
   "/games/charades/",
+  "/games/personal-impostor/",
   "/circa_impostor_detective_icon_180.png",
   "/circa_impostor_detective_icon_512.png"
 ];
 
 const NAV_FALLBACKS={
-  "/":"/",
-  "/index.html":"/",
-  "/games/circa-imposter/":"/games/circa-imposter/",
-  "/games/circa-imposter/index.html":"/games/circa-imposter/",
-  "/games/classic-imposter/":"/games/classic-imposter/",
-  "/games/classic-imposter/index.html":"/games/classic-imposter/",
-  "/games/who-am-i/":"/games/who-am-i/",
-  "/games/who-am-i/index.html":"/games/who-am-i/",
-  "/games/charades/":"/games/charades/",
-  "/games/charades/index.html":"/games/charades/"
+  ["/"]:"/",
+  ["/index.html"]:"/",
+  ["/games/circa-imposter/"]:"/games/circa-imposter/",
+  ["/games/circa-imposter/index.html"]:"/games/circa-imposter/",
+  ["/games/classic-imposter/"]:"/games/classic-imposter/",
+  ["/games/classic-imposter/index.html"]:"/games/classic-imposter/",
+  ["/games/who-am-i/"]:"/games/who-am-i/",
+  ["/games/who-am-i/index.html"]:"/games/who-am-i/",
+  ["/games/charades/"]:"/games/charades/",
+  ["/games/charades/index.html"]:"/games/charades/",
+  ["/games/personal-impostor/"]:"/games/personal-impostor/",
+  ["/games/personal-impostor/index.html"]:"/games/personal-impostor/"
 };
 
 const DATA_PATHS=new Set([
@@ -50,7 +56,8 @@ const DATA_PATHS=new Set([
   "/data/circa-questions.json",
   "/data/classic-words.json",
   "/data/who-am-i.json",
-  "/data/charades.json"
+  "/data/charades.json",
+  "/data/personal-impostor.json"
 ]);
 
 self.addEventListener("install",event=>{
@@ -71,9 +78,7 @@ self.addEventListener("activate",event=>{
   event.waitUntil(
     caches.keys()
       .then(keys=>Promise.all(
-        keys
-          .filter(key=>key.startsWith(CACHE_PREFIX)&&key!==CACHE_NAME)
-          .map(key=>caches.delete(key))
+        keys.filter(key=>key.startsWith(CACHE_PREFIX)&&key!==CACHE_NAME).map(key=>caches.delete(key))
       ))
       .then(()=>self.clients.claim())
   );
@@ -81,8 +86,7 @@ self.addEventListener("activate",event=>{
 
 async function cacheFirst(request,fallbackKey){
   const cache=await caches.open(CACHE_NAME);
-  const cached=(await cache.match(request))||
-               (fallbackKey?await cache.match(fallbackKey):null);
+  const cached=(await cache.match(request))||(fallbackKey?await cache.match(fallbackKey):null);
   if(cached)return cached;
   return fetch(request);
 }
@@ -90,21 +94,17 @@ async function cacheFirst(request,fallbackKey){
 self.addEventListener("fetch",event=>{
   const request=event.request;
   if(request.method!=="GET")return;
-
   const url=new URL(request.url);
   if(url.origin!==self.location.origin)return;
-
   if(request.mode==="navigate"){
     const fallback=NAV_FALLBACKS[url.pathname];
     if(!fallback)return;
     event.respondWith(cacheFirst(request,fallback));
     return;
   }
-
   if(DATA_PATHS.has(url.pathname)){
     event.respondWith(cacheFirst(request,url.pathname));
     return;
   }
-
   event.respondWith(cacheFirst(request,null));
 });

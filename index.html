@@ -8,9 +8,9 @@
 <meta name="apple-mobile-web-app-title" content="Imposter Games">
 <meta name="theme-color" content="#292929">
 <link rel="apple-touch-icon" sizes="180x180" href="circa_impostor_detective_icon_180.png">
-<link rel="icon" type="image/png" sizes="180x180" href="../../circa_impostor_detective_icon_180.png">
-<link rel="stylesheet" href="assets/css/launcher.css?v=73">
-<title>Imposter Games · V73R14</title>
+<link rel="icon" type="image/png" sizes="180x180" href="circa_impostor_detective_icon_180.png">
+<link rel="stylesheet" href="assets/css/launcher.css?v=74">
+<title>Imposter Games · V74R1</title>
 </head>
 <body>
 <main class="appShell">
@@ -68,6 +68,12 @@
           <div class="gameTop"><span class="gameIcon">🎬</span><span class="gameBadge">STIRN</span></div>
           <div class="gameTitle">Scharade</div>
           <div class="gameSub">2–12 Spieler · Erklären &amp; raten</div>
+          <div class="gameAction">Spielen <span>›</span></div>
+        </a>
+        <a class="gameCard personal" href="games/personal-impostor/">
+          <div class="gameTop"><span class="gameIcon">💬</span><span class="gameBadge">NEU · PERSÖNLICH</span></div>
+          <div class="gameTitle">Persönlicher Impostor</div>
+          <div class="gameSub">3–12 Spieler · Antworten &amp; bluffen</div>
           <div class="gameAction">Spielen <span>›</span></div>
         </a>
       </div>
@@ -130,9 +136,12 @@
       <small id="statsScopeSub">Runden des ausgewählten Profils</small>
     </section>
 
-    <div class="statGrid twoCol">
-      <div class="statCard"><strong id="circaProgress">0%</strong><span id="circaProgressSub">0 / 520 Circa</span></div>
-      <div class="statCard"><strong id="classicProgress">0%</strong><span id="classicProgressSub">0 / 250 Classic</span></div>
+    <div class="statGrid gameProgressGrid">
+      <div class="statCard"><small class="statCardLabel">CIRCA · FRAGEN</small><strong id="circaProgress">0%</strong><span id="circaProgressSub">0 / 520 gespielt</span></div>
+      <div class="statCard"><small class="statCardLabel">CLASSIC · WÖRTER</small><strong id="classicProgress">0%</strong><span id="classicProgressSub">0 / 250 gespielt</span></div>
+      <div class="statCard"><small class="statCardLabel">WER BIN ICH? · BEGRIFFE</small><strong id="whoamiProgress">0%</strong><span id="whoamiProgressSub">0 / 275 gesehen</span></div>
+      <div class="statCard"><small class="statCardLabel">SCHARADE · BEGRIFFE</small><strong id="charadesProgress">0%</strong><span id="charadesProgressSub">0 / 300 gewertet</span></div>
+      <div class="statCard"><small class="statCardLabel">PERSÖNLICH · FRAGEN</small><strong id="personalProgress">0%</strong><span id="personalProgressSub">0 / 100 gespielt</span></div>
     </div>
 
     <section class="sectionBlock">
@@ -140,8 +149,41 @@
       <div class="metricList">
         <div><span>🎯 Circa Imposter</span><strong id="circaRounds">0</strong></div>
         <div><span>🎭 Klassisches Imposter</span><strong id="classicRounds">0</strong></div>
-        <div><span>🎯 Perfekte Schätzungen</span><strong id="perfectCount">0</strong></div>
-        <div><span>🗺️ Kategorien gespielt</span><strong id="categoryCount">0 / 10</strong></div>
+        <div><span>❓ Wer bin ich?</span><strong id="whoamiRounds">0</strong></div>
+        <div><span>🎬 Scharade</span><strong id="charadesRounds">0</strong></div>
+        <div><span>💬 Persönlicher Impostor</span><strong id="personalRounds">0</strong></div>
+      </div>
+    </section>
+
+    <section class="sectionBlock usageStatsBlock">
+      <div class="sectionHeading">
+        <div><div class="eyebrow">SPIELZEIT</div><h2>Zeit in der App</h2></div>
+        <span class="sectionHint">geräteweit</span>
+      </div>
+      <div class="usageTotalCard"><span>⏱️ App insgesamt</span><strong id="usageTotal">0 Min.</strong></div>
+      <div class="metricList usageMetricList">
+        <div><span>🎯 Circa Imposter</span><strong id="usageCirca">0 Min.</strong></div>
+        <div><span>🎭 Klassisches Imposter</span><strong id="usageClassic">0 Min.</strong></div>
+        <div><span>❓ Wer bin ich?</span><strong id="usageWhoami">0 Min.</strong></div>
+        <div><span>🎬 Scharade</span><strong id="usageCharades">0 Min.</strong></div>
+        <div><span>💬 Persönlicher Impostor</span><strong id="usagePersonal">0 Min.</strong></div>
+      </div>
+      <p class="presetInlineHint">Gezählt wird nur, solange die PWA sichtbar im Vordergrund ist.</p>
+    </section>
+
+    <section class="sectionBlock">
+      <div class="sectionHeading"><div><div class="eyebrow">PERFORMANCE</div><h2>Deine Zahlen</h2></div></div>
+      <div class="statGrid twoCol modeStatsGrid">
+        <div class="statCard"><small class="statCardLabel">IMPOSTOR · ALLE MODI</small><strong id="impostorCount">0</strong><span>Rollen als Impostor</span></div>
+        <div class="statCard"><small class="statCardLabel">PERSÖNLICHER IMPOSTOR</small><strong id="personalImpostorCount">0</strong><span>Rollen als Impostor</span></div>
+        <div class="statCard"><small class="statCardLabel">SCHARADE · RICHTIG</small><strong id="charadesCorrect">0</strong><span>Begriffe insgesamt</span></div>
+        <div class="statCard"><small class="statCardLabel">SCHARADE · SKIPS</small><strong id="charadesSkipped">0</strong><span>Begriffe übersprungen</span></div>
+        <div class="statCard"><small class="statCardLabel">SCHARADE · DURCHSCHNITT</small><strong id="charadesAverage">0,0</strong><span>Richtige je Spieler-Runde</span></div>
+        <div class="statCard"><small class="statCardLabel">SCHARADE · BESTWERT</small><strong id="charadesBestTurn">0</strong><span>Richtige in einer Spieler-Runde</span></div>
+      </div>
+      <div class="metricList compactMetrics">
+        <div><span>🎯 Perfekte Circa-Schätzungen</span><strong id="perfectCount">0</strong></div>
+        <div><span>🗺️ Circa-Kategorien gespielt</span><strong id="categoryCount">0 / 10</strong></div>
       </div>
     </section>
 
@@ -154,7 +196,10 @@
     </section>
 
     <section class="sectionBlock">
-      <div class="sectionHeading"><div><div class="eyebrow">ACHIEVEMENTS</div><h2 id="achievementHeading">Sammlung</h2></div></div>
+      <div class="sectionHeading">
+        <div><div class="eyebrow">ACHIEVEMENTS</div><h2 id="achievementHeading">Sammlung</h2></div>
+        <span id="achievementCount" class="sectionHint">0 / 0</span>
+      </div>
       <div id="achievementList" class="achievementList"></div>
     </section>
   </section>
@@ -188,14 +233,14 @@
         </button>
         <input id="importDataFile" class="hiddenFileInput" type="file" accept="application/json,.json" tabindex="-1" aria-hidden="true">
         <button id="resetAppData" class="settingAction danger" type="button">
-          <span><strong>Lokale App-Daten zurücksetzen</strong><small>Profile, Sessions, Statistik und V73-Spielfortschritt löschen</small></span><span>›</span>
+          <span><strong>Lokale App-Daten zurücksetzen</strong><small>Profile, Sessions, Statistik und V74-Spielfortschritt löschen</small></span><span>›</span>
         </button>
       </div>
       <p id="dataStatus" class="inlineStatus" aria-live="polite"></p>
     </section>
 
     <div class="aboutCard">
-      <strong>Imposter Games · V73R14</strong>
+      <strong>Imposter Games · V74R1</strong>
       <span>Lokale Profile, Sessions und persönliche Statistik</span>
       <small>Deine Daten bleiben lokal auf diesem Gerät und können als Backup exportiert werden.</small>
     </div>
@@ -240,37 +285,72 @@
   </div>
   <div id="presetGame" class="presetSheetGame"></div>
   <p id="presetDetail" class="presetSheetDetail"></p>
-  <p class="prototypeNote">Spielerzahl und Spieleinstellungen werden beim Start direkt vorausgefüllt.</p>
+  <p class="prototypeNote">Spieler und Spieleinstellungen werden beim Start direkt vorausgefüllt.</p>
   <button id="presetOpenGame" class="primaryButton" type="button">Mit Preset starten</button>
   <button id="deletePreset" class="sheetDangerButton hidden" type="button">Eigenes Preset löschen</button>
 </section>
 
-<section id="presetEditorSheet" class="bottomSheet hidden" aria-modal="true" role="dialog" aria-labelledby="presetEditorTitle">
+<section id="presetEditorSheet" class="bottomSheet hidden presetEditorSheet" aria-modal="true" role="dialog" aria-labelledby="presetEditorTitle">
   <div class="sheetHandle"></div>
   <div class="sheetHeader">
     <div><div class="eyebrow">EIGENES PRESET</div><h2 id="presetEditorTitle">Schnellstart speichern</h2></div>
     <button class="closeSheet" type="button" aria-label="Schließen">×</button>
   </div>
-  <label class="fieldLabel" for="presetNameInput">Name</label>
+
+  <label class="fieldLabel" for="presetNameInput">NAME</label>
   <input id="presetNameInput" class="textInput" type="text" maxlength="22" placeholder="Freitagabend">
-  <div class="formGrid">
-    <label><span>Spiel</span><select id="presetGameInput"><option value="circa">Circa Imposter</option><option value="classic">Klassisches Imposter</option></select></label>
-    <label><span>Spieler</span><select id="presetPlayersInput"></select></label>
+
+  <label class="fieldLabel" for="presetGameInput">SPIEL</label>
+  <select id="presetGameInput" class="selectInput">
+    <option value="circa">🎯 Circa Imposter</option>
+    <option value="classic">🎭 Klassisches Imposter</option>
+    <option value="whoami">❓ Wer bin ich?</option>
+    <option value="charades">🎬 Scharade</option>
+    <option value="personal">💬 Persönlicher Impostor</option>
+  </select>
+
+  <div class="fieldLabel">SPIELER</div>
+  <button id="presetPlayersButton" class="presetConfigButton" type="button">
+    <span><strong>Mitspieler auswählen</strong><small id="presetPlayersSummary">Noch keine Spieler ausgewählt</small></span><span class="chevron">›</span>
+  </button>
+
+  <div id="presetCategoriesBlock">
+    <div class="fieldLabel">KATEGORIEN</div>
+    <div id="presetCategoryChoices" class="presetChoiceGrid" aria-label="Kategorien auswählen"></div>
+    <p id="presetCategorySummary" class="presetInlineHint">Alle Kategorien</p>
   </div>
+
   <div id="circaPresetFields">
-    <label class="fieldLabel" for="presetCategoryInput">Kategorie</label>
-    <select id="presetCategoryInput" class="selectInput">
-      <option>Alle</option><option>Allgemein</option><option>Geografie</option><option>Technik</option><option>Natur</option><option>Alltag</option><option>Sport</option><option>Auto</option><option>Essen</option><option>Popkultur</option><option>Spicy 🌶️</option>
-    </select>
-    <label class="fieldLabel" for="presetDifficultyInput">Schwierigkeit</label>
+    <label class="fieldLabel" for="presetDifficultyInput">SCHWIERIGKEIT</label>
     <select id="presetDifficultyInput" class="selectInput"><option value="leicht">Leicht</option><option value="mittel" selected>Mittel</option><option value="schwer">Schwer</option><option value="zufaellig">Zufall</option></select>
   </div>
+
   <div id="classicPresetFields" class="hidden">
-    <label class="primaryProfileRow"><input id="presetHintInput" type="checkbox" checked> <span>Imposter-Hinweis aktiv</span></label>
-    <label class="fieldLabel" for="presetTimerInput">Timer</label>
+    <label class="primaryProfileRow"><input id="presetHintInput" type="checkbox" checked> <span>Impostor-Hinweis aktiv</span></label>
+    <label class="fieldLabel" for="presetTimerInput">DISKUSSIONS-TIMER</label>
     <select id="presetTimerInput" class="selectInput"><option value="0">Aus</option><option value="60">1:00</option><option value="90">1:30</option><option value="120">2:00</option><option value="150">2:30</option><option value="180" selected>3:00</option><option value="210">3:30</option><option value="240">4:00</option><option value="270">4:30</option><option value="300">5:00</option></select>
   </div>
+
+  <div id="charadesPresetFields" class="hidden">
+    <label class="fieldLabel" for="presetCharadesTimerInput">ZEIT PRO SPIELER</label>
+    <select id="presetCharadesTimerInput" class="selectInput"><option value="30">0:30</option><option value="45">0:45</option><option value="60" selected>1:00</option><option value="90">1:30</option><option value="120">2:00</option></select>
+  </div>
+
+  <p id="presetEditorStatus" class="inlineStatus presetEditorStatus" aria-live="polite"></p>
   <button id="savePreset" class="primaryButton" type="button">Preset speichern</button>
+</section>
+
+<section id="presetPlayersSheet" class="bottomSheet hidden" aria-modal="true" role="dialog" aria-labelledby="presetPlayersTitle">
+  <div class="sheetHandle"></div>
+  <div class="sheetHeader">
+    <div><div class="eyebrow">PRESET · SPIELER</div><h2 id="presetPlayersTitle">Wer spielt mit?</h2></div>
+    <button id="presetPlayersCancel" type="button" class="presetSheetBack" aria-label="Zurück">‹</button>
+  </div>
+  <p id="presetPlayersHint" class="presetSheetDetail">Wähle die Profile aus, die beim Schnellstart direkt geladen werden sollen.</p>
+  <div id="presetPlayersList" class="presetPlayerPicker"></div>
+  <button id="presetAddPlayer" class="presetAddPlayerButton" type="button"><span>＋</span><strong>Neuen Spieler anlegen</strong></button>
+  <p id="presetPlayersStatus" class="inlineStatus" aria-live="polite"></p>
+  <button id="presetPlayersDone" class="primaryButton" type="button">Auswahl übernehmen</button>
 </section>
 
 <section id="sessionSheet" class="bottomSheet hidden" aria-modal="true" role="dialog" aria-labelledby="sessionSheetTitle">
@@ -293,15 +373,15 @@
 <section id="migrationSheet" class="bottomSheet hidden migrationSheet" aria-modal="true" role="dialog" aria-labelledby="migrationTitle">
   <div class="sheetHandle"></div>
   <div class="sheetHeader">
-    <div><div class="eyebrow">V72 → V73</div><h2 id="migrationTitle">Wer bist du?</h2></div>
+    <div><div class="eyebrow">V72 → V74</div><h2 id="migrationTitle">Wer bist du?</h2></div>
   </div>
   <p id="migrationText" class="migrationText">Wir haben vorhandene Spieler übernommen. Wähle dein Profil für den Launcher aus.</p>
   <div id="migrationProfiles" class="migrationProfiles"></div>
   <p class="prototypeNote">Deine bisherigen V72-Daten bleiben als Sicherheitskopie unverändert auf dem Gerät.</p>
 </section>
 
-<script src="assets/js/app-state.js?v=73"></script>
-<script src="assets/js/launcher.js?v=73"></script>
-<script src="assets/js/pwa.js?v=73"></script>
+<script src="assets/js/app-state.js?v=74"></script>
+<script src="assets/js/launcher.js?v=74"></script>
+<script src="assets/js/pwa.js?v=74"></script>
 </body>
 </html>

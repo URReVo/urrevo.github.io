@@ -1,0 +1,896 @@
+{
+  "schemaVersion": 1,
+  "game": "personal-impostor",
+  "count": 100,
+  "items": [
+    {
+      "id": "personal-0001",
+      "normal": "Wie alt sollte deine Freundin oder dein Freund idealerweise sein?",
+      "impostor": "Wie alt warst du, als du das erste Mal Bier getrunken hast?",
+      "unit": "Jahre",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0002",
+      "normal": "Wie alt möchtest du ungefähr sein, wenn du ausziehst oder ausgezogen sein willst?",
+      "impostor": "Wie alt warst du bei deinem ersten Kuss?",
+      "unit": "Jahre",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0003",
+      "normal": "Mit welchem Alter würdest du gern eine eigene Immobilie besitzen?",
+      "impostor": "Wie alt warst du bei deinem ersten Urlaub ohne Eltern?",
+      "unit": "Jahre",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0004",
+      "normal": "Mit welchem Alter könntest du dir eine Hochzeit vorstellen?",
+      "impostor": "Wie alt warst du, als du dein erstes eigenes Smartphone bekommen hast?",
+      "unit": "Jahre",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0005",
+      "normal": "Mit welchem Alter könntest du dir Kinder vorstellen?",
+      "impostor": "Wie alt warst du bei deinem ersten richtigen Nebenjob?",
+      "unit": "Jahre",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0006",
+      "normal": "Wie viele Jahre Altersunterschied wären bei einem Partner für dich maximal okay?",
+      "impostor": "Wie viele Jahre würdest du dasselbe Auto maximal fahren?",
+      "unit": "Jahre",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0007",
+      "normal": "Wie viele Jahre wohnst du schon ungefähr in deinem aktuellen Ort?",
+      "impostor": "Wie viele Jahre kennst du deinen ältesten guten Freund?",
+      "unit": "Jahre",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0008",
+      "normal": "Mit welchem Alter würdest du am liebsten in Rente gehen?",
+      "impostor": "Wie alt warst du, als du dein erstes eigenes Auto bekommen hast?",
+      "unit": "Jahre",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0009",
+      "normal": "Wie viel würdest du maximal für ein Paar Schuhe ausgeben?",
+      "impostor": "Wie viel Bargeld hast du normalerweise ungefähr dabei?",
+      "unit": "€",
+      "answerType": "number",
+      "min": 0,
+      "step": 0.01
+    },
+    {
+      "id": "personal-0010",
+      "normal": "Wie viel würdest du bei einem ersten Date ungefähr ausgeben?",
+      "impostor": "Für wie viel Euro tankst du normalerweise, wenn du nicht volltankst?",
+      "unit": "€",
+      "answerType": "number",
+      "min": 0,
+      "step": 0.01
+    },
+    {
+      "id": "personal-0011",
+      "normal": "Wie viel würdest du für ein Geburtstagsgeschenk für deinen besten Freund ausgeben?",
+      "impostor": "Wie viel kostet bei dir ungefähr ein Friseurbesuch?",
+      "unit": "€",
+      "answerType": "number",
+      "min": 0,
+      "step": 0.01
+    },
+    {
+      "id": "personal-0012",
+      "normal": "Wie viel gibst du im Monat ungefähr für Kleidung aus?",
+      "impostor": "Wie viel zahlst du im Monat ungefähr für Abos und Streaming?",
+      "unit": "€",
+      "answerType": "number",
+      "min": 0,
+      "step": 0.01
+    },
+    {
+      "id": "personal-0013",
+      "normal": "Wie viel würdest du maximal pro Person in einem Restaurant ausgeben?",
+      "impostor": "Wie viel kostet für dich ein typischer Kinoabend mit allem drum und dran?",
+      "unit": "€",
+      "answerType": "number",
+      "min": 0,
+      "step": 0.01
+    },
+    {
+      "id": "personal-0014",
+      "normal": "Wie viel würdest du maximal für ein neues Handy ausgeben?",
+      "impostor": "Wie viel würdest du für einen spontanen Wochenendtrip ausgeben?",
+      "unit": "€",
+      "answerType": "number",
+      "min": 0,
+      "step": 0.01
+    },
+    {
+      "id": "personal-0015",
+      "normal": "Wie viel würdest du monatlich maximal für eine Autofinanzierung zahlen?",
+      "impostor": "Wie viel würdest du monatlich maximal für deinen Anteil an einer Wohnung zahlen?",
+      "unit": "€",
+      "answerType": "number",
+      "min": 0,
+      "step": 0.01
+    },
+    {
+      "id": "personal-0016",
+      "normal": "Wie viel gibst du ungefähr pro Woche für Lebensmittel aus?",
+      "impostor": "Wie viel kostet bei dir ungefähr ein kompletter Abend in Bar oder Club?",
+      "unit": "€",
+      "answerType": "number",
+      "min": 0,
+      "step": 0.01
+    },
+    {
+      "id": "personal-0017",
+      "normal": "Wie viel würdest du maximal für ein Konzertticket bezahlen?",
+      "impostor": "Wie viel würdest du noch ohne große Diskussion für eine kleine Autoreparatur zahlen?",
+      "unit": "€",
+      "answerType": "number",
+      "min": 0,
+      "step": 0.01
+    },
+    {
+      "id": "personal-0018",
+      "normal": "Wie viel würdest du maximal für eine gute Jacke ausgeben?",
+      "impostor": "Wie viel würdest du maximal für eine Smartwatch ausgeben?",
+      "unit": "€",
+      "answerType": "number",
+      "min": 0,
+      "step": 0.01
+    },
+    {
+      "id": "personal-0019",
+      "normal": "Wie viel Geld würdest du zu einer Hochzeit schenken?",
+      "impostor": "Ab welcher Höhe würde dich ein Bußgeld richtig ärgern?",
+      "unit": "€",
+      "answerType": "number",
+      "min": 0,
+      "step": 0.01
+    },
+    {
+      "id": "personal-0020",
+      "normal": "Wie viel Geld würdest du für Notfälle ungefähr zu Hause aufbewahren?",
+      "impostor": "Wie viel Wert trägst du an einem normalen Tag ungefähr in deiner Tasche oder deinem Rucksack herum?",
+      "unit": "€",
+      "answerType": "number",
+      "min": 0,
+      "step": 0.01
+    },
+    {
+      "id": "personal-0021",
+      "normal": "Wie viel bezahlst du im Monat ungefähr für dein Auto – ohne Sprit?",
+      "impostor": "Wie viel gibst du im Monat ungefähr für Essen außer Haus aus?",
+      "unit": "€",
+      "answerType": "number",
+      "min": 0,
+      "step": 0.01
+    },
+    {
+      "id": "personal-0022",
+      "normal": "Wie viel hat dein aktuelles Auto ungefähr gekostet oder wie viel wäre dir ein Auto wert?",
+      "impostor": "Wie viel würdest du maximal für eine richtig große Reise ausgeben?",
+      "unit": "€",
+      "answerType": "number",
+      "min": 0,
+      "step": 0.01
+    },
+    {
+      "id": "personal-0023",
+      "normal": "Wie viele Stunden schläfst du am Wochenende ungefähr?",
+      "impostor": "Wie viele Stunden bist du an einem normalen Tag ungefähr am Handy?",
+      "unit": "Stunden",
+      "answerType": "number",
+      "min": 0,
+      "step": 0.5
+    },
+    {
+      "id": "personal-0024",
+      "normal": "Wie viele Stunden pro Woche zockst du ungefähr?",
+      "impostor": "Wie viele Stunden pro Woche machst du ungefähr Sport?",
+      "unit": "Stunden",
+      "answerType": "number",
+      "min": 0,
+      "step": 0.5
+    },
+    {
+      "id": "personal-0025",
+      "normal": "Wie viele Stunden am Tag würdest du idealerweise arbeiten wollen?",
+      "impostor": "Wie viele Stunden würdest du bei einem Roadtrip maximal an einem Tag fahren wollen?",
+      "unit": "Stunden",
+      "answerType": "number",
+      "min": 0,
+      "step": 0.5
+    },
+    {
+      "id": "personal-0026",
+      "normal": "Wie viele Stunden Flug wären für einen Urlaub für dich noch okay?",
+      "impostor": "Wie viele Stunden hältst du es auf einer großen Familienfeier entspannt aus?",
+      "unit": "Stunden",
+      "answerType": "number",
+      "min": 0,
+      "step": 0.5
+    },
+    {
+      "id": "personal-0027",
+      "normal": "Wie viele Stunden pro Woche brauchst du wirklich Zeit komplett für dich?",
+      "impostor": "Wie viele Stunden pro Woche hörst du ungefähr bewusst Musik oder Podcasts?",
+      "unit": "Stunden",
+      "answerType": "number",
+      "min": 0,
+      "step": 0.5
+    },
+    {
+      "id": "personal-0028",
+      "normal": "Wie viele Stunden Schlaf brauchst du, damit du dich wirklich fit fühlst?",
+      "impostor": "Wie viele Stunden könntest du ohne Pause mit Freunden unterwegs sein?",
+      "unit": "Stunden",
+      "answerType": "number",
+      "min": 0,
+      "step": 0.5
+    },
+    {
+      "id": "personal-0029",
+      "normal": "Wie viele Tage könntest du ohne Social Media auskommen?",
+      "impostor": "Wie viele Tage Urlaub am Stück wären für dich ideal?",
+      "unit": "Tage",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0030",
+      "normal": "Wie viele Tage trägst du eine Jeans ungefähr, bevor sie in die Wäsche kommt?",
+      "impostor": "Wie viele Tage würdest du gekochtes Essen maximal im Kühlschrank aufbewahren?",
+      "unit": "Tage",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0031",
+      "normal": "Wie viele Tage im Voraus planst du einen größeren Urlaub normalerweise?",
+      "impostor": "Wie viele Tage könntest du problemlos komplett ohne Auto auskommen?",
+      "unit": "Tage",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0032",
+      "normal": "Wie viele Tage darf jemand deine Nachricht unbeantwortet lassen, bevor es dich nervt?",
+      "impostor": "Wie viele Tage würdest du mit leichten Beschwerden warten, bevor du zum Arzt gehst?",
+      "unit": "Tage",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0033",
+      "normal": "Wie viele Tage Festival am Stück wären für dich das Maximum?",
+      "impostor": "Wie viele Tage könntest du Besuch bei dir zu Hause am Stück entspannt haben?",
+      "unit": "Tage",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0034",
+      "normal": "Wie viele Tage würdest du spontan alleine verreisen?",
+      "impostor": "Wie viele Tage würdest du dein Handy zur Reparatur abgeben können, ohne Ersatzgerät zu brauchen?",
+      "unit": "Tage",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0035",
+      "normal": "Wie viele Leute würdest du ungefähr zu deiner Hochzeit einladen?",
+      "impostor": "Mit wie vielen Leuten schreibst du ungefähr regelmäßig auf WhatsApp oder anderen Messengern?",
+      "unit": "Personen",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0036",
+      "normal": "Wie vielen Leuten würdest du ein wirklich großes Geheimnis anvertrauen?",
+      "impostor": "Wie viele Kollegen haben ungefähr deine private Handynummer?",
+      "unit": "Personen",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0037",
+      "normal": "Wie viele Leute würdest du zu deinem Geburtstag einladen?",
+      "impostor": "Mit wie vielen Leuten würdest du spontan einen mehrtägigen Roadtrip machen?",
+      "unit": "Personen",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0038",
+      "normal": "Mit wie vielen Personen könntest du dir vorstellen, dauerhaft in einer WG zu wohnen?",
+      "impostor": "Mit wie vielen Personen würdest du gleichzeitig in den Urlaub fahren wollen?",
+      "unit": "Personen",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0039",
+      "normal": "Wie viele enge Freunde würdest du sagen, dass du wirklich hast?",
+      "impostor": "Wie viele Personen würdest du nachts um drei anrufen können, wenn du Hilfe brauchst?",
+      "unit": "Personen",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0040",
+      "normal": "Wie viele Personen dürfen deiner Meinung nach maximal in einer guten Reisegruppe sein?",
+      "impostor": "Wie viele Personen sollten für dich maximal in einem Gruppenchat aktiv schreiben?",
+      "unit": "Personen",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0041",
+      "normal": "Wie viele Beziehungen hattest du bisher ungefähr?",
+      "impostor": "Wie viele Autos hattest du bisher ungefähr?",
+      "unit": "Anzahl",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0042",
+      "normal": "Wie viele Länder hast du schon besucht?",
+      "impostor": "Wie viele kostenpflichtige Apps oder Abos bezahlst du aktuell ungefähr?",
+      "unit": "Anzahl",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0043",
+      "normal": "Wie viele Kaffee oder Energy-Drinks trinkst du an einem normalen Tag?",
+      "impostor": "Wie viele alkoholische Getränke trinkst du auf einer längeren Party ungefähr?",
+      "unit": "Anzahl",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0044",
+      "normal": "Wie viele Wecker stellst du morgens normalerweise?",
+      "impostor": "Wie viele Browser-Tabs hast du gerade ungefähr offen?",
+      "unit": "Anzahl",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0045",
+      "normal": "Wie oft bestellst du in einem normalen Monat Essen?",
+      "impostor": "Wie oft wäschst oder putzt du dein Auto in einem normalen Monat?",
+      "unit": "Mal",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0046",
+      "normal": "Wie oft gehst du pro Monat ungefähr auswärts essen?",
+      "impostor": "Wie oft kaufst du dir pro Monat spontan etwas, das du nicht geplant hattest?",
+      "unit": "Mal",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0047",
+      "normal": "Wie oft telefonierst du pro Woche länger als zehn Minuten privat?",
+      "impostor": "Wie oft gehst du pro Woche irgendwo einkaufen?",
+      "unit": "Mal",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0048",
+      "normal": "Wie oft snoozest du morgens normalerweise?",
+      "impostor": "Wie oft schaust du am Tag ungefähr in deinen Kühlschrank, ohne genau zu wissen was du willst?",
+      "unit": "Mal",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0049",
+      "normal": "Wie viele Minuten duschst du normalerweise?",
+      "impostor": "Wie viele Minuten brauchst du ungefähr für deinen Arbeits- oder Schulweg?",
+      "unit": "Minuten",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0050",
+      "normal": "Wie viele Minuten snoozest du morgens insgesamt?",
+      "impostor": "Wie viele Minuten brauchst du morgens ungefähr, bis du das Haus verlassen kannst?",
+      "unit": "Minuten",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0051",
+      "normal": "Wie lange telefonierst du gern maximal am Stück?",
+      "impostor": "Wie lange würdest du in einem Restaurant auf dein Essen warten, bevor du genervt bist?",
+      "unit": "Minuten",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0052",
+      "normal": "Wie viele Minuten würdest du maximal zum Fitnessstudio fahren?",
+      "impostor": "Wie lange brauchst du ungefähr, um dir ein normales Abendessen zu machen?",
+      "unit": "Minuten",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0053",
+      "normal": "Wie lange würdest du auf einen verspäteten Freund warten, bevor du richtig genervt bist?",
+      "impostor": "Wie lange würdest du nach einem Parkplatz suchen, bevor du woanders hinfährst?",
+      "unit": "Minuten",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0054",
+      "normal": "Wie lang dürfte dein täglicher Arbeitsweg maximal sein?",
+      "impostor": "Wie lange dauert bei dir ungefähr ein Friseurbesuch?",
+      "unit": "Minuten",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0055",
+      "normal": "Wie viele Kilometer würdest du maximal täglich zur Arbeit fahren wollen?",
+      "impostor": "Wie viele Kilometer würdest du für dein Lieblingsrestaurant extra fahren?",
+      "unit": "km",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0056",
+      "normal": "Wie viele Kilometer Entfernung wären für dich beim Dating noch okay?",
+      "impostor": "Wie viele Kilometer würdest du für ein richtig gutes Gebraucht-Angebot fahren?",
+      "unit": "km",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0057",
+      "normal": "Wie viele Kilometer würdest du an einem Urlaubstag freiwillig mit dem Auto fahren?",
+      "impostor": "Wie viele Kilometer würdest du für einen besonderen Freizeitpark oder ein Event fahren?",
+      "unit": "km",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0058",
+      "normal": "Wie weit dürfte ein Flughafen maximal entfernt sein, damit du ihn noch bequem mit dem Auto anfährst?",
+      "impostor": "Wie weit würdest du zu einer Werkstatt fahren, der du wirklich vertraust?",
+      "unit": "km",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0059",
+      "normal": "Wie weit würdest du für einen sehr guten Job täglich pendeln?",
+      "impostor": "Wie weit würdest du fahren, um einen guten Freund spontan abzuholen?",
+      "unit": "km",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0060",
+      "normal": "Bei wie viel Prozent Akku lädst du dein Handy normalerweise spätestens?",
+      "impostor": "Ab wie viel Prozent Rabatt würdest du etwas eher spontan kaufen?",
+      "unit": "%",
+      "answerType": "percent",
+      "min": 0,
+      "max": 100,
+      "step": 1
+    },
+    {
+      "id": "personal-0061",
+      "normal": "Bei wie viel Prozent Akku wirst du langsam nervös?",
+      "impostor": "Ab wie viel Prozent Regenwahrscheinlichkeit nimmst du einen Schirm mit?",
+      "unit": "%",
+      "answerType": "percent",
+      "min": 0,
+      "max": 100,
+      "step": 1
+    },
+    {
+      "id": "personal-0062",
+      "normal": "Wie viel Prozent mehr Gehalt müssten dir geboten werden, damit du ernsthaft über einen Jobwechsel nachdenkst?",
+      "impostor": "Wie viel Prozent Rabatt müsste Kleidung ungefähr haben, damit du extra in einen Laden gehst?",
+      "unit": "%",
+      "answerType": "percent",
+      "min": 0,
+      "max": 100,
+      "step": 1
+    },
+    {
+      "id": "personal-0063",
+      "normal": "Wie voll darf dein Kalender ungefähr sein, bevor es dir zu viel wird?",
+      "impostor": "Wie voll ist dein Handyspeicher meistens ungefähr, bevor du anfängst aufzuräumen?",
+      "unit": "%",
+      "answerType": "percent",
+      "min": 0,
+      "max": 100,
+      "step": 1
+    },
+    {
+      "id": "personal-0064",
+      "normal": "Wie sicher bist du dir in Prozent, dass du gut parallel einparken kannst?",
+      "impostor": "Wie hoch ist die Chance in Prozent, dass du bei einer unbekannten Nummer sofort rangehst?",
+      "unit": "%",
+      "answerType": "percent",
+      "min": 0,
+      "max": 100,
+      "step": 1
+    },
+    {
+      "id": "personal-0065",
+      "normal": "Um wie viel Uhr gehst du unter der Woche normalerweise schlafen?",
+      "impostor": "Um wie viel Uhr sollte für dich eine gute Party anfangen?",
+      "unit": "Uhrzeit",
+      "answerType": "time"
+    },
+    {
+      "id": "personal-0066",
+      "normal": "Um wie viel Uhr stehst du am Wochenende freiwillig ungefähr auf?",
+      "impostor": "Um wie viel Uhr dürfte ein sehr günstiger Flug frühestens starten, damit du ihn noch buchst?",
+      "unit": "Uhrzeit",
+      "answerType": "time"
+    },
+    {
+      "id": "personal-0067",
+      "normal": "Um wie viel Uhr isst du normalerweise Abendessen?",
+      "impostor": "Um wie viel Uhr würdest du einen Clubabend ungefähr verlassen?",
+      "unit": "Uhrzeit",
+      "answerType": "time"
+    },
+    {
+      "id": "personal-0068",
+      "normal": "Um wie viel Uhr klingelt dein Wecker an einem normalen Arbeitstag?",
+      "impostor": "Um wie viel Uhr würdest du für einen langen Roadtrip am liebsten losfahren?",
+      "unit": "Uhrzeit",
+      "answerType": "time"
+    },
+    {
+      "id": "personal-0069",
+      "normal": "Bis wie viel Uhr würdest du spätestens noch Kaffee oder Energy trinken?",
+      "impostor": "Bis wie viel Uhr würdest du abends noch auf eine berufliche Nachricht antworten?",
+      "unit": "Uhrzeit",
+      "answerType": "time"
+    },
+    {
+      "id": "personal-0070",
+      "normal": "Wie viele Monate nutzt du ein Handy ungefähr, bevor du es ersetzen möchtest?",
+      "impostor": "Wie viele Monate Beziehung würdest du ungefähr abwarten, bevor Zusammenziehen für dich realistisch wäre?",
+      "unit": "Monate",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0071",
+      "normal": "Wie viele Monate würdest du für einen größeren Kauf sparen?",
+      "impostor": "Wie viele Monate im Voraus planst du einen großen Urlaub normalerweise?",
+      "unit": "Monate",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0072",
+      "normal": "Wie viele Monate im Jahr fährst du ungefähr mit Winterreifen?",
+      "impostor": "Wie viele Monate würdest du einem neuen Fitnessstudio geben, bevor du entscheidest, ob es zu dir passt?",
+      "unit": "Monate",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0073",
+      "normal": "Wie viele Monate hältst du es ungefähr ohne richtigen Urlaub aus?",
+      "impostor": "Wie viele Monate würdest du ein neues Hobby testen, bevor du teure Ausrüstung dafür kaufst?",
+      "unit": "Monate",
+      "answerType": "integer",
+      "min": 0,
+      "step": 1
+    },
+    {
+      "id": "personal-0074",
+      "normal": "Wie eifersüchtig bist du normalerweise?",
+      "impostor": "Wie scharf isst du gerne?",
+      "unit": "1–10",
+      "answerType": "rating",
+      "min": 1,
+      "max": 10,
+      "step": 1
+    },
+    {
+      "id": "personal-0075",
+      "normal": "Wie wichtig ist dir Ordnung zu Hause?",
+      "impostor": "Wie risikofreudig fährst du Auto?",
+      "unit": "1–10",
+      "answerType": "rating",
+      "min": 1,
+      "max": 10,
+      "step": 1
+    },
+    {
+      "id": "personal-0076",
+      "normal": "Wie wichtig ist dir Pünktlichkeit?",
+      "impostor": "Wie wichtig sind dir Marken bei Kleidung oder Technik?",
+      "unit": "1–10",
+      "answerType": "rating",
+      "min": 1,
+      "max": 10,
+      "step": 1
+    },
+    {
+      "id": "personal-0077",
+      "normal": "Wie zufrieden bist du aktuell mit Arbeit oder Studium?",
+      "impostor": "Wie sicher fühlst du dich beim Autofahren?",
+      "unit": "1–10",
+      "answerType": "rating",
+      "min": 1,
+      "max": 10,
+      "step": 1
+    },
+    {
+      "id": "personal-0078",
+      "normal": "Wie extrovertiert bist du in einer fremden Gruppe?",
+      "impostor": "Wie emotional hängst du an deinem Auto oder deinen persönlichen Sachen?",
+      "unit": "1–10",
+      "answerType": "rating",
+      "min": 1,
+      "max": 10,
+      "step": 1
+    },
+    {
+      "id": "personal-0079",
+      "normal": "Wie geduldig bist du im Stau?",
+      "impostor": "Wie gut kommst du mit kaltem Wasser beim Duschen klar?",
+      "unit": "1–10",
+      "answerType": "rating",
+      "min": 1,
+      "max": 10,
+      "step": 1
+    },
+    {
+      "id": "personal-0080",
+      "normal": "Wie wichtig ist dir viel Geld im Leben?",
+      "impostor": "Wie sehr brauchst du regelmäßig Zeit komplett alleine?",
+      "unit": "1–10",
+      "answerType": "rating",
+      "min": 1,
+      "max": 10,
+      "step": 1
+    },
+    {
+      "id": "personal-0081",
+      "normal": "Wie sehr stressen dich viele ungelesene Nachrichten?",
+      "impostor": "Wie groß ist deine Höhenangst?",
+      "unit": "1–10",
+      "answerType": "rating",
+      "min": 1,
+      "max": 10,
+      "step": 1
+    },
+    {
+      "id": "personal-0082",
+      "normal": "Wie gut kannst du deiner Meinung nach kochen?",
+      "impostor": "Wie gut kommst du mit neuer Technik ohne Anleitung klar?",
+      "unit": "1–10",
+      "answerType": "rating",
+      "min": 1,
+      "max": 10,
+      "step": 1
+    },
+    {
+      "id": "personal-0083",
+      "normal": "Wie wichtig ist dir, Dinge früh zu planen?",
+      "impostor": "Wie sehr magst du Regenwetter?",
+      "unit": "1–10",
+      "answerType": "rating",
+      "min": 1,
+      "max": 10,
+      "step": 1
+    },
+    {
+      "id": "personal-0084",
+      "normal": "Wie gerne gehst du auf Partys?",
+      "impostor": "Wie sehr bist du ein Morgenmensch?",
+      "unit": "1–10",
+      "answerType": "rating",
+      "min": 1,
+      "max": 10,
+      "step": 1
+    },
+    {
+      "id": "personal-0085",
+      "normal": "Wie schnell vertraust du fremden Menschen?",
+      "impostor": "Wie sehr liebst du Hunde?",
+      "unit": "1–10",
+      "answerType": "rating",
+      "min": 1,
+      "max": 10,
+      "step": 1
+    },
+    {
+      "id": "personal-0086",
+      "normal": "Wie ehrgeizig bist du bei Spielen oder Sport?",
+      "impostor": "Wie ordentlich hältst du dein Auto oder deinen Arbeitsplatz?",
+      "unit": "1–10",
+      "answerType": "rating",
+      "min": 1,
+      "max": 10,
+      "step": 1
+    },
+    {
+      "id": "personal-0087",
+      "normal": "Wie bereitwillig würdest du einem Freund Geld leihen?",
+      "impostor": "Wie bereitwillig würdest du vor vielen Leuten Karaoke singen?",
+      "unit": "1–10",
+      "answerType": "rating",
+      "min": 1,
+      "max": 10,
+      "step": 1
+    },
+    {
+      "id": "personal-0088",
+      "normal": "Wie motiviert bist du normalerweise für Sport?",
+      "impostor": "Wie diszipliniert bist du beim Sparen?",
+      "unit": "1–10",
+      "answerType": "rating",
+      "min": 1,
+      "max": 10,
+      "step": 1
+    },
+    {
+      "id": "personal-0089",
+      "normal": "Wie romantisch würdest du dich einschätzen?",
+      "impostor": "Wie abenteuerlustig bist du beim Reisen?",
+      "unit": "1–10",
+      "answerType": "rating",
+      "min": 1,
+      "max": 10,
+      "step": 1
+    },
+    {
+      "id": "personal-0090",
+      "normal": "Welche Farbe sollte dein nächstes Auto haben?",
+      "impostor": "Welche Farbe trägst du bei Kleidung am liebsten?",
+      "unit": "Freitext",
+      "answerType": "text"
+    },
+    {
+      "id": "personal-0091",
+      "normal": "Welches Land würdest du sofort für einen Urlaub wählen?",
+      "impostor": "Aus welchem Land kommt dein Lieblingsessen?",
+      "unit": "Freitext",
+      "answerType": "text"
+    },
+    {
+      "id": "personal-0092",
+      "normal": "Was wäre für dich ein perfektes erstes Date?",
+      "impostor": "Was machst du an einem freien Sonntag am liebsten?",
+      "unit": "Freitext",
+      "answerType": "text"
+    },
+    {
+      "id": "personal-0093",
+      "normal": "Welche Stadt würdest du gern einmal besuchen?",
+      "impostor": "In welcher Stadt würdest du für einen richtig guten Job am ehesten wohnen?",
+      "unit": "Freitext",
+      "answerType": "text"
+    },
+    {
+      "id": "personal-0094",
+      "normal": "Welche Farbe verbindest du spontan mit Liebe?",
+      "impostor": "Welche Farbe würdest du für deine Wohnung am ehesten wählen?",
+      "unit": "Freitext",
+      "answerType": "text"
+    },
+    {
+      "id": "personal-0095",
+      "normal": "Welches Wort beschreibt deinen idealen Partner am besten?",
+      "impostor": "Welches Wort beschreibt deinen Traumjob am besten?",
+      "unit": "Freitext",
+      "answerType": "text"
+    },
+    {
+      "id": "personal-0096",
+      "normal": "Welches Hobby würdest du gerne neu anfangen?",
+      "impostor": "Welches Hobby findest du bei anderen besonders interessant?",
+      "unit": "Freitext",
+      "answerType": "text"
+    },
+    {
+      "id": "personal-0097",
+      "normal": "Welches Geschenk würdest du am liebsten zum Geburtstag bekommen?",
+      "impostor": "Was würdest du bei einem Gewinnspiel am liebsten gewinnen?",
+      "unit": "Freitext",
+      "answerType": "text"
+    },
+    {
+      "id": "personal-0098",
+      "normal": "Welche Musikrichtung hörst du beim Autofahren am liebsten?",
+      "impostor": "Welche Musikrichtung würdest du auf einer Hochzeit am ehesten spielen?",
+      "unit": "Freitext",
+      "answerType": "text"
+    },
+    {
+      "id": "personal-0099",
+      "normal": "Welches Essen würdest du bei einem ersten Date bestellen?",
+      "impostor": "Welches Essen würdest du nachts nach einer langen Party bestellen?",
+      "unit": "Freitext",
+      "answerType": "text"
+    },
+    {
+      "id": "personal-0100",
+      "normal": "Welches Reiseziel würdest du mit deinem Partner wählen?",
+      "impostor": "Welchen Ort würdest du für einen Trip mit deinen besten Freunden wählen?",
+      "unit": "Freitext",
+      "answerType": "text"
+    }
+  ]
+}
