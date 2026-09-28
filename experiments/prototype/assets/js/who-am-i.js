@@ -5,11 +5,26 @@ var STORAGE_PREFIX="imposterGames.prototype.game.whoami.";
 var STORAGE_PLAYERS=STORAGE_PREFIX+"players.v1",STORAGE_CATEGORIES=STORAGE_PREFIX+"categories.v1",STORAGE_DECK=STORAGE_PREFIX+"deck.v1";
 var avatarPool=["😎","🕵️","🥷","🤠","👻","🤖","🦊","🐼","🐸","🦁","🐙","🦄"];
 var appState=window.CIAppState||null;
+async function validateProgressBeforeRound(){
+  if(!appState||typeof appState.validateProgressIntegrity!=="function")return true;
+  var result=await appState.validateProgressIntegrity();
+  if(!result||result.ok!==false){
+    selectedCategories=filterCategories(selectedCategories);
+    saveCategories();renderCategories();updatePoolCount();
+    return true;
+  }
+  byId("error").textContent="Fortschritt konnte nicht sicher geprüft werden. Bitte App neu laden oder ein gültiges Backup wiederherstellen.";
+  return false;
+}
 var launchPreset=appState&&appState.consumeLaunchPreset?appState.consumeLaunchPreset("whoami"):null;
+function categoryUnlocked(name){return name==="Alle"||!appState||!appState.isCategoryUnlocked||appState.isCategoryUnlocked("whoami",name);}
+function categoryLock(name){return appState&&appState.getCategoryLock?appState.getCategoryLock("whoami",name):null;}
+function filterCategories(list){return appState&&appState.filterUnlockedCategories?appState.filterUnlockedCategories("whoami",list):(Array.isArray(list)&&list.length?list.slice():["Alle"]);}
+function openCategoryUnlock(name){if(window.CIAppUI&&window.CIAppUI.openCategoryUnlock)window.CIAppUI.openCategoryUnlock("whoami",name);}
 var preferences=appState&&appState.getPreferences?appState.getPreferences():{sound:true,haptics:true,animations:true};
 var soundEnabled=preferences.sound!==false,audioCtx=null,bank=[],categoryMeta=[];
 var count=3,players=[],assignments=[],activeViewer=0,round=0,selectedCategories=["Alle"],savedPlayerNames=[],savedPlayerProfileIds=[],avatarSelections=[];
-var currentRoundKey=null;
+var currentRoundKey=null,roundStartPending=false;
 var sections=["setup","handoff","viewer","play","result"];
 function storageGet(key,fallback){try{var raw=localStorage.getItem(key);return raw===null?fallback:JSON.parse(raw);}catch(e){return fallback;}}
 function storageSet(key,value){try{localStorage.setItem(key,JSON.stringify(value));return true;}catch(e){return false;}}
@@ -30,15 +45,42 @@ function applyPreferredPlayers(){var presetProfiles=launchPreset&&Array.isArray(
 function savePlayersFromInputs(){var nodes=byId("names").querySelectorAll("input"),list=[];for(var i=0;i<count;i++){var name=cleanName(nodes[i]&&nodes[i].value)||("Spieler "+(i+1));var profileId=validProfileId(savedPlayerProfileIds[i],name);savedPlayerProfileIds[i]=profileId;list.push({name:name,avatar:avatarSelections[i]||avatarPool[i%avatarPool.length],profileId:profileId});}savedPlayerNames=list.map(function(p){return p.name;});storageSet(STORAGE_PLAYERS,{players:list});}
 function renderNames(){var box=byId("names");box.innerHTML="";while(savedPlayerNames.length<count)savedPlayerNames.push("Spieler "+(savedPlayerNames.length+1));while(savedPlayerProfileIds.length<count)savedPlayerProfileIds.push(null);while(avatarSelections.length<count)avatarSelections.push(avatarPool[avatarSelections.length%avatarPool.length]);savedPlayerNames=savedPlayerNames.slice(0,count);savedPlayerProfileIds=savedPlayerProfileIds.slice(0,count);avatarSelections=avatarSelections.slice(0,count);for(let i=0;i<count;i++){var row=document.createElement("div");row.className="playerRow";var av=document.createElement("button");av.type="button";av.className="playerAvatarButton";av.textContent=avatarSelections[i];av.setAttribute("aria-label","Avatar für Spieler "+(i+1)+" ändern");av.addEventListener("click",function(){var cur=avatarPool.indexOf(avatarSelections[i]);avatarSelections[i]=avatarPool[(cur+1)%avatarPool.length];av.textContent=avatarSelections[i];savePlayersFromInputs();tone(500,.04);});var inp=document.createElement("input");inp.type="text";inp.className="playerInput";inp.autocomplete="off";inp.maxLength=24;inp.value=savedPlayerNames[i];inp.placeholder="Spieler "+(i+1);inp.addEventListener("input",function(){savedPlayerProfileIds[i]=validProfileId(savedPlayerProfileIds[i],inp.value);});inp.addEventListener("blur",savePlayersFromInputs);row.append(av,inp);box.appendChild(row);}byId("minus").disabled=count<=2;byId("plus").disabled=count>=12;}
 function validCategories(){return categoryMeta.map(function(x){return x.name;}).filter(Boolean);}
-function loadCategories(){if(launchPreset&&Array.isArray(launchPreset.categories)&&launchPreset.categories.length){selectedCategories=launchPreset.categories.slice();saveCategories();return;}var saved=storageGet(STORAGE_CATEGORIES,["Alle"]);if(!Array.isArray(saved)){selectedCategories=["Alle"];return;}var valid=validCategories();if(saved.indexOf("Alle")!==-1){selectedCategories=["Alle"];return;}selectedCategories=saved.filter(function(x,i){return valid.indexOf(x)!==-1&&saved.indexOf(x)===i;});if(!selectedCategories.length)selectedCategories=["Alle"];}
+function loadCategories(){
+  if(launchPreset&&Array.isArray(launchPreset.categories)&&launchPreset.categories.length){selectedCategories=filterCategories(launchPreset.categories);saveCategories();return;}
+  var saved=storageGet(STORAGE_CATEGORIES,["Alle"]);if(!Array.isArray(saved)){selectedCategories=["Alle"];return;}
+  var valid=validCategories();if(saved.indexOf("Alle")!==-1){selectedCategories=["Alle"];return;}
+  selectedCategories=saved.filter(function(x,i){return valid.indexOf(x)!==-1&&categoryUnlocked(x)&&saved.indexOf(x)===i;});
+  if(!selectedCategories.length)selectedCategories=["Alle"];saveCategories();
+}
 function saveCategories(){storageSet(STORAGE_CATEGORIES,selectedCategories.slice());}
-function selectedPool(){if(selectedCategories.indexOf("Alle")!==-1)return bank.slice();return bank.filter(function(item){return selectedCategories.indexOf(item.cat)!==-1;});}
+function selectedPool(){
+  if(selectedCategories.indexOf("Alle")!==-1)return bank.filter(function(item){return categoryUnlocked(item.cat);});
+  return bank.filter(function(item){return selectedCategories.indexOf(item.cat)!==-1&&categoryUnlocked(item.cat);});
+}
 function updatePoolCount(){byId("poolCount").textContent=selectedPool().length+" Begriffe verfügbar";}
-function renderCategories(){var deck=byId("categoryDeck");deck.innerHTML="";var all=[{name:"Alle",emoji:"✨"}].concat(categoryMeta);all.forEach(function(meta){var name=meta.name||"",btn=document.createElement("button");btn.type="button";btn.className="categoryCard"+(selectedCategories.indexOf(name)!==-1?" selected":"");btn.setAttribute("aria-pressed",selectedCategories.indexOf(name)!==-1?"true":"false");var em=document.createElement("span");em.className="categoryEmoji";em.textContent=meta.emoji||"❔";var nm=document.createElement("span");nm.className="categoryName";nm.textContent=name;btn.append(em,nm);btn.addEventListener("click",function(){if(name==="Alle")selectedCategories=["Alle"];else{selectedCategories=selectedCategories.filter(function(x){return x!=="Alle";});var idx=selectedCategories.indexOf(name);if(idx===-1)selectedCategories.push(name);else selectedCategories.splice(idx,1);if(!selectedCategories.length)selectedCategories=["Alle"];}saveCategories();renderCategories();updatePoolCount();tone(540,.04);pulse(5);});deck.appendChild(btn);});}
+function renderCategories(){
+  var deck=byId("categoryDeck");deck.innerHTML="";var all=[{name:"Alle",emoji:"✨"}].concat(categoryMeta);
+  all.forEach(function(meta){
+    var name=meta.name||"",locked=name!=="Alle"&&!categoryUnlocked(name),lock=locked?categoryLock(name):null,btn=document.createElement("button");
+    btn.type="button";btn.className="categoryCard"+(selectedCategories.indexOf(name)!==-1?" selected":"")+(locked?" locked":"");
+    btn.setAttribute("aria-pressed",selectedCategories.indexOf(name)!==-1?"true":"false");
+    var em=document.createElement("span");em.className="categoryEmoji";em.textContent=meta.emoji||"❔";
+    var nm=document.createElement("span");nm.className="categoryName";nm.textContent=name;btn.append(em,nm);
+    if(lock){var lm=document.createElement("small");lm.className="categoryLockMeta";lm.textContent=(lock.tickets&&lock.tickets.available>0)?"Freischaltung verfügbar":lock.challenge.progress+" · "+lock.challenge.title;btn.appendChild(lm);btn.setAttribute("aria-label",name+" gesperrt · "+lock.challenge.progress);}
+    btn.addEventListener("click",function(){
+      if(locked){openCategoryUnlock(name);tone(390,.04);return;}
+      if(name==="Alle")selectedCategories=["Alle"];
+      else{selectedCategories=selectedCategories.filter(function(x){return x!=="Alle";});var idx=selectedCategories.indexOf(name);if(idx===-1)selectedCategories.push(name);else selectedCategories.splice(idx,1);if(!selectedCategories.length)selectedCategories=["Alle"];}
+      saveCategories();renderCategories();updatePoolCount();tone(540,.04);pulse(5);
+    });
+    deck.appendChild(btn);
+  });
+}
+window.addEventListener("ci:category-unlocked",function(){loadCategories();renderCategories();updatePoolCount();});
 function deckKey(){return selectedCategories.indexOf("Alle")!==-1?"Alle":selectedCategories.slice().sort().join("|");}
 function drawTerms(amount){var pool=selectedPool();if(pool.length<amount)return null;var state=storageGet(STORAGE_DECK,{});if(!state||typeof state!=="object"||Array.isArray(state))state={};var key=deckKey(),used=Array.isArray(state[key])?state[key].map(String):[],available=pool.filter(function(item){return used.indexOf(String(item.id))===-1;});if(available.length<amount){used=[];available=pool.slice();}var picked=shuffle(available).slice(0,amount);state[key]=used.concat(picked.map(function(item){return String(item.id);}));storageSet(STORAGE_DECK,state);return picked;}
 function collectPlayers(){var nodes=byId("names").querySelectorAll("input"),names=[],seen={};if(nodes.length<count)return {ok:false,message:"Spielerliste konnte nicht vollständig geladen werden."};for(var i=0;i<count;i++){var name=cleanName(nodes[i].value);if(!name)return {ok:false,message:"Bitte für jeden Spieler einen Namen eintragen."};var key=name.toLocaleLowerCase("de-DE");if(seen[key])return {ok:false,message:"Jeder Spieler braucht einen anderen Namen."};seen[key]=true;names.push(name);}players=[];for(var j=0;j<count;j++){var profileId=validProfileId(savedPlayerProfileIds[j],names[j]);if(!profileId&&appState&&appState.ensureProfileForPlayer&&!/^spieler\s+\d+$/i.test(names[j]))profileId=appState.ensureProfileForPlayer({name:names[j],avatar:avatarSelections[j]});savedPlayerProfileIds[j]=profileId||null;players.push({name:names[j],avatar:avatarSelections[j]||avatarPool[j%avatarPool.length],profileId:profileId||null});}savePlayersFromInputs();return {ok:true};}
-function startRound(useExisting){if(!useExisting){var result=collectPlayers();if(!result.ok){byId("error").textContent=result.message;return;}}var terms=drawTerms(players.length);if(!terms){byId("error").textContent="Für diese Auswahl sind nicht genug unterschiedliche Begriffe vorhanden.";show("setup");return;}byId("error").textContent="";round++;currentRoundKey="whoami_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,7);assignments=players.map(function(player,i){return {name:player.name,avatar:player.avatar,profileId:player.profileId,term:terms[i].term,cat:terms[i].cat,id:terms[i].id};});if(appState&&appState.beginSession){appState.beginSession(players);if(appState.setActiveSessionGame)appState.setActiveSessionGame("whoami","Runde "+round,true);}activeViewer=0;showHandoff();tone(640,.07);pulse(8);}
+async function startRound(useExisting){if(roundStartPending)return;roundStartPending=true;try{if(!useExisting){var result=collectPlayers();if(!result.ok){byId("error").textContent=result.message;return;}}if(!(await validateProgressBeforeRound()))return;var terms=drawTerms(players.length);if(!terms){byId("error").textContent="Für diese Auswahl sind nicht genug unterschiedliche Begriffe vorhanden.";show("setup");return;}byId("error").textContent="";round++;currentRoundKey="whoami_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,7);assignments=players.map(function(player,i){return {name:player.name,avatar:player.avatar,profileId:player.profileId,term:terms[i].term,cat:terms[i].cat,id:terms[i].id};});if(appState&&appState.beginSession){appState.beginSession(players);if(appState.setActiveSessionGame)appState.setActiveSessionGame("whoami","Runde "+round,true);}activeViewer=0;showHandoff();tone(640,.07);pulse(8);}finally{roundStartPending=false;}}
 function showHandoff(){var p=players[activeViewer];byId("handoffAvatar").textContent=p.avatar;byId("handoffName").textContent=p.name;if(appState&&appState.setActiveSessionGame)appState.setActiveSessionGame("whoami","Runde "+round+" · Spieler "+(activeViewer+1)+"/"+players.length,false);show("handoff");}
 function renderViewer(){var p=players[activeViewer];byId("viewerAvatar").textContent=p.avatar;byId("viewerName").textContent=p.name;byId("viewerProgress").textContent=(activeViewer+1)+"/"+players.length;var box=byId("termsList");box.innerHTML="";assignments.forEach(function(item,index){var row=document.createElement("div");row.className="whoTermRow"+(index===activeViewer?" self":"");var av=document.createElement("div");av.className="whoTermAvatar";av.textContent=item.avatar;var info=document.createElement("div");info.className="whoTermInfo";var name=document.createElement("span");name.textContent=item.name+(index===activeViewer?" · DU":"");var term=document.createElement("strong");term.textContent=index===activeViewer?"???":item.term;info.append(name,term);row.append(av,info);box.appendChild(row);});byId("viewerDone").textContent=activeViewer===players.length-1?"Gesehen · Fertig":"Gesehen · Weitergeben";show("viewer");tone(560,.045);}
 function finishViewer(){if(activeViewer<players.length-1){activeViewer++;showHandoff();pulse(5);return;}show("play");tone(690,.07);pulse(9);}
@@ -55,8 +97,8 @@ byId("viewerDone").addEventListener("click",finishViewer);
 byId("revealAll").addEventListener("click",renderResult);
 byId("newRound").addEventListener("click",function(){startRound(true);});
 byId("backSetup").addEventListener("click",function(){show("setup");window.scrollTo(0,0);});
-byId("freshRound").addEventListener("click",function(){if(players.length>=2)startRound(true);});
-byId("leaveGame").addEventListener("click",function(){if(players.length&&round>0&&!window.confirm("Aktuelle Runde verlassen und zum Launcher zurück?"))return;window.location.href="../../";});
+byId("freshRound").addEventListener("click",function(){if(players.length<2)return;if(currentRoundKey&&!window.confirm("Aktuelle Runde abbrechen und neue Begriffe verteilen?"))return;startRound(true);});
+byId("leaveGame").addEventListener("click",function(){if(currentRoundKey&&!window.confirm("Aktuelle Runde verlassen und zum Launcher zurück?"))return;window.location.href="../../";});
 byId("soundToggle").addEventListener("click",toggleSound);
 if(window.PointerEvent)document.addEventListener("pointerdown",function(){if(soundEnabled)ensureAudio();},{passive:true,capture:true});
 else document.addEventListener("touchstart",function(){if(soundEnabled)ensureAudio();},{passive:true,capture:true});

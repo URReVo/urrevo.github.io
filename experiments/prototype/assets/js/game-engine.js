@@ -61,6 +61,7 @@ function byId(id){return document.getElementById(id);}
 var sections=gameMode==="classic"?["setup","handoff","classicRole","classicDiscussion","classicResult"]:["setup","stats","handoff","question","normalReveal","answers","result"];
 var count=3,players=[],active=0,impIndex=0,round=0,current=null,scrubbing=false;
 var guessLocked=false,guessSaveTimer=null;
+var experimentStartPending=false,experimentRoundStartPending=false;
 
 /* Fairness state exists only for the current game session. */
 var impostorSessionCounts=[];
@@ -73,7 +74,7 @@ var roundStatsRecorded=false;
 var roundOutcomeChoice=null;
 var diagRoundDirty=false;
 
-/* V73 uses its own game-local keys. V72 keys are copied once and then
+/* V74 uses its own game-local keys. V72 keys are copied once and then
    left untouched as a rollback-safe snapshot. */
 var EXP_STORAGE="imposterGames.prototype.game.";
 var STORAGE_PLAYERS=EXP_STORAGE+(gameMode==="classic"?"classic.players.v1":"circa.players.v1");
@@ -111,6 +112,33 @@ var experimentGameRunId="run_"+Date.now().toString(36)+"_"+Math.random().toStrin
 var experimentSessionId=null;
 var experimentPreferences=experimentAppState?experimentAppState.getPreferences():{sound:true,haptics:true,animations:true};
 
+async function experimentValidateProgressBeforeRound(){
+  if(!experimentAppState||typeof experimentAppState.validateProgressIntegrity!=="function")return true;
+  var result=await experimentAppState.validateProgressIntegrity();
+  if(!result||result.ok!==false){
+    selectedCategories=experimentFilterCategories(selectedCategories);
+    saveSelectedCategories();
+    if(byId("categoryDeck"))syncCategoryUI();
+    return true;
+  }
+  byId("error").textContent="Fortschritt konnte nicht sicher geprüft werden. Bitte App neu laden oder ein gültiges Backup wiederherstellen.";
+  return false;
+}
+
+function experimentProgressGame(){return gameMode==="classic"?"classic":"circa";}
+function experimentCategoryUnlocked(category){
+  return category==="Alle"||!experimentAppState||!experimentAppState.isCategoryUnlocked||experimentAppState.isCategoryUnlocked(experimentProgressGame(),category);
+}
+function experimentCategoryLock(category){
+  return experimentAppState&&experimentAppState.getCategoryLock?experimentAppState.getCategoryLock(experimentProgressGame(),category):null;
+}
+function experimentOpenCategoryUnlock(category){
+  if(window.CIAppUI&&window.CIAppUI.openCategoryUnlock)window.CIAppUI.openCategoryUnlock(experimentProgressGame(),category);
+}
+function experimentFilterCategories(categories){
+  if(experimentAppState&&experimentAppState.filterUnlockedCategories)return experimentAppState.filterUnlockedCategories(experimentProgressGame(),categories);
+  return Array.isArray(categories)&&categories.length?categories.slice():["Alle"];
+}
 function experimentActiveProfile(profileId){
   if(!experimentAppState||!profileId||!experimentAppState.getProfileById)return null;
   var profile=experimentAppState.getProfileById(profileId);
@@ -200,7 +228,7 @@ function experimentApplyLaunchPreset(){
   if(preset){
     if(Array.isArray(preset.profileIds))presetProfiles=preset.profileIds.map(function(id){return experimentAppState.getProfileById(id);}).filter(function(p){return p&&!p.deletedAt;});
     count=presetProfiles.length?Math.max(3,Math.min(12,presetProfiles.length)):Math.max(3,Math.min(12,Number(preset.playerCount)||count));
-    if(Array.isArray(preset.categories)&&preset.categories.length)selectedCategories=preset.categories.slice();
+    if(Array.isArray(preset.categories)&&preset.categories.length)selectedCategories=experimentFilterCategories(preset.categories);
     if(gameMode==="classic"){
       classicHintEnabled=preset.hint!==false;
       classicTimerSeconds=[0,60,90,120,150,180,210,240,270,300].indexOf(Number(preset.timer))!==-1?Number(preset.timer):classicTimerSeconds;
@@ -275,10 +303,22 @@ function copyV72Storage(target,sources){
   }catch(e){}
   return false;
 }
-function migrateV72GameStorageOnce(){
+function migrateV72GameStorageOnce(){ storageSet(EXP_STORAGE+"v72Migration.v1",{completed:true,from:"prototype-isolated"}); return;
   var marker=EXP_STORAGE+"v72Migration.v1";
   if(storageGet(marker,null))return;
-  storageSet(marker,{completed:true,at:new Date().toISOString(),from:"prototype-isolated"});
+  copyV72Storage(EXP_STORAGE+"circa.players.v1",["circaImpostor.players.v1"]);
+  copyV72Storage(EXP_STORAGE+"classic.players.v1",["classicImpostor.players.v1"]);
+  copyV72Storage(EXP_STORAGE+"circa.categories.v1",["circaImpostor.categories.v1"]);
+  copyV72Storage(EXP_STORAGE+"classic.categories.v1",["classicImpostor.categories.v1"]);
+  copyV72Storage(EXP_STORAGE+"circa.deckProgress.v1",["circaImpostor.deckProgress.v5"]);
+  copyV72Storage(EXP_STORAGE+"circa.difficulty.v1",["circaImpostor.difficulty.v1"]);
+  copyV72Storage(EXP_STORAGE+"circa.playerStats.v1",["circaImpostor.playerStats.v1"]);
+  copyV72Storage(EXP_STORAGE+"circa.deviceStats.v1",["circaImpostor.deviceStats.v1"]);
+  copyV72Storage(EXP_STORAGE+"circa.completedQuestions.v1",["circaImpostor.completedQuestions.v1"]);
+  copyV72Storage(EXP_STORAGE+"classic.deck.v1",["classicImpostor.deck.v1","circaImpostor.classicDeck.v1"]);
+  copyV72Storage(EXP_STORAGE+"classic.hint.v1",["classicImpostor.hint.v1","circaImpostor.classicHint.v1"]);
+  copyV72Storage(EXP_STORAGE+"classic.timer.v1",["classicImpostor.timer.v1","circaImpostor.classicTimer.v1"]);
+  storageSet(marker,{completed:true,at:new Date().toISOString(),from:"V72"});
 }
 function difficultyRatio(item){
   var a=Math.abs(Number(item.normalValue)),b=Math.abs(Number(item.impValue));
@@ -523,6 +563,7 @@ function classicEligibleCategories(){
   for(var i=0;i<classicWords.length;i++){
     if(!seen[classicWords[i].cat]){seen[classicWords[i].cat]=true;all.push(classicWords[i].cat);}
   }
+  all=all.filter(experimentCategoryUnlocked);
   if(selectedCategories.indexOf("Alle")!==-1)return all;
   var out=[];
   for(var j=0;j<selectedCategories.length;j++){
@@ -995,12 +1036,13 @@ function loadSavedCategories(){
   }
 
   for(var i=0;i<saved.length;i++){
-    if(valid.indexOf(saved[i])!==-1&&clean.indexOf(saved[i])===-1){
+    if(valid.indexOf(saved[i])!==-1&&experimentCategoryUnlocked(saved[i])&&clean.indexOf(saved[i])===-1){
       clean.push(saved[i]);
     }
   }
 
   selectedCategories=clean.length?clean:["Alle"];
+  saveSelectedCategories();
 }
 
 var avatarPool=["😎","🦊","🐼","🤠","👾","🐸","🦁","🐯","🦄","🐵","🧸","🥷","👽","🤖","😈","🐧"];
@@ -1046,6 +1088,12 @@ function syncSetupScrollFit(){
     }
   });
 }
+window.addEventListener("ci:category-unlocked",function(){
+  loadSavedCategories();
+  initCategories();
+  updateToolbar();
+  syncSetupScrollFit();
+});
 window.addEventListener("resize",syncSetupScrollFit,{passive:true});
 window.addEventListener("orientationchange",function(){setTimeout(syncSetupScrollFit,80);},{passive:true});
 
@@ -1245,6 +1293,11 @@ function syncCategoryUI(){
   }
 }
 function toggleCategory(cat){
+  if(cat!=="Alle"&&!experimentCategoryUnlocked(cat)){
+    experimentOpenCategoryUnlock(cat);
+    tone(390,0.04,0.012,"sine",0);
+    return;
+  }
   if(cat==="Alle"){
     selectedCategories=["Alle"];
     saveSelectedCategories();
@@ -1281,11 +1334,18 @@ function initCategories(){
     var c=cats[j];
 
     var b=document.createElement("button");
-    b.type="button";b.className="categoryCard";b.setAttribute("aria-pressed","false");
+    var locked=c!=="Alle"&&!experimentCategoryUnlocked(c),lock=locked?experimentCategoryLock(c):null;
+    b.type="button";b.className="categoryCard"+(locked?" locked":"");b.setAttribute("aria-pressed","false");
     b.setAttribute("data-category",c);
     var em=document.createElement("span");em.className="categoryEmoji";em.textContent=categoryIcons[c]||"🎲";
     var nm=document.createElement("span");nm.className="categoryName";nm.textContent=c;
     b.appendChild(em);b.appendChild(nm);
+    if(lock){
+      var meta=document.createElement("small");meta.className="categoryLockMeta";
+      meta.textContent=(lock.tickets&&lock.tickets.available>0)?"Freischaltung verfügbar":lock.challenge.progress+" · "+lock.challenge.title;
+      b.appendChild(meta);
+      b.setAttribute("aria-label",c+" gesperrt · "+lock.challenge.progress);
+    }
     b.addEventListener("click",function(){toggleCategory(this.getAttribute("data-category"));});
     deck.appendChild(b);
   }
@@ -1333,7 +1393,10 @@ function renderNames(){
   byId("minus").disabled=count<=3;byId("plus").disabled=count>=12;
   syncSetupScrollFit();
 }
-function start(){
+async function start(){
+  if(experimentStartPending)return;
+  experimentStartPending=true;
+  try{
   experimentGameRunId="run_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,7);
   var nodes=byId("names").querySelectorAll("input"),names=[],set=Object.create(null);
   if(nodes.length<count){byId("error").textContent="Spielerliste konnte nicht vollständig geladen werden.";return;}
@@ -1359,8 +1422,9 @@ function start(){
   diagRoundDirty=false;
   resetImpostorFairness();
   diagLog("Partie","Gestartet mit "+players.length+" Spielern · "+(gameMode==="classic"?"Impostor":"Circa"));
-  if(gameMode==="classic")classicNewRound(false);
-  else newRound(false);
+  if(gameMode==="classic")await classicNewRound(false);
+  else await newRound(false);
+  }finally{experimentStartPending=false;}
 }
 
 function randomUnit(){
@@ -1544,7 +1608,8 @@ function pickRound(){
   for(var j=0;j<bank.length;j++){
     if(!seenCats[bank[j].cat]){seenCats[bank[j].cat]=true;allCats.push(bank[j].cat);}
   }
-  var requestedCats=selectedCategories.indexOf("Alle")!==-1?allCats:selectedCategories.slice();
+  allCats=allCats.filter(experimentCategoryUnlocked);
+  var requestedCats=selectedCategories.indexOf("Alle")!==-1?allCats:selectedCategories.filter(experimentCategoryUnlocked);
   if(!requestedCats.length)requestedCats=allCats;
 
   /* Keep category weighting fair, but only include categories that have
@@ -1728,8 +1793,12 @@ function refreshClassicTimerFromClock(){
   if(gameMode!=="classic"||classicTimerPaused||!classicTimerDeadline||classicResolved)return;
   tickClassicTimer();
 }
-function classicNewRound(confirmFirst){
+async function classicNewRound(confirmFirst){
+  if(experimentRoundStartPending)return;
   if(confirmFirst && !window.confirm("Aktuelle Runde abbrechen und eine neue Runde starten?"))return;
+  experimentRoundStartPending=true;
+  try{
+  if(!(await experimentValidateProgressBeforeRound()))return;
   if(confirmFirst&&round>0&&!classicResolved)rollbackCurrentImpostorSelection();
   resetClassicTimerRuntime();
   if(typeof clearRevealTimers==="function")clearRevealTimers();
@@ -1759,6 +1828,7 @@ function classicNewRound(confirmFirst){
     roundIntroTimer=null;
     animateHandoff();
   },motionDelay(1700));
+  }finally{experimentRoundStartPending=false;}
 }
 function classicOpenRole(){
   ensureAudio();
@@ -1788,8 +1858,10 @@ function classicOpenRole(){
   byId("classicRoleDone").textContent=active<players.length-1?"Verstanden · weitergeben":"Verstanden · Runde starten";
   show("classicRole");
   var card=byId("classicRoleCard");
+  card.classList.toggle("isImpostor",isImp);
   card.classList.remove("revealFlip");void card.offsetWidth;card.classList.add("revealFlip");
   tone(isImp?260:420,0.06,0.016,"sine",0);
+  softHaptic(isImp?[18,28,36]:10);
 }
 function classicRoleDone(){
   ensureAudio();
@@ -1824,8 +1896,12 @@ function classicReveal(){
   diagLog("Classic Auflösung","Impostor: "+imp.name+" · Wort: "+classicCurrent.word);
 }
 
-function newRound(confirmFirst){
+async function newRound(confirmFirst){
+  if(experimentRoundStartPending)return;
   if(confirmFirst && !window.confirm("Aktuelle Runde abbrechen und eine neue Runde starten?"))return;
+  experimentRoundStartPending=true;
+  try{
+  if(!(await experimentValidateProgressBeforeRound()))return;
   var previousRoundCompleted=roundStatsRecorded;
   if(confirmFirst&&round>0&&!previousRoundCompleted){
     rollbackCurrentImpostorSelection();
@@ -1869,6 +1945,7 @@ function newRound(confirmFirst){
     roundIntroTimer=null;
     animateHandoff();
   },motionDelay(1700));
+  }finally{experimentRoundStartPending=false;}
 }
 function handoff(){
   prepareHandoff();

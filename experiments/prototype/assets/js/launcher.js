@@ -17,8 +17,11 @@ var PRESET_CATEGORIES={
   personal:[]
 };
 var selectedSession=null;
+var selectedCrew=null;
 var statsScope="profile";
+var currentView="home";
 var launcherAudioCtx=null;
+var heroGoalAction=null;
 var circaMetadataItems=null;
 var circaMetadataPromise=null;
 var GAME_META={
@@ -29,6 +32,17 @@ var GAME_META={
   personal:{title:"Persönlich",full:"Persönlicher Impostor",icon:"💬",path:"games/personal-impostor/",min:3}
 };
 function gameMeta(game){return GAME_META[game]||GAME_META.circa;}
+function categoryLock(game,category){return store.getCategoryLock?store.getCategoryLock(game,category):null;}
+function openCategoryProgress(game,category){
+  if(window.CIAppUI&&window.CIAppUI.openCategoryUnlock)return window.CIAppUI.openCategoryUnlock(game,category);
+  return false;
+}
+function firstLockedPresetCategory(preset){
+  var categories=Array.isArray(preset&&preset.categories)?preset.categories:[];
+  if(categories.indexOf("Alle")!==-1)return null;
+  for(var i=0;i<categories.length;i++)if(categoryLock(preset.game,categories[i]))return categories[i];
+  return null;
+}
 function formatUsage(ms){
   var minutes=Math.floor(Math.max(0,Number(ms)||0)/60000);
   if(minutes<1)return Number(ms)>0?"<1 Min.":"0 Min.";
@@ -48,6 +62,9 @@ function renderUsageStats(){
 }
 
 function byId(id){return document.getElementById(id);}
+function appToast(title,message,icon){
+  if(window.CIAppUI&&window.CIAppUI.toast)window.CIAppUI.toast({title:title,message:message||"",icon:icon||"✓"});
+}
 function launcherSoundEnabled(){
   return !store.getPreferences||store.getPreferences().sound!==false;
 }
@@ -96,7 +113,10 @@ function uiSound(kind){
 }
 function navigateWithSound(href){
   uiSound("start");
-  setTimeout(function(){window.location.href=href;},55);
+  setTimeout(function(){
+    if(window.CIAppUI&&window.CIAppUI.navigate)window.CIAppUI.navigate(href);
+    else window.location.href=href;
+  },35);
 }
 function fmtDate(iso){
   try{return new Date(iso).toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit",year:"2-digit"});}catch(e){return "–";}
@@ -164,30 +184,284 @@ function updateGreeting(){
   byId("greeting").textContent=hour<11?"Guten Morgen":hour<18?"Hallo":"Guten Abend";
 }
 function setView(name){
-  document.querySelectorAll(".view").forEach(function(view){view.classList.toggle("active",view.id==="view-"+name);});
+  var order=["home","profile","stats","settings"],from=order.indexOf(currentView),to=order.indexOf(name);
+  var motion=to<from?"ciViewBack":"ciViewForward";
+  document.querySelectorAll(".view").forEach(function(view){
+    var active=view.id==="view-"+name;
+    view.classList.toggle("active",active);
+    view.classList.remove("ciViewForward","ciViewBack");
+    if(active&&name!==currentView&&store.getPreferences().animations!==false){
+      void view.offsetWidth;
+      view.classList.add(motion);
+    }
+  });
   document.querySelectorAll(".tab").forEach(function(tab){tab.classList.toggle("active",tab.getAttribute("data-view")===name);});
+  currentView=name;
   renderAll();
   window.scrollTo({top:0,behavior:store.getPreferences().animations===false?"auto":"smooth"});
 }
 function openSheet(id){
-  byId("sheetBackdrop").classList.remove("hidden");
-  byId("sheetBackdrop").setAttribute("aria-hidden","false");
-  byId(id).classList.remove("hidden");
+  var backdrop=byId("sheetBackdrop");
+  backdrop.style.removeProperty("--sheet-backdrop-alpha");
+  backdrop.classList.remove("hidden");
+  backdrop.setAttribute("aria-hidden","false");
+  var sheet=byId(id);
+  sheet.classList.remove("sheetDragging","sheetSwipeSnapBack","sheetSwipeDismiss");
+  sheet.style.removeProperty("--sheet-drag");
+  sheet.classList.remove("hidden");
+  document.body.classList.add("sheetOpen");
 }
 function closeSheets(){
-  byId("sheetBackdrop").classList.add("hidden");
-  byId("sheetBackdrop").setAttribute("aria-hidden","true");
-  document.querySelectorAll(".bottomSheet").forEach(function(sheet){sheet.classList.add("hidden");});
+  var backdrop=byId("sheetBackdrop");
+  backdrop.classList.add("hidden");
+  backdrop.setAttribute("aria-hidden","true");
+  backdrop.style.removeProperty("--sheet-backdrop-alpha");
+  document.querySelectorAll(".bottomSheet").forEach(function(sheet){
+    sheet.classList.add("hidden");
+    sheet.classList.remove("sheetDragging","sheetSwipeSnapBack","sheetSwipeDismiss");
+    sheet.style.removeProperty("--sheet-drag");
+  });
+  document.body.classList.remove("sheetOpen");
 }
 function profileName(id){
   var p=store.getProfileById?store.getProfileById(id):store.getProfiles().find(function(x){return x.id===id;});
   return p?p.name:"Ehemaliger Spieler";
 }
+function crewDisplayName(crew){
+  var names=(crew&&crew.members||[]).map(function(member){return member.name;});
+  if(names.length<=3)return names.join(" · ")||"Eure Crew";
+  return names.slice(0,3).join(" · ")+" +"+(names.length-3);
+}
+function crewDaysSince(iso){
+  if(!iso)return null;
+  var time=new Date(iso).getTime();if(!Number.isFinite(time))return null;
+  return Math.max(0,Math.floor((Date.now()-time)/86400000));
+}
+function crewLastSeenText(crew){
+  var days=crewDaysSince(crew&&crew.stats&&crew.stats.lastAt);
+  if(days===null)return "Noch kein abgeschlossener Spieleabend";
+  if(days===0)return "Zuletzt heute";
+  if(days===1)return "Zuletzt gestern";
+  return "Zuletzt vor "+days+" Tagen";
+}
+function renderCrewAvatars(box,crew,limit){
+  box.textContent="";limit=Math.max(1,Number(limit)||5);
+  (crew.members||[]).slice(0,limit).forEach(function(member){
+    var span=document.createElement("span");span.textContent=member.avatar||"👤";span.title=member.name;box.appendChild(span);
+  });
+  if((crew.members||[]).length>limit){
+    var more=document.createElement("span");more.className="crewAvatarMore";more.textContent="+"+(crew.members.length-limit);box.appendChild(more);
+  }
+}
+function crewMemberLabel(crew,id){
+  var member=(crew&&crew.members||[]).find(function(item){return item.id===id;});
+  return member?member.name:profileName(id);
+}
+function crewRecordRow(icon,title,value){
+  var row=document.createElement("div");row.className="crewMemory";
+  var em=document.createElement("span");em.className="crewMemoryIcon";em.textContent=icon;
+  var copy=document.createElement("div"),strong=document.createElement("strong"),small=document.createElement("span");
+  strong.textContent=title;small.textContent=value;copy.append(strong,small);row.append(em,copy);return row;
+}
+function openCrewSheet(crew){
+  if(!crew||!store.getCrew)return;
+  crew=store.getCrew(crew.profileIds)||crew;selectedCrew=crew;
+  byId("crewSheetTitle").textContent=crewDisplayName(crew);
+  renderCrewAvatars(byId("crewSheetAvatars"),crew,6);
+  byId("crewSheetLevel").textContent=crew.level.level;
+  byId("crewSheetLevelTitle").textContent=crew.level.title;
+  byId("crewSheetLevelMeta").textContent=crew.level.remaining+" XP bis Level "+(crew.level.level+1);
+  byId("crewSheetLevelFill").style.width=Math.round(crew.level.progress*100)+"%";
+  byId("crewSheetMembers").textContent=crew.members.map(function(member){return member.name;}).join(" · ");
+
+  var metrics=byId("crewSheetMetrics");metrics.textContent="";
+  [
+    [crew.stats.sessions,crew.stats.sessions===1?"Spieleabend":"Spieleabende"],
+    [crew.stats.rounds,"Runden"],
+    [crew.stats.games.length+"/5","Spielmodi"],
+    [crew.stats.awards,"Awards"]
+  ].forEach(function(item){
+    var card=document.createElement("div"),strong=document.createElement("strong"),span=document.createElement("span");
+    strong.textContent=item[0];span.textContent=item[1];card.append(strong,span);metrics.appendChild(card);
+  });
+
+  var challenges=byId("crewChallengeList");challenges.textContent="";
+  (crew.challenges||[]).forEach(function(challenge){
+    var button=document.createElement("button");button.type="button";
+    button.className="crewChallengeChoice"+(crew.selectedChallenge&&crew.selectedChallenge.id===challenge.id?" selected":"")+(challenge.done?" done":"");
+    button.dataset.crewChallenge=challenge.id;
+    var icon=document.createElement("span");icon.className="crewChallengeIcon";icon.textContent=challenge.icon;
+    var copy=document.createElement("div");copy.className="crewChallengeCopy";
+    var title=document.createElement("strong");title.textContent=challenge.title;
+    var desc=document.createElement("span");desc.textContent=challenge.text;
+    var track=document.createElement("div");track.className="crewChallengeTrack";
+    var fill=document.createElement("i");fill.style.width=Math.round(challenge.ratio*100)+"%";track.appendChild(fill);
+    copy.append(title,desc,track);
+    var state=document.createElement("b");state.textContent=challenge.done?"✓":challenge.progress;
+    button.append(icon,copy,state);
+    button.addEventListener("click",function(){
+      if(!store.setCrewChallenge)return;
+      var updated=store.setCrewChallenge(crew.profileIds,challenge.id);
+      if(!updated)return;
+      uiSound("select");selectedCrew=updated;openCrewSheet(updated);renderCrewHome();renderCrewHistory();
+    });
+    challenges.appendChild(button);
+  });
+
+  var memories=byId("crewMemoryList");memories.textContent="";
+  var records=[];
+  if(crew.stats.bestCirca)records.push(crewRecordRow("🎯","Beste Circa-Schätzung",crewMemberLabel(crew,crew.stats.bestCirca.profileId)+" · "+crew.stats.bestCirca.error.toLocaleString("de-DE",{maximumFractionDigits:1})+" % daneben"));
+  if(crew.stats.bestCharades&&crew.stats.bestCharades.correct>0)records.push(crewRecordRow("🎭","Scharade-Rekord",crewMemberLabel(crew,crew.stats.bestCharades.profileId)+" · "+crew.stats.bestCharades.correct+" richtig"));
+  if(crew.stats.escapeLeader)records.push(crewRecordRow("🕵️","Meiste Impostor-Fluchten",crewMemberLabel(crew,crew.stats.escapeLeader.profileId)+" · "+crew.stats.escapeLeader.escapes+"× unentdeckt"));
+  if(crew.stats.wildCirca)records.push(crewRecordRow("😵","Wildeste Schätzung",crewMemberLabel(crew,crew.stats.wildCirca.profileId)+" · "+crew.stats.wildCirca.error.toLocaleString("de-DE",{maximumFractionDigits:0})+" % daneben"));
+  if(crew.stats.longestSessionRounds)records.push(crewRecordRow("🌙","Längster Abend",crew.stats.longestSessionRounds+" Runden"));
+  records.slice(0,5).forEach(function(row){memories.appendChild(row);});
+  if(!records.length){
+    var empty=document.createElement("div");empty.className="emptyState";empty.textContent="Nach dem ersten abgeschlossenen Spieleabend entstehen hier eure Crew Memories.";memories.appendChild(empty);
+  }
+
+  closeSheets();openSheet("crewSheet");
+}
+function renderCrewHome(){
+  if(!store.getCrew||!store.getCrews)return;
+  var active=store.getActiveSession(),crew=null;
+  if(active&&(active.profileIds||[]).length>=2)crew=store.getCrew(active.profileIds);
+  if(!crew){
+    var crews=store.getCrews();crew=crews[0]||null;
+  }
+  var block=byId("crewHomeBlock");block.classList.toggle("hidden",!crew);
+  if(!crew)return;
+  selectedCrew=crew;
+  var days=crewDaysSince(crew.stats.lastAt);
+  byId("crewHomeEyebrow").textContent=active&&crew.key===store.getCrew(active.profileIds).key?"AKTUELLE CREW":days!==null&&days>=2?"WILLKOMMEN ZURÜCK":"PARTY-PASS";
+  byId("crewHomeTitle").textContent=crewDisplayName(crew);
+  renderCrewAvatars(byId("crewHomeAvatars"),crew,5);
+  byId("crewHomeLevel").textContent=crew.level.level;
+  byId("crewHomeLevelOrb").style.setProperty("--crew-progress",Math.round(crew.level.progress*360)+"deg");
+  byId("crewHomeLevelTitle").textContent=crew.level.title;
+  byId("crewHomeMeta").textContent=crew.hasHistory?(crew.stats.sessions+" "+(crew.stats.sessions===1?"Spieleabend":"Spieleabende")+" · "+crew.stats.rounds+" Runden · "+crewLastSeenText(crew)):"Heute beginnt euer Party-Pass";
+  byId("crewHomeLevelFill").style.width=Math.round(crew.level.progress*100)+"%";
+  var goal=crew.selectedChallenge;
+  byId("crewHomeGoalIcon").textContent=goal.icon;
+  byId("crewHomeGoalTitle").textContent=(goal.done?"✓ ":"")+goal.title;
+  byId("crewHomeGoalProgress").textContent=goal.done?"Geschafft · neues Ziel wählen":goal.progress+" · noch "+goal.remaining;
+  byId("crewHomeOpen").onclick=function(){uiSound("tap");openCrewSheet(crew);};
+  byId("crewHomeCard").onclick=function(){uiSound("tap");openCrewSheet(crew);};
+}
+function renderCrewHistory(){
+  if(!store.getCrews)return;
+  var selected=store.getSelectedProfile?store.getSelectedProfile():store.getPrimaryProfile();
+  var crews=store.getCrews();
+  if(statsScope==="profile")crews=crews.filter(function(crew){return crew.profileIds.indexOf(selected.id)!==-1;});
+  byId("crewHistoryHint").textContent=crews.length+" "+(crews.length===1?"Crew":"Crews");
+  var box=byId("crewHistoryList");box.textContent="";
+  if(!crews.length){
+    var empty=document.createElement("div");empty.className="emptyState";empty.textContent="Sobald dieselbe Gruppe einen Spieleabend abschließt, entsteht hier ihr gemeinsamer Party-Pass.";box.appendChild(empty);return;
+  }
+  crews.slice(0,8).forEach(function(crew){
+    var card=document.createElement("button");card.type="button";card.className="crewHistoryCard";
+    var avatars=document.createElement("div");avatars.className="crewAvatarStack compact";renderCrewAvatars(avatars,crew,4);
+    var copy=document.createElement("div");copy.className="crewHistoryCopy";
+    var title=document.createElement("strong");title.textContent=crewDisplayName(crew);
+    var sub=document.createElement("span");sub.textContent=crew.stats.sessions+" "+(crew.stats.sessions===1?"Abend":"Abende")+" · "+crew.stats.rounds+" Runden · "+crew.completedChallenges+"/5 Ziele";
+    copy.append(title,sub);
+    var level=document.createElement("span");level.className="crewHistoryLevel";level.textContent="LVL "+crew.level.level;
+    card.append(avatars,copy,level);
+    card.addEventListener("click",function(){uiSound("tap");openCrewSheet(crew);});
+    box.appendChild(card);
+  });
+}
+
 function renderHeader(){
   var p=store.getSelectedProfile?store.getSelectedProfile():store.getPrimaryProfile();
   byId("headerAvatar").textContent=p.avatar||"😎";
   byId("headerName").textContent=p.name||"Spieler";
+  if(store.getProfileLevel){
+    var level=store.getProfileLevel(p.id);
+    byId("headerLevel").textContent=level?("LVL "+level.level+" · "+level.title):"LVL 1 · Neuling";
+  }
   updateGreeting();
+}
+
+function renderGameCards(){
+  var selected=store.getSelectedProfile?store.getSelectedProfile():store.getPrimaryProfile();
+  var st=store.getProfileStats?store.getProfileStats(selected.id):{};
+  var defs={
+    circa:{rounds:Number(st.circaRounds)||0,seen:(st.circaQids||[]).length,total:520},
+    classic:{rounds:Number(st.classicRounds)||0,seen:(st.classicWids||[]).length,total:250},
+    whoami:{rounds:Number(st.whoamiRounds)||0,seen:(st.whoamiTermIds||[]).length,total:275},
+    charades:{rounds:Number(st.charadesRounds)||0,seen:(st.charadesTermIds||[]).length,total:300},
+    personal:{rounds:Number(st.personalRounds)||0,seen:(st.personalQids||[]).length,total:100}
+  };
+  Object.keys(defs).forEach(function(game){
+    var d=defs[game],ratio=Math.max(0,Math.min(1,d.seen/Math.max(1,d.total)));
+    var fill=byId("gameProgress-"+game),meta=byId("gameMeta-"+game),action=byId("gameAction-"+game);
+    if(fill)fill.style.width=Math.round(ratio*100)+"%";
+    if(meta)meta.textContent=d.rounds?d.rounds+" "+(d.rounds===1?"Runde":"Runden")+" · "+Math.round(ratio*100)+" % entdeckt":"Noch keine Runde gespielt";
+    if(action)action.textContent=d.rounds?"Weiterspielen":"Spielen";
+  });
+}
+
+function renderMotivationHero(){
+  var selected=store.getSelectedProfile?store.getSelectedProfile():store.getPrimaryProfile();
+  var active=store.getActiveSession?store.getActiveSession():null;
+  var sessions=store.getSessions?store.getSessions().filter(function(s){return !!s.endedAt;}):[];
+  var last=sessions[0]||null;
+  var heroPrimary=byId("heroPrimary");
+  heroPrimary.classList.add("hidden");
+  heroPrimary.onclick=null;
+
+  if(active){
+    var meta=gameMeta(sessionGame(active));
+    byId("heroEyebrow").textContent="PARTY LÄUFT";
+    byId("homeTitle").textContent=meta.full+" läuft";
+    byId("heroSubtitle").textContent=(active.profileIds||[]).length+" Spieler · "+active.rounds.length+" "+(active.rounds.length===1?"Runde":"Runden")+" · "+fmtDuration(active.startedAt,null);
+    byId("heroPrimaryIcon").textContent=meta.icon;
+    byId("heroPrimaryText").textContent="Session fortsetzen";
+    heroPrimary.classList.remove("hidden");
+    heroPrimary.onclick=function(){launchSessionGroup(active);};
+  }else{
+    byId("heroEyebrow").textContent="IMPOSTER GAMES";
+    byId("homeTitle").textContent="Bereit für die nächste Runde?";
+    byId("heroSubtitle").textContent=last?"Letzter Spieleabend: "+last.rounds.length+" Runden · "+fmtDuration(last.startedAt,last.endedAt):"Wähle ein Spiel oder starte mit einem Preset.";
+    if(last&&activeProfilesForLaunch(last).length>=gameMeta(sessionGame(last)).min){
+      byId("heroPrimaryIcon").textContent="↻";
+      byId("heroPrimaryText").textContent="Letzte Gruppe nochmal";
+      heroPrimary.classList.remove("hidden");
+      heroPrimary.onclick=function(){launchSessionGroup(last);};
+    }
+  }
+
+  heroGoalAction=function(){setView("stats");};
+  var goal={icon:"⭐",label:"DEIN NÄCHSTES ZIEL",title:"Spieler-Level",meta:"Weiter spielen",ratio:0};
+  var level=store.getProfileLevel?store.getProfileLevel(selected.id):null;
+  if(level){
+    goal.title="LVL "+level.level+" · "+level.title;
+    goal.meta=level.remaining>0?"Noch "+level.remaining+" XP bis LVL "+(level.level+1):"Maximales Level erreicht";
+    goal.ratio=level.progress;
+  }
+
+  var category=store.getCategoryProgress?store.getCategoryProgress():null;
+  if(!active&&category&&category.tickets&&Number(category.tickets.available)>0){
+    goal={icon:"🔓",label:"FREIE FREISCHALTUNG",title:"Neue Bonus-Kategorie",meta:category.tickets.available+" "+(category.tickets.available===1?"Freischaltung verfügbar":"Freischaltungen verfügbar"),ratio:1};
+  }else if(!active&&category&&category.tickets&&category.tickets.nextThreshold&&Number(category.tickets.roundsToNext)<=4){
+    var done=Math.max(0,category.tickets.nextThreshold-category.tickets.roundsToNext);
+    goal={icon:"🔓",label:"FAST FREIGESCHALTET",title:"Nächste freie Kategorie",meta:"Noch "+category.tickets.roundsToNext+" "+(category.tickets.roundsToNext===1?"Runde":"Runden"),ratio:done/category.tickets.nextThreshold};
+  }
+
+  if(active&&store.getCrew&&(active.profileIds||[]).length>=2){
+    var crew=store.getCrew(active.profileIds);
+    if(crew&&crew.selectedChallenge){
+      var ch=crew.selectedChallenge;
+      goal={icon:ch.icon||"🤝",label:"CREW-ZIEL",title:ch.title,meta:ch.done?"Geschafft · neues Ziel wählen":ch.progress+" · noch "+ch.remaining,ratio:Math.max(0,Math.min(1,Number(ch.ratio)||0))};
+      heroGoalAction=function(){openCrewSheet(crew);};
+    }
+  }
+  byId("heroGoalIcon").textContent=goal.icon;
+  byId("heroGoalLabel").textContent=goal.label;
+  byId("heroGoalTitle").textContent=goal.title;
+  byId("heroGoalMeta").textContent=goal.meta;
+  byId("heroGoalFill").style.width=Math.round(goal.ratio*100)+"%";
 }
 function renderPlayers(){
   var box=byId("playerList"),profiles=store.getProfiles(),selected=store.getSelectedProfile?store.getSelectedProfile():store.getPrimaryProfile();
@@ -200,9 +474,19 @@ function renderPlayers(){
     if(p.id===selected.id)card.setAttribute("aria-current","true");
     var av=document.createElement("div");av.className="playerAvatarBig";av.textContent=p.avatar||"😎";
     var info=document.createElement("div");info.className="playerInfo";
+    var nameRow=document.createElement("div");nameRow.className="playerNameRow";
     var name=document.createElement("strong");name.textContent=p.name;
+    var level=store.getProfileLevel?store.getProfileLevel(p.id):null;
+    var levelBadge=document.createElement("b");levelBadge.className="playerLevelBadge";levelBadge.textContent="LVL "+(level?level.level:1);
+    nameRow.append(name,levelBadge);
     var meta=document.createElement("span");meta.textContent=st.rounds+" Runden · "+st.impostor+"× Imposter · "+st.impostorEscapes+"× unentdeckt";
-    info.appendChild(name);info.appendChild(meta);
+    info.appendChild(nameRow);info.appendChild(meta);
+    if(level){
+      var progress=document.createElement("div");progress.className="playerLevelTrack";
+      var fill=document.createElement("i");fill.style.width=Math.round(level.progress*100)+"%";progress.appendChild(fill);
+      var next=document.createElement("small");next.className="playerLevelNext";next.textContent=level.title+" · "+level.xp+" XP";
+      info.append(progress,next);
+    }
     if(p.id===selected.id){var tag=document.createElement("span");tag.className="primaryTag";tag.textContent="AUSGEWÄHLT";info.appendChild(tag);}
     function selectProfile(){
       var selectedNow=store.getSelectedProfile?store.getSelectedProfile():store.getPrimaryProfile();
@@ -239,12 +523,22 @@ function openProfileEditor(id,returnTarget){
 function renderPresets(){
   var box=byId("presetScroller");box.textContent="";
   store.getPresets().forEach(function(p){
-    var b=document.createElement("button");b.type="button";b.className="presetCard";
+    var lockedCategory=firstLockedPresetCategory(p);
+    var b=document.createElement("button");b.type="button";b.className="presetCard"+(lockedCategory?" locked":"");
     var icon=document.createElement("span");icon.className="presetEmoji";icon.textContent=p.icon||"⭐️";
     var name=document.createElement("strong");name.textContent=p.name;
-    var small=document.createElement("small");small.textContent=p.summary||"Schnellstart";
+    var small=document.createElement("small");
+    if(lockedCategory){
+      var lock=categoryLock(p.game,lockedCategory);
+      small.textContent="🔒 "+(lock&&lock.title?lock.title:"Bonus-Kategorie")+" · "+(lock&&lock.challenge?lock.challenge.progress:"");
+      b.setAttribute("aria-label",p.name+" gesperrt");
+    }else small.textContent=p.summary||"Schnellstart";
     b.appendChild(icon);b.appendChild(name);b.appendChild(small);
-    b.addEventListener("click",function(){uiSound("tap");openPreset(p);});box.appendChild(b);
+    b.addEventListener("click",function(){
+      uiSound("tap");
+      if(lockedCategory){openCategoryProgress(p.game,lockedCategory);return;}
+      openPreset(p);
+    });box.appendChild(b);
   });
 }
 function presetProfileNames(p){
@@ -254,8 +548,14 @@ function openPreset(p){
   selectedPreset=p;
   byId("presetTitle").textContent=p.name;
   byId("presetGame").textContent=gameMeta(p.game).icon+" "+gameMeta(p.game).full;
-  var names=presetProfileNames(p);
-  byId("presetDetail").textContent=(p.summary||"")+(names.length?" · "+names.join(", "):"");
+  var names=presetProfileNames(p),min=presetMinPlayers(p.game);
+  var boundProfiles=Array.isArray(p.profileIds)&&p.profileIds.length>0;
+  var playable=!!p.builtIn||(boundProfiles?names.length>=min:Math.max(0,Number(p.playerCount)||0)>=min);
+  var detail=(p.summary||"")+(names.length?" · "+names.join(", "):"");
+  if(!playable)detail+=" · Zu wenige vorhandene Profile";
+  byId("presetDetail").textContent=detail;
+  byId("presetOpenGame").disabled=!playable;
+  byId("presetOpenGame").textContent=playable?"Mit Preset starten":"Preset unvollständig";
   byId("deletePreset").classList.toggle("hidden",!!p.builtIn);
   openSheet("presetSheet");
 }
@@ -272,12 +572,21 @@ function renderPresetCategories(){
   if(game==="personal"){presetSelectedCategories=[];byId("presetCategorySummary").textContent="Keine Kategorien in diesem Modus";return;}
   var choices=["Alle"].concat(available);
   if(!presetSelectedCategories.length)presetSelectedCategories=["Alle"];
-  presetSelectedCategories=presetSelectedCategories.filter(function(cat){return choices.indexOf(cat)!==-1;});
+  presetSelectedCategories=presetSelectedCategories.filter(function(cat){return choices.indexOf(cat)!==-1&&(cat==="Alle"||!categoryLock(game,cat));});
   if(!presetSelectedCategories.length)presetSelectedCategories=["Alle"];
   choices.forEach(function(cat){
-    var button=document.createElement("button");button.type="button";button.className="presetChoice"+(presetSelectedCategories.indexOf(cat)!==-1?" selected":"");button.textContent=cat;button.dataset.category=cat;box.appendChild(button);
+    var lock=cat==="Alle"?null:categoryLock(game,cat);
+    var button=document.createElement("button");button.type="button";
+    button.className="presetChoice"+(presetSelectedCategories.indexOf(cat)!==-1?" selected":"")+(lock?" locked":"");
+    button.textContent=cat;button.dataset.category=cat;
+    if(lock){
+      button.dataset.locked="1";
+      button.title=lock.title+" · "+lock.challenge.progress;
+      button.setAttribute("aria-label",cat+" gesperrt · "+lock.challenge.progress);
+    }
+    box.appendChild(button);
   });
-  byId("presetCategorySummary").textContent=presetSelectedCategories[0]==="Alle"?"Alle Kategorien":presetSelectedCategories.length+" Kategorien ausgewählt";
+  byId("presetCategorySummary").textContent=presetSelectedCategories[0]==="Alle"?"Alle freigeschalteten Kategorien":presetSelectedCategories.length+" Kategorien ausgewählt";
 }
 function renderPresetEditorMode(){
   var game=byId("presetGameInput").value;
@@ -372,6 +681,23 @@ function renderSessionSheet(session){
     var emptyPlayers=document.createElement("div");emptyPlayers.className="emptyState";emptyPlayers.textContent="Für diese Session sind keine Spielerprofile gespeichert.";playersBox.appendChild(emptyPlayers);
   }
 
+  var sessionCrew=store.getCrew&&((session.profileIds||[]).length>=2)?store.getCrew(session.profileIds):null;
+  var spotlight=byId("sessionSpotlight");
+  if(session.endedAt){
+    var awardsList=session.awards||[],topAward=awardsList[0]||null;
+    spotlight.classList.remove("hidden");
+    byId("sessionSpotlightIcon").textContent=topAward?(topAward.icon||"🏆"):(sessionCrew?"🤝":"✨");
+    byId("sessionSpotlightLabel").textContent=topAward?"HIGHLIGHT":sessionCrew?"CREW-FORTSCHRITT":"SPIELEABEND";
+    byId("sessionSpotlightTitle").textContent=topAward?(profileName(topAward.profileId)+" · "+topAward.title):(sessionCrew?"Crew LVL "+sessionCrew.level.level+" · "+sessionCrew.level.title:"Runde abgeschlossen");
+    byId("sessionSpotlightMeta").textContent=topAward?topAward.detail:(sessionCrew?sessionCrew.stats.rounds+" gemeinsame Runden · "+sessionCrew.completedChallenges+"/5 Ziele":(session.rounds||[]).length+" Runden · "+fmtDuration(session.startedAt,session.endedAt));
+  }else spotlight.classList.add("hidden");
+  var sessionCrewButton=byId("sessionCrewOpen");
+  sessionCrewButton.classList.toggle("hidden",!sessionCrew);
+  if(sessionCrew){
+    byId("sessionCrewLabel").textContent="Crew-Level "+sessionCrew.level.level+" · "+sessionCrew.stats.sessions+" "+(sessionCrew.stats.sessions===1?"Abend":"Abende");
+    sessionCrewButton.onclick=function(){uiSound("tap");openCrewSheet(sessionCrew);};
+  }
+
   var awards=byId("sessionAwards");awards.textContent="";
   var list=session.awards||[];
   if(!list.length){
@@ -399,7 +725,7 @@ function renderSessionSheet(session){
   }
 
   var replay=byId("replaySession");
-  var replayable=!!session.endedAt&&activeProfilesForLaunch(session).length>=3;
+  var replayable=!!session.endedAt&&activeProfilesForLaunch(session).length>=gameMeta(sessionGame(session)).min;
   replay.classList.toggle("hidden",!replayable);
   replay.textContent="Noch einmal mit dieser Gruppe · "+gameMeta(sessionGame(session)).title;
   replay.onclick=function(){launchSessionGroup(session);};
@@ -432,6 +758,8 @@ function renderSessionHistory(sessions){
 function renderSessions(){
   var active=store.getActiveSession();
   byId("activeSessionBlock").classList.toggle("hidden",!active);
+  byId("sessionMiniBar").classList.toggle("hidden",!active);
+  document.body.classList.toggle("hasMiniSession",!!active);
   byId("sessionStatusPill").textContent=active?"Session läuft · "+fmtDuration(active.startedAt,null):"Keine Session aktiv";
   if(active){
     var currentGame=sessionGame(active),currentMeta=gameMeta(currentGame);
@@ -441,9 +769,13 @@ function renderSessions(){
     var roundAge=active.gameStartedAt?fmtDuration(active.gameStartedAt,null):"–";
     var activity=active.activity?active.activity+" · ":"";
     byId("activeSessionSub").textContent=activity+"aktuell seit "+roundAge;
-    var cont=byId("continueSession");
+    var cont=byId("continueSession"),playable=activeProfilesForLaunch(active).length>=currentMeta.min;
     cont.textContent="Session fortsetzen · "+currentMeta.title;
-    cont.disabled=activeProfilesForLaunch(active).length<currentMeta.min;
+    cont.disabled=!playable;
+    byId("sessionMiniIcon").textContent=currentMeta.icon;
+    byId("sessionMiniTitle").textContent=currentMeta.full+" · "+active.rounds.length+" "+(active.rounds.length===1?"Runde":"Runden");
+    byId("sessionMiniSub").textContent=playable?(activity||"")+"Tippen zum Fortsetzen":"Zu wenige vorhandene Profile";
+    byId("sessionMiniBar").disabled=!playable;
   }
   var sessions=store.getSessions().filter(function(s){return !!s.endedAt;});
   var last=sessions[0]||null;
@@ -456,6 +788,48 @@ function renderSessions(){
     byId("lastSessionCard").onclick=function(){uiSound("tap");renderSessionSheet(last);};
   }
 }
+function achievementRequiredAmount(id){
+  var required={
+    "first-session":1,
+    "perfect":1,
+    "charades-clean":1,
+    "app-hour-1":1,
+    "session-games-3":3,
+    "escape-3":3,
+    "all-games":5,
+    "session-games-5":5,
+    "charades-clean-5":5,
+    "app-hours-5":5,
+    "warmup-10":10,
+    "whoami-10":10,
+    "personal-10":10,
+    "escape-10":10,
+    "impostor-10":10,
+    "charades-10":10,
+    "app-hours-10":10,
+    "session-20":20,
+    "circa-precision-20":20,
+    "circa-25":25,
+    "classic-25":25,
+    "whoami-25":25,
+    "charades-25":25,
+    "personal-25":25,
+    "impostor-25":25,
+    "fifty-rounds":50,
+    "charades-50":50,
+    "marathon":60,
+    "hundred-rounds":100,
+    "charades-100":100,
+    "collector-100":100
+  };
+  return Object.prototype.hasOwnProperty.call(required,id)?required[id]:Number.MAX_SAFE_INTEGER;
+}
+function sortAchievementsByRequirement(items){
+  return items.map(function(item,index){return {item:item,index:index};}).sort(function(a,b){
+    var amountDiff=achievementRequiredAmount(a.item.id)-achievementRequiredAmount(b.item.id);
+    return amountDiff||a.index-b.index;
+  }).map(function(entry){return entry.item;});
+}
 function renderStats(){
   var selected=store.getSelectedProfile?store.getSelectedProfile():store.getPrimaryProfile();
   var personal=statsScope==="profile";
@@ -466,6 +840,22 @@ function renderStats(){
   byId("statsScopeGlobal").classList.toggle("active",!personal);
   byId("statsScopeLabel").textContent=personal?"Gespielt von "+selected.name:"Gesamt gespielt";
   byId("statsScopeSub").textContent=personal?"Runden dieses lokalen Profils":"Runden auf diesem Gerät";
+
+  var levelBlock=byId("profileLevelBlock");
+  levelBlock.classList.toggle("hidden",!personal);
+  if(personal&&store.getProfileLevel){
+    var profileLevel=store.getProfileLevel(selected.id);
+    if(profileLevel){
+      byId("profileLevelNumber").textContent=profileLevel.level;
+      byId("profileLevelTitle").textContent=profileLevel.title;
+      byId("profileLevelXp").textContent=profileLevel.xp+" XP";
+      byId("profileLevelFill").style.width=Math.round(profileLevel.progress*100)+"%";
+      byId("profileLevelOrb").style.setProperty("--profile-progress",Math.round(profileLevel.progress*360)+"deg");
+      byId("profileLevelNext").textContent=profileLevel.remaining>0
+        ?("Noch "+profileLevel.remaining+" XP bis LVL "+(profileLevel.level+1))
+        :"Maximales Level erreicht";
+    }
+  }
 
   byId("totalRounds").textContent=st.rounds||0;
   byId("circaRounds").textContent=st.circaRounds||0;
@@ -514,9 +904,11 @@ function renderStats(){
   byId("sessionHistoryTitle").textContent=personal?"Sessions mit "+selected.name:"Letzte Sessions";
   byId("sessionHistoryHint").textContent=sessions.length+" gespeichert";
   renderSessionHistory(sessions);
+  renderCrewHistory();
 
   byId("achievementHeading").textContent=personal?"Persönliche Sammlung":"Gesamte Sammlung";
   var achievementData=personal&&store.getProfileAchievements?store.getProfileAchievements(selected.id):store.getAchievements();
+  achievementData=sortAchievementsByRequirement(achievementData);
   var unlockedCount=achievementData.filter(function(a){return a.unlocked;}).length;
   byId("achievementCount").textContent=unlockedCount+" / "+achievementData.length;
   var box=byId("achievementList");box.textContent="";
@@ -531,6 +923,42 @@ function renderStats(){
     card.appendChild(icon);card.appendChild(text);card.appendChild(state);box.appendChild(card);
   });
 }
+function renderCategoryProgress(){
+  if(!store.getCategoryProgress)return;
+  var progress=store.getCategoryProgress(),packs=progress.packs||[],tickets=progress.tickets||{};
+  var unlocked=packs.filter(function(pack){return pack.unlocked;}).length;
+  byId("categoryProgressHint").textContent=unlocked+" / "+packs.length+" frei";
+  byId("categoryTicketCount").textContent=String(tickets.available||0);
+  byId("categoryTicketNext").textContent=tickets.nextThreshold
+    ?("Nächste freie Freischaltung bei "+tickets.nextThreshold+" Gesamtrunden · noch "+tickets.roundsToNext+".")
+    :"Alle freien Freischaltungen wurden verdient.";
+
+  var box=byId("categoryProgressList");box.textContent="";
+  packs.forEach(function(pack){
+    var card=document.createElement(pack.unlocked?"div":"button");
+    if(!pack.unlocked)card.type="button";
+    card.className="categoryProgressCard"+(pack.unlocked?" unlocked":" locked");
+    var icon=document.createElement("span");icon.className="categoryProgressIcon";icon.textContent=pack.icon||"🔒";
+    var text=document.createElement("div");text.className="categoryProgressText";
+    var title=document.createElement("strong");title.textContent=pack.title;
+    var sub=document.createElement("span");
+    if(pack.unlocked)sub.textContent=pack.method==="ticket"?"Mit freier Wahl freigeschaltet":"Challenge geschafft";
+    else sub.textContent=pack.challenge.title+" · "+pack.challenge.progress;
+    text.append(title,sub);
+    var state=document.createElement("span");state.className="categoryProgressState";state.textContent=pack.unlocked?"✓":Math.round(pack.challenge.ratio*100)+"%";
+    card.append(icon,text,state);
+    if(!pack.unlocked){
+      var representative=null,game=null;
+      Object.keys(pack.categories||{}).some(function(key){
+        var list=pack.categories[key]||[];
+        if(list.length){game=key;representative=list[0];return true;}
+        return false;
+      });
+      if(game&&representative)card.addEventListener("click",function(){uiSound("tap");openCategoryProgress(game,representative);});
+    }
+    box.appendChild(card);
+  });
+}
 function renderSettings(){
   var p=store.getPreferences();
   byId("settingSound").checked=p.sound!==false;
@@ -539,8 +967,15 @@ function renderSettings(){
   document.documentElement.classList.toggle("reduceExperimentMotion",p.animations===false);
 }
 function renderAll(){
-  renderHeader();renderPlayers();renderPresets();renderSessions();renderStats();renderSettings();
+  renderHeader();renderPlayers();renderPresets();renderSessions();renderCrewHome();renderMotivationHero();renderGameCards();renderStats();renderCategoryProgress();renderSettings();
 }
+window.addEventListener("ci:category-unlocked",function(){
+  renderPresets();renderPresetCategories();renderCategoryProgress();
+});
+window.CILauncherRefresh=function(){
+  renderAll();
+  hydrateCircaMetadata();
+};
 function hydrateCircaMetadata(){
   if(!store.applyCircaQuestionMetadata)return Promise.resolve(false);
   if(circaMetadataItems){
@@ -597,6 +1032,15 @@ document.querySelectorAll(".tab").forEach(function(tab){tab.addEventListener("cl
 });});
 byId("profileButton").addEventListener("click",function(){uiSound("tap");setView("profile");});
 byId("settingsShortcut").addEventListener("click",function(){uiSound("tap");setView("settings");});
+byId("heroGoal").addEventListener("click",function(){uiSound("tap");if(heroGoalAction)heroGoalAction();});
+byId("surpriseGame").addEventListener("click",function(){
+  var games=Object.keys(GAME_META),game=games[Math.floor(Math.random()*games.length)],card=document.querySelector('[data-game-card="'+game+'"]');
+  document.querySelectorAll(".gameCard.chosenPulse").forEach(function(el){el.classList.remove("chosenPulse");});
+  if(card){card.classList.add("chosenPulse");card.scrollIntoView({behavior:store.getPreferences().animations===false?"auto":"smooth",block:"center"});}
+  uiSound("select");
+  appToast("Heute entscheidet der Zufall",gameMeta(game).full+" wurde ausgewählt.",gameMeta(game).icon);
+  setTimeout(function(){navigateWithSound(gameMeta(game).path);},store.getPreferences().animations===false?80:650);
+});
 byId("addPlayer").addEventListener("click",function(){uiSound("tap");openProfileEditor(null,null);});
 byId("addPreset").addEventListener("click",function(){uiSound("tap");openPresetEditor();});
 byId("presetGameInput").addEventListener("change",function(){
@@ -609,7 +1053,10 @@ byId("presetGameInput").addEventListener("change",function(){
 byId("presetPlayersButton").addEventListener("click",function(){uiSound("tap");openPresetPlayers();});
 byId("presetCategoryChoices").addEventListener("click",function(event){
   var button=event.target.closest("[data-category]");if(!button)return;
-  var cat=button.dataset.category;
+  var cat=button.dataset.category,game=byId("presetGameInput").value;
+  if(button.dataset.locked==="1"){
+    uiSound("tap");openCategoryProgress(game,cat);return;
+  }
   if(cat==="Alle")presetSelectedCategories=["Alle"];
   else{
     presetSelectedCategories=presetSelectedCategories.filter(function(x){return x!=="Alle";});
@@ -658,7 +1105,7 @@ byId("saveProfile").addEventListener("click",function(){
       if(presetSelectedProfileIds.indexOf(id)===-1&&presetSelectedProfileIds.length<12)presetSelectedProfileIds.push(id);
     }else if(store.setSelectedProfile)store.setSelectedProfile(id);else store.setPrimaryProfile(id);
   }
-  uiSound("confirm");
+  uiSound("confirm");appToast(id?"Profil gespeichert":"Profil angelegt",name+" ist bereit.","👤");
   if(returnToPreset){returnToPresetPlayers();renderAll();}
   else{profileEditorReturnTarget=null;closeSheets();renderAll();}
 });
@@ -686,10 +1133,12 @@ byId("savePreset").addEventListener("click",function(){
     hint:byId("presetHintInput").checked,
     timer:game==="charades"?Number(byId("presetCharadesTimerInput").value):Number(byId("presetTimerInput").value)
   });
-  uiSound("confirm");closeSheets();renderAll();
+  uiSound("confirm");closeSheets();renderAll();appToast("Preset gespeichert","Der Schnellstart ist jetzt verfügbar.","⚡️");
 });
 byId("presetOpenGame").addEventListener("click",function(){
-  if(!selectedPreset)return;
+  if(!selectedPreset||this.disabled)return;
+  var lockedCategory=firstLockedPresetCategory(selectedPreset);
+  if(lockedCategory){openCategoryProgress(selectedPreset.game,lockedCategory);return;}
   store.setLaunchPreset(selectedPreset);
   navigateWithSound(gameMeta(selectedPreset.game).path);
 });
@@ -700,13 +1149,14 @@ byId("deletePreset").addEventListener("click",function(){
 
 byId("activeSessionCard").addEventListener("click",function(){var s=store.getActiveSession();if(s){uiSound("tap");renderSessionSheet(s);}});
 byId("continueSession").addEventListener("click",function(){var s=store.getActiveSession();if(s)launchSessionGroup(s);});
+byId("sessionMiniBar").addEventListener("click",function(){var s=store.getActiveSession();if(s&&!this.disabled)launchSessionGroup(s);});
 document.querySelectorAll("[data-stats-scope]").forEach(function(button){
   button.addEventListener("click",function(){var next=this.getAttribute("data-stats-scope")==="global"?"global":"profile";if(next!==statsScope)uiSound("tap");statsScope=next;renderStats();});
 });
 byId("endSession").addEventListener("click",function(){
   var s=store.getActiveSession();if(!s)return;
   if(!s.rounds.length&&!window.confirm("Die Session enthält noch keine abgeschlossene Runde. Trotzdem beenden?"))return;
-  var ended=store.endSession();if(ended)uiSound("end");renderAll();if(ended)renderSessionSheet(ended);
+  var ended=store.endSession();renderAll();if(ended)renderSessionSheet(ended);
 });
 
 ["Sound","Haptics","Animations"].forEach(function(name){
@@ -722,9 +1172,9 @@ byId("exportData").addEventListener("click",async function(){
     var backup=store.createBackup?await store.createBackup():store.snapshot();
     var blob=new Blob([JSON.stringify(backup,null,2)],{type:"application/json"});
     var url=URL.createObjectURL(blob);
-    var a=document.createElement("a");a.href=url;a.download="imposter-games-prototype-v73-backup.json";document.body.appendChild(a);a.click();a.remove();
+    var a=document.createElement("a");a.href=url;a.download="imposter-games-prototype-v74-backup.json";document.body.appendChild(a);a.click();a.remove();
     setTimeout(function(){URL.revokeObjectURL(url);},1000);
-    uiSound("success");byId("dataStatus").textContent="Backup wurde vorbereitet.";
+    uiSound("success");byId("dataStatus").textContent="Backup wurde vorbereitet.";appToast("Backup erstellt","Deine lokalen Daten wurden exportiert.","✓");
   }catch(e){byId("dataStatus").textContent="Export ist auf diesem Gerät gerade nicht verfügbar.";}
 });
 byId("importData").addEventListener("click",function(){
@@ -745,22 +1195,23 @@ byId("importDataFile").addEventListener("change",function(){
     try{parsed=JSON.parse(String(reader.result||""));}catch(e){
       byId("dataStatus").textContent="Import abgebrochen: Keine gültige JSON-Datei.";input.value="";return;
     }
-    if(!window.confirm("Dieses Backup ersetzt die aktuellen lokalen Prototyp-Daten. Fortfahren?")){input.value="";return;}
+    if(!window.confirm("Dieses Backup ersetzt die aktuellen lokalen App-Daten. Fortfahren?")){input.value="";return;}
     var result=store.importSnapshot?await store.importSnapshot(parsed):{ok:false,reason:"unsupported"};
     if(!result.ok){
-      var reason=result.reason==="profiles"?"Keine gültigen Profile im Backup gefunden.":result.reason==="duplicate-profiles"?"Das Backup enthält doppelte Profilnamen und wurde aus Sicherheitsgründen nicht übernommen.":result.reason==="storage"?"Die importierten Daten konnten nicht lokal gespeichert werden.":result.reason==="version"?"Nur geprüfte Backup-V3-Dateien werden importiert. Ältere ungeprüfte Backups werden nicht mehr akzeptiert.":result.reason==="format"?"Die Datei ist kein Imposter-App-Backup.":result.reason==="integrity"?"Das Backup wurde verändert oder ist beschädigt.":result.reason==="integrity-unavailable"?"Die Integrität dieses Backups kann auf diesem Gerät nicht geprüft werden.":"Das Backup passt nicht zu dieser App-Version.";
+      var reason=result.reason==="profiles"?"Keine gültigen Profile im Backup gefunden.":result.reason==="duplicate-profiles"?"Das Backup enthält doppelte Profile und wurde aus Sicherheitsgründen nicht übernommen.":result.reason==="plausibility"?"Die Fortschrittsdaten sind widersprüchlich. Dein aktueller Spielstand wurde nicht verändert.":result.reason==="category-unlock"||result.reason==="category-progress"?"Die Kategorie-Freischaltungen passen nicht zum gespeicherten Fortschritt. Dein aktueller Spielstand wurde nicht verändert.":result.reason==="storage"?"Die importierten Daten konnten nicht lokal gespeichert werden.":result.reason==="version"?"Nur geprüfte Backup-V3-Dateien werden importiert. Ältere ungeprüfte Backups werden nicht mehr akzeptiert.":result.reason==="format"?"Die Datei ist kein Imposter-App-Backup.":result.reason==="integrity"?"Das Backup wurde verändert oder ist beschädigt.":result.reason==="integrity-unavailable"?"Die Integrität dieses Backups kann auf diesem Gerät nicht geprüft werden.":"Das Backup passt nicht zu dieser App-Version.";
       byId("dataStatus").textContent="Import abgebrochen: "+reason;
       input.value="";return;
     }
     uiSound("success");closeSheets();renderAll();hydrateCircaMetadata();
     byId("dataStatus").textContent="Backup importiert: "+result.profiles+" Profile · "+result.sessions+" Sessions · "+result.rounds+" Runden.";
+    appToast("Backup importiert",result.profiles+" Profile · "+result.rounds+" Runden","✓");
     input.value="";
   };
   reader.readAsText(file);
 });
 byId("resetAppData").addEventListener("click",function(){
-  if(!window.confirm("Wirklich alle lokalen Prototyp-Daten löschen? Die Live-App bleibt unangetastet."))return;
-  uiSound("end");store.reset();byId("dataStatus").textContent="Lokale Prototyp-Daten wurden zurückgesetzt.";closeSheets();setView("home");renderAll();
+  if(!window.confirm("Wirklich alle lokalen App-Daten löschen?"))return;
+  uiSound("end");store.reset();byId("dataStatus").textContent="Lokale App-Daten wurden zurückgesetzt.";closeSheets();setView("home");renderAll();
 });
 
 document.querySelectorAll(".closeSheet").forEach(function(b){b.addEventListener("click",function(){
@@ -798,6 +1249,105 @@ document.addEventListener("visibilitychange",function(){
   else{if(store.trackUsage)store.trackUsage(null);renderAll();renderMigrationChoice();}
 });
 
+function shouldDismissSheetSwipe(deltaY,elapsedMs,deltaX){
+  deltaY=Math.max(0,Number(deltaY)||0);
+  deltaX=Math.abs(Number(deltaX)||0);
+  elapsedMs=Math.max(1,Number(elapsedMs)||1);
+  if(deltaX>Math.max(34,deltaY*0.85))return false;
+  var velocity=deltaY/elapsedMs;
+  return deltaY>=84||(deltaY>=30&&velocity>=0.52);
+}
+function installSheetSwipe(){
+  document.querySelectorAll(".bottomSheet").forEach(function(sheet){
+    if(!sheet||sheet.id==="migrationSheet"||sheet.dataset.sheetSwipeBound==="1")return;
+    sheet.dataset.sheetSwipeBound="1";
+
+    var startY=0,startX=0,startAt=0,dragging=false,pointerId=null,grabTarget=null;
+
+    function resetDrag(){
+      dragging=false;pointerId=null;grabTarget=null;
+      sheet.classList.remove("sheetDragging");
+      sheet.style.setProperty("--sheet-drag","0px");
+      byId("sheetBackdrop").style.removeProperty("--sheet-backdrop-alpha");
+    }
+    function dismiss(){
+      uiSound("tap");
+      if(sheet.id==="presetPlayersSheet"){backToPresetEditor();return;}
+      if(sheet.id==="profileSheet"&&profileEditorReturnTarget==="preset"){returnToPresetPlayers();return;}
+      closeSheets();
+    }
+    function canStart(event){
+      if(sheet.classList.contains("hidden"))return false;
+      if(event.pointerType==="mouse"&&event.button!==0)return false;
+      var target=event.target;
+      var handle=target&&target.closest?target.closest(".sheetHandle"):null;
+      if(handle)return true;
+      var header=target&&target.closest?target.closest(".sheetHeader"):null;
+      if(!header)return false;
+      if(target.closest&&target.closest("button,input,select,textarea,a,[role='button']"))return false;
+      return true;
+    }
+    function begin(event){
+      if(!canStart(event))return;
+      startY=event.clientY;startX=event.clientX;startAt=performance.now();dragging=true;pointerId=event.pointerId;grabTarget=event.currentTarget;
+      sheet.classList.add("sheetDragging");
+      try{sheet.setPointerCapture(pointerId);}catch(e){}
+      event.preventDefault();
+    }
+    function move(event){
+      if(!dragging||event.pointerId!==pointerId)return;
+      var rawY=event.clientY-startY,deltaX=event.clientX-startX;
+      if(rawY<0){
+        sheet.style.setProperty("--sheet-drag","0px");
+        return;
+      }
+      if(Math.abs(deltaX)>Math.max(42,rawY*1.05)){
+        resetDrag();
+        try{sheet.releasePointerCapture(event.pointerId);}catch(e){}
+        return;
+      }
+      var drag=rawY<=170?rawY:170+(rawY-170)*0.28;
+      drag=Math.min(280,drag);
+      sheet.style.setProperty("--sheet-drag",drag.toFixed(1)+"px");
+      var alpha=Math.max(0.18,0.52*(1-Math.min(1,drag/320)));
+      byId("sheetBackdrop").style.setProperty("--sheet-backdrop-alpha",alpha.toFixed(3));
+      event.preventDefault();
+    }
+    function finish(event){
+      if(!dragging||event.pointerId!==pointerId)return;
+      var deltaY=Math.max(0,event.clientY-startY),deltaX=event.clientX-startX,elapsed=performance.now()-startAt;
+      dragging=false;
+      sheet.classList.remove("sheetDragging");
+      try{sheet.releasePointerCapture(event.pointerId);}catch(e){}
+      if(shouldDismissSheetSwipe(deltaY,elapsed,deltaX)){
+        sheet.classList.add("sheetSwipeDismiss");
+        sheet.style.setProperty("--sheet-drag",Math.min(window.innerHeight,420)+"px");
+        byId("sheetBackdrop").style.setProperty("--sheet-backdrop-alpha","0");
+        setTimeout(function(){
+          sheet.classList.remove("sheetSwipeDismiss");
+          dismiss();
+        },145);
+      }else{
+        sheet.classList.add("sheetSwipeSnapBack");
+        sheet.style.setProperty("--sheet-drag","0px");
+        byId("sheetBackdrop").style.removeProperty("--sheet-backdrop-alpha");
+        setTimeout(function(){sheet.classList.remove("sheetSwipeSnapBack");},180);
+      }
+      pointerId=null;grabTarget=null;
+    }
+    function cancel(event){
+      if(!dragging||event.pointerId!==pointerId)return;
+      try{sheet.releasePointerCapture(event.pointerId);}catch(e){}
+      resetDrag();
+    }
+
+    sheet.addEventListener("pointerdown",begin);
+    sheet.addEventListener("pointermove",move);
+    sheet.addEventListener("pointerup",finish);
+    sheet.addEventListener("pointercancel",cancel);
+  });
+}
+installSheetSwipe();
 renderAll();
 setInterval(function(){if(store.getActiveSession&&store.getActiveSession())renderSessions();},30000);
 hydrateCircaMetadata();
