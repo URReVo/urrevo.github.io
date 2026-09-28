@@ -1,0 +1,127 @@
+name: R23 Personal keyboard candidate
+on:
+  push:
+    branches: ["fix/personal-ios-keyboard-viewport-r23"]
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+
+      - name: Full project audit
+        run: node scripts/audit-full.mjs
+      - name: Validate release
+        run: node scripts/validate-release.mjs
+      - name: Test local progress integrity
+        run: node scripts/test-progress-integrity.mjs
+      - name: Validate iOS readiness
+        run: node scripts/validate-ios-readiness.mjs
+
+      - name: Install browser driver
+        run: npm install --no-save puppeteer-core@24.17.0
+
+      - name: Start local server
+        run: |
+          python3 -m http.server 8080 --bind 127.0.0.1 > /tmp/r23-http.log 2>&1 &
+          sleep 2
+
+      - name: Simulate Personal keyboard viewport recovery
+        run: |
+          CHROME="$(command -v google-chrome || command -v chromium-browser || command -v chromium || true)"
+          test -n "$CHROME"
+          export CHROME
+          cat > r23-keyboard-audit.mjs <<'NODE'
+          import puppeteer from "puppeteer-core";
+
+          const browser=await puppeteer.launch({
+            headless:true,
+            executablePath:process.env.CHROME,
+            args:["--no-sandbox","--disable-gpu"]
+          });
+          const page=await browser.newPage();
+          const errors=[];
+          page.on("pageerror",e=>errors.push("pageerror: "+e.message));
+          page.on("console",m=>{if(m.type()==="error")errors.push("console: "+m.text());});
+          const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+
+          async function setViewport(height){
+            await page.setViewport({width:402,height,deviceScaleFactor:1,isMobile:true,hasTouch:true});
+            await sleep(160);
+          }
+          async function visible(selector){
+            return page.$eval(selector,el=>!el.classList.contains("hidden"));
+          }
+          async function metrics(buttonSelector){
+            return page.evaluate(sel=>{
+              const app=document.querySelector("#app").getBoundingClientRect();
+              const button=document.querySelector(sel).getBoundingClientRect();
+              const cssVar=getComputedStyle(document.documentElement).getPropertyValue("--personal-viewport-height").trim();
+              return {
+                innerHeight:window.innerHeight,
+                visualHeight:window.visualViewport?window.visualViewport.height:null,
+                cssVar,
+                app:{top:app.top,bottom:app.bottom,height:app.height},
+                button:{top:button.top,bottom:button.bottom,height:button.height},
+                gap:app.bottom-button.bottom
+              };
+            },buttonSelector);
+          }
+
+          await setViewport(874);
+          await page.goto("http://127.0.0.1:8080/games/personal-impostor/",{waitUntil:"networkidle0",timeout:30000});
+          await sleep(500);
+
+          await page.click("#start");
+          await page.waitForSelector("#handoff:not(.hidden)",{timeout:10000});
+          await sleep(1800);
+          await page.click("#showQuestion");
+          await page.waitForSelector("#answerInput",{visible:true,timeout:10000});
+          await sleep(300);
+
+          let full=await metrics("#saveAnswer");
+          console.log("FULL_QUESTION",JSON.stringify(full));
+          if(Math.abs(parseFloat(full.cssVar)-full.visualHeight)>2)throw new Error("initial viewport CSS variable does not track visualViewport");
+
+          await setViewport(520);
+          let small=await metrics("#saveAnswer");
+          console.log("KEYBOARD_QUESTION",JSON.stringify(small));
+          if(Math.abs(parseFloat(small.cssVar)-small.visualHeight)>2)throw new Error("keyboard-size viewport was not synchronized");
+
+          await page.type("#answerInput","42");
+          await page.click("#saveAnswer");
+          await page.waitForSelector("#handoff:not(.hidden)",{timeout:5000});
+          if(!(await visible("#handoff")))throw new Error("handoff did not open after saving answer");
+
+          await setViewport(874);
+          await sleep(850);
+          let recovered=await metrics("#showQuestion");
+          console.log("RECOVERED_HANDOFF",JSON.stringify(recovered));
+          if(Math.abs(parseFloat(recovered.cssVar)-recovered.visualHeight)>2)throw new Error("viewport CSS variable did not recover after keyboard close");
+          if(Math.abs(recovered.app.height-recovered.visualHeight)>2)throw new Error("game app height stayed keyboard-reduced");
+          if(recovered.gap<0||recovered.gap>18)throw new Error("handoff action did not return to bottom baseline; gap="+recovered.gap);
+
+          // Same-screen recovery: open next question, shrink, blur, restore, stay on question.
+          await page.click("#showQuestion");
+          await page.waitForSelector("#answerInput",{visible:true,timeout:5000});
+          await setViewport(520);
+          await page.evaluate(()=>document.querySelector("#answerInput").blur());
+          await setViewport(874);
+          await sleep(850);
+          if(!(await visible("#question")))throw new Error("question screen unexpectedly changed during blur recovery");
+          let same=await metrics("#saveAnswer");
+          console.log("RECOVERED_QUESTION",JSON.stringify(same));
+          if(Math.abs(parseFloat(same.cssVar)-same.visualHeight)>2)throw new Error("same-screen viewport did not recover");
+          if(Math.abs(same.app.height-same.visualHeight)>2)throw new Error("same-screen app height stayed keyboard-reduced");
+          if(same.gap<0||same.gap>18)throw new Error("save button did not return to bottom baseline; gap="+same.gap);
+
+          if(errors.length)throw new Error(errors.join(" | "));
+          await browser.close();
+          NODE
+          node r23-keyboard-audit.mjs
+          rm r23-keyboard-audit.mjs
