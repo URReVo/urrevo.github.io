@@ -365,6 +365,9 @@ assert(appStateSource.includes("function nearAchievementFeedback("),"near-achiev
 assert(appStateSource.includes("function previousCircaBest("),"Circa personal-record feedback missing");
 assert(appStateSource.includes('progress:def.progress()'),"achievement unlock payload must include completed progress");
 assert(pwaSource.includes("var feedbackQueue=[]")&&pwaSource.includes("function queueFeedback("),"central feedback queue missing");
+assert(pwaSource.includes("var feedbackPumpScheduled=false"),"feedback queue batching flag missing");
+assert(pwaSource.includes("feedbackQueue.sort(function(a,b){return b.intensity-a.intensity;})"),"feedback queue must prioritize intensity");
+assert(pwaSource.includes("setTimeout(function(){feedbackPumpScheduled=false;pumpFeedback();},0)"),"same-tick feedback batching missing");
 assert(pwaSource.includes("function feedbackSound(level)"),"tiered feedback sound missing");
 assert(pwaSource.includes("function feedbackHero(item)"),"hero feedback presentation missing");
 assert(pwaSource.includes('window.addEventListener("ci:motivational-feedback"'),"motivational feedback listener missing");
