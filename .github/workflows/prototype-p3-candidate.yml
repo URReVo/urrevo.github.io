@@ -1,0 +1,22 @@
+name: Prototype P3 candidate
+on:
+  push:
+    branches: ["prototype/party-makeover-p3-shell"]
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+      - name: Full project audit
+        run: node scripts/audit-full.mjs
+      - name: Validate release
+        run: node scripts/validate-release.mjs
+      - name: Test local progress integrity
+        run: node scripts/test-progress-integrity.mjs
+      - name: Validate iOS readiness
+        run: node scripts/validate-ios-readiness.mjs
