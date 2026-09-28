@@ -2041,70 +2041,7 @@ function setActiveSessionGame(game,activity,resetClock){
   save();return true;
 }
 function sanitizeLegacyCircaSource(){
-  var legacyStats={},legacyDevice={},legacyCompleted=[];
-  try{legacyStats=JSON.parse(localStorage.getItem("circaImpostor.playerStats.v1")||"{}")||{};}catch(e){}
-  try{legacyDevice=JSON.parse(localStorage.getItem("circaImpostor.deviceStats.v1")||"{}")||{};}catch(e){}
-  try{legacyCompleted=JSON.parse(localStorage.getItem("circaImpostor.completedQuestions.v1")||"[]")||[];}catch(e){}
-
-  var players=[];
-  if(legacyStats&&typeof legacyStats==="object"&&!Array.isArray(legacyStats)){
-    Object.keys(legacyStats).sort().forEach(function(key){
-      var item=legacyStats[key];if(!item||typeof item!=="object")return;
-      var name=cleanName(item.name);if(!name)return;
-      players.push({
-        name:name,
-        avatar:String(item.avatar||"😎").slice(0,8),
-        rounds:Math.max(0,Number(item.rounds)||0),
-        impostor:Math.max(0,Number(item.impostor)||0),
-        impostorWins:Math.max(0,Number(item.impostorWins)||0),
-        closest:Math.max(0,Number(item.closest)||0),
-        farthest:Math.max(0,Number(item.farthest)||0),
-        errorSum:Math.max(0,Number(item.errorSum)||0),
-        errorSamples:Math.max(0,Number(item.errorSamples)||0)
-      });
-    });
-  }
-  var qids=[];
-  if(Array.isArray(legacyCompleted))legacyCompleted.forEach(function(qid){addUnique(qids,qid);});
-  var rounds=Math.max(0,Number(legacyDevice&&legacyDevice.roundsPlayed)||0);
-  var fingerprint=JSON.stringify({players:players,rounds:rounds,qids:qids});
-  return {players:players,rounds:rounds,qids:qids,fingerprint:fingerprint,hasData:players.length>0||rounds>0||qids.length>0};
-}
-function applyLegacyCircaBaseline(source){
-  if(!source||!source.hasData)return;
-  source.players.forEach(function(item){
-    var pid=ensureProfileForPlayer({name:item.name,avatar:item.avatar});
-    var st=ensureStat(pid);
-    st.rounds+=item.rounds;
-    st.circaRounds+=item.rounds;
-    st.impostor+=item.impostor;
-    st.impostorEscapes+=item.impostorWins;
-    st.closest+=item.closest;
-    st.farthest+=item.farthest;
-    st.errorSum+=item.errorSum;
-    st.errorSamples+=item.errorSamples;
-  });
-  data.stats.rounds+=source.rounds;
-  data.stats.circaRounds+=source.rounds;
-  source.qids.forEach(function(qid){addUnique(data.stats.circaQids,qid);});
-}
-function rebuildAggregates(){
-  data.profileStats={};
-  data.stats=baseStats();
-  data.sessions.forEach(function(session){
-    (session.rounds||[]).forEach(function(round){contribution(round,1);});
-    session.awards=session.endedAt&&(session.rounds||[]).length?computeAwards(session):[];
-  });
-  var imported=data.imports&&data.imports.legacyCircaData;
-  if(imported){
-    applyLegacyCircaBaseline({
-      players:Array.isArray(imported.players)?imported.players:[],
-      rounds:Math.max(0,Number(imported.rounds)||0),
-      qids:Array.isArray(imported.qids)?imported.qids:[],
-      hasData:true
-    });
-  }
-  evaluateAchievements();
+  return {players:[],rounds:0,qids:[],hasData:false,fingerprint:"prototype-isolated"};
 }
 function getLegacyImportStatus(){
   var imported=data.imports&&data.imports.legacyCircaData;
