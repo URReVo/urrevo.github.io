@@ -1,0 +1,24 @@
+:root{--ci-motion-fast:120ms;--ci-motion:190ms;--ci-motion-slow:260ms;--ci-ease:cubic-bezier(.2,.75,.25,1)}
+html{background:#292929}
+body{transition:opacity var(--ci-motion) var(--ci-ease),transform var(--ci-motion) var(--ci-ease);transform-origin:50% 50%}
+body.ciPageLeaving{opacity:.02;transform:scale(.992)}
+.ciPressable{transition:transform var(--ci-motion-fast) ease,filter var(--ci-motion-fast) ease,opacity var(--ci-motion-fast) ease}
+.ciPressable.ciPressed{transform:scale(.972);filter:brightness(1.08)}
+.ciToastHost{position:fixed;z-index:10000;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));width:min(calc(100% - 28px),560px);transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.ciToast{pointer-events:auto;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;min-height:56px;padding:10px 11px;border-radius:17px;background:rgba(35,36,40,.96);border:1px solid rgba(255,255,255,.09);box-shadow:0 18px 50px rgba(0,0,0,.36);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);animation:ciToastIn var(--ci-motion) var(--ci-ease) both}
+.ciToast.ciToastLeaving{animation:ciToastOut 150ms ease both}
+.ciToastIcon{width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.055);display:grid;place-items:center;font-size:21px}
+.ciToastText{min-width:0;display:flex;flex-direction:column}.ciToastText strong{font-size:11px;line-height:1.25}.ciToastText span{margin-top:3px;color:#92949a;font-size:9px;line-height:1.35}
+.ciToastAction{min-height:34px;padding:0 10px;border-radius:10px;border:1px solid rgba(243,154,50,.28);background:rgba(243,154,50,.1);color:#efb574;font-size:8px;font-weight:950}
+.ciToastAchievement{background:linear-gradient(145deg,rgba(56,53,43,.98),rgba(34,35,39,.98));border-color:rgba(243,154,50,.22)}
+.ciToastUpdate{background:linear-gradient(145deg,rgba(43,50,57,.98),rgba(34,35,39,.98));border-color:rgba(111,163,214,.22)}
+.ciToastOffline .ciToastIcon{opacity:.8}
+@keyframes ciToastIn{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes ciToastOut{to{opacity:0;transform:translateY(8px) scale(.985)}}
+@keyframes ciViewInForward{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
+@keyframes ciViewInBack{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:none}}
+@keyframes ciSheetIn{from{opacity:0;transform:translate(-50%,18px) scale(.985)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
+@keyframes ciBackdropIn{from{opacity:0}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){body,.ciPressable{transition:none!important}.ciToast{animation:none!important}}
+.reduceExperimentMotion body,.reduceExperimentMotion .ciPressable,.experimentReduceMotion body,.experimentReduceMotion .ciPressable{transition:none!important}
+.reduceExperimentMotion .ciToast,.experimentReduceMotion .ciToast{animation:none!important}
