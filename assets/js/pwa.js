@@ -422,6 +422,13 @@ function emitTestAchievements(items){
     return true;
   }catch(e){return false;}
 }
+function emitTestFeedback(items){
+  if(typeof CustomEvent==="undefined")return false;
+  try{
+    window.dispatchEvent(new CustomEvent("ci:motivational-feedback",{detail:{items:Array.isArray(items)?items:[items]}}));
+    return true;
+  }catch(e){return false;}
+}
 function previewMiniSession(){
   var bar=document.getElementById("sessionMiniBar");
   if(!bar){toast({icon:"ℹ️",title:"Nur im Launcher",message:"Die Mini-Session-Leiste existiert nur im Launcher.",duration:2800});return;}
@@ -462,13 +469,13 @@ function runDevUiTest(action){
     }else if(action==="mini-session"){
       previewMiniSession();
     }else if(action==="feedback-1"){
-      queueFeedback({id:"dev-feedback-1-"+Date.now(),icon:"🎯",title:"Starke Schätzung",message:"Nur 8,4 % daneben.",intensity:1,type:"performance"});
+      emitTestFeedback({id:"dev-feedback-1-"+Date.now(),icon:"🎯",title:"Starke Schätzung",message:"Nur 8,4 % daneben.",intensity:1,type:"performance"});
     }else if(action==="feedback-2"){
-      queueFeedback({id:"dev-feedback-2-"+Date.now(),icon:"🔥",title:"Persönlicher Rekord",message:"Neue Bestleistung in dieser Kategorie.",intensity:2,type:"record"});
+      emitTestFeedback({id:"dev-feedback-2-"+Date.now(),icon:"🔥",title:"Persönlicher Rekord",message:"Neue Bestleistung in dieser Kategorie.",intensity:2,type:"record"});
     }else if(action==="feedback-3"){
-      queueFeedback({id:"dev-feedback-3-"+Date.now(),icon:"🎯",title:"Punktlandung!",message:"Exakt richtig geschätzt.",label:"AUSSERGEWÖHNLICH",intensity:3,type:"performance"});
+      emitTestFeedback({id:"dev-feedback-3-"+Date.now(),icon:"🎯",title:"Punktlandung!",message:"Exakt richtig geschätzt.",label:"AUSSERGEWÖHNLICH",intensity:3,type:"performance"});
     }else if(action==="feedback-session"){
-      queueFeedback({id:"dev-feedback-session-"+Date.now(),icon:"🏁",title:"Starker Spieleabend",message:"20 Runden · 4 Awards",label:"SESSION ABGESCHLOSSEN",intensity:3,type:"session-end"});
+      emitTestFeedback({id:"dev-feedback-session-"+Date.now(),icon:"🏁",title:"Starker Spieleabend",message:"20 Runden · 4 Awards",label:"SESSION ABGESCHLOSSEN",intensity:3,type:"session-end"});
     }else if(action==="haptic"){
       var ok=haptic("success");
       toast({
@@ -491,7 +498,7 @@ function devSessionUnlocked(){
 }
 function buildGameDevTestCard(){
   var card=document.createElement("div");card.id="ciDevUiTests";card.className="devCard devWide";
-  var title=document.createElement("div");title.className="devCardTitle";title.textContent="APP-FEEL TESTS";
+  var title=document.createElement("div");title.className="devCardTitle";title.textContent="FEEDBACK / APP-FEEL";
   var buttons=document.createElement("div");buttons.className="devButtonGrid";
   [
     ["Achievement anzeigen","achievement"],
@@ -545,7 +552,7 @@ function installDevUiTests(){
     var section=document.createElement("section");section.id="ciLauncherDevUiTests";section.className="launcherDevSection";
     var head=document.createElement("div");head.className="launcherDevSectionHead";
     var headInner=document.createElement("div"),eyebrow=document.createElement("span"),strong=document.createElement("strong");
-    eyebrow.textContent="APP-FEEL";strong.textContent="Neue UI-Funktionen testen";
+    eyebrow.textContent="FEEDBACK";strong.textContent="Motivierende UI testen";
     headInner.append(eyebrow,strong);head.appendChild(headInner);
     var actions=document.createElement("div");actions.className="launcherDevActions three";
     [
