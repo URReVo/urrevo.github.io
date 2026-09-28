@@ -18,6 +18,7 @@ var PRESET_CATEGORIES={
 };
 var selectedSession=null;
 var statsScope="profile";
+var currentView="home";
 var launcherAudioCtx=null;
 var circaMetadataItems=null;
 var circaMetadataPromise=null;
@@ -48,6 +49,9 @@ function renderUsageStats(){
 }
 
 function byId(id){return document.getElementById(id);}
+function appToast(title,message,icon){
+  if(window.CIAppUI&&window.CIAppUI.toast)window.CIAppUI.toast({title:title,message:message||"",icon:icon||"✓"});
+}
 function launcherSoundEnabled(){
   return !store.getPreferences||store.getPreferences().sound!==false;
 }
@@ -96,7 +100,10 @@ function uiSound(kind){
 }
 function navigateWithSound(href){
   uiSound("start");
-  setTimeout(function(){window.location.href=href;},55);
+  setTimeout(function(){
+    if(window.CIAppUI&&window.CIAppUI.navigate)window.CIAppUI.navigate(href);
+    else window.location.href=href;
+  },35);
 }
 function fmtDate(iso){
   try{return new Date(iso).toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit",year:"2-digit"});}catch(e){return "–";}
@@ -164,20 +171,33 @@ function updateGreeting(){
   byId("greeting").textContent=hour<11?"Guten Morgen":hour<18?"Hallo":"Guten Abend";
 }
 function setView(name){
-  document.querySelectorAll(".view").forEach(function(view){view.classList.toggle("active",view.id==="view-"+name);});
+  var order=["home","profile","stats","settings"],from=order.indexOf(currentView),to=order.indexOf(name);
+  var motion=to<from?"ciViewBack":"ciViewForward";
+  document.querySelectorAll(".view").forEach(function(view){
+    var active=view.id==="view-"+name;
+    view.classList.toggle("active",active);
+    view.classList.remove("ciViewForward","ciViewBack");
+    if(active&&name!==currentView&&store.getPreferences().animations!==false){
+      void view.offsetWidth;
+      view.classList.add(motion);
+    }
+  });
   document.querySelectorAll(".tab").forEach(function(tab){tab.classList.toggle("active",tab.getAttribute("data-view")===name);});
+  currentView=name;
   renderAll();
   window.scrollTo({top:0,behavior:store.getPreferences().animations===false?"auto":"smooth"});
 }
 function openSheet(id){
   byId("sheetBackdrop").classList.remove("hidden");
   byId("sheetBackdrop").setAttribute("aria-hidden","false");
-  byId(id).classList.remove("hidden");
+  var sheet=byId(id);sheet.style.removeProperty("--sheet-drag");sheet.classList.remove("hidden");
+  document.body.classList.add("sheetOpen");
 }
 function closeSheets(){
   byId("sheetBackdrop").classList.add("hidden");
   byId("sheetBackdrop").setAttribute("aria-hidden","true");
-  document.querySelectorAll(".bottomSheet").forEach(function(sheet){sheet.classList.add("hidden");});
+  document.querySelectorAll(".bottomSheet").forEach(function(sheet){sheet.classList.add("hidden");sheet.style.removeProperty("--sheet-drag");});
+  document.body.classList.remove("sheetOpen");
 }
 function profileName(id){
   var p=store.getProfileById?store.getProfileById(id):store.getProfiles().find(function(x){return x.id===id;});
@@ -438,6 +458,8 @@ function renderSessionHistory(sessions){
 function renderSessions(){
   var active=store.getActiveSession();
   byId("activeSessionBlock").classList.toggle("hidden",!active);
+  byId("sessionMiniBar").classList.toggle("hidden",!active);
+  document.body.classList.toggle("hasMiniSession",!!active);
   byId("sessionStatusPill").textContent=active?"Session läuft · "+fmtDuration(active.startedAt,null):"Keine Session aktiv";
   if(active){
     var currentGame=sessionGame(active),currentMeta=gameMeta(currentGame);
@@ -447,9 +469,13 @@ function renderSessions(){
     var roundAge=active.gameStartedAt?fmtDuration(active.gameStartedAt,null):"–";
     var activity=active.activity?active.activity+" · ":"";
     byId("activeSessionSub").textContent=activity+"aktuell seit "+roundAge;
-    var cont=byId("continueSession");
+    var cont=byId("continueSession"),playable=activeProfilesForLaunch(active).length>=currentMeta.min;
     cont.textContent="Session fortsetzen · "+currentMeta.title;
-    cont.disabled=activeProfilesForLaunch(active).length<currentMeta.min;
+    cont.disabled=!playable;
+    byId("sessionMiniIcon").textContent=currentMeta.icon;
+    byId("sessionMiniTitle").textContent=currentMeta.full+" · "+active.rounds.length+" "+(active.rounds.length===1?"Runde":"Runden");
+    byId("sessionMiniSub").textContent=playable?(activity||"")+"Tippen zum Fortsetzen":"Zu wenige vorhandene Profile";
+    byId("sessionMiniBar").disabled=!playable;
   }
   var sessions=store.getSessions().filter(function(s){return !!s.endedAt;});
   var last=sessions[0]||null;
@@ -711,7 +737,7 @@ byId("saveProfile").addEventListener("click",function(){
       if(presetSelectedProfileIds.indexOf(id)===-1&&presetSelectedProfileIds.length<12)presetSelectedProfileIds.push(id);
     }else if(store.setSelectedProfile)store.setSelectedProfile(id);else store.setPrimaryProfile(id);
   }
-  uiSound("confirm");
+  uiSound("confirm");appToast(id?"Profil gespeichert":"Profil angelegt",name+" ist bereit.","👤");
   if(returnToPreset){returnToPresetPlayers();renderAll();}
   else{profileEditorReturnTarget=null;closeSheets();renderAll();}
 });
@@ -739,7 +765,7 @@ byId("savePreset").addEventListener("click",function(){
     hint:byId("presetHintInput").checked,
     timer:game==="charades"?Number(byId("presetCharadesTimerInput").value):Number(byId("presetTimerInput").value)
   });
-  uiSound("confirm");closeSheets();renderAll();
+  uiSound("confirm");closeSheets();renderAll();appToast("Preset gespeichert","Der Schnellstart ist jetzt verfügbar.","⚡️");
 });
 byId("presetOpenGame").addEventListener("click",function(){
   if(!selectedPreset||this.disabled)return;
@@ -753,13 +779,14 @@ byId("deletePreset").addEventListener("click",function(){
 
 byId("activeSessionCard").addEventListener("click",function(){var s=store.getActiveSession();if(s){uiSound("tap");renderSessionSheet(s);}});
 byId("continueSession").addEventListener("click",function(){var s=store.getActiveSession();if(s)launchSessionGroup(s);});
+byId("sessionMiniBar").addEventListener("click",function(){var s=store.getActiveSession();if(s&&!this.disabled)launchSessionGroup(s);});
 document.querySelectorAll("[data-stats-scope]").forEach(function(button){
   button.addEventListener("click",function(){var next=this.getAttribute("data-stats-scope")==="global"?"global":"profile";if(next!==statsScope)uiSound("tap");statsScope=next;renderStats();});
 });
 byId("endSession").addEventListener("click",function(){
   var s=store.getActiveSession();if(!s)return;
   if(!s.rounds.length&&!window.confirm("Die Session enthält noch keine abgeschlossene Runde. Trotzdem beenden?"))return;
-  var ended=store.endSession();if(ended)uiSound("end");renderAll();if(ended)renderSessionSheet(ended);
+  var ended=store.endSession();if(ended){uiSound("end");appToast("Session beendet",ended.rounds.length+" "+(ended.rounds.length===1?"Runde":"Runden")+" gespeichert.","🏆");}renderAll();if(ended)renderSessionSheet(ended);
 });
 
 ["Sound","Haptics","Animations"].forEach(function(name){
@@ -777,7 +804,7 @@ byId("exportData").addEventListener("click",async function(){
     var url=URL.createObjectURL(blob);
     var a=document.createElement("a");a.href=url;a.download="imposter-games-v74-backup.json";document.body.appendChild(a);a.click();a.remove();
     setTimeout(function(){URL.revokeObjectURL(url);},1000);
-    uiSound("success");byId("dataStatus").textContent="Backup wurde vorbereitet.";
+    uiSound("success");byId("dataStatus").textContent="Backup wurde vorbereitet.";appToast("Backup erstellt","Deine lokalen Daten wurden exportiert.","✓");
   }catch(e){byId("dataStatus").textContent="Export ist auf diesem Gerät gerade nicht verfügbar.";}
 });
 byId("importData").addEventListener("click",function(){
@@ -807,6 +834,7 @@ byId("importDataFile").addEventListener("change",function(){
     }
     uiSound("success");closeSheets();renderAll();hydrateCircaMetadata();
     byId("dataStatus").textContent="Backup importiert: "+result.profiles+" Profile · "+result.sessions+" Sessions · "+result.rounds+" Runden.";
+    appToast("Backup importiert",result.profiles+" Profile · "+result.rounds+" Runden","✓");
     input.value="";
   };
   reader.readAsText(file);
@@ -851,6 +879,31 @@ document.addEventListener("visibilitychange",function(){
   else{if(store.trackUsage)store.trackUsage(null);renderAll();renderMigrationChoice();}
 });
 
+function installSheetSwipe(){
+  document.querySelectorAll(".bottomSheet .sheetHandle").forEach(function(handle){
+    var sheet=handle.closest(".bottomSheet"),startY=0,dragging=false;
+    handle.addEventListener("pointerdown",function(event){
+      if(sheet.classList.contains("hidden"))return;
+      startY=event.clientY;dragging=true;
+      try{handle.setPointerCapture(event.pointerId);}catch(e){}
+    });
+    handle.addEventListener("pointermove",function(event){
+      if(!dragging)return;
+      var delta=Math.max(0,event.clientY-startY);
+      sheet.style.setProperty("--sheet-drag",Math.min(140,delta)+"px");
+    });
+    function finish(event){
+      if(!dragging)return;
+      dragging=false;
+      var delta=Math.max(0,event.clientY-startY);
+      if(delta>72){uiSound("tap");closeSheets();}
+      else sheet.style.setProperty("--sheet-drag","0px");
+    }
+    handle.addEventListener("pointerup",finish);
+    handle.addEventListener("pointercancel",function(){dragging=false;sheet.style.setProperty("--sheet-drag","0px");});
+  });
+}
+installSheetSwipe();
 renderAll();
 setInterval(function(){if(store.getActiveSession&&store.getActiveSession())renderSessions();},30000);
 hydrateCircaMetadata();
