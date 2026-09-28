@@ -214,7 +214,7 @@ const readme=read("README.md");
 assert(!readme.includes("\\n"),"README contains literal \\n text");
 assert(["Circa Imposter","Klassisches Imposter","Wer bin ich?","Scharade","Persönlicher Impostor"].every(name=>readme.includes(name)),"README must describe the five-game app");
 const changelog=read("CHANGELOG.md");
-assert(changelog.includes("V74R22")&&changelog.includes("Offline-Cache **r22**"),"V74R22 changelog entry missing");
+assert(changelog.includes("V74R23")&&changelog.includes("Offline-Cache **r23**"),"V74R23 changelog entry missing");
 
 const appStateSource=read("assets/js/app-state.js");
 const launcherSource=read("assets/js/launcher.js");
@@ -248,6 +248,12 @@ assert(appStateSource.includes('"charades.players.v1","charades.categories.v1","
 assert(personalSource.includes('PREFIX="imposterGames.v74.game.personal."'),"Personal production storage namespace missing");
 assert(!personalSource.includes("imposterGames.prototype."),"production Personal must not reference prototype storage");
 assert(appStateSource.includes('"personal.players.v1","personal.deck.v1"'),"Personal backup allowlist missing");
+assert(personalSource.includes("window.visualViewport"),"R23 Personal visualViewport recovery missing");
+assert(personalSource.includes('window.visualViewport.addEventListener("resize",syncPersonalViewportHeight'),"R23 Personal visualViewport resize hook missing");
+assert(personalSource.includes('document.addEventListener("focusout"'),"R23 Personal keyboard focusout recovery missing");
+assert(personalSource.includes("[80,180,320,520,760]"),"R23 Personal staged viewport settle timings missing");
+assert(personalSource.includes('document.documentElement.style.setProperty("--personal-viewport-height"'),"R23 Personal viewport CSS variable sync missing");
+assert(personalCss.includes('body[data-game="personal-impostor"].game-active .app')&&personalCss.includes('height:var(--personal-viewport-height,100dvh)!important'),"R23 Personal viewport-height CSS binding missing");
 assert(appStateSource.includes('PREVIOUS_GAME_STORAGE_PREFIX="imposterGames.v73.game."'),"V73 to V74 game-storage migration missing");
 assert(charadesSource.includes('window.addEventListener("devicemotion",onDeviceMotion,true)'),"Scharade DeviceMotion listener missing");
 assert(charadesSource.includes("latestGravityZ-baseGravityZ"),"Scharade signed gravity direction missing");
@@ -317,7 +323,7 @@ for(const obsoletePrototypeFile of [
 ]){
   assert(!fs.existsSync(path.join(root,obsoletePrototypeFile)),"obsolete prototype makeover asset still present: "+obsoletePrototypeFile);
 }
-assert(prototypeSwSource.includes('CACHE_REVISION="r22-baseline"'),"prototype baseline cache revision missing");
+assert(prototypeSwSource.includes('CACHE_REVISION="r23-baseline"'),"prototype baseline cache revision missing");
 assert(!prototypeSwSource.includes("party-makeover")&&!prototypeSwSource.includes("party-launcher-p3"),"prototype service worker still caches discarded makeover assets");
 const prototypeManifest=JSON.parse(read("experiments/prototype/manifest.webmanifest"));
 assert(prototypeManifest.start_url==="/experiments/prototype/"&&prototypeManifest.scope==="/experiments/prototype/","prototype manifest lost isolated scope");
