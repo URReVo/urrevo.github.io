@@ -882,6 +882,13 @@ document.addEventListener("visibilitychange",function(){
 function installSheetSwipe(){
   document.querySelectorAll(".bottomSheet .sheetHandle").forEach(function(handle){
     var sheet=handle.closest(".bottomSheet"),startY=0,dragging=false;
+    if(!sheet||sheet.id==="migrationSheet")return;
+    function dismiss(){
+      uiSound("tap");
+      if(sheet.id==="presetPlayersSheet"){backToPresetEditor();return;}
+      if(sheet.id==="profileSheet"&&profileEditorReturnTarget==="preset"){returnToPresetPlayers();return;}
+      closeSheets();
+    }
     handle.addEventListener("pointerdown",function(event){
       if(sheet.classList.contains("hidden"))return;
       startY=event.clientY;dragging=true;
@@ -896,7 +903,7 @@ function installSheetSwipe(){
       if(!dragging)return;
       dragging=false;
       var delta=Math.max(0,event.clientY-startY);
-      if(delta>72){uiSound("tap");closeSheets();}
+      if(delta>72)dismiss();
       else sheet.style.setProperty("--sheet-drag","0px");
     }
     handle.addEventListener("pointerup",finish);
