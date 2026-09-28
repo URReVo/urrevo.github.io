@@ -60,10 +60,11 @@ assert(html["index.html"].includes("app-state.js?v="+release),"launcher app-stat
 assert(html["index.html"].includes("launcher.js?v="+release),"launcher.js version mismatch");
 assert(html["index.html"].includes("launcher-dev.js?v="+release),"launcher DEV JS version mismatch");
 assert(html["index.html"].includes("pwa.js?v="+release),"launcher pwa version mismatch");
+assert(html["index.html"].indexOf("app-state.js?v="+release)<html["index.html"].indexOf("pwa.js?v="+release)&&html["index.html"].indexOf("pwa.js?v="+release)<html["index.html"].indexOf("launcher.js?v="+release),"launcher app UI load order mismatch");
 for(const file of htmlFiles)assert(html[file].includes("app-ui.css?v="+release),file+" shared app UI stylesheet missing");
 for(const file of ["games/circa-imposter/index.html","games/classic-imposter/index.html"]){
   assert(html[file].includes("app-state.js?v="+release),file+" app-state version mismatch");
-  assert(html[file].indexOf("app-state.js?v="+release)<html[file].indexOf("game-engine.js?v="+release),file+" must load app-state before engine");
+  assert(html[file].indexOf("app-state.js?v="+release)<html[file].indexOf("pwa.js?v="+release)&&html[file].indexOf("pwa.js?v="+release)<html[file].indexOf("game-engine.js?v="+release),file+" app UI load order mismatch");
 }
 assert(html["games/who-am-i/index.html"].includes("V"+release),"WhoAmI title/version mismatch");
 assert(html["games/who-am-i/index.html"].includes("game.css?v="+release),"WhoAmI game.css version mismatch");
@@ -71,21 +72,21 @@ assert(html["games/who-am-i/index.html"].includes("who-am-i.css?v="+release),"Wh
 assert(html["games/who-am-i/index.html"].includes("app-state.js?v="+release),"WhoAmI app-state version mismatch");
 assert(html["games/who-am-i/index.html"].includes("who-am-i.js?v="+release),"WhoAmI JS version mismatch");
 assert(html["games/who-am-i/index.html"].includes("pwa.js?v="+release),"WhoAmI pwa version mismatch");
-assert(html["games/who-am-i/index.html"].indexOf("app-state.js?v="+release)<html["games/who-am-i/index.html"].indexOf("who-am-i.js?v="+release),"WhoAmI app-state load order mismatch");
+assert(html["games/who-am-i/index.html"].indexOf("app-state.js?v="+release)<html["games/who-am-i/index.html"].indexOf("pwa.js?v="+release)&&html["games/who-am-i/index.html"].indexOf("pwa.js?v="+release)<html["games/who-am-i/index.html"].indexOf("who-am-i.js?v="+release),"WhoAmI app UI load order mismatch");
 assert(html["games/charades/index.html"].includes("V"+release),"Scharade title/version mismatch");
 assert(html["games/charades/index.html"].includes("game.css?v="+release),"Scharade game.css version mismatch");
 assert(html["games/charades/index.html"].includes("charades.css?v="+release),"Scharade CSS version mismatch");
 assert(html["games/charades/index.html"].includes("app-state.js?v="+release),"Scharade app-state version mismatch");
 assert(html["games/charades/index.html"].includes("charades.js?v="+release),"Scharade JS version mismatch");
 assert(html["games/charades/index.html"].includes("pwa.js?v="+release),"Scharade pwa version mismatch");
-assert(html["games/charades/index.html"].indexOf("app-state.js?v="+release)<html["games/charades/index.html"].indexOf("charades.js?v="+release),"Scharade app-state load order mismatch");
+assert(html["games/charades/index.html"].indexOf("app-state.js?v="+release)<html["games/charades/index.html"].indexOf("pwa.js?v="+release)&&html["games/charades/index.html"].indexOf("pwa.js?v="+release)<html["games/charades/index.html"].indexOf("charades.js?v="+release),"Scharade app UI load order mismatch");
 assert(html["games/personal-impostor/index.html"].includes("V"+release),"Personal title/version mismatch");
 assert(html["games/personal-impostor/index.html"].includes("game.css?v="+release),"Personal game.css version mismatch");
 assert(html["games/personal-impostor/index.html"].includes("personal-impostor.css?v="+release),"Personal CSS version mismatch");
 assert(html["games/personal-impostor/index.html"].includes("app-state.js?v="+release),"Personal app-state version mismatch");
 assert(html["games/personal-impostor/index.html"].includes("personal-impostor.js?v="+release),"Personal JS version mismatch");
 assert(html["games/personal-impostor/index.html"].includes("pwa.js?v="+release),"Personal pwa version mismatch");
-assert(html["games/personal-impostor/index.html"].indexOf("app-state.js?v="+release)<html["games/personal-impostor/index.html"].indexOf("personal-impostor.js?v="+release),"Personal app-state load order mismatch");
+assert(html["games/personal-impostor/index.html"].indexOf("app-state.js?v="+release)<html["games/personal-impostor/index.html"].indexOf("pwa.js?v="+release)&&html["games/personal-impostor/index.html"].indexOf("pwa.js?v="+release)<html["games/personal-impostor/index.html"].indexOf("personal-impostor.js?v="+release),"Personal app UI load order mismatch");
 
 const sw=read("service-worker.js");
 const swRelease=(sw.match(/const RELEASE="([^"]+)"/)||[])[1];
@@ -304,6 +305,8 @@ assert(launcherDevSource.includes("fillContentProgress"),"launcher DEV content p
 assert(launcherSource.includes("window.CILauncherRefresh"),"launcher DEV refresh bridge missing");
 assert(html["index.html"].includes('id="sessionMiniBar"'),"launcher persistent session mini bar missing");
 assert(launcherSource.includes("function installSheetSwipe()"),"launcher sheet swipe gesture missing");
+assert(launcherSource.includes('if(!sheet||sheet.id==="migrationSheet")return;'),"mandatory migration sheet must not be swipe-dismissable");
+assert(launcherSource.includes('sheet.id==="presetPlayersSheet"')&&launcherSource.includes('profileEditorReturnTarget==="preset"'),"nested sheet swipe navigation guards missing");
 assert(launcherSource.includes('view.classList.add(motion)'),"launcher directional view transition missing");
 assert(launcherSource.includes('byId("sessionMiniBar").addEventListener'),"launcher mini-session action missing");
 assert(launcherCss.includes(".sessionMiniBar")&&launcherCss.includes(".view.ciViewForward"),"launcher app-feel styles missing");
