@@ -517,6 +517,8 @@ function renderStats(){
 
   byId("achievementHeading").textContent=personal?"Persönliche Sammlung":"Gesamte Sammlung";
   var achievementData=personal&&store.getProfileAchievements?store.getProfileAchievements(selected.id):store.getAchievements();
+  var unlockedCount=achievementData.filter(function(a){return a.unlocked;}).length;
+  byId("achievementCount").textContent=unlockedCount+" / "+achievementData.length;
   var box=byId("achievementList");box.textContent="";
   achievementData.forEach(function(a){
     var card=document.createElement("article");card.className="achievement"+(a.unlocked?" unlocked":"");

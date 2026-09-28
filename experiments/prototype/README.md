@@ -89,3 +89,19 @@ Korrektur der Preset-Idee:
 - Das neu angelegte Preset-Profil ersetzt nicht ungefragt das aktuell ausgewählte Hauptprofil im Launcher.
 - Nach Speichern oder Abbrechen geht es direkt zurück zur Preset-Spielerauswahl.
 - Die geräteweite Spielzeitstatistik aus r26 bleibt erhalten.
+
+## Achievement-Ausbau
+
+Die Sammlung wurde erweitert. Bestehende Achievement-IDs bleiben erhalten.
+
+Neue Bereiche:
+- Gesamtmeilensteine bei 10 und 50 Runden
+- 20 Runden in einer Session
+- 3 bzw. alle 5 Spielmodi in einer Session
+- 25-Runden-Meilensteine für jeden Spielmodus
+- 25 Impostor-Einsätze und 10 erfolgreiche Fluchten
+- 100 richtige Scharade-Begriffe und 5 saubere Scharade-Runden
+- Circa-Präzision: 20 Schätzungen bei höchstens 10 % Durchschnittsfehler
+- 100 unterschiedliche Inhalte erlebt
+- globale Spielzeit-Meilensteine bei 1, 5 und 10 Stunden sichtbarer App-Zeit
+- Statistik zeigt jetzt freigeschaltete Achievements als X / Y

@@ -484,20 +484,70 @@ function contribution(round,dir){
 }
 function hourSessionDone(){return data.sessions.some(function(s){if(!s.endedAt||!(s.rounds||[]).length)return false;return new Date(s.endedAt).getTime()-new Date(s.startedAt).getTime()>=60*60*1000;});}
 function allGamesDone(st){return ["circaRounds","classicRounds","whoamiRounds","charadesRounds","personalRounds"].every(function(k){return Number(st[k])>0;});}
+function roundHasProfile(round,id){return !id||(round.players||[]).some(function(p){return p.profileId===id;});}
+function sessionRoundPeak(id){
+  var best=0;data.sessions.forEach(function(s){if(!s.endedAt)return;var count=id?(s.rounds||[]).filter(function(r){return roundHasProfile(r,id);}).length:(s.rounds||[]).length;best=Math.max(best,count);});return best;
+}
+function sessionGamePeak(id){
+  var best=0;data.sessions.forEach(function(s){if(!s.endedAt)return;var seen={};(s.rounds||[]).forEach(function(r){if(roundHasProfile(r,id))seen[normalizeGame(r.game)]=true;});best=Math.max(best,Object.keys(seen).length);});return best;
+}
+function uniqueContentCount(st){
+  return ["circaQids","classicWids","whoamiTermIds","charadesTermIds","personalQids"].reduce(function(total,key){return total+(Array.isArray(st[key])?st[key].length:0);},0);
+}
+function circaPrecision(st){
+  var samples=Math.max(0,Number(st.errorSamples)||0),sum=Math.max(0,Number(st.errorSum)||0);
+  return {samples:samples,average:samples?sum/samples:null};
+}
+function bestGlobalCircaPrecision(){
+  var best=null,maxSamples=0;
+  Object.values(data.profileStats).forEach(function(st){
+    var item=circaPrecision(st);maxSamples=Math.max(maxSamples,item.samples);
+    if(item.samples>=20&&item.average!==null&&(!best||item.average<best.average))best=item;
+  });
+  return {best:best,maxSamples:maxSamples};
+}
 function achievementDefs(){
+  function maxProfileValue(key){var m=0;Object.values(data.profileStats).forEach(function(s){m=Math.max(m,Number(s[key])||0);});return m;}
+  function globalPrecisionDone(){var p=bestGlobalCircaPrecision();return !!p.best&&p.best.average<=10;}
+  function globalPrecisionProgress(){var p=bestGlobalCircaPrecision();if(p.maxSamples<20)return Math.min(20,p.maxSamples)+"/20";if(!p.best)return "20/20";return "Ø "+p.best.average.toLocaleString("de-DE",{maximumFractionDigits:1})+" %";}
+  function usageHours(ms){return Math.floor(Math.max(0,Number(ms)||0)/360000)/10;}
   return [
     {id:"first-session",icon:"🎬",title:"Erster Abend",text:"Eine Session mit mindestens einer Runde abgeschlossen",done:function(){return data.sessions.some(function(s){return !!s.endedAt&&Array.isArray(s.rounds)&&s.rounds.length>0;});},progress:function(){return data.sessions.some(function(s){return !!s.endedAt&&Array.isArray(s.rounds)&&s.rounds.length>0;})?"1/1":"0/1";}},
+    {id:"warmup-10",icon:"🏁",title:"Warmgelaufen",text:"10 Runden insgesamt spielen",done:function(){return data.stats.rounds>=10;},progress:function(){return Math.min(10,data.stats.rounds)+"/10";}},
+    {id:"fifty-rounds",icon:"🎮",title:"Stammspieler",text:"50 Runden insgesamt spielen",done:function(){return data.stats.rounds>=50;},progress:function(){return Math.min(50,data.stats.rounds)+"/50";}},
+    {id:"hundred-rounds",icon:"💯",title:"Veteran",text:"100 Runden insgesamt spielen",done:function(){return data.stats.rounds>=100;},progress:function(){return Math.min(100,data.stats.rounds)+"/100";}},
     {id:"all-games",icon:"🎲",title:"Allrounder",text:"Alle fünf Spielmodi mindestens einmal spielen",done:function(){return allGamesDone(data.stats);},progress:function(){var n=["circaRounds","classicRounds","whoamiRounds","charadesRounds","personalRounds"].filter(function(k){return Number(data.stats[k])>0;}).length;return n+"/5";}},
+    {id:"session-20",icon:"🌙",title:"Langer Abend",text:"20 Runden in einer einzigen Session spielen",done:function(){return sessionRoundPeak(null)>=20;},progress:function(){return Math.min(20,sessionRoundPeak(null))+"/20";}},
+    {id:"session-games-3",icon:"🔀",title:"Spielwechsel",text:"3 verschiedene Modi in einer Session spielen",done:function(){return sessionGamePeak(null)>=3;},progress:function(){return Math.min(3,sessionGamePeak(null))+"/3";}},
+    {id:"session-games-5",icon:"🧩",title:"Volles Programm",text:"Alle 5 Modi in einer Session spielen",done:function(){return sessionGamePeak(null)>=5;},progress:function(){return Math.min(5,sessionGamePeak(null))+"/5";}},
+
+    {id:"circa-25",icon:"📏",title:"Schätzroutine",text:"25 Circa-Runden spielen",done:function(){return data.stats.circaRounds>=25;},progress:function(){return Math.min(25,data.stats.circaRounds)+"/25";}},
+    {id:"classic-25",icon:"😶",title:"Pokerface",text:"25 Classic-Runden spielen",done:function(){return data.stats.classicRounds>=25;},progress:function(){return Math.min(25,data.stats.classicRounds)+"/25";}},
+    {id:"whoami-10",icon:"❓",title:"Identitätskrise",text:"10 Runden Wer bin ich? spielen",done:function(){return data.stats.whoamiRounds>=10;},progress:function(){return Math.min(10,data.stats.whoamiRounds)+"/10";}},
+    {id:"whoami-25",icon:"🤔",title:"Wer war ich nochmal?",text:"25 Runden Wer bin ich? spielen",done:function(){return data.stats.whoamiRounds>=25;},progress:function(){return Math.min(25,data.stats.whoamiRounds)+"/25";}},
+    {id:"charades-25",icon:"🎭",title:"Bühnenreif",text:"25 Scharade-Partien spielen",done:function(){return data.stats.charadesRounds>=25;},progress:function(){return Math.min(25,data.stats.charadesRounds)+"/25";}},
+    {id:"personal-10",icon:"💬",title:"Persönlich geworden",text:"10 Runden Persönlicher Impostor spielen",done:function(){return data.stats.personalRounds>=10;},progress:function(){return Math.min(10,data.stats.personalRounds)+"/10";}},
+    {id:"personal-25",icon:"📖",title:"Offenes Buch",text:"25 Runden Persönlicher Impostor spielen",done:function(){return data.stats.personalRounds>=25;},progress:function(){return Math.min(25,data.stats.personalRounds)+"/25";}},
+
     {id:"perfect",icon:"🎯",title:"Punktlandung",text:"Eine Circa-Schätzung exakt treffen",done:function(){return data.stats.perfectEstimates>=1;},progress:function(){return data.stats.perfectEstimates>=1?"1/1":"0/1";}},
-    {id:"escape-3",icon:"🕵️",title:"Unentdeckt",text:"3× als Imposter davonkommen",done:function(){return Object.values(data.profileStats).some(function(s){return s.impostorEscapes>=3;});},progress:function(){var m=0;Object.values(data.profileStats).forEach(function(s){m=Math.max(m,s.impostorEscapes||0);});return Math.min(3,m)+"/3";}},
+    {id:"circa-precision-20",icon:"📐",title:"Präzisionsarbeit",text:"20 Circa-Schätzungen mit höchstens 10 % Durchschnittsfehler",done:globalPrecisionDone,progress:globalPrecisionProgress},
+    {id:"escape-3",icon:"🕵️",title:"Unentdeckt",text:"3× als Impostor davonkommen",done:function(){return maxProfileValue("impostorEscapes")>=3;},progress:function(){return Math.min(3,maxProfileValue("impostorEscapes"))+"/3";}},
+    {id:"escape-10",icon:"👻",title:"Phantom",text:"10× als Impostor davonkommen",done:function(){return maxProfileValue("impostorEscapes")>=10;},progress:function(){return Math.min(10,maxProfileValue("impostorEscapes"))+"/10";}},
     {id:"impostor-10",icon:"🥷",title:"Stammverdächtig",text:"10× die Impostor-Rolle bekommen",done:function(){return data.stats.impostor>=10;},progress:function(){return Math.min(10,data.stats.impostor)+"/10";}},
+    {id:"impostor-25",icon:"🕶️",title:"Berufsverdächtig",text:"25× die Impostor-Rolle bekommen",done:function(){return data.stats.impostor>=25;},progress:function(){return Math.min(25,data.stats.impostor)+"/25";}},
+
     {id:"charades-50",icon:"🎬",title:"Begriffjäger",text:"50 Begriffe bei Scharade richtig erraten",done:function(){return data.stats.charadesCorrect>=50;},progress:function(){return Math.min(50,data.stats.charadesCorrect)+"/50";}},
+    {id:"charades-100",icon:"🗣️",title:"100 Begriffe später",text:"100 Scharade-Begriffe richtig erraten",done:function(){return data.stats.charadesCorrect>=100;},progress:function(){return Math.min(100,data.stats.charadesCorrect)+"/100";}},
     {id:"charades-10",icon:"⚡️",title:"Zehnerlauf",text:"10 richtige Begriffe in einer Scharade-Runde",done:function(){return data.stats.charadesBestTurn>=10;},progress:function(){return Math.min(10,data.stats.charadesBestTurn)+"/10";}},
     {id:"charades-clean",icon:"✨",title:"Saubere Runde",text:"Mindestens 5 richtige Begriffe ohne Überspringen",done:function(){return data.stats.charadesCleanTurns>=1;},progress:function(){return data.stats.charadesCleanTurns>=1?"1/1":"0/1";}},
-    {id:"personal-10",icon:"💬",title:"Persönlich geworden",text:"10 Runden Persönlicher Impostor spielen",done:function(){return data.stats.personalRounds>=10;},progress:function(){return Math.min(10,data.stats.personalRounds)+"/10";}},
-    {id:"whoami-10",icon:"❓",title:"Identitätskrise",text:"10 Runden Wer bin ich? spielen",done:function(){return data.stats.whoamiRounds>=10;},progress:function(){return Math.min(10,data.stats.whoamiRounds)+"/10";}},
+    {id:"charades-clean-5",icon:"💎",title:"Makellos",text:"5 Scharade-Runden mit mindestens 5 richtigen und keinem Skip",done:function(){return data.stats.charadesCleanTurns>=5;},progress:function(){return Math.min(5,data.stats.charadesCleanTurns)+"/5";}},
+
+    {id:"collector-100",icon:"🗃️",title:"Sammler",text:"100 unterschiedliche Fragen, Wörter oder Begriffe erleben",done:function(){return uniqueContentCount(data.stats)>=100;},progress:function(){return Math.min(100,uniqueContentCount(data.stats))+"/100";}},
     {id:"marathon",icon:"🕐",title:"Marathon",text:"Eine Session mindestens 60 Minuten spielen",done:hourSessionDone,progress:function(){return hourSessionDone()?"1/1":"0/1";}},
-    {id:"hundred-rounds",icon:"💯",title:"Veteran",text:"100 Runden insgesamt spielen",done:function(){return data.stats.rounds>=100;},progress:function(){return Math.min(100,data.stats.rounds)+"/100";}}
+
+    {id:"app-hour-1",icon:"⏱️",title:"Eingespielt",text:"1 Stunde sichtbare Zeit in der App verbringen",done:function(){return getUsageStats().appMs>=3600000;},progress:function(){var u=getUsageStats().appMs;return Math.min(60,Math.floor(u/60000))+"/60 Min.";}},
+    {id:"app-hours-5",icon:"🕔",title:"Stammgast",text:"5 Stunden sichtbare Zeit in der App verbringen",done:function(){return getUsageStats().appMs>=18000000;},progress:function(){var u=getUsageStats().appMs;return Math.min(5,usageHours(u)).toLocaleString("de-DE",{maximumFractionDigits:1})+"/5 h";}},
+    {id:"app-hours-10",icon:"🕙",title:"Dauergast",text:"10 Stunden sichtbare Zeit in der App verbringen",done:function(){return getUsageStats().appMs>=36000000;},progress:function(){var u=getUsageStats().appMs;return Math.min(10,usageHours(u)).toLocaleString("de-DE",{maximumFractionDigits:1})+"/10 h";}}
   ];
 }
 function evaluateAchievements(){
@@ -508,20 +558,42 @@ function evaluateAchievements(){
 function profileAchievementDefs(id){
   var st=ensureStat(id);
   function endedSession(){return data.sessions.some(function(s){return !!s.endedAt&&Array.isArray(s.rounds)&&s.rounds.length>0&&Array.isArray(s.profileIds)&&s.profileIds.indexOf(id)!==-1;});}
-  function marathon(){return data.sessions.some(function(s){return !!s.endedAt&&(s.profileIds||[]).indexOf(id)!==-1&&(new Date(s.endedAt).getTime()-new Date(s.startedAt).getTime()>=60*60*1000);});}
+  function marathon(){return data.sessions.some(function(s){if(!s.endedAt)return false;var rounds=(s.rounds||[]).filter(function(r){return roundHasProfile(r,id);});if(!rounds.length)return false;return new Date(s.endedAt).getTime()-new Date(s.startedAt).getTime()>=60*60*1000;});}
+  function precisionDone(){var p=circaPrecision(st);return p.samples>=20&&p.average!==null&&p.average<=10;}
+  function precisionProgress(){var p=circaPrecision(st);if(p.samples<20)return Math.min(20,p.samples)+"/20";return "Ø "+p.average.toLocaleString("de-DE",{maximumFractionDigits:1})+" %";}
   return [
     {id:"first-session",icon:"🎬",title:"Erster Abend",text:"Eine Session abgeschlossen",done:endedSession,progress:function(){return endedSession()?"1/1":"0/1";}},
+    {id:"warmup-10",icon:"🏁",title:"Warmgelaufen",text:"10 Runden insgesamt spielen",done:function(){return st.rounds>=10;},progress:function(){return Math.min(10,st.rounds)+"/10";}},
+    {id:"fifty-rounds",icon:"🎮",title:"Stammspieler",text:"50 Runden insgesamt spielen",done:function(){return st.rounds>=50;},progress:function(){return Math.min(50,st.rounds)+"/50";}},
+    {id:"hundred-rounds",icon:"💯",title:"Veteran",text:"100 Runden insgesamt spielen",done:function(){return st.rounds>=100;},progress:function(){return Math.min(100,st.rounds)+"/100";}},
     {id:"all-games",icon:"🎲",title:"Allrounder",text:"Alle fünf Spielmodi mindestens einmal spielen",done:function(){return allGamesDone(st);},progress:function(){var n=["circaRounds","classicRounds","whoamiRounds","charadesRounds","personalRounds"].filter(function(k){return Number(st[k])>0;}).length;return n+"/5";}},
+    {id:"session-20",icon:"🌙",title:"Langer Abend",text:"20 Runden in einer Session mitspielen",done:function(){return sessionRoundPeak(id)>=20;},progress:function(){return Math.min(20,sessionRoundPeak(id))+"/20";}},
+    {id:"session-games-3",icon:"🔀",title:"Spielwechsel",text:"3 verschiedene Modi in einer Session mitspielen",done:function(){return sessionGamePeak(id)>=3;},progress:function(){return Math.min(3,sessionGamePeak(id))+"/3";}},
+    {id:"session-games-5",icon:"🧩",title:"Volles Programm",text:"Alle 5 Modi in einer Session mitspielen",done:function(){return sessionGamePeak(id)>=5;},progress:function(){return Math.min(5,sessionGamePeak(id))+"/5";}},
+
+    {id:"circa-25",icon:"📏",title:"Schätzroutine",text:"25 Circa-Runden spielen",done:function(){return st.circaRounds>=25;},progress:function(){return Math.min(25,st.circaRounds)+"/25";}},
+    {id:"classic-25",icon:"😶",title:"Pokerface",text:"25 Classic-Runden spielen",done:function(){return st.classicRounds>=25;},progress:function(){return Math.min(25,st.classicRounds)+"/25";}},
+    {id:"whoami-10",icon:"❓",title:"Identitätskrise",text:"10 Runden Wer bin ich? spielen",done:function(){return st.whoamiRounds>=10;},progress:function(){return Math.min(10,st.whoamiRounds)+"/10";}},
+    {id:"whoami-25",icon:"🤔",title:"Wer war ich nochmal?",text:"25 Runden Wer bin ich? spielen",done:function(){return st.whoamiRounds>=25;},progress:function(){return Math.min(25,st.whoamiRounds)+"/25";}},
+    {id:"charades-25",icon:"🎭",title:"Bühnenreif",text:"25 Scharade-Partien spielen",done:function(){return st.charadesRounds>=25;},progress:function(){return Math.min(25,st.charadesRounds)+"/25";}},
+    {id:"personal-10",icon:"💬",title:"Persönlich geworden",text:"10 persönliche Runden spielen",done:function(){return st.personalRounds>=10;},progress:function(){return Math.min(10,st.personalRounds)+"/10";}},
+    {id:"personal-25",icon:"📖",title:"Offenes Buch",text:"25 persönliche Runden spielen",done:function(){return st.personalRounds>=25;},progress:function(){return Math.min(25,st.personalRounds)+"/25";}},
+
     {id:"perfect",icon:"🎯",title:"Punktlandung",text:"Eine Circa-Schätzung exakt treffen",done:function(){return st.perfect>=1;},progress:function(){return st.perfect>=1?"1/1":"0/1";}},
-    {id:"escape-3",icon:"🕵️",title:"Unentdeckt",text:"3× als Imposter davonkommen",done:function(){return st.impostorEscapes>=3;},progress:function(){return Math.min(3,st.impostorEscapes)+"/3";}},
+    {id:"circa-precision-20",icon:"📐",title:"Präzisionsarbeit",text:"20 Circa-Schätzungen mit höchstens 10 % Durchschnittsfehler",done:precisionDone,progress:precisionProgress},
+    {id:"escape-3",icon:"🕵️",title:"Unentdeckt",text:"3× als Impostor davonkommen",done:function(){return st.impostorEscapes>=3;},progress:function(){return Math.min(3,st.impostorEscapes)+"/3";}},
+    {id:"escape-10",icon:"👻",title:"Phantom",text:"10× als Impostor davonkommen",done:function(){return st.impostorEscapes>=10;},progress:function(){return Math.min(10,st.impostorEscapes)+"/10";}},
     {id:"impostor-10",icon:"🥷",title:"Stammverdächtig",text:"10× die Impostor-Rolle bekommen",done:function(){return st.impostor>=10;},progress:function(){return Math.min(10,st.impostor)+"/10";}},
+    {id:"impostor-25",icon:"🕶️",title:"Berufsverdächtig",text:"25× die Impostor-Rolle bekommen",done:function(){return st.impostor>=25;},progress:function(){return Math.min(25,st.impostor)+"/25";}},
+
     {id:"charades-50",icon:"🎬",title:"Begriffjäger",text:"50 Scharade-Begriffe richtig erraten",done:function(){return st.charadesCorrect>=50;},progress:function(){return Math.min(50,st.charadesCorrect)+"/50";}},
+    {id:"charades-100",icon:"🗣️",title:"100 Begriffe später",text:"100 Scharade-Begriffe richtig erraten",done:function(){return st.charadesCorrect>=100;},progress:function(){return Math.min(100,st.charadesCorrect)+"/100";}},
     {id:"charades-10",icon:"⚡️",title:"Zehnerlauf",text:"10 richtige Begriffe in einer Scharade-Runde",done:function(){return st.charadesBestTurn>=10;},progress:function(){return Math.min(10,st.charadesBestTurn)+"/10";}},
     {id:"charades-clean",icon:"✨",title:"Saubere Runde",text:"5 richtige Begriffe ohne Überspringen",done:function(){return st.charadesCleanTurns>=1;},progress:function(){return st.charadesCleanTurns>=1?"1/1":"0/1";}},
-    {id:"personal-10",icon:"💬",title:"Persönlich geworden",text:"10 persönliche Runden spielen",done:function(){return st.personalRounds>=10;},progress:function(){return Math.min(10,st.personalRounds)+"/10";}},
-    {id:"whoami-10",icon:"❓",title:"Identitätskrise",text:"10 Runden Wer bin ich? spielen",done:function(){return st.whoamiRounds>=10;},progress:function(){return Math.min(10,st.whoamiRounds)+"/10";}},
-    {id:"marathon",icon:"🕐",title:"Marathon",text:"Bei einer Session mindestens 60 Minuten dabei sein",done:marathon,progress:function(){return marathon()?"1/1":"0/1";}},
-    {id:"hundred-rounds",icon:"💯",title:"Veteran",text:"100 Runden insgesamt spielen",done:function(){return st.rounds>=100;},progress:function(){return Math.min(100,st.rounds)+"/100";}}
+    {id:"charades-clean-5",icon:"💎",title:"Makellos",text:"5 Scharade-Runden mit mindestens 5 richtigen und keinem Skip",done:function(){return st.charadesCleanTurns>=5;},progress:function(){return Math.min(5,st.charadesCleanTurns)+"/5";}},
+
+    {id:"collector-100",icon:"🗃️",title:"Sammler",text:"100 unterschiedliche Fragen, Wörter oder Begriffe erleben",done:function(){return uniqueContentCount(st)>=100;},progress:function(){return Math.min(100,uniqueContentCount(st))+"/100";}},
+    {id:"marathon",icon:"🕐",title:"Marathon",text:"Bei einer Session mindestens 60 Minuten dabei sein",done:marathon,progress:function(){return marathon()?"1/1":"0/1";}}
   ];
 }
 function recordRound(input){
