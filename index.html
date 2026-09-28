@@ -21,7 +21,7 @@
         <span id="headerAvatar" class="profileAvatar">😎</span>
         <span class="profileText">
           <span id="greeting" class="profileGreeting">Willkommen</span>
-          <strong id="headerName">Spieler</strong>
+          <span class="profileNameRow"><strong id="headerName">Spieler</strong><span id="headerLevel" class="profileLevelPill">LVL 1</span></span>
         </span>
         <span class="chevron">›</span>
       </button>
@@ -156,6 +156,15 @@
       <button id="statsScopeProfile" class="statsScopeButton active" type="button" data-stats-scope="profile">Spieler</button>
       <button id="statsScopeGlobal" class="statsScopeButton" type="button" data-stats-scope="global">Gesamt</button>
     </div>
+
+    <section id="profileLevelSummary" class="profileLevelSummary">
+      <div id="profileLevelOrb" class="profileLevelOrb" aria-hidden="true"><span>LVL</span><strong id="profileLevelNumber">1</strong></div>
+      <div class="profileLevelSummaryCopy">
+        <div><span id="profileLevelTitle">Neuling</span><strong id="profileLevelXp">0 XP</strong></div>
+        <div class="profileLevelTrack" aria-hidden="true"><i id="profileLevelFill"></i></div>
+        <small id="profileLevelNext">Noch 16 XP bis Level 2</small>
+      </div>
+    </section>
 
     <section class="bigStat">
       <span id="statsScopeLabel">Gespielt</span>
