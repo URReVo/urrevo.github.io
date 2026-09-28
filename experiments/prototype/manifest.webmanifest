@@ -1,13 +1,13 @@
 {
-  "name": "Imposter Games Party Lab",
-  "short_name": "Party Lab",
-  "description": "Isolierter Party-Makeover-Prototyp von Imposter Games auf Basis von V74R22.",
+  "name": "Imposter Games Prototype",
+  "short_name": "Imposter Prototype",
+  "description": "Isolierter Spiegel des aktuellen produktiven Imposter-Games-Stands für spätere Experimente.",
   "start_url": "/experiments/prototype/",
   "scope": "/experiments/prototype/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#090b13",
-  "theme_color": "#090b13",
+  "background_color": "#292929",
+  "theme_color": "#292929",
   "icons": [
     {
       "src": "/experiments/prototype/circa_impostor_detective_icon_180.png",
