@@ -1,7 +1,7 @@
 "use strict";
 
 const RELEASE="74";
-const CACHE_REVISION="r4";
+const CACHE_REVISION="r5";
 const CACHE_PREFIX="imposter-games-";
 const CACHE_NAME=CACHE_PREFIX+"v"+RELEASE+"-"+CACHE_REVISION;
 const versioned=path=>path+"?v="+RELEASE;
@@ -10,6 +10,7 @@ const CORE_URLS=[
   "/",
   "/manifest.webmanifest",
   versioned("/assets/css/launcher.css"),
+  versioned("/assets/css/app-ui.css"),
   versioned("/assets/js/launcher.js"),
   versioned("/assets/js/launcher-dev.js"),
   versioned("/assets/js/app-state.js"),
@@ -91,6 +92,12 @@ async function cacheFirst(request,fallbackKey){
   if(cached)return cached;
   return fetch(request);
 }
+
+self.addEventListener("message",event=>{
+  if(event.data&&event.data.type==="SKIP_WAITING"){
+    event.waitUntil(self.skipWaiting());
+  }
+});
 
 self.addEventListener("fetch",event=>{
   const request=event.request;
