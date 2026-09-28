@@ -879,35 +879,102 @@ document.addEventListener("visibilitychange",function(){
   else{if(store.trackUsage)store.trackUsage(null);renderAll();renderMigrationChoice();}
 });
 
+function shouldDismissSheetSwipe(deltaY,elapsedMs,deltaX){
+  deltaY=Math.max(0,Number(deltaY)||0);
+  deltaX=Math.abs(Number(deltaX)||0);
+  elapsedMs=Math.max(1,Number(elapsedMs)||1);
+  if(deltaX>Math.max(34,deltaY*0.85))return false;
+  var velocity=deltaY/elapsedMs;
+  return deltaY>=84||(deltaY>=30&&velocity>=0.52);
+}
 function installSheetSwipe(){
-  document.querySelectorAll(".bottomSheet .sheetHandle").forEach(function(handle){
-    var sheet=handle.closest(".bottomSheet"),startY=0,dragging=false;
-    if(!sheet||sheet.id==="migrationSheet")return;
+  document.querySelectorAll(".bottomSheet").forEach(function(sheet){
+    if(!sheet||sheet.id==="migrationSheet"||sheet.dataset.sheetSwipeBound==="1")return;
+    sheet.dataset.sheetSwipeBound="1";
+
+    var startY=0,startX=0,startAt=0,dragging=false,pointerId=null,grabTarget=null;
+
+    function resetDrag(){
+      dragging=false;pointerId=null;grabTarget=null;
+      sheet.classList.remove("sheetDragging");
+      sheet.style.setProperty("--sheet-drag","0px");
+      byId("sheetBackdrop").style.removeProperty("--sheet-backdrop-alpha");
+    }
     function dismiss(){
       uiSound("tap");
       if(sheet.id==="presetPlayersSheet"){backToPresetEditor();return;}
       if(sheet.id==="profileSheet"&&profileEditorReturnTarget==="preset"){returnToPresetPlayers();return;}
       closeSheets();
     }
-    handle.addEventListener("pointerdown",function(event){
-      if(sheet.classList.contains("hidden"))return;
-      startY=event.clientY;dragging=true;
-      try{handle.setPointerCapture(event.pointerId);}catch(e){}
-    });
-    handle.addEventListener("pointermove",function(event){
-      if(!dragging)return;
-      var delta=Math.max(0,event.clientY-startY);
-      sheet.style.setProperty("--sheet-drag",Math.min(140,delta)+"px");
-    });
-    function finish(event){
-      if(!dragging)return;
-      dragging=false;
-      var delta=Math.max(0,event.clientY-startY);
-      if(delta>72)dismiss();
-      else sheet.style.setProperty("--sheet-drag","0px");
+    function canStart(event){
+      if(sheet.classList.contains("hidden"))return false;
+      if(event.pointerType==="mouse"&&event.button!==0)return false;
+      var target=event.target;
+      var handle=target&&target.closest?target.closest(".sheetHandle"):null;
+      if(handle)return true;
+      var header=target&&target.closest?target.closest(".sheetHeader"):null;
+      if(!header)return false;
+      if(target.closest&&target.closest("button,input,select,textarea,a,[role='button']"))return false;
+      return true;
     }
-    handle.addEventListener("pointerup",finish);
-    handle.addEventListener("pointercancel",function(){dragging=false;sheet.style.setProperty("--sheet-drag","0px");});
+    function begin(event){
+      if(!canStart(event))return;
+      startY=event.clientY;startX=event.clientX;startAt=performance.now();dragging=true;pointerId=event.pointerId;grabTarget=event.currentTarget;
+      sheet.classList.add("sheetDragging");
+      try{sheet.setPointerCapture(pointerId);}catch(e){}
+      event.preventDefault();
+    }
+    function move(event){
+      if(!dragging||event.pointerId!==pointerId)return;
+      var rawY=event.clientY-startY,deltaX=event.clientX-startX;
+      if(rawY<0){
+        sheet.style.setProperty("--sheet-drag","0px");
+        return;
+      }
+      if(Math.abs(deltaX)>Math.max(42,rawY*1.05)){
+        resetDrag();
+        try{sheet.releasePointerCapture(event.pointerId);}catch(e){}
+        return;
+      }
+      var drag=rawY<=170?rawY:170+(rawY-170)*0.28;
+      drag=Math.min(280,drag);
+      sheet.style.setProperty("--sheet-drag",drag.toFixed(1)+"px");
+      var alpha=Math.max(0.18,0.52*(1-Math.min(1,drag/320)));
+      byId("sheetBackdrop").style.setProperty("--sheet-backdrop-alpha",alpha.toFixed(3));
+      event.preventDefault();
+    }
+    function finish(event){
+      if(!dragging||event.pointerId!==pointerId)return;
+      var deltaY=Math.max(0,event.clientY-startY),deltaX=event.clientX-startX,elapsed=performance.now()-startAt;
+      dragging=false;
+      sheet.classList.remove("sheetDragging");
+      try{sheet.releasePointerCapture(event.pointerId);}catch(e){}
+      if(shouldDismissSheetSwipe(deltaY,elapsed,deltaX)){
+        sheet.classList.add("sheetSwipeDismiss");
+        sheet.style.setProperty("--sheet-drag",Math.min(window.innerHeight,420)+"px");
+        byId("sheetBackdrop").style.setProperty("--sheet-backdrop-alpha","0");
+        setTimeout(function(){
+          sheet.classList.remove("sheetSwipeDismiss");
+          dismiss();
+        },145);
+      }else{
+        sheet.classList.add("sheetSwipeSnapBack");
+        sheet.style.setProperty("--sheet-drag","0px");
+        byId("sheetBackdrop").style.removeProperty("--sheet-backdrop-alpha");
+        setTimeout(function(){sheet.classList.remove("sheetSwipeSnapBack");},180);
+      }
+      pointerId=null;grabTarget=null;
+    }
+    function cancel(event){
+      if(!dragging||event.pointerId!==pointerId)return;
+      try{sheet.releasePointerCapture(event.pointerId);}catch(e){}
+      resetDrag();
+    }
+
+    sheet.addEventListener("pointerdown",begin);
+    sheet.addEventListener("pointermove",move);
+    sheet.addEventListener("pointerup",finish);
+    sheet.addEventListener("pointercancel",cancel);
   });
 }
 installSheetSwipe();
