@@ -183,9 +183,117 @@ function handleAchievement(event){
     },index*480);
   });
 }
+function closeDevPanelForPreview(){
+  var gamePanel=document.getElementById("devPanelOverlay");
+  if(gamePanel&&!gamePanel.classList.contains("hidden")){
+    gamePanel.classList.add("hidden");gamePanel.setAttribute("aria-hidden","true");
+  }
+  var launcherPanel=document.getElementById("launcherDevPanelOverlay");
+  if(launcherPanel&&!launcherPanel.classList.contains("hidden")){
+    launcherPanel.classList.add("hidden");launcherPanel.setAttribute("aria-hidden","true");
+    document.body.classList.remove("launcherDevOpen");
+  }
+}
+function emitTestAchievements(items){
+  if(typeof CustomEvent==="undefined")return false;
+  try{
+    window.dispatchEvent(new CustomEvent("ci:achievement-unlocked",{detail:{items:items}}));
+    return true;
+  }catch(e){return false;}
+}
+function runDevUiTest(action){
+  action=String(action||"");
+  if(["achievement","achievement-stack","success","offline","update"].indexOf(action)!==-1)closeDevPanelForPreview();
+  setTimeout(function(){
+    if(action==="achievement"){
+      emitTestAchievements([{id:"dev-preview",icon:"🏆",title:"Warmgelaufen",text:"DEV-Vorschau"}]);
+    }else if(action==="achievement-stack"){
+      emitTestAchievements([
+        {id:"dev-preview-1",icon:"🎬",title:"Erster Abend",text:"DEV-Vorschau"},
+        {id:"dev-preview-2",icon:"🎯",title:"Punktlandung",text:"DEV-Vorschau"},
+        {id:"dev-preview-3",icon:"💯",title:"Veteran",text:"DEV-Vorschau"}
+      ]);
+    }else if(action==="success"){
+      haptic("success");
+      toast({icon:"✓",title:"Aktion erfolgreich",message:"So sieht ein normaler Erfolgs-Hinweis aus.",duration:3600});
+    }else if(action==="offline"){
+      toast({icon:"☁️",title:"Offline-Modus",message:"Die gespeicherten Spiele bleiben verfügbar.",kind:"Offline",duration:4000});
+    }else if(action==="update"){
+      toast({
+        icon:"⬆️",title:"Update verfügbar",message:"DEV-Vorschau – es wird nichts aktualisiert.",
+        actionLabel:"Test schließen",persistent:true,kind:"Update",onAction:function(){}
+      }).dataset.devUpdatePreview="1";
+    }else if(action==="haptic"){
+      var ok=haptic("success");
+      toast({
+        icon:ok?"📳":"ℹ️",
+        title:ok?"Haptik ausgelöst":"Keine Browser-Haptik",
+        message:ok?"Das Gerät hat den Test angenommen.":"Der Browser meldet für navigator.vibrate keine Unterstützung oder Haptik ist deaktiviert.",
+        duration:3600
+      });
+    }
+  },120);
+}
+function devTestButton(label,action,className){
+  var button=document.createElement("button");
+  button.type="button";button.textContent=label;button.dataset.ciDevUiTest=action;
+  if(className)button.className=className;
+  return button;
+}
+function installDevUiTests(){
+  if(document.getElementById("ciDevUiTests")||document.getElementById("ciLauncherDevUiTests"))return;
 
-window.CIAppUI={toast:toast,navigate:navigate,haptic:haptic,showUpdateReady:showUpdateReady};
+  var gameGrid=document.querySelector("#devPanelOverlay .devGrid");
+  if(gameGrid){
+    var card=document.createElement("div");card.id="ciDevUiTests";card.className="devCard devWide";
+    var title=document.createElement("div");title.className="devCardTitle";title.textContent="APP-FEEL TESTS";
+    var buttons=document.createElement("div");buttons.className="devButtonGrid";
+    [
+      ["Achievement anzeigen","achievement"],
+      ["3 Achievements","achievement-stack"],
+      ["Erfolgs-Toast","success"],
+      ["Offline-Hinweis","offline"],
+      ["Update-Hinweis","update"],
+      ["Haptik testen","haptic"]
+    ].forEach(function(item){buttons.appendChild(devTestButton(item[0],item[1],"secondary"));});
+    var note=document.createElement("div");note.className="devQuestionMeta";
+    note.textContent="Vorschauen nutzen die echten V74R5-UI-Pfade, verändern aber keine Statistik oder Achievement-Freischaltung.";
+    card.append(title,buttons,note);gameGrid.appendChild(card);
+  }
+
+  var launcherPanel=document.querySelector("#launcherDevPanelOverlay .launcherDevPanel");
+  if(launcherPanel){
+    var section=document.createElement("section");section.id="ciLauncherDevUiTests";section.className="launcherDevSection";
+    var head=document.createElement("div");head.className="launcherDevSectionHead";
+    var headInner=document.createElement("div"),eyebrow=document.createElement("span"),strong=document.createElement("strong");
+    eyebrow.textContent="APP-FEEL";strong.textContent="Neue UI-Funktionen testen";
+    headInner.append(eyebrow,strong);head.appendChild(headInner);
+    var actions=document.createElement("div");actions.className="launcherDevActions three";
+    [
+      ["Achievement","achievement"],
+      ["3 Achievements","achievement-stack"],
+      ["Erfolgs-Toast","success"],
+      ["Offline","offline"],
+      ["Update","update"],
+      ["Haptik","haptic"]
+    ].forEach(function(item){actions.appendChild(devTestButton(item[0],item[1],"launcherDevButton secondary"));});
+    var hint=document.createElement("p");hint.className="launcherDevHint";
+    hint.textContent="Nur Vorschau: Die Tests ändern keine echten Statistiken, Sessions oder Achievement-Zustände.";
+    section.append(head,actions,hint);
+    var toolsSection=launcherPanel.querySelector(".launcherDevSection:last-of-type");
+    if(toolsSection)launcherPanel.insertBefore(section,toolsSection);else launcherPanel.appendChild(section);
+  }
+
+  document.addEventListener("click",function(event){
+    var button=event.target&&event.target.closest?event.target.closest("[data-ci-dev-ui-test]"):null;
+    if(!button)return;
+    event.preventDefault();runDevUiTest(button.dataset.ciDevUiTest);
+  });
+}
+
+window.CIAppUI={toast:toast,navigate:navigate,haptic:haptic,showUpdateReady:showUpdateReady,devTest:runDevUiTest};
 installInteractionLayer();
+installDevUiTests();
 window.addEventListener("ci:achievement-unlocked",handleAchievement);
 
 if(document.readyState==="complete")registerOfflineSupport();
