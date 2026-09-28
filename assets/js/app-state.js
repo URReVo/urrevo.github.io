@@ -21,6 +21,32 @@ var GAME_STORAGE_KEYS=[
 ];
 var DEFAULT_AVATARS=["😎","🕵️","🥷","🤠","👻","🤖","🦊","🐼","🐸","🦁","🐙","🦄"];
 var GAME_IDS=["circa","classic","whoami","charades","personal"];
+var CATEGORY_TICKET_THRESHOLDS=[8,20,40];
+var CATEGORY_PACKS=[
+  {
+    id:"popculture",icon:"🎬",title:"Popkultur Pack",
+    categories:{
+      circa:["Popkultur"],classic:["Popkultur"],
+      whoami:["Film & Serien","Games & Figuren"],
+      charades:["Film & Serien","Musik & Bühne"]
+    },
+    challenge:{type:"gameVariety",target:3,title:"Entdecker",text:"Spiele mindestens eine Runde in 3 verschiedenen Spielmodi."}
+  },
+  {
+    id:"tech",icon:"⚡",title:"Technik Pack",
+    categories:{
+      circa:["Technik"],classic:["Technik"],
+      whoami:["Marken & Technik"],
+      charades:["Technik & Internet"]
+    },
+    challenge:{type:"uniqueContent",target:60,title:"Sammler",text:"Erlebe 60 unterschiedliche Fragen, Wörter oder Begriffe."}
+  },
+  {
+    id:"spicy",icon:"🌶️",title:"Spicy Pack",
+    categories:{circa:["Spicy 🌶️"],classic:["Spicy 🌶️"]},
+    challenge:{type:"sessionRounds",target:10,title:"Langer Abend",text:"Spiele 10 Runden in einer einzigen Session."}
+  }
+];
 function normalizeGame(game){return GAME_IDS.indexOf(game)!==-1?game:"circa";}
 
 function uid(prefix){
@@ -57,6 +83,19 @@ function baseStats(){
 }
 function baseUsage(){
   return {appMs:0,games:{circa:0,classic:0,whoami:0,charades:0,personal:0},lastTickAt:null,activeGame:null};
+}
+function baseCategoryProgress(){return {unlocks:{}};}
+function normalizeCategoryProgress(src){
+  var out=baseCategoryProgress();
+  src=src&&typeof src==="object"&&!Array.isArray(src)?src:{};
+  var unlocks=src.unlocks&&typeof src.unlocks==="object"&&!Array.isArray(src.unlocks)?src.unlocks:{};
+  CATEGORY_PACKS.forEach(function(def){
+    var item=unlocks[def.id];
+    if(!item||typeof item!=="object")return;
+    var method=["challenge","ticket"].indexOf(item.method)!==-1?item.method:"challenge";
+    out.unlocks[def.id]={method:method,at:item.at||now()};
+  });
+  return out;
 }
 function normalizeUsage(src){
   src=src&&typeof src==="object"&&!Array.isArray(src)?src:{};
@@ -118,6 +157,7 @@ function defaults(){
     profileArchive:{},
     stats:baseStats(),
     usage:baseUsage(),
+    categoryProgress:baseCategoryProgress(),
     sessions:[],
     activeSessionId:null,
     achievements:{},
@@ -323,6 +363,7 @@ function load(){
   ["circaQids","classicWids","whoamiTermIds","charadesTermIds","personalQids","categories"].forEach(function(k){if(!Array.isArray(data.stats[k]))data.stats[k]=[];});
   ["rounds","circaRounds","classicRounds","whoamiRounds","charadesRounds","personalRounds","impostor","personalImpostor","perfectEstimates","charadesCorrect","charadesSkipped","charadesTurns","charadesBestTurn","charadesCleanTurns"].forEach(function(k){data.stats[k]=Math.max(0,Number(data.stats[k])||0);});
   data.usage=normalizeUsage(data.usage);
+  data.categoryProgress=normalizeCategoryProgress(data.categoryProgress);
   /* A persisted heartbeat is never trusted after a reload; page lifecycle code starts a fresh foreground interval. */
   data.usage.lastTickAt=null;data.usage.activeGame=null;
   if(!Array.isArray(data.sessions))data.sessions=[];
@@ -376,6 +417,130 @@ var devState=loadDevState();
 function save(){
   try{localStorage.setItem(KEY,JSON.stringify(data));return true;}catch(e){return false;}
 }
+
+function categoryPackDef(id){
+  for(var i=0;i<CATEGORY_PACKS.length;i++)if(CATEGORY_PACKS[i].id===id)return CATEGORY_PACKS[i];
+  return null;
+}
+function categoryPackFor(game,category){
+  game=normalizeGame(game);category=String(category||"");
+  for(var i=0;i<CATEGORY_PACKS.length;i++){
+    var list=CATEGORY_PACKS[i].categories[game]||[];
+    if(list.indexOf(category)!==-1)return CATEGORY_PACKS[i];
+  }
+  return null;
+}
+function categoryChallengeState(def){
+  var challenge=def&&def.challenge||{},current=0,target=Math.max(1,Number(challenge.target)||1);
+  if(challenge.type==="gameVariety"){
+    current=["circaRounds","classicRounds","whoamiRounds","charadesRounds","personalRounds"].filter(function(k){return Number(data.stats[k])>0;}).length;
+  }else if(challenge.type==="uniqueContent"){
+    current=uniqueContentCount(data.stats);
+  }else if(challenge.type==="sessionRounds"){
+    current=0;
+    (data.sessions||[]).forEach(function(session){current=Math.max(current,Array.isArray(session&&session.rounds)?session.rounds.length:0);});
+  }
+  current=Math.max(0,current);
+  return {
+    type:challenge.type||"",
+    title:challenge.title||"Challenge",
+    text:challenge.text||"",
+    current:current,
+    target:target,
+    done:current>=target,
+    progress:Math.min(target,current)+"/"+target,
+    ratio:Math.max(0,Math.min(1,current/target))
+  };
+}
+function categoryTicketStatus(){
+  var rounds=Math.max(0,Number(data.stats.rounds)||0);
+  var earned=CATEGORY_TICKET_THRESHOLDS.filter(function(target){return rounds>=target;}).length;
+  var spent=0;
+  Object.keys(data.categoryProgress.unlocks||{}).forEach(function(id){
+    if(data.categoryProgress.unlocks[id]&&data.categoryProgress.unlocks[id].method==="ticket")spent++;
+  });
+  var next=null;
+  for(var i=0;i<CATEGORY_TICKET_THRESHOLDS.length;i++){
+    if(rounds<CATEGORY_TICKET_THRESHOLDS[i]){next=CATEGORY_TICKET_THRESHOLDS[i];break;}
+  }
+  return {
+    thresholds:CATEGORY_TICKET_THRESHOLDS.slice(),
+    earned:earned,spent:spent,available:Math.max(0,earned-spent),
+    rounds:rounds,nextThreshold:next,roundsToNext:next===null?0:Math.max(0,next-rounds)
+  };
+}
+function categoryPackInfo(def){
+  var unlock=data.categoryProgress.unlocks[def.id]||null;
+  return {
+    id:def.id,icon:def.icon,title:def.title,categories:clone(def.categories),
+    unlocked:!!unlock,method:unlock&&unlock.method||null,unlockedAt:unlock&&unlock.at||null,
+    challenge:categoryChallengeState(def)
+  };
+}
+function evaluateCategoryUnlocks(){
+  var unlocked=[];
+  CATEGORY_PACKS.forEach(function(def){
+    if(data.categoryProgress.unlocks[def.id])return;
+    var challenge=categoryChallengeState(def);
+    if(!challenge.done)return;
+    data.categoryProgress.unlocks[def.id]={method:"challenge",at:now()};
+    unlocked.push(categoryPackInfo(def));
+  });
+  return unlocked;
+}
+function emitCategoryUnlocks(items){
+  if(!items||!items.length||!window||typeof window.dispatchEvent!=="function"||typeof CustomEvent==="undefined")return;
+  try{window.dispatchEvent(new CustomEvent("ci:category-unlocked",{detail:{items:clone(items)}}));}catch(e){}
+}
+function getCategoryProgress(){
+  var newlyUnlocked=evaluateCategoryUnlocks();
+  if(newlyUnlocked.length)save();
+  return {
+    packs:CATEGORY_PACKS.map(categoryPackInfo),
+    tickets:categoryTicketStatus()
+  };
+}
+function isCategoryUnlocked(game,category){
+  if(String(category)==="Alle")return true;
+  var def=categoryPackFor(game,category);
+  return !def||!!data.categoryProgress.unlocks[def.id];
+}
+function getCategoryLock(game,category){
+  var def=categoryPackFor(game,category);
+  if(!def||data.categoryProgress.unlocks[def.id])return null;
+  var info=categoryPackInfo(def);
+  info.tickets=categoryTicketStatus();
+  info.game=normalizeGame(game);
+  info.category=String(category||"");
+  return info;
+}
+function filterUnlockedCategories(game,categories){
+  if(!Array.isArray(categories)||!categories.length)return ["Alle"];
+  if(categories.indexOf("Alle")!==-1)return ["Alle"];
+  var out=[];
+  categories.forEach(function(category){
+    category=String(category||"");
+    if(category&&isCategoryUnlocked(game,category)&&out.indexOf(category)===-1)out.push(category);
+  });
+  return out.length?out:["Alle"];
+}
+function unlockCategoryPack(id,method){
+  var def=categoryPackDef(String(id||""));
+  if(!def)return {ok:false,reason:"pack"};
+  if(data.categoryProgress.unlocks[def.id])return {ok:true,already:true,pack:categoryPackInfo(def),tickets:categoryTicketStatus()};
+  method=method==="ticket"?"ticket":"challenge";
+  if(method==="ticket"){
+    if(categoryTicketStatus().available<1)return {ok:false,reason:"ticket",pack:categoryPackInfo(def),tickets:categoryTicketStatus()};
+  }else if(!categoryChallengeState(def).done){
+    return {ok:false,reason:"challenge",pack:categoryPackInfo(def),tickets:categoryTicketStatus()};
+  }
+  data.categoryProgress.unlocks[def.id]={method:method,at:now()};
+  save();
+  var info=categoryPackInfo(def);
+  emitCategoryUnlocks([info]);
+  return {ok:true,pack:info,tickets:categoryTicketStatus()};
+}
+
 function profileById(id){
   for(var i=0;i<data.profiles.length;i++)if(data.profiles[i].id===id)return data.profiles[i];
   return null;
@@ -731,7 +896,8 @@ function recordRound(input){
   });
   if(roundProfileIds.length)session.lastProfileIds=roundProfileIds;
 
-  var unlocked=evaluateAchievements();save();emitAchievementUnlocks(unlocked);return true;
+  var categoryUnlocked=evaluateCategoryUnlocks();
+  var unlocked=evaluateAchievements();save();emitAchievementUnlocks(unlocked);emitCategoryUnlocks(categoryUnlocked);return true;
 }
 function computeAwards(session){
   var best=null,wild=null,escapes={},impostors={},charadesCorrect={},charadesSkipped={},charadesTurns={};
@@ -769,7 +935,8 @@ function endSession(){
   var s=data.activeSessionId&&sessionById(data.activeSessionId);
   if(!s||s.endedAt)return null;
   s.endedAt=now();s.awards=computeAwards(s);data.activeSessionId=null;
-  var unlocked=evaluateAchievements();save();emitAchievementUnlocks(unlocked);return clone(s);
+  var categoryUnlocked=evaluateCategoryUnlocks();
+  var unlocked=evaluateAchievements();save();emitAchievementUnlocks(unlocked);emitCategoryUnlocks(categoryUnlocked);return clone(s);
 }
 function getAchievements(){
   evaluateAchievements();save();
@@ -833,10 +1000,10 @@ function devPatchStats(scope,profileId,patch){
     var safeProfile=sanitizeImportedProfileStats(source)[profileId];
     if(!safeProfile)return null;
     data.profileStats[profileId]=safeProfile;
-    evaluateAchievements();save();return clone(safeProfile);
+    evaluateCategoryUnlocks();evaluateAchievements();save();return clone(safeProfile);
   }
   data.stats=sanitizeImportedStats(Object.assign({},data.stats,patch));
-  evaluateAchievements();save();return clone(data.stats);
+  evaluateCategoryUnlocks();evaluateAchievements();save();return clone(data.stats);
 }
 function devReplaceStats(scope,profileId,next){
   next=next&&typeof next==="object"&&!Array.isArray(next)?next:{};
@@ -846,10 +1013,10 @@ function devReplaceStats(scope,profileId,next){
     var safeProfile=sanitizeImportedProfileStats(source)[profileId];
     if(!safeProfile)return null;
     data.profileStats[profileId]=safeProfile;
-    evaluateAchievements();save();return clone(safeProfile);
+    evaluateCategoryUnlocks();evaluateAchievements();save();return clone(safeProfile);
   }
   data.stats=sanitizeImportedStats(next);
-  evaluateAchievements();save();return clone(data.stats);
+  evaluateCategoryUnlocks();evaluateAchievements();save();return clone(data.stats);
 }
 function devResetStats(scope,profileId){
   return devReplaceStats(scope,profileId,scope==="profile"?baseProfileStats():baseStats());
@@ -1251,6 +1418,7 @@ async function importSnapshot(input){
     profileArchive:archive,
     stats:sanitizeImportedStats(src.stats),
     usage:normalizeUsage(src.usage),
+    categoryProgress:normalizeCategoryProgress(src.categoryProgress),
     sessions:sanitizeImportedSessions(src.sessions),
     activeSessionId:null,
     achievements:src.achievements&&typeof src.achievements==="object"&&!Array.isArray(src.achievements)?clone(src.achievements):{},
@@ -1272,6 +1440,7 @@ async function importSnapshot(input){
   if(activeId&&imported.sessions.some(function(x){return x.id===activeId&&!x.endedAt;}))imported.activeSessionId=activeId;
 
   data=imported;
+  evaluateCategoryUnlocks();
   evaluateAchievements();
   if(!save())return {ok:false,reason:"storage"};
   restoreGameStorage(gameStorage);
@@ -1363,7 +1532,9 @@ async function createBackup(){
   return backup;
 }
 
-save();
+var categoryBackfill=evaluateCategoryUnlocks();
+if(categoryBackfill.length)save();
+else save();
 window.CIAppState={
   storageKey:KEY,
   avatars:DEFAULT_AVATARS.slice(),
@@ -1387,6 +1558,11 @@ window.CIAppState={
   getStats:getStats,
   getProfileStats:getProfileStats,
   getUsageStats:getUsageStats,
+  getCategoryProgress:getCategoryProgress,
+  isCategoryUnlocked:isCategoryUnlocked,
+  getCategoryLock:getCategoryLock,
+  filterUnlockedCategories:filterUnlockedCategories,
+  unlockCategoryPack:unlockCategoryPack,
   devPatchStats:devPatchStats,
   devReplaceStats:devReplaceStats,
   devResetStats:devResetStats,
