@@ -102,6 +102,7 @@ for(const id of classicForbidden)assert(!html["games/classic-imposter/index.html
 assert(Number(questions.count)===questions.items.length,"Circa count mismatch");
 const qids=questions.items.map(x=>x.qid);
 assert(new Set(qids).size===qids.length,"duplicate Circa qid");
+assert(new Set(questions.items.map(x=>x.cat)).size===10,"Circa category count mismatch");
 for(const item of questions.items){
   assert(item.qid&&item.cat&&item.normal&&item.imp,"malformed Circa item "+item.qid);
   const step=Number(item.step),max=Number(item.max);
@@ -133,6 +134,8 @@ assertUniqueNormalized(questions.items,item=>item.imp,"Circa impostor questions"
 assert(Number(words.count)===words.items.length,"Classic count mismatch");
 const wids=words.items.map(x=>x.wid);
 assert(new Set(wids).size===wids.length,"duplicate Classic wid");
+assert(new Set(words.items.map(x=>x.cat)).size===10,"Classic category count mismatch");
+for(const item of words.items)assert(item.wid&&item.cat&&item.word&&item.hint,"malformed Classic item "+item.wid);
 const wordNames=words.items.map(x=>String(x.word).toLocaleLowerCase("de-DE"));
 const hints=words.items.map(x=>String(x.hint).toLocaleLowerCase("de-DE"));
 assert(new Set(wordNames).size===wordNames.length,"duplicate Classic word");
@@ -153,6 +156,8 @@ assert(new Set(whoIds).size===whoIds.length,"duplicate WhoAmI id");
 assert(new Set(whoTerms).size===whoTerms.length,"duplicate WhoAmI term");
 assertUniqueNormalized(who.items,item=>item.term,"WhoAmI terms");
 assert(Array.isArray(who.categories)&&who.categories.length===11,"WhoAmI category count mismatch");
+const whoCategoryNames=new Set(who.categories.map(category=>category.name));
+for(const item of who.items)assert(whoCategoryNames.has(item.cat),"unknown WhoAmI category: "+item.cat);
 for(const category of who.categories){
   const actual=who.items.filter(item=>item.cat===category.name).length;
   assert(actual===Number(category.count),"WhoAmI category metadata mismatch: "+category.name);
@@ -166,6 +171,8 @@ assert(new Set(charadesIds).size===charadesIds.length,"duplicate Scharade id");
 assert(new Set(charadesTerms).size===charadesTerms.length,"duplicate Scharade term");
 assertUniqueNormalized(charades.items,item=>item.term,"Scharade terms");
 assert(Array.isArray(charades.categories)&&charades.categories.length===12,"Scharade category count mismatch");
+const charadesCategoryNames=new Set(charades.categories.map(category=>category.name));
+for(const item of charades.items)assert(charadesCategoryNames.has(item.cat),"unknown Scharade category: "+item.cat);
 for(const category of charades.categories){
   const actual=charades.items.filter(item=>item.cat===category.name).length;
   assert(actual===Number(category.count),"Scharade category metadata mismatch: "+category.name);
@@ -179,7 +186,7 @@ assertUniqueNormalized(personal.items,item=>item.normal,"Personal normal questio
 assertUniqueNormalized(personal.items,item=>item.impostor,"Personal impostor questions");
 for(const item of personal.items){
   assert(item.id&&item.normal&&item.impostor&&item.answerType,"malformed Personal item "+item.id);
-  assert(item.normal!==item.impostor,"identical Personal questions "+item.id);
+  assert(normalizeContentText(item.normal)!==normalizeContentText(item.impostor),"identical Personal questions "+item.id);
   assert(["integer","number","rating","percent","time","text"].includes(item.answerType),"invalid Personal answer type "+item.id);
   if(item.answerType==="rating")assert(Number(item.min)===1&&Number(item.max)===10,"invalid Personal rating range "+item.id);
   if(item.answerType==="percent")assert(Number(item.min)===0&&Number(item.max)===100,"invalid Personal percent range "+item.id);
