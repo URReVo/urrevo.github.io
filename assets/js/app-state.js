@@ -1325,7 +1325,8 @@ function endSession(){
   var crewAfter=computeCrew(s.profileIds);
   var categoryUnlocked=evaluateCategoryUnlocks();
   var unlocked=evaluateAchievements();
-  var feedback=buildCrewFeedback(crewBefore,crewAfter).concat(buildSessionFeedback(s));
+  var crewFeedback=buildCrewFeedback(crewBefore,crewAfter);
+  var feedback=crewFeedback.length?crewFeedback:buildSessionFeedback(s);
   save();
   emitAchievementUnlocks(unlocked);
   emitCategoryUnlocks(categoryUnlocked);
