@@ -17,6 +17,7 @@ var PRESET_CATEGORIES={
   personal:[]
 };
 var selectedSession=null;
+var selectedCrew=null;
 var statsScope="profile";
 var currentView="home";
 var launcherAudioCtx=null;
@@ -225,6 +226,146 @@ function profileName(id){
   var p=store.getProfileById?store.getProfileById(id):store.getProfiles().find(function(x){return x.id===id;});
   return p?p.name:"Ehemaliger Spieler";
 }
+function crewDisplayName(crew){
+  var names=(crew&&crew.members||[]).map(function(member){return member.name;});
+  if(names.length<=3)return names.join(" · ")||"Eure Crew";
+  return names.slice(0,3).join(" · ")+" +"+(names.length-3);
+}
+function crewDaysSince(iso){
+  if(!iso)return null;
+  var time=new Date(iso).getTime();if(!Number.isFinite(time))return null;
+  return Math.max(0,Math.floor((Date.now()-time)/86400000));
+}
+function crewLastSeenText(crew){
+  var days=crewDaysSince(crew&&crew.stats&&crew.stats.lastAt);
+  if(days===null)return "Noch kein abgeschlossener Spieleabend";
+  if(days===0)return "Zuletzt heute";
+  if(days===1)return "Zuletzt gestern";
+  return "Zuletzt vor "+days+" Tagen";
+}
+function renderCrewAvatars(box,crew,limit){
+  box.textContent="";limit=Math.max(1,Number(limit)||5);
+  (crew.members||[]).slice(0,limit).forEach(function(member){
+    var span=document.createElement("span");span.textContent=member.avatar||"👤";span.title=member.name;box.appendChild(span);
+  });
+  if((crew.members||[]).length>limit){
+    var more=document.createElement("span");more.className="crewAvatarMore";more.textContent="+"+(crew.members.length-limit);box.appendChild(more);
+  }
+}
+function crewRecordRow(icon,title,value){
+  var row=document.createElement("div");row.className="crewMemory";
+  var em=document.createElement("span");em.className="crewMemoryIcon";em.textContent=icon;
+  var copy=document.createElement("div"),strong=document.createElement("strong"),small=document.createElement("span");
+  strong.textContent=title;small.textContent=value;copy.append(strong,small);row.append(em,copy);return row;
+}
+function openCrewSheet(crew){
+  if(!crew||!store.getCrew)return;
+  crew=store.getCrew(crew.profileIds)||crew;selectedCrew=crew;
+  byId("crewSheetTitle").textContent=crewDisplayName(crew);
+  renderCrewAvatars(byId("crewSheetAvatars"),crew,6);
+  byId("crewSheetLevel").textContent=crew.level.level;
+  byId("crewSheetLevelTitle").textContent=crew.level.title;
+  byId("crewSheetLevelMeta").textContent=crew.level.remaining+" XP bis Level "+(crew.level.level+1);
+  byId("crewSheetLevelFill").style.width=Math.round(crew.level.progress*100)+"%";
+  byId("crewSheetMembers").textContent=crew.members.map(function(member){return member.name;}).join(" · ");
+
+  var metrics=byId("crewSheetMetrics");metrics.textContent="";
+  [
+    [crew.stats.sessions,crew.stats.sessions===1?"Spieleabend":"Spieleabende"],
+    [crew.stats.rounds,"Runden"],
+    [crew.stats.games.length+"/5","Spielmodi"],
+    [crew.stats.awards,"Awards"]
+  ].forEach(function(item){
+    var card=document.createElement("div"),strong=document.createElement("strong"),span=document.createElement("span");
+    strong.textContent=item[0];span.textContent=item[1];card.append(strong,span);metrics.appendChild(card);
+  });
+
+  var challenges=byId("crewChallengeList");challenges.textContent="";
+  (crew.challenges||[]).forEach(function(challenge){
+    var button=document.createElement("button");button.type="button";
+    button.className="crewChallengeChoice"+(crew.selectedChallenge&&crew.selectedChallenge.id===challenge.id?" selected":"")+(challenge.done?" done":"");
+    button.dataset.crewChallenge=challenge.id;
+    var icon=document.createElement("span");icon.className="crewChallengeIcon";icon.textContent=challenge.icon;
+    var copy=document.createElement("div");copy.className="crewChallengeCopy";
+    var title=document.createElement("strong");title.textContent=challenge.title;
+    var desc=document.createElement("span");desc.textContent=challenge.text;
+    var track=document.createElement("div");track.className="crewChallengeTrack";
+    var fill=document.createElement("i");fill.style.width=Math.round(challenge.ratio*100)+"%";track.appendChild(fill);
+    copy.append(title,desc,track);
+    var state=document.createElement("b");state.textContent=challenge.done?"✓":challenge.progress;
+    button.append(icon,copy,state);
+    button.addEventListener("click",function(){
+      if(!store.setCrewChallenge)return;
+      var updated=store.setCrewChallenge(crew.profileIds,challenge.id);
+      if(!updated)return;
+      uiSound("select");selectedCrew=updated;openCrewSheet(updated);renderCrewHome();renderCrewHistory();
+    });
+    challenges.appendChild(button);
+  });
+
+  var memories=byId("crewMemoryList");memories.textContent="";
+  var records=[];
+  if(crew.stats.bestCirca)records.push(crewRecordRow("🎯","Beste Circa-Schätzung",profileName(crew.stats.bestCirca.profileId)+" · "+crew.stats.bestCirca.error.toLocaleString("de-DE",{maximumFractionDigits:1})+" % daneben"));
+  if(crew.stats.bestCharades&&crew.stats.bestCharades.correct>0)records.push(crewRecordRow("🎭","Scharade-Rekord",profileName(crew.stats.bestCharades.profileId)+" · "+crew.stats.bestCharades.correct+" richtig"));
+  if(crew.stats.escapeLeader)records.push(crewRecordRow("🕵️","Meiste Impostor-Fluchten",profileName(crew.stats.escapeLeader.profileId)+" · "+crew.stats.escapeLeader.escapes+"× unentdeckt"));
+  if(crew.stats.wildCirca)records.push(crewRecordRow("😵","Wildeste Schätzung",profileName(crew.stats.wildCirca.profileId)+" · "+crew.stats.wildCirca.error.toLocaleString("de-DE",{maximumFractionDigits:0})+" % daneben"));
+  if(crew.stats.longestSessionRounds)records.push(crewRecordRow("🌙","Längster Abend",crew.stats.longestSessionRounds+" Runden"));
+  records.slice(0,5).forEach(function(row){memories.appendChild(row);});
+  if(!records.length){
+    var empty=document.createElement("div");empty.className="emptyState";empty.textContent="Nach dem ersten abgeschlossenen Spieleabend entstehen hier eure Crew Memories.";memories.appendChild(empty);
+  }
+
+  closeSheets();openSheet("crewSheet");
+}
+function renderCrewHome(){
+  if(!store.getCrew||!store.getCrews)return;
+  var active=store.getActiveSession(),crew=null;
+  if(active&&(active.profileIds||[]).length>=2)crew=store.getCrew(active.profileIds);
+  if(!crew){
+    var crews=store.getCrews();crew=crews[0]||null;
+  }
+  var block=byId("crewHomeBlock");block.classList.toggle("hidden",!crew);
+  if(!crew)return;
+  selectedCrew=crew;
+  var days=crewDaysSince(crew.stats.lastAt);
+  byId("crewHomeEyebrow").textContent=active&&crew.key===store.getCrew(active.profileIds).key?"AKTUELLE CREW":days!==null&&days>=2?"WILLKOMMEN ZURÜCK":"PARTY-PASS";
+  byId("crewHomeTitle").textContent=crewDisplayName(crew);
+  renderCrewAvatars(byId("crewHomeAvatars"),crew,5);
+  byId("crewHomeLevel").textContent=crew.level.level;
+  byId("crewHomeLevelTitle").textContent=crew.level.title;
+  byId("crewHomeMeta").textContent=crew.hasHistory?(crew.stats.sessions+" "+(crew.stats.sessions===1?"Spieleabend":"Spieleabende")+" · "+crew.stats.rounds+" Runden · "+crewLastSeenText(crew)):"Heute beginnt euer Party-Pass";
+  byId("crewHomeLevelFill").style.width=Math.round(crew.level.progress*100)+"%";
+  var goal=crew.selectedChallenge;
+  byId("crewHomeGoalIcon").textContent=goal.icon;
+  byId("crewHomeGoalTitle").textContent=(goal.done?"✓ ":"")+goal.title;
+  byId("crewHomeGoalProgress").textContent=goal.done?"Geschafft · neues Ziel wählen":goal.progress+" · noch "+goal.remaining;
+  byId("crewHomeOpen").onclick=function(){uiSound("tap");openCrewSheet(crew);};
+  byId("crewHomeCard").onclick=function(){uiSound("tap");openCrewSheet(crew);};
+}
+function renderCrewHistory(){
+  if(!store.getCrews)return;
+  var selected=store.getSelectedProfile?store.getSelectedProfile():store.getPrimaryProfile();
+  var crews=store.getCrews();
+  if(statsScope==="profile")crews=crews.filter(function(crew){return crew.profileIds.indexOf(selected.id)!==-1;});
+  byId("crewHistoryHint").textContent=crews.length+" "+(crews.length===1?"Crew":"Crews");
+  var box=byId("crewHistoryList");box.textContent="";
+  if(!crews.length){
+    var empty=document.createElement("div");empty.className="emptyState";empty.textContent="Sobald dieselbe Gruppe einen Spieleabend abschließt, entsteht hier ihr gemeinsamer Party-Pass.";box.appendChild(empty);return;
+  }
+  crews.slice(0,8).forEach(function(crew){
+    var card=document.createElement("button");card.type="button";card.className="crewHistoryCard";
+    var avatars=document.createElement("div");avatars.className="crewAvatarStack compact";renderCrewAvatars(avatars,crew,4);
+    var copy=document.createElement("div");copy.className="crewHistoryCopy";
+    var title=document.createElement("strong");title.textContent=crewDisplayName(crew);
+    var sub=document.createElement("span");sub.textContent=crew.stats.sessions+" "+(crew.stats.sessions===1?"Abend":"Abende")+" · "+crew.stats.rounds+" Runden · "+crew.completedChallenges+"/5 Ziele";
+    copy.append(title,sub);
+    var level=document.createElement("span");level.className="crewHistoryLevel";level.textContent="LVL "+crew.level.level;
+    card.append(avatars,copy,level);
+    card.addEventListener("click",function(){uiSound("tap");openCrewSheet(crew);});
+    box.appendChild(card);
+  });
+}
+
 function renderHeader(){
   var p=store.getSelectedProfile?store.getSelectedProfile():store.getPrimaryProfile();
   byId("headerAvatar").textContent=p.avatar||"😎";
@@ -439,6 +580,14 @@ function renderSessionSheet(session){
     var emptyPlayers=document.createElement("div");emptyPlayers.className="emptyState";emptyPlayers.textContent="Für diese Session sind keine Spielerprofile gespeichert.";playersBox.appendChild(emptyPlayers);
   }
 
+  var sessionCrew=store.getCrew&&((session.profileIds||[]).length>=2)?store.getCrew(session.profileIds):null;
+  var sessionCrewButton=byId("sessionCrewOpen");
+  sessionCrewButton.classList.toggle("hidden",!sessionCrew);
+  if(sessionCrew){
+    byId("sessionCrewLabel").textContent="Crew-Level "+sessionCrew.level.level+" · "+sessionCrew.stats.sessions+" "+(sessionCrew.stats.sessions===1?"Abend":"Abende");
+    sessionCrewButton.onclick=function(){uiSound("tap");openCrewSheet(sessionCrew);};
+  }
+
   var awards=byId("sessionAwards");awards.textContent="";
   var list=session.awards||[];
   if(!list.length){
@@ -629,6 +778,7 @@ function renderStats(){
   byId("sessionHistoryTitle").textContent=personal?"Sessions mit "+selected.name:"Letzte Sessions";
   byId("sessionHistoryHint").textContent=sessions.length+" gespeichert";
   renderSessionHistory(sessions);
+  renderCrewHistory();
 
   byId("achievementHeading").textContent=personal?"Persönliche Sammlung":"Gesamte Sammlung";
   var achievementData=personal&&store.getProfileAchievements?store.getProfileAchievements(selected.id):store.getAchievements();
@@ -691,7 +841,7 @@ function renderSettings(){
   document.documentElement.classList.toggle("reduceExperimentMotion",p.animations===false);
 }
 function renderAll(){
-  renderHeader();renderPlayers();renderPresets();renderSessions();renderStats();renderCategoryProgress();renderSettings();
+  renderHeader();renderPlayers();renderPresets();renderSessions();renderCrewHome();renderStats();renderCategoryProgress();renderSettings();
 }
 window.addEventListener("ci:category-unlocked",function(){
   renderPresets();renderPresetCategories();renderCategoryProgress();
