@@ -967,9 +967,10 @@ function nearAchievementFeedback(before,unlockedIds){
   if(best)delete best.score;
   return best;
 }
-function buildRoundFeedback(round,session,context,unlockedItems){
-  var items=[],unlockedIds={};
+function buildRoundFeedback(round,session,context,unlockedItems,categoryUnlockedItems){
+  var items=[],unlockedIds={},categoryUnlockedIds={};
   (unlockedItems||[]).forEach(function(item){unlockedIds[item.id]=true;});
+  (categoryUnlockedItems||[]).forEach(function(item){categoryUnlockedIds[item.id]=true;});
   function add(item){if(item&&item.id)items.push(item);}
   var previousRound=context.previousRound||null;
 
@@ -986,8 +987,8 @@ function buildRoundFeedback(round,session,context,unlockedItems){
     (round.players||[]).forEach(function(p){
       if(!Number.isFinite(Number(p.error)))return;
       var error=Math.max(0,Number(p.error)),name=profileDisplayName(p.profileId),previous=context.circaBest[p.profileId];
-      if((p.perfect||error===0)&&!unlockedIds.perfect){
-        circaCandidates.push({id:"perfect-"+round.roundKey+"-"+p.profileId,type:"performance",icon:"🎯",title:"Punktlandung!",message:name+" liegt exakt richtig.",intensity:3});
+      if(p.perfect||error===0){
+        if(!unlockedIds.perfect)circaCandidates.push({id:"perfect-"+round.roundKey+"-"+p.profileId,type:"performance",icon:"🎯",title:"Punktlandung!",message:name+" liegt exakt richtig.",intensity:3});
       }else if(previous!==null&&error<previous&&error>0){
         circaCandidates.push({
           id:"circa-record-"+round.roundKey+"-"+p.profileId,type:"record",icon:"📈",title:"Persönlicher Rekord",
@@ -1009,13 +1010,15 @@ function buildRoundFeedback(round,session,context,unlockedItems){
     (round.players||[]).forEach(function(p){
       var correct=Math.max(0,Number(p.correct)||0),skipped=Math.max(0,Number(p.skipped)||0);
       var before=context.beforeProfiles[p.profileId]||baseProfileStats(),name=profileDisplayName(p.profileId);
-      if(correct>=10&&!unlockedIds["charades-10"]){
-        charadesCandidates.push({id:"charades-10-"+round.roundKey+"-"+p.profileId,type:"performance",icon:"⚡️",title:"Zehnerlauf!",message:name+" schafft "+correct+" richtige Begriffe.",intensity:3});
+      if(correct>=10){
+        if(!unlockedIds["charades-10"])charadesCandidates.push({id:"charades-10-"+round.roundKey+"-"+p.profileId,type:"performance",icon:"⚡️",title:"Zehnerlauf!",message:name+" schafft "+correct+" richtige Begriffe.",intensity:3});
+      }else if(unlockedIds["charades-clean"]){
+        /* The achievement presentation owns this first clean-run moment. */
       }else if(before.charadesBestTurn>0&&correct>before.charadesBestTurn){
         charadesCandidates.push({id:"charades-record-"+round.roundKey+"-"+p.profileId,type:"record",icon:"🔥",title:"Neuer Scharade-Rekord",message:name+": "+correct+" richtige Begriffe.",intensity:2});
       }else if(correct>=7){
         charadesCandidates.push({id:"charades-strong-"+round.roundKey+"-"+p.profileId,type:"performance",icon:"🎬",title:"Starke Runde",message:name+": "+correct+" richtige Begriffe.",intensity:2});
-      }else if(correct>=5&&skipped===0&&!unlockedIds["charades-clean"]){
+      }else if(correct>=5&&skipped===0){
         charadesCandidates.push({id:"charades-clean-"+round.roundKey+"-"+p.profileId,type:"performance",icon:"✨",title:"Saubere Runde",message:name+": "+correct+" richtig, kein Skip.",intensity:2});
       }
     });
@@ -1026,6 +1029,7 @@ function buildRoundFeedback(round,session,context,unlockedItems){
   if(context.isNew){
     var count=(session.rounds||[]).length;
     var milestone={5:1,10:2,20:3,30:2,50:3}[count];
+    if(count===10&&(unlockedIds["warmup-10"]||categoryUnlockedIds.spicy))milestone=0;
     if(milestone)add({
       id:"session-rounds-"+session.id+"-"+count,type:"session",icon:count>=20?"🔥":"🎲",
       title:count+". Runde der Session",message:count>=20?"Das ist ein langer Spieleabend.":"Die Runde läuft.",intensity:milestone
@@ -1115,7 +1119,7 @@ function recordRound(input){
   var categoryUnlocked=evaluateCategoryUnlocks();
   var ticketEarned=evaluateCategoryTicketNotices();
   var unlocked=evaluateAchievements();
-  var feedback=buildRoundFeedback(round,session,feedbackContext,unlocked);
+  var feedback=buildRoundFeedback(round,session,feedbackContext,unlocked,categoryUnlocked);
   save();
   emitMotivationalFeedback(feedback);
   emitAchievementUnlocks(unlocked);
