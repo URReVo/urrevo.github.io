@@ -201,6 +201,21 @@ function emitTestAchievements(items){
     return true;
   }catch(e){return false;}
 }
+function previewMiniSession(){
+  var bar=document.getElementById("sessionMiniBar");
+  if(!bar){toast({icon:"ℹ️",title:"Nur im Launcher",message:"Die Mini-Session-Leiste existiert nur im Launcher.",duration:2800});return;}
+  var state=window.CIAppState&&window.CIAppState.getActiveSession?window.CIAppState.getActiveSession():null;
+  if(state){toast({icon:"🟢",title:"Echte Session läuft bereits",message:"Die Mini-Session-Leiste zeigt gerade echte Daten.",duration:3000});return;}
+  var icon=document.getElementById("sessionMiniIcon"),title=document.getElementById("sessionMiniTitle"),sub=document.getElementById("sessionMiniSub");
+  var old={icon:icon.textContent,title:title.textContent,sub:sub.textContent,disabled:bar.disabled,hidden:bar.classList.contains("hidden"),body:document.body.classList.contains("hasMiniSession")};
+  icon.textContent="🎬";title.textContent="Scharade · 7 Runden";sub.textContent="DEV-Vorschau · Tippen zum Fortsetzen";
+  bar.disabled=true;bar.classList.remove("hidden");document.body.classList.add("hasMiniSession");
+  setTimeout(function(){
+    if(!bar.isConnected)return;
+    icon.textContent=old.icon;title.textContent=old.title;sub.textContent=old.sub;bar.disabled=old.disabled;
+    bar.classList.toggle("hidden",old.hidden);document.body.classList.toggle("hasMiniSession",old.body);
+  },4200);
+}
 function runDevUiTest(action){
   action=String(action||"");
   if(["achievement","achievement-stack","success","offline","update"].indexOf(action)!==-1)closeDevPanelForPreview();
@@ -223,6 +238,8 @@ function runDevUiTest(action){
         icon:"⬆️",title:"Update verfügbar",message:"DEV-Vorschau – es wird nichts aktualisiert.",
         actionLabel:"Test schließen",persistent:true,kind:"Update",onAction:function(){}
       }).dataset.devUpdatePreview="1";
+    }else if(action==="mini-session"){
+      previewMiniSession();
     }else if(action==="haptic"){
       var ok=haptic("success");
       toast({
@@ -257,7 +274,7 @@ function installDevUiTests(){
       ["Haptik testen","haptic"]
     ].forEach(function(item){buttons.appendChild(devTestButton(item[0],item[1],"secondary"));});
     var note=document.createElement("div");note.className="devQuestionMeta";
-    note.textContent="Vorschauen nutzen die echten V74R5-UI-Pfade, verändern aber keine Statistik oder Achievement-Freischaltung.";
+    note.textContent="Vorschauen nutzen die echten Produktions-UI-Pfade, verändern aber keine Statistik oder Achievement-Freischaltung.";
     card.append(title,buttons,note);gameGrid.appendChild(card);
   }
 
@@ -275,7 +292,8 @@ function installDevUiTests(){
       ["Erfolgs-Toast","success"],
       ["Offline","offline"],
       ["Update","update"],
-      ["Haptik","haptic"]
+      ["Haptik","haptic"],
+      ["Mini-Session","mini-session"]
     ].forEach(function(item){actions.appendChild(devTestButton(item[0],item[1],"launcherDevButton secondary"));});
     var hint=document.createElement("p");hint.className="launcherDevHint";
     hint.textContent="Nur Vorschau: Die Tests ändern keine echten Statistiken, Sessions oder Achievement-Zustände.";
