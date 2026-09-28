@@ -204,7 +204,7 @@ const readme=read("README.md");
 assert(!readme.includes("\\n"),"README contains literal \\n text");
 assert(["Circa Imposter","Klassisches Imposter","Wer bin ich?","Scharade","Persönlicher Impostor"].every(name=>readme.includes(name)),"README must describe the five-game app");
 const changelog=read("CHANGELOG.md");
-assert(changelog.includes("V74R11")&&changelog.includes("Offline-Cache **r11**"),"V74R11 changelog entry missing");
+assert(changelog.includes("V74R12")&&changelog.includes("Offline-Cache **r12**"),"V74R12 changelog entry missing");
 
 const appStateSource=read("assets/js/app-state.js");
 const launcherSource=read("assets/js/launcher.js");
@@ -388,7 +388,12 @@ assert(launcherCss.includes(".crewPassCard")&&launcherCss.includes(".crewChallen
 assert(launcherCss.includes("conic-gradient(#ef9f45 var(--crew-progress)"),"crew level progress ring missing");
 assert(pwaSource.includes('"crew-level"')&&pwaSource.includes('"crew-challenge"'),"DEV crew feedback previews missing");
 assert(appStateSource.includes("function profileXpBreakdown(")&&appStateSource.includes("function profileLevelInfoFromStats("),"profile level model missing");
-assert(appStateSource.includes("var breakdown=profileXpBreakdown(st),base=crewLevelInfo(breakdown.total)"),"profile and crew levels must share one progression curve");
+assert(appStateSource.includes("function levelCurveInfo(")&&appStateSource.includes("var breakdown=profileXpBreakdown(st),base=levelCurveInfo(breakdown.total)"),"profile level curve model missing");
+assert(!appStateSource.includes("base=crewLevelInfo(breakdown.total)"),"profile progression must not depend on crew semantics");
+assert(appStateSource.includes("rounds:Math.max(0,Number(st.rounds)||0)*2")&&appStateSource.includes("variety:games*8"),"profile XP experience weighting missing");
+assert(appStateSource.includes("precision:Math.min(10,Math.max(0,Number(st.perfect)||0))*2")&&appStateSource.includes("escapes:Math.min(10,Math.max(0,Number(st.impostorEscapes)||0))")&&appStateSource.includes("charades:Math.min(10,Math.floor(Math.max(0,Number(st.charadesCorrect)||0)/10))"),"profile performance XP caps missing");
+assert(appStateSource.includes("var xp=stats.rounds+stats.sessions*8+stats.awards*3+stats.games.length*5"),"crew XP formula changed unexpectedly");
+assert(appStateSource.includes("function preserveRoundContentIdentity(")&&appStateSource.includes("if(previousRound)round=preserveRoundContentIdentity(previousRound,round)"),"round edit identity guard missing");
 assert(appStateSource.includes("function profileLevelFeedback("),"profile level-up feedback missing");
 assert(appStateSource.includes("getProfileLevel:getProfileLevel"),"profile level API not exported");
 assert(html["index.html"].includes('id="headerLevel"')&&html["index.html"].includes('id="profileLevelBlock"')&&html["index.html"].includes('id="profileLevelOrb"'),"profile level launcher UI missing");
@@ -784,6 +789,49 @@ harmonyIds.forEach((id,index)=>{
   assert(level.level===harmonyAfterEndLevels[index].level&&level.xp===harmonyAfterEndLevels[index].xp,"profile level changed after backup restore");
 });
 assert(harmonyRestore.getCrew(harmonyIds).level.level===harmonyCrewAfter.level.level,"crew level changed after backup restore");
+
+/* V74R12 round-edit audit: one round key may update outcomes, never rewrite its identity or mint duplicate XP. */
+const editMem=auditStorage(),editEvents=[];
+const editState=auditStore(editMem,editEvents);
+const editP1=editState.getProfiles()[0];
+editState.updateProfile(editP1.id,{name:"Edit One",avatar:"😎"});
+const editP2=editState.addProfile({name:"Edit Two",avatar:"🦊"});
+const editP3=editState.addProfile({name:"Edit Three",avatar:"🐼"});
+const editIds=[editP1.id,editP2,editP3];
+editState.beginSession(editIds.map(id=>({profileId:id,name:id})));
+const editQid=questions.items[0].qid;
+editState.recordRound({
+  roundKey:"edit-stable-1",game:"circa",category:"Allgemein",qid:editQid,impostorEscaped:null,
+  players:editIds.map((id,index)=>({profileId:id,role:index===2?"impostor":"normal",error:10+index}))
+});
+const editXpBefore=editIds.map(id=>editState.getProfileLevel(id).xp);
+editEvents.length=0;
+editState.recordRound({
+  roundKey:"edit-stable-1",game:"classic",category:"Technik",wid:words.items[0].wid,qid:"should-not-stick",impostorEscaped:true,
+  players:editIds.map(id=>({profileId:id}))
+});
+let editedSession=editState.getActiveSession(),editedRound=editedSession.rounds[0];
+assert(editState.getStats().rounds===1&&editedSession.rounds.length===1,"round edit created duplicate rounds");
+assert(editedRound.game==="circa"&&editedRound.qid===editQid&&!editedRound.wid&&editedRound.category==="Allgemein","round edit rewrote immutable content identity");
+assert(editedRound.players.every((player,index)=>player.role===(index===2?"impostor":"normal")&&player.error===10+index),"partial round outcome update lost immutable player data");
+assert(editIds.every(id=>editState.getProfileStats(id).circaQids.length===1&&editState.getProfileStats(id).circaQids[0]===editQid),"round edit polluted profile discovery content");
+const editXpEscaped=editIds.map(id=>editState.getProfileLevel(id).xp);
+assert(editXpEscaped[0]===editXpBefore[0]&&editXpEscaped[1]===editXpBefore[1]&&editXpEscaped[2]===editXpBefore[2]+1,"impostor outcome correction changed unrelated personal XP");
+let editFeedback=editEvents.filter(event=>event.type==="ci:motivational-feedback").flatMap(event=>event.detail.items||[]);
+assert(!editFeedback.some(item=>item.type==="profile-level"),"round edit emitted duplicate personal level-up feedback");
+editEvents.length=0;
+editState.recordRound({
+  roundKey:"edit-stable-1",game:"classic",category:"Spicy 🌶️",wid:"still-wrong",impostorEscaped:false,
+  players:editIds.map(id=>({profileId:id}))
+});
+assert(editIds.map(id=>editState.getProfileLevel(id).xp).every((xp,index)=>xp===editXpBefore[index]),"reverted impostor outcome did not restore personal XP");
+assert(editState.getProfileStats(editP3).impostorEscapes===0,"reverted impostor outcome left stale escape stats");
+const editLevelCapped=editState.devPatchStats("profile",editP1.id,{
+  rounds:100,circaRounds:100,perfect:100,impostorEscapes:100,charadesCorrect:1000
+});
+const cappedProfileLevel=editState.getProfileLevel(editP1.id);
+assert(cappedProfileLevel.breakdown.precision===20&&cappedProfileLevel.breakdown.escapes===10&&cappedProfileLevel.breakdown.charades===10,"personal performance XP is not capped");
+assert(cappedProfileLevel.breakdown.rounds>cappedProfileLevel.breakdown.precision+cappedProfileLevel.breakdown.escapes+cappedProfileLevel.breakdown.charades,"personal progression became performance-dominated");
 
 /* V74R10 Party-Pass audit: exact-group identity, persistent goal choice, crew memories and feedback. */
 const crewMem=auditStorage(),crewEvents=[];
