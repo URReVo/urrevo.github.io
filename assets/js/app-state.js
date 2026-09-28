@@ -465,6 +465,48 @@ function crewMember(id){
   var profile=profileById(id)||data.profileArchive[id]||null;
   return profile?{id:id,name:profile.name||"Spieler",avatar:profile.avatar||"👤"}:{id:id,name:"Ehemaliger Spieler",avatar:"👤"};
 }
+function profileLevelThreshold(level){
+  var n=Math.max(0,Math.floor(Number(level)||1)-1);
+  return 4*n*(n+3);
+}
+function profileLevelInfo(xp){
+  xp=Math.max(0,Math.floor(Number(xp)||0));
+  var level=1;
+  while(level<99&&xp>=profileLevelThreshold(level+1))level++;
+  var start=profileLevelThreshold(level),next=profileLevelThreshold(level+1);
+  var span=Math.max(1,next-start),into=xp-start;
+  var title=level>=12?"Party-Legende":level>=9?"Veteran":level>=6?"Party-Profi":level>=4?"Routinier":level>=2?"Mitspieler":"Neuling";
+  return {level:level,title:title,xp:xp,startXp:start,nextXp:next,progress:Math.max(0,Math.min(1,into/span)),remaining:Math.max(0,next-xp)};
+}
+function computeProfileLevel(id){
+  var profile=profileById(id)||data.profileArchive[id];
+  if(!profile)return null;
+  var st=data.profileStats[id]||baseProfileStats();
+  var achievements=profileAchievementDefs(id).filter(function(def){return !!def.done();}).length;
+  var unique=Math.floor(uniqueContentCount(st)/20);
+  var xp=
+    Math.max(0,Number(st.rounds)||0)+
+    achievements*4+
+    Math.max(0,Number(st.perfect)||0)*2+
+    Math.max(0,Number(st.impostorEscapes)||0)*2+
+    Math.floor(Math.max(0,Number(st.charadesCorrect)||0)/10)+
+    unique;
+  var level=profileLevelInfo(xp);
+  return {
+    profileId:id,name:profile.name||"Spieler",avatar:profile.avatar||"👤",
+    xp:xp,level:level,achievementCount:achievements,
+    breakdown:{
+      rounds:Math.max(0,Number(st.rounds)||0),
+      achievements:achievements*4,
+      perfect:Math.max(0,Number(st.perfect)||0)*2,
+      escapes:Math.max(0,Number(st.impostorEscapes)||0)*2,
+      charades:Math.floor(Math.max(0,Number(st.charadesCorrect)||0)/10),
+      discovery:unique
+    }
+  };
+}
+function getProfileLevel(id){var item=computeProfileLevel(id);return item?clone(item):null;}
+
 function crewLevelThreshold(level){
   var n=Math.max(0,Math.floor(Number(level)||1)-1);
   return 5*n*(n+3);
@@ -1185,6 +1227,25 @@ function buildRoundFeedback(round,session,context,unlockedItems,categoryUnlocked
   }
 
   if(context.isNew){
+    var levelUps=[];
+    (round.players||[]).forEach(function(p){
+      var beforeLevel=context.profileLevelsBefore&&context.profileLevelsBefore[p.profileId];
+      var afterLevel=computeProfileLevel(p.profileId);
+      if(beforeLevel&&afterLevel&&afterLevel.level.level>beforeLevel.level.level){
+        levelUps.push(afterLevel);
+      }
+    });
+    if(levelUps.length){
+      levelUps.sort(function(a,b){return b.level.level-a.level.level;});
+      var top=levelUps[0],message=top.name+" erreicht Level "+top.level.level+" · "+top.level.title;
+      if(levelUps.length>1)message=levelUps.length+" Spieler sind aufgestiegen · höchstes Level "+top.level.level;
+      add({
+        id:"profile-level-"+round.roundKey+"-"+levelUps.map(function(item){return item.profileId+"-"+item.level.level;}).join("-"),
+        type:"profile-level",icon:"⭐️",title:levelUps.length>1?"Level-Ups!":"Level-Up!",
+        message:message,label:"PERSÖNLICHER FORTSCHRITT",intensity:top.level.level>=5?3:2
+      });
+    }
+
     var count=(session.rounds||[]).length;
     var milestone={5:1,10:2,20:3,30:2,50:3}[count];
     if(count===10&&(unlockedIds["warmup-10"]||categoryUnlockedIds.spicy))milestone=0;
@@ -1249,12 +1310,16 @@ function recordRound(input){
 
   var existing=session.rounds.findIndex(function(r){return r.roundKey===round.roundKey;});
   var previousRound=existing>=0?clone(session.rounds[existing]):null;
-  var beforeProfiles={},roundIds=round.players.map(function(p){return p.profileId;});
-  roundIds.forEach(function(id){beforeProfiles[id]=clone(data.profileStats[id]||baseProfileStats());});
+  var beforeProfiles={},profileLevelsBefore={},roundIds=round.players.map(function(p){return p.profileId;});
+  roundIds.forEach(function(id){
+    beforeProfiles[id]=clone(data.profileStats[id]||baseProfileStats());
+    profileLevelsBefore[id]=computeProfileLevel(id);
+  });
   var feedbackContext={
     isNew:existing<0,
     previousRound:previousRound,
     beforeProfiles:beforeProfiles,
+    profileLevelsBefore:profileLevelsBefore,
     circaBest:previousCircaBest(round.roundKey,roundIds),
     sessionGamesBefore:activeSessionGameCount(session),
     achievementBefore:achievementProgressSnapshot()
@@ -1954,6 +2019,7 @@ window.CIAppState={
   getActiveSession:getActiveSession,
   getStats:getStats,
   getProfileStats:getProfileStats,
+  getProfileLevel:getProfileLevel,
   getUsageStats:getUsageStats,
   getCrew:getCrew,
   getCrews:getCrews,
