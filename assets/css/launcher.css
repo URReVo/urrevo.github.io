@@ -196,3 +196,8 @@ select,
 body.hasMiniSession{padding-bottom:calc(140px + var(--safeBottom))}
 body.hasMiniSession .ciToastHost{bottom:calc(150px + var(--safeBottom))}
 @media(max-width:390px){.sessionMiniBar{width:calc(100% - 20px);bottom:calc(76px + var(--safeBottom))}}
+
+body.sheetOpen{overflow:hidden}
+.tabIcon,.tabEmoji{transition:transform var(--ci-motion-fast) ease,opacity var(--ci-motion-fast) ease}
+.tab.active .tabIcon,.tab.active .tabEmoji{transform:translateY(-1px) scale(1.06)}
+.tab.active small{color:#f3b36d}
