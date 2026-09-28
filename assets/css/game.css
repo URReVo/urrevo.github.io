@@ -820,9 +820,6 @@ body:not(.game-active) .app{
 .impResolution{
   margin-top:14px!important;
 }
-.resultActions{
-  margin-top:7px!important;
-}
 @media(max-height:760px){
   #start{margin-top:12px}
   .count{padding-top:8px}
@@ -1222,6 +1219,7 @@ body.setup-fits:not(.game-active){
 }
 #handoff .handoffButton,
 #normalReveal .stageButton,
+#questionReveal .stageButton,
 #answers .stageButton{
   flex-basis:48px!important;
   min-height:48px!important;

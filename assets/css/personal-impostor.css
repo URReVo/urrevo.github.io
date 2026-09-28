@@ -1,4 +1,4 @@
-/* Persoenlicher Impostor · prototype-only game */
+/* Persönlicher Impostor · production game */
 .personalSetupHero{margin-bottom:18px}
 .personalLogo{width:78px;height:78px;border-radius:25px;display:grid;place-items:center;margin:0 auto 12px;background:radial-gradient(circle at 30% 20%,rgba(236,127,199,.28),transparent 44%),#353139;border:1px solid rgba(255,255,255,.07);font-size:39px}
 .personalInfoCard{display:grid;grid-template-columns:46px 1fr;gap:12px;align-items:center;padding:14px;margin:6px 0 19px;border:1px solid rgba(255,255,255,.07);border-radius:17px;background:#242529}

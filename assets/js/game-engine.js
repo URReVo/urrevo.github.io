@@ -61,6 +61,7 @@ function byId(id){return document.getElementById(id);}
 var sections=gameMode==="classic"?["setup","handoff","classicRole","classicDiscussion","classicResult"]:["setup","stats","handoff","question","normalReveal","answers","result"];
 var count=3,players=[],active=0,impIndex=0,round=0,current=null,scrubbing=false;
 var guessLocked=false,guessSaveTimer=null;
+var experimentStartPending=false,experimentRoundStartPending=false;
 
 /* Fairness state exists only for the current game session. */
 var impostorSessionCounts=[];
@@ -1392,7 +1393,10 @@ function renderNames(){
   byId("minus").disabled=count<=3;byId("plus").disabled=count>=12;
   syncSetupScrollFit();
 }
-function start(){
+async function start(){
+  if(experimentStartPending)return;
+  experimentStartPending=true;
+  try{
   experimentGameRunId="run_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,7);
   var nodes=byId("names").querySelectorAll("input"),names=[],set=Object.create(null);
   if(nodes.length<count){byId("error").textContent="Spielerliste konnte nicht vollständig geladen werden.";return;}
@@ -1418,8 +1422,9 @@ function start(){
   diagRoundDirty=false;
   resetImpostorFairness();
   diagLog("Partie","Gestartet mit "+players.length+" Spielern · "+(gameMode==="classic"?"Impostor":"Circa"));
-  if(gameMode==="classic")classicNewRound(false);
-  else newRound(false);
+  if(gameMode==="classic")await classicNewRound(false);
+  else await newRound(false);
+  }finally{experimentStartPending=false;}
 }
 
 function randomUnit(){
@@ -1789,7 +1794,10 @@ function refreshClassicTimerFromClock(){
   tickClassicTimer();
 }
 async function classicNewRound(confirmFirst){
+  if(experimentRoundStartPending)return;
   if(confirmFirst && !window.confirm("Aktuelle Runde abbrechen und eine neue Runde starten?"))return;
+  experimentRoundStartPending=true;
+  try{
   if(!(await experimentValidateProgressBeforeRound()))return;
   if(confirmFirst&&round>0&&!classicResolved)rollbackCurrentImpostorSelection();
   resetClassicTimerRuntime();
@@ -1820,6 +1828,7 @@ async function classicNewRound(confirmFirst){
     roundIntroTimer=null;
     animateHandoff();
   },motionDelay(1700));
+  }finally{experimentRoundStartPending=false;}
 }
 function classicOpenRole(){
   ensureAudio();
@@ -1888,7 +1897,10 @@ function classicReveal(){
 }
 
 async function newRound(confirmFirst){
+  if(experimentRoundStartPending)return;
   if(confirmFirst && !window.confirm("Aktuelle Runde abbrechen und eine neue Runde starten?"))return;
+  experimentRoundStartPending=true;
+  try{
   if(!(await experimentValidateProgressBeforeRound()))return;
   var previousRoundCompleted=roundStatsRecorded;
   if(confirmFirst&&round>0&&!previousRoundCompleted){
@@ -1933,6 +1945,7 @@ async function newRound(confirmFirst){
     roundIntroTimer=null;
     animateHandoff();
   },motionDelay(1700));
+  }finally{experimentRoundStartPending=false;}
 }
 function handoff(){
   prepareHandoff();

@@ -18,6 +18,8 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: "22"
+      - name: Full project audit
+        run: node scripts/audit-full.mjs
       - name: Validate release
         run: node scripts/validate-release.mjs
       - name: Test local progress integrity

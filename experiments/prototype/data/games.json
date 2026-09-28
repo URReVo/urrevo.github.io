@@ -38,7 +38,7 @@
       "id": "personal-impostor",
       "title": "Persönlicher Impostor",
       "icon": "💬",
-      "description": "Alle beantworten persönliche Fragen – der Impostor bekommt heimlich eine ganz andere Frage.",
+      "description": "Alle beantworten persönliche Fragen – der Impostor bekommt heimlich eine andere, aber vergleichbare Frage.",
       "meta": "3–12 Spieler · Antworten & bluffen",
       "path": "games/personal-impostor/"
     }

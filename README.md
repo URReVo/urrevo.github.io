@@ -11,7 +11,7 @@
 - **🎭 Klassisches Imposter** – geheimes Wort, optionaler Hinweis und Diskussions-Timer
 - **❓ Wer bin ich?** – jeder Spieler erhält einen eigenen geheimen Begriff
 - **🎬 Scharade** – Begriffe erraten per Bewegungssensor oder Touch
-- **💬 Persönlicher Impostor** – persönliche Fragen beantworten, während der Impostor heimlich eine andere Frage erhält
+- **💬 Persönlicher Impostor** – persönliche Fragen beantworten, während der Impostor heimlich eine andere, aber vergleichbare Frage erhält
 
 Aktuell enthalten:
 
