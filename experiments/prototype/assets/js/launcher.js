@@ -414,16 +414,16 @@ function renderMotivationHero(){
   if(active){
     var meta=gameMeta(sessionGame(active));
     byId("heroEyebrow").textContent="PARTY LÄUFT";
-    byId("homeTitle").textContent=meta.full+" ist live";
+    byId("homeTitle").textContent=meta.full+" läuft";
     byId("heroSubtitle").textContent=(active.profileIds||[]).length+" Spieler · "+active.rounds.length+" "+(active.rounds.length===1?"Runde":"Runden")+" · "+fmtDuration(active.startedAt,null);
     byId("heroPrimaryIcon").textContent=meta.icon;
     byId("heroPrimaryText").textContent="Session fortsetzen";
     heroPrimary.classList.remove("hidden");
     heroPrimary.onclick=function(){launchSessionGroup(active);};
   }else{
-    byId("heroEyebrow").textContent="PARTY MODE";
-    byId("homeTitle").textContent="Was geht heute?";
-    byId("heroSubtitle").textContent=last?"Zuletzt: "+last.rounds.length+" Runden · "+fmtDuration(last.startedAt,last.endedAt):"Fünf Spiele. Eine Crew. Such dir das Chaos aus.";
+    byId("heroEyebrow").textContent="IMPOSTER GAMES";
+    byId("homeTitle").textContent="Bereit für die nächste Runde?";
+    byId("heroSubtitle").textContent=last?"Letzter Spieleabend: "+last.rounds.length+" Runden · "+fmtDuration(last.startedAt,last.endedAt):"Wähle ein Spiel oder starte mit einem Preset.";
     if(last&&activeProfilesForLaunch(last).length>=gameMeta(sessionGame(last)).min){
       byId("heroPrimaryIcon").textContent="↻";
       byId("heroPrimaryText").textContent="Letzte Gruppe nochmal";
@@ -1172,7 +1172,7 @@ byId("exportData").addEventListener("click",async function(){
     var backup=store.createBackup?await store.createBackup():store.snapshot();
     var blob=new Blob([JSON.stringify(backup,null,2)],{type:"application/json"});
     var url=URL.createObjectURL(blob);
-    var a=document.createElement("a");a.href=url;a.download="imposter-games-prototype-v74-backup.json";document.body.appendChild(a);a.click();a.remove();
+    var a=document.createElement("a");a.href=url;a.download="imposter-games-v74-backup.json";document.body.appendChild(a);a.click();a.remove();
     setTimeout(function(){URL.revokeObjectURL(url);},1000);
     uiSound("success");byId("dataStatus").textContent="Backup wurde vorbereitet.";appToast("Backup erstellt","Deine lokalen Daten wurden exportiert.","✓");
   }catch(e){byId("dataStatus").textContent="Export ist auf diesem Gerät gerade nicht verfügbar.";}
