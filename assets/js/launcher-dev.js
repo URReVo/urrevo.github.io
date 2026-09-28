@@ -292,6 +292,41 @@ function setAllAchievements(value){
   ctx.items.forEach(function(a){store.devSetAchievementOverride(a.id,value,ctx.profileId);});
   renderAchievements();refreshLauncher();setStatus(value===true?"Alle Achievements freigegeben.":value===false?"Alle Achievements gesperrt.":"Achievement-Overrides entfernt.","ok");
 }
+function renderCategoryPacks(){
+  var progress=store.getCategoryProgress?store.getCategoryProgress():{packs:[],tickets:{available:0}};
+  var box=byId("launcherDevCategoryPacks");if(!box)return;
+  byId("launcherDevCategoryHint").textContent=(progress.tickets&&progress.tickets.available||0)+" freie Freischaltung"+((progress.tickets&&progress.tickets.available||0)===1?"":"en")+" · Auto = echter Fortschritt";
+  box.textContent="";
+  (progress.packs||[]).forEach(function(pack){
+    var row=document.createElement("div");row.className="launcherDevAchievement";
+    var info=document.createElement("div");info.className="launcherDevAchievementInfo";
+    var title=document.createElement("strong");title.textContent=(pack.icon||"🔒")+" "+pack.title;
+    var sub=document.createElement("span");
+    var base=pack.actualUnlocked?"Echt freigeschaltet":"Echt gesperrt";
+    sub.textContent=base+" · "+pack.challenge.progress+" · "+pack.challenge.title;
+    info.append(title,sub);
+    var controls=document.createElement("div");controls.className="launcherDevAchievementControls";
+    [["true","Frei"],["false","Sperren"],["auto","Auto"]].forEach(function(item){
+      var button=document.createElement("button");button.type="button";button.textContent=item[1];
+      button.dataset.categoryPackId=pack.id;button.dataset.categoryPackValue=item[0];
+      var active=(item[0]==="true"&&pack.devOverride===true)||(item[0]==="false"&&pack.devOverride===false)||(item[0]==="auto"&&pack.devOverride===null);
+      if(active)button.classList.add("active");
+      controls.appendChild(button);
+    });
+    row.append(info,controls);box.appendChild(row);
+  });
+}
+function setCategoryPack(id,value){
+  var parsed=value==="true"?true:value==="false"?false:null;
+  store.devSetCategoryPackOverride(id,parsed);
+  renderCategoryPacks();refreshLauncher();setStatus("Kategorie-DEV-Status geändert.","ok");
+}
+function setAllCategoryPacks(value){
+  var progress=store.getCategoryProgress?store.getCategoryProgress():{packs:[]};
+  (progress.packs||[]).forEach(function(pack){store.devSetCategoryPackOverride(pack.id,value);});
+  renderCategoryPacks();refreshLauncher();
+  setStatus(value===true?"Alle Bonus-Packs im DEV freigegeben.":value===false?"Alle Bonus-Packs im DEV gesperrt.":"Kategorie-Overrides entfernt.","ok");
+}
 function renderSessions(){
   var sessions=store.getSessions(),box=byId("launcherDevSessions");
   box.textContent="";
@@ -328,7 +363,7 @@ async function copySnapshot(){
   }catch(e){setStatus("Kopieren ist auf diesem Gerät nicht verfügbar.","error");}
 }
 function renderPanel(){
-  renderScope();renderOverview();renderStats();renderUsage();renderAchievements();renderSessions();
+  renderScope();renderOverview();renderStats();renderUsage();renderAchievements();renderCategoryPacks();renderSessions();
 }
 function lockDev(){
   setDiagUnlocked(false);closePanel();setStatus("","");
@@ -361,6 +396,13 @@ byId("launcherDevAchievements").addEventListener("click",function(event){
 byId("launcherDevUnlockAll").addEventListener("click",function(){setAllAchievements(true);});
 byId("launcherDevLockAll").addEventListener("click",function(){setAllAchievements(false);});
 byId("launcherDevAutoAll").addEventListener("click",function(){setAllAchievements(null);});
+byId("launcherDevCategoryPacks").addEventListener("click",function(event){
+  var button=event.target.closest("[data-category-pack-id]");if(!button)return;
+  setCategoryPack(button.dataset.categoryPackId,button.dataset.categoryPackValue);
+});
+byId("launcherDevCategoriesUnlockAll").addEventListener("click",function(){setAllCategoryPacks(true);});
+byId("launcherDevCategoriesLockAll").addEventListener("click",function(){setAllCategoryPacks(false);});
+byId("launcherDevCategoriesAutoAll").addEventListener("click",function(){setAllCategoryPacks(null);});
 byId("launcherDevEndSession").addEventListener("click",endActiveSession);
 byId("launcherDevClearSessions").addEventListener("click",clearSessions);
 byId("launcherDevSessions").addEventListener("click",function(event){
