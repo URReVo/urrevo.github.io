@@ -41,6 +41,7 @@ Das Live-Spiel wurde bisher auf folgenden Geräten und Systemen getestet:
 
 - **iPad Air**
 - **iPhone 17**
+- **iPhone 17 Pro**
 - **iPhone 14**
 - **Windows**
 
