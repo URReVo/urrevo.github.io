@@ -283,8 +283,7 @@
   </div>
   <div id="presetGame" class="presetSheetGame"></div>
   <p id="presetDetail" class="presetSheetDetail"></p>
-  <p class="prototypeNote">Spieler und die jeweilige Spielkonfiguration werden beim Start direkt vorausgefüllt.</p>
-  <div id="presetLaunchChoices" class="presetLaunchChoices hidden" aria-label="Spiel aus Preset starten"></div>
+  <p class="prototypeNote">Spieler und Spieleinstellungen werden beim Start direkt vorausgefüllt.</p>
   <button id="presetOpenGame" class="primaryButton" type="button">Mit Preset starten</button>
   <button id="deletePreset" class="sheetDangerButton hidden" type="button">Eigenes Preset löschen</button>
 </section>
@@ -299,14 +298,14 @@
   <label class="fieldLabel" for="presetNameInput">NAME</label>
   <input id="presetNameInput" class="textInput" type="text" maxlength="22" placeholder="Freitagabend">
 
-  <div class="fieldLabel">SPIELE</div>
-  <div id="presetGameChoices" class="presetChoiceGrid presetGameChoices" aria-label="Spiele zum Preset hinzufügen"></div>
-  <p class="presetInlineHint">Du kannst mehrere Spiele hinzufügen. Die Einstellungen werden pro Spiel gespeichert.</p>
-  <select id="presetGameInput" class="hidden" aria-hidden="true" tabindex="-1">
-    <option value="circa">Circa</option><option value="classic">Classic</option><option value="whoami">Wer bin ich?</option><option value="charades">Scharade</option><option value="personal">Persönlich</option>
+  <label class="fieldLabel" for="presetGameInput">SPIEL</label>
+  <select id="presetGameInput" class="selectInput">
+    <option value="circa">🎯 Circa Imposter</option>
+    <option value="classic">🎭 Klassisches Imposter</option>
+    <option value="whoami">❓ Wer bin ich?</option>
+    <option value="charades">🎬 Scharade</option>
+    <option value="personal">💬 Persönlicher Impostor</option>
   </select>
-  <div id="presetGameConfigTabs" class="presetGameConfigTabs" aria-label="Spiel konfigurieren"></div>
-  <p id="presetGameConfigHint" class="presetInlineHint">Einstellungen für Circa Imposter</p>
 
   <div class="fieldLabel">SPIELER</div>
   <button id="presetPlayersButton" class="presetConfigButton" type="button">
@@ -347,6 +346,7 @@
   </div>
   <p id="presetPlayersHint" class="presetSheetDetail">Wähle die Profile aus, die beim Schnellstart direkt geladen werden sollen.</p>
   <div id="presetPlayersList" class="presetPlayerPicker"></div>
+  <button id="presetAddPlayer" class="presetAddPlayerButton" type="button"><span>＋</span><strong>Neuen Spieler anlegen</strong></button>
   <p id="presetPlayersStatus" class="inlineStatus" aria-live="polite"></p>
   <button id="presetPlayersDone" class="primaryButton" type="button">Auswahl übernehmen</button>
 </section>

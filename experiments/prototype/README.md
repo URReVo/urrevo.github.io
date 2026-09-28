@@ -78,3 +78,14 @@ Die Statistik-Karten haben zusätzlich feste Bezeichnungen oberhalb jeder Kennza
 - Spielzeit wird im Statistikbereich in Minuten bzw. Stunden angezeigt und ist Bestandteil des V3-Backups.
 
 - Spielzeit-Herzschlag korrigiert: Der aktive Zeitstempel bleibt während einer sichtbaren Seite erhalten; gespeicherte oder importierte Laufzeitstempel werden beim Neustart weiterhin verworfen.
+
+## Preset-Spieler direkt anlegen
+
+Korrektur der Preset-Idee:
+
+- Ein Preset enthält wieder genau einen Spielmodus.
+- Im Preset-Menü „Wer spielt mit?“ kann über „Neuen Spieler anlegen“ direkt ein lokales Profil erstellt werden.
+- Der neue Spieler wird automatisch für das aktuelle Preset ausgewählt.
+- Das neu angelegte Preset-Profil ersetzt nicht ungefragt das aktuell ausgewählte Hauptprofil im Launcher.
+- Nach Speichern oder Abbrechen geht es direkt zurück zur Preset-Spielerauswahl.
+- Die geräteweite Spielzeitstatistik aus r26 bleibt erhalten.
