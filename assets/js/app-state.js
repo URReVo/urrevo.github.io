@@ -1394,9 +1394,7 @@ function endSession(){
   var unlocked=evaluateAchievements();
   var crewFeedback=buildCrewFeedback(crewBefore,crewAfter);
   var profileLevelFeedback=buildProfileLevelFeedback(profileLevelsBefore,s.profileIds,"session-"+s.id);
-  var feedback=crewFeedback.slice();
-  if(profileLevelFeedback)feedback.push(profileLevelFeedback);
-  if(!feedback.length)feedback=buildSessionFeedback(s);
+  var feedback=crewFeedback.length?crewFeedback.slice():(profileLevelFeedback?[profileLevelFeedback]:buildSessionFeedback(s));
   save();
   emitAchievementUnlocks(unlocked);
   emitCategoryUnlocks(categoryUnlocked);
