@@ -20,7 +20,8 @@
 - V74R9 ergänzt die zentrale Feedback Engine V1: leistungsabhängige Feedback-Stufen 1–3, Sound/Haptik, seltene Hero-Momente, persönliche Rekorde, Session-Meilensteine, ehrliche Fast-geschafft-Hinweise, Session-Finale und eine gemeinsame Prioritäts-Queue für Achievements, Kategorie-Unlocks und Rundenfeedback. DEV-Vorschauen decken alle drei Stufen und das Session-Finale ab.
 - V74R10 führt den Party-Pass ein: identische Profilgruppen werden automatisch als Crew erkannt, erhalten gemeinsame Level, frei wählbare Crew-Ziele, dauerhafte Crew Memories und einen „Willkommen zurück“-Anker auf Home. Bestehende Sessions werden rückwirkend ausgewertet; Crew-Ziele verfallen nicht. Crew-Level-Ups und abgeschlossene Crew-Challenges laufen durch die Feedback Engine, inklusive DEV-Vorschauen.
 - V74R11 ergänzt ein persönliches Level-System für jedes Profil. Profil-XP entsteht aus eigenen Runden, Spielvielfalt, entdecktem Content und kleinen Leistungsboni; Profil und Crew nutzen dieselbe Level-Kurve, bleiben aber logisch getrennt. Level-Up-Feedback, Header-/Profilkarten-Anzeige, persönliche Statistik und DEV-Vorschau wurden ergänzt.
-- Produktionsstand auf **V74R11** / Offline-Cache **r11** angehoben.
+- V74R12 härtet die gemeinsame Progression: persönliche XP bleibt erfahrungsgetrieben, Leistungsboni sind bewusst gedeckelt und Crew-/Profil-Semantik ist technisch getrennt. Updates derselben Runden-ID dürfen Ergebnisse korrigieren, aber keine neue Content-Identität und damit keine künstliche Discovery-XP erzeugen; partielle Outcome-Updates behalten bestehende Rundendaten.
+- Produktionsstand auf **V74R12** / Offline-Cache **r12** angehoben.
 
 
 ## V73
