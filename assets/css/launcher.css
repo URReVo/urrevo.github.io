@@ -354,3 +354,53 @@ button.categoryProgressCard{cursor:pointer}
 @media(max-width:380px){.crewMetrics{grid-template-columns:repeat(2,1fr)}}
 @media(prefers-reduced-motion:reduce){.crewLevelFill,.crewChallengeTrack i{transition:none}}
 .reduceExperimentMotion .crewLevelFill,.reduceExperimentMotion .crewChallengeTrack i{transition:none}
+
+
+/* V74R10 personal profile levels */
+.profileNameRow{display:flex;align-items:center;gap:7px;min-width:0}
+.profileLevelPill{
+  display:inline-flex;align-items:center;justify-content:center;min-height:18px;padding:0 6px;
+  border-radius:999px;background:rgba(243,154,50,.11);border:1px solid rgba(243,154,50,.2);
+  color:#e4ad6c;font-size:7px;font-weight:950;letter-spacing:.45px;white-space:nowrap
+}
+.playerNameRow{display:flex;align-items:center;gap:8px;min-width:0}
+.playerNameRow>strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.playerLevelBadge{
+  flex:none;padding:3px 6px;border-radius:999px;background:#34353a;
+  border:1px solid rgba(243,154,50,.14);color:#dfaa6d;font-size:7px;font-weight:950;letter-spacing:.35px
+}
+.playerLevelMeta{display:flex;align-items:center;gap:8px;margin-top:6px}
+.playerLevelMeta small{flex:none;color:#8d8f95;font-size:7px;font-weight:850}
+.playerLevelTrack{
+  display:block;flex:1;min-width:46px;max-width:120px;height:5px;border-radius:99px;background:#38393e;overflow:hidden
+}
+.playerLevelTrack i{
+  display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#c67d2e,#f0b267);
+  transition:width 220ms ease
+}
+.profileLevelSummary{
+  --profile-progress:0deg;
+  display:grid;grid-template-columns:70px minmax(0,1fr);gap:14px;align-items:center;
+  padding:15px;margin:10px 0 14px;border-radius:20px;border:1px solid rgba(243,154,50,.12);
+  background:linear-gradient(145deg,rgba(48,43,38,.96),rgba(35,36,40,.98))
+}
+.profileLevelOrb{
+  width:68px;height:68px;border-radius:50%;display:grid;place-content:center;text-align:center;position:relative;
+  background:conic-gradient(#e49b49 var(--profile-progress),#3a3b40 0);
+  box-shadow:0 10px 28px rgba(0,0,0,.24)
+}
+.profileLevelOrb::after{
+  content:"";position:absolute;inset:5px;border-radius:50%;background:#292a2f;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.035)
+}
+.profileLevelOrb span,.profileLevelOrb strong{position:relative;z-index:1}
+.profileLevelOrb span{font-size:7px;color:#9a9ca2;font-weight:950;letter-spacing:.8px}
+.profileLevelOrb strong{font-size:24px;line-height:1;color:#f0b267}
+.profileLevelSummaryCopy{display:flex;flex-direction:column;gap:7px;min-width:0}
+.profileLevelSummaryCopy>div:first-child{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.profileLevelSummaryCopy>div:first-child span{font-size:12px;font-weight:900}
+.profileLevelSummaryCopy>div:first-child strong{font-size:10px;color:#e0a965}
+.profileLevelSummaryCopy small{color:#85878d;font-size:8px}
+.profileLevelTrack{height:7px;border-radius:99px;background:#393a3f;overflow:hidden}
+.profileLevelTrack i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#c67d2e,#f0b267);transition:width 220ms ease}
+@media(prefers-reduced-motion:reduce){.playerLevelTrack i,.profileLevelTrack i{transition:none}}
