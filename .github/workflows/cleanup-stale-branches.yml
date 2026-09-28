@@ -1,0 +1,39 @@
+name: Cleanup stale branches
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/cleanup-stale-branches.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete stale branch refs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          branches=(
+            "native-ios-parity"
+            "v74r2-audit-fixes"
+            "v74r3-achievement-order"
+            "v74r4-launcher-dev"
+            "v74r5-app-feel"
+            "v74r6-dev-app-feel-tests"
+            "v74r7-sheet-swipe"
+            "v74r8-category-progression"
+            "v74r9-feedback-engine"
+            "v74r10-crew-pass"
+            "v74r11-profile-levels"
+            "v74r12-level-hardening"
+          )
+          for branch in "${branches[@]}"; do
+            echo "Deleting $branch"
+            gh api --method DELETE "repos/$GH_REPO/git/refs/heads/$branch"
+          done
