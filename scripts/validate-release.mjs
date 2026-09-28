@@ -276,6 +276,14 @@ const prototypePwaSource=read("experiments/prototype/assets/js/pwa.js");
 const prototypeSwSource=read("experiments/prototype/service-worker.js");
 assert(prototypePwaSource.includes('/experiments/prototype/service-worker.js')&&prototypePwaSource.includes('scope:"/experiments/prototype/"'),"prototype PWA registration lost isolated scope");
 assert(prototypeSwSource.includes('const BASE="/experiments/prototype"')&&prototypeSwSource.includes('CACHE_PREFIX="imposter-games-prototype-"'),"prototype service worker lost isolated base/cache namespace");
+const expectedPrototypePwa=read("assets/js/pwa.js")
+  .replaceAll('navigator.serviceWorker.register("/service-worker.js",{scope:"/",updateViaCache:"none"})','navigator.serviceWorker.register("/experiments/prototype/service-worker.js",{scope:"/experiments/prototype/",updateViaCache:"none"})')
+  .replaceAll('navigator.serviceWorker.register("/service-worker.js",{scope:"/"})','navigator.serviceWorker.register("/experiments/prototype/service-worker.js",{scope:"/experiments/prototype/"})');
+assert(prototypePwaSource===expectedPrototypePwa,"prototype PWA logic drifted from production beyond isolated scope");
+assert(prototypeWhoSource===read("assets/js/who-am-i.js").replace('STORAGE_PREFIX="imposterGames.v74.game.whoami."','STORAGE_PREFIX="imposterGames.prototype.game.whoami."'),"prototype WhoAmI logic drifted from production beyond storage namespace");
+assert(prototypeCharadesSource===read("assets/js/charades.js").replace('PREFIX="imposterGames.v74.game.charades."','PREFIX="imposterGames.prototype.game.charades."'),"prototype Scharade logic drifted from production beyond storage namespace");
+assert(prototypePersonalSource===read("assets/js/personal-impostor.js").replace('PREFIX="imposterGames.v74.game.personal."','PREFIX="imposterGames.prototype.game.personal."'),"prototype Personal logic drifted from production beyond storage namespace");
+
 const prototypeMirrorPairs=[
   ["experiments/prototype/index.html","index.html"],
   ["experiments/prototype/assets/css/launcher.css","assets/css/launcher.css"],
