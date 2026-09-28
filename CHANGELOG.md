@@ -15,7 +15,8 @@
 - V74R4 ergänzt geschützte Launcher-DEV-Tools für Statistik, Spielzeit, Achievements, Content-Fortschritt und Sessions und erweitert die Release-Validierung um Content-Qualitäts- und Logiktests.
 - V74R5 bündelt das App-Feeling in einer gemeinsamen UI-Schicht: Touch-Pressed-Feedback, weichere Navigation, Toasts, Achievement-Unlock-Hinweise, explizite In-App-Updates, animierte Launcher-Tabs, Swipe-down-Sheets und eine persistente Mini-Session-Leiste.
 - V74R6 ergänzt DEV-Vorschauen für Achievement-Popups, Toasts, Offline-/Update-Hinweise, Haptik und Mini-Session. Circa/Classic erhalten sie im bestehenden DEV-Panel; die übrigen Spiele bekommen nach DEV-Entsperrung einen gemeinsamen Testzugang in der Spiel-Toolbar.
-- Produktionsstand auf **V74R6** / Offline-Cache **r6** angehoben.
+- V74R7 überarbeitet die Launcher-Bottom-Sheet-Geste mit größerem Touch-Ziel, Header-Drag, Distanz- und Flick-Erkennung, Horizontal-Abbruch, Backdrop-Feedback und sauberem Snap-back.
+- Produktionsstand auf **V74R7** / Offline-Cache **r7** angehoben.
 
 
 ## V73
