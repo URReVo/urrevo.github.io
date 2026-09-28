@@ -465,36 +465,44 @@ function crewMember(id){
   var profile=profileById(id)||data.profileArchive[id]||null;
   return profile?{id:id,name:profile.name||"Spieler",avatar:profile.avatar||"👤"}:{id:id,name:"Ehemaliger Spieler",avatar:"👤"};
 }
-function crewLevelThreshold(level){
+function levelThreshold(level){
   var n=Math.max(0,Math.floor(Number(level)||1)-1);
   return 5*n*(n+3);
 }
-function crewLevelInfo(xp){
+function levelCurveInfo(xp){
   xp=Math.max(0,Math.floor(Number(xp)||0));
   var level=1;
-  while(level<99&&xp>=crewLevelThreshold(level+1))level++;
-  var start=crewLevelThreshold(level),next=crewLevelThreshold(level+1);
+  while(level<99&&xp>=levelThreshold(level+1))level++;
+  var start=levelThreshold(level),next=levelThreshold(level+1);
   var span=Math.max(1,next-start),into=xp-start;
-  var title=level>=10?"Legendäre Runde":level>=7?"Stammcrew":level>=4?"Eingespielt":level>=2?"Auf Kurs":"Neue Crew";
-  return {level:level,title:title,xp:xp,startXp:start,nextXp:next,progress:Math.max(0,Math.min(1,into/span)),remaining:Math.max(0,next-xp)};
+  return {level:level,xp:xp,startXp:start,nextXp:next,progress:Math.max(0,Math.min(1,into/span)),remaining:Math.max(0,next-xp)};
+}
+function crewLevelInfo(xp){
+  var base=levelCurveInfo(xp),level=base.level;
+  base.title=level>=10?"Legendäre Runde":level>=7?"Stammcrew":level>=4?"Eingespielt":level>=2?"Auf Kurs":"Neue Crew";
+  return base;
 }
 function profileXpBreakdown(st){
   st=st&&typeof st==="object"?st:baseProfileStats();
   var games=["circaRounds","classicRounds","whoamiRounds","charadesRounds","personalRounds"].filter(function(key){return Number(st[key])>0;}).length;
   var content=uniqueContentCount(st);
+  /*
+   * Personal XP rewards experience first. Performance stays deliberately capped,
+   * so weaker players still progress reliably and DEV/achievement overrides never grant XP.
+   */
   var breakdown={
     rounds:Math.max(0,Number(st.rounds)||0)*2,
-    variety:games*5,
+    variety:games*8,
     discovery:Math.floor(content/10)*2,
-    precision:Math.max(0,Number(st.perfect)||0)*5,
-    escapes:Math.max(0,Number(st.impostorEscapes)||0)*2,
-    charades:Math.floor(Math.max(0,Number(st.charadesCorrect)||0)/10)*2
+    precision:Math.min(10,Math.max(0,Number(st.perfect)||0))*2,
+    escapes:Math.min(10,Math.max(0,Number(st.impostorEscapes)||0)),
+    charades:Math.min(10,Math.floor(Math.max(0,Number(st.charadesCorrect)||0)/10))
   };
   breakdown.total=Object.keys(breakdown).reduce(function(total,key){return key==="total"?total:total+breakdown[key];},0);
   return breakdown;
 }
 function profileLevelInfoFromStats(st){
-  var breakdown=profileXpBreakdown(st),base=crewLevelInfo(breakdown.total),level=base.level;
+  var breakdown=profileXpBreakdown(st),base=levelCurveInfo(breakdown.total),level=base.level;
   var title=level>=15?"Ikone":level>=10?"Legende":level>=7?"Spielmacher":level>=4?"Routinier":level>=2?"Mitspieler":"Neuling";
   return {
     level:level,title:title,xp:base.xp,startXp:base.startXp,nextXp:base.nextXp,
@@ -937,6 +945,24 @@ function beginSession(players){
 function addUnique(arr,value){
   value=String(value||"").trim();if(value&&arr.indexOf(value)===-1)arr.push(value);
 }
+function preserveRoundContentIdentity(previous,next){
+  if(!previous||!next)return next;
+  next.game=previous.game;
+  ["qid","wid","word","category"].forEach(function(key){
+    if(Object.prototype.hasOwnProperty.call(previous,key))next[key]=clone(previous[key]);
+    else delete next[key];
+  });
+  var previousPlayers={};
+  (previous.players||[]).forEach(function(player){if(player&&player.profileId)previousPlayers[player.profileId]=player;});
+  (next.players||[]).forEach(function(player){
+    var old=previousPlayers[player&&player.profileId];if(!old)return;
+    if(Object.prototype.hasOwnProperty.call(old,"termId"))player.termId=clone(old.termId);
+    else delete player.termId;
+    if(Array.isArray(old.termIds))player.termIds=old.termIds.slice();
+    else delete player.termIds;
+  });
+  return next;
+}
 function contribution(round,dir){
   dir=dir||1;
   var game=normalizeGame(round.game);
@@ -971,10 +997,13 @@ function contribution(round,dir){
       data.stats.charadesCorrect=Math.max(0,data.stats.charadesCorrect+dir*correct);
       data.stats.charadesSkipped=Math.max(0,data.stats.charadesSkipped+dir*skipped);
       data.stats.charadesTurns=Math.max(0,data.stats.charadesTurns+dir);
+      if(correct>=5&&skipped===0){
+        st.charadesCleanTurns=Math.max(0,st.charadesCleanTurns+dir);
+        data.stats.charadesCleanTurns=Math.max(0,data.stats.charadesCleanTurns+dir);
+      }
       if(dir>0){
         st.charadesBestTurn=Math.max(st.charadesBestTurn,correct);
         data.stats.charadesBestTurn=Math.max(data.stats.charadesBestTurn,correct);
-        if(correct>=5&&skipped===0){st.charadesCleanTurns++;data.stats.charadesCleanTurns++;}
       }
     }
     if(dir>0){
@@ -1292,8 +1321,6 @@ function recordRound(input){
   var round=clone(input);
   round.at=round.at||now();
   round.roundKey=String(round.roundKey||uid("round"));
-  session.lastGame=normalizeGame(round.game);
-  if(!session.gameStartedAt)session.gameStartedAt=round.at||now();
   round.players=(round.players||[]).map(function(p){
     var profileId=p&&p.profileId&&profileById(p.profileId)?p.profileId:null;
     if(!profileId&&p&&cleanName(p.name))profileId=ensureProfileForPlayer(p);
@@ -1305,6 +1332,9 @@ function recordRound(input){
 
   var existing=session.rounds.findIndex(function(r){return r.roundKey===round.roundKey;});
   var previousRound=existing>=0?clone(session.rounds[existing]):null;
+  if(previousRound)round=preserveRoundContentIdentity(previousRound,round);
+  session.lastGame=normalizeGame(round.game);
+  if(!session.gameStartedAt)session.gameStartedAt=round.at||now();
   var beforeProfiles={},roundIds=round.players.map(function(p){return p.profileId;});
   roundIds.forEach(function(id){beforeProfiles[id]=clone(data.profileStats[id]||baseProfileStats());});
   var feedbackContext={
