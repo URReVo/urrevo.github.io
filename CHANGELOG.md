@@ -10,7 +10,10 @@
 - Statistik-Karten mit eindeutigen Bezeichnungen versehen; Achievements für alle fünf Modi, Impostor-Rollen, Scharade-Leistungen und lange Sessions ergänzt.
 - Web-Audio der neueren Modi für iOS/PWA-Foreground-Wechsel gehärtet; Scharade-Abbruchlogik korrigiert.
 - Bestehende V73-Spielstände werden einmalig nach `imposterGames.v74.game.*` kopiert. Die bisherigen `imposterGames.v73.game.*`-Keys bleiben dabei unverändert als Sicherheitskopie bestehen.
-- Produktionsstand auf **V74R1** / Offline-Cache **r1** angehoben.
+- V74R2 behebt Statistik-/Profil-/Preset-Regressionsfehler, repariert verunreinigte Circa-Kategorien und vereinheitlicht Rundenschutz sowie Beschriftungen.
+- V74R3 sortiert Achievements in der Statistik nach benötigter Zielmenge.
+- V74R4 ergänzt geschützte Launcher-DEV-Tools für Statistik, Spielzeit, Achievements, Content-Fortschritt und Sessions und erweitert die Release-Validierung um Content-Qualitäts- und Logiktests.
+- Produktionsstand auf **V74R4** / Offline-Cache **r4** angehoben.
 
 
 ## V73
