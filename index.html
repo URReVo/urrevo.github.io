@@ -11,14 +11,14 @@
 <link rel="icon" type="image/png" sizes="180x180" href="circa_impostor_detective_icon_180.png">
 <link rel="stylesheet" href="assets/css/launcher.css?v=74">
 <link rel="stylesheet" href="assets/css/app-ui.css?v=74">
-<title>Imposter Games · V74R12</title>
+<title>Imposter Games · V74R13</title>
 </head>
 <body>
 <main class="appShell">
   <section id="view-home" class="view active" aria-labelledby="homeTitle">
     <header class="homeHeader">
       <button id="profileButton" class="profileButton" type="button" aria-label="Spieler öffnen">
-        <span id="headerAvatar" class="profileAvatar">😎</span>
+        <span id="headerAvatar" class="profileAvatar" style="--profile-progress:0deg">😎</span>
         <span class="profileText">
           <span id="greeting" class="profileGreeting">Willkommen</span>
           <strong id="headerName">Spieler</strong>
@@ -32,11 +32,17 @@
       </div>
     </header>
 
-    <section class="heroPanel">
-      <div>
-        <div class="eyebrow">IMPOSTER GAMES</div>
-        <h1 id="homeTitle">Was spielen wir?</h1>
-        <p>Direkt starten oder eine vorbereitete Runde wählen.</p>
+    <section id="homeHero" class="heroPanel">
+      <div class="heroCopy">
+        <div id="heroEyebrow" class="eyebrow">IMPOSTER GAMES</div>
+        <h1 id="homeTitle">Bereit für die nächste Runde?</h1>
+        <p id="heroSubtitle">Wähle ein Spiel oder starte dort weiter, wo ihr aufgehört habt.</p>
+        <button id="heroPrimary" class="heroPrimary hidden" type="button"><span id="heroPrimaryIcon">▶</span><strong id="heroPrimaryText">Weiterspielen</strong><span>›</span></button>
+        <button id="heroGoal" class="heroGoal" type="button">
+          <span id="heroGoalIcon" class="heroGoalIcon">⭐</span>
+          <span class="heroGoalCopy"><small id="heroGoalLabel">NÄCHSTES ZIEL</small><strong id="heroGoalTitle">Dein nächstes Level</strong><span id="heroGoalMeta">Noch 20 XP</span></span>
+          <span class="heroGoalProgress" aria-hidden="true"><i id="heroGoalFill"></i></span>
+        </button>
       </div>
       <div id="launcherDevTrigger" class="heroMark" aria-hidden="true">🎭</div>
     </section>
@@ -49,37 +55,53 @@
     <section class="sectionBlock">
       <div class="sectionHeading">
         <div><div class="eyebrow">SPIELE</div><h2>Deine Spiele</h2></div>
+        <button id="surpriseGame" class="textButton surpriseGameButton" type="button">🎲 Entscheiden</button>
       </div>
       <div class="gameGrid">
-        <a class="gameCard circa" href="games/circa-imposter/">
+        <a class="gameCard circa" data-game-card="circa" href="games/circa-imposter/">
+          <div class="gameCardAura" aria-hidden="true"></div>
           <div class="gameTop"><span class="gameIcon">🎯</span><span class="gameBadge">SCHÄTZEN</span></div>
           <div class="gameTitle">Circa<br>Imposter</div>
           <div class="gameSub">3–12 Spieler</div>
-          <div class="gameAction">Spielen <span>›</span></div>
+          <div class="gameCardProgress" aria-hidden="true"><i id="gameProgress-circa"></i></div>
+          <div id="gameMeta-circa" class="gameProgressMeta">Noch keine Runde gespielt</div>
+          <div class="gameAction"><strong id="gameAction-circa">Spielen</strong><span>›</span></div>
         </a>
-        <a class="gameCard classic" href="games/classic-imposter/">
+        <a class="gameCard classic" data-game-card="classic" href="games/classic-imposter/">
+          <div class="gameCardAura" aria-hidden="true"></div>
           <div class="gameTop"><span class="gameIcon">🎭</span><span class="gameBadge">KLASSISCH</span></div>
           <div class="gameTitle">Klassisches<br>Imposter</div>
           <div class="gameSub">3–12 Spieler</div>
-          <div class="gameAction">Spielen <span>›</span></div>
+          <div class="gameCardProgress" aria-hidden="true"><i id="gameProgress-classic"></i></div>
+          <div id="gameMeta-classic" class="gameProgressMeta">Noch keine Runde gespielt</div>
+          <div class="gameAction"><strong id="gameAction-classic">Spielen</strong><span>›</span></div>
         </a>
-        <a class="gameCard whoami" href="games/who-am-i/">
+        <a class="gameCard whoami" data-game-card="whoami" href="games/who-am-i/">
+          <div class="gameCardAura" aria-hidden="true"></div>
           <div class="gameTop"><span class="gameIcon">❓</span><span class="gameBadge">RATEN</span></div>
           <div class="gameTitle">Wer bin ich?</div>
           <div class="gameSub">2–12 Spieler · Gemeinsam raten</div>
-          <div class="gameAction">Spielen <span>›</span></div>
+          <div class="gameCardProgress" aria-hidden="true"><i id="gameProgress-whoami"></i></div>
+          <div id="gameMeta-whoami" class="gameProgressMeta">Noch keine Runde gespielt</div>
+          <div class="gameAction"><strong id="gameAction-whoami">Spielen</strong><span>›</span></div>
         </a>
-        <a class="gameCard charades" href="games/charades/">
+        <a class="gameCard charades" data-game-card="charades" href="games/charades/">
+          <div class="gameCardAura" aria-hidden="true"></div>
           <div class="gameTop"><span class="gameIcon">🎬</span><span class="gameBadge">STIRN</span></div>
           <div class="gameTitle">Scharade</div>
           <div class="gameSub">2–12 Spieler · Erklären &amp; raten</div>
-          <div class="gameAction">Spielen <span>›</span></div>
+          <div class="gameCardProgress" aria-hidden="true"><i id="gameProgress-charades"></i></div>
+          <div id="gameMeta-charades" class="gameProgressMeta">Noch keine Runde gespielt</div>
+          <div class="gameAction"><strong id="gameAction-charades">Spielen</strong><span>›</span></div>
         </a>
-        <a class="gameCard personal" href="games/personal-impostor/">
-          <div class="gameTop"><span class="gameIcon">💬</span><span class="gameBadge">NEU · PERSÖNLICH</span></div>
+        <a class="gameCard personal" data-game-card="personal" href="games/personal-impostor/">
+          <div class="gameCardAura" aria-hidden="true"></div>
+          <div class="gameTop"><span class="gameIcon">💬</span><span class="gameBadge">PERSÖNLICH</span></div>
           <div class="gameTitle">Persönlicher Impostor</div>
           <div class="gameSub">3–12 Spieler · Antworten &amp; bluffen</div>
-          <div class="gameAction">Spielen <span>›</span></div>
+          <div class="gameCardProgress" aria-hidden="true"><i id="gameProgress-personal"></i></div>
+          <div id="gameMeta-personal" class="gameProgressMeta">Noch keine Runde gespielt</div>
+          <div class="gameAction"><strong id="gameAction-personal">Spielen</strong><span>›</span></div>
         </a>
       </div>
     </section>
@@ -302,7 +324,7 @@
     </section>
 
     <div class="aboutCard">
-      <strong>Imposter Games · V74R12</strong>
+      <strong>Imposter Games · V74R13</strong>
       <span>Lokale Profile, Crews, Presets, Sessions und persönliche Statistik</span>
       <small>Deine Daten bleiben lokal auf diesem Gerät und können als Backup exportiert werden.</small>
     </div>
@@ -426,6 +448,10 @@
   <div class="sheetHeader">
     <div><div class="eyebrow">SESSION-ZUSAMMENFASSUNG</div><h2 id="sessionSheetTitle">Session</h2></div>
     <button class="closeSheet" type="button" aria-label="Schließen">×</button>
+  </div>
+  <div id="sessionSpotlight" class="sessionSpotlight hidden">
+    <span id="sessionSpotlightIcon" class="sessionSpotlightIcon">✨</span>
+    <div><small id="sessionSpotlightLabel">HIGHLIGHT</small><strong id="sessionSpotlightTitle">Euer Spieleabend</strong><span id="sessionSpotlightMeta"></span></div>
   </div>
   <div id="sessionMeta" class="sessionMeta"></div>
   <div class="fieldLabel sessionSectionLabel">Mitgespielt</div>

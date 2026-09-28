@@ -402,3 +402,125 @@ button.categoryProgressCard{cursor:pointer}
 .profileLevelMain>span{margin-top:5px;color:#7e8086;font-size:8px}
 @media(prefers-reduced-motion:reduce){.playerLevelTrack i,.profileLevelTrack i{transition:none}}
 .reduceExperimentMotion .playerLevelTrack i,.reduceExperimentMotion .profileLevelTrack i{transition:none}
+
+
+/* V74R13 motivational design pass */
+:root{
+  --circa-accent:#5f8fff;
+  --classic-accent:#f39a32;
+  --whoami-accent:#9d7bff;
+  --charades-accent:#48c4a7;
+  --personal-accent:#e15cb1;
+}
+.profileAvatar{
+  position:relative;
+  background:
+    radial-gradient(circle at 50% 50%,#37383d 0 64%,transparent 66%),
+    conic-gradient(var(--accent) var(--profile-progress,0deg),rgba(255,255,255,.09) 0);
+  box-shadow:0 0 0 1px rgba(255,255,255,.035),0 8px 20px rgba(0,0,0,.18)
+}
+.heroPanel{
+  position:relative;overflow:hidden;align-items:stretch;min-height:220px;
+  background:
+    radial-gradient(circle at 88% 8%,rgba(243,154,50,.22),transparent 31%),
+    radial-gradient(circle at 18% 110%,rgba(95,143,255,.11),transparent 34%),
+    linear-gradient(145deg,#393a40,#202126);
+  box-shadow:0 20px 50px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.035)
+}
+.heroPanel:before{
+  content:"";position:absolute;inset:-30% -10% auto 40%;height:180px;
+  background:radial-gradient(circle,rgba(255,255,255,.055),transparent 64%);
+  transform:rotate(-14deg);pointer-events:none
+}
+.heroCopy{position:relative;z-index:1;display:flex;flex:1;min-width:0;flex-direction:column}
+.heroPanel h1{max-width:430px;margin-top:5px;font-size:clamp(30px,8.4vw,42px);line-height:.99;letter-spacing:-1.2px}
+.heroPanel p{max-width:440px;font-size:12px}
+.heroMark{position:relative;z-index:1;align-self:flex-start;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+.heroPrimary{
+  width:max-content;max-width:100%;min-height:42px;margin-top:14px;padding:8px 12px;
+  border:1px solid rgba(243,154,50,.34);border-radius:13px;
+  display:flex;align-items:center;gap:8px;background:rgba(243,154,50,.11);color:#f3bd7f;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.035)
+}
+.heroPrimary strong{font-size:10px;font-weight:950;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.heroPrimary>span:last-child{font-size:18px;margin-left:2px}
+.heroGoal{
+  width:min(100%,430px);margin-top:auto;padding:12px 12px 11px;border-radius:16px;
+  display:grid;grid-template-columns:38px minmax(0,1fr) 58px;align-items:center;gap:10px;text-align:left;
+  border:1px solid rgba(255,255,255,.075);background:rgba(10,10,12,.20);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)
+}
+.heroGoalIcon{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.055);font-size:19px}
+.heroGoalCopy{display:flex;min-width:0;flex-direction:column}
+.heroGoalCopy small{color:#7f8188;font-size:7px;font-weight:950;letter-spacing:.8px}
+.heroGoalCopy strong{margin-top:2px;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.heroGoalCopy span{margin-top:2px;color:#92949a;font-size:8px;font-weight:750}
+.heroGoalProgress{height:5px;border-radius:999px;background:rgba(255,255,255,.075);overflow:hidden}
+.heroGoalProgress i{display:block;height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,#e58a2d,#ffb75f);transition:width .28s ease}
+.gameCard{
+  position:relative;overflow:hidden;isolation:isolate;
+  transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease
+}
+.gameCard:active{transform:scale(.975) translateY(1px)}
+.gameCard:focus-visible{outline:2px solid rgba(243,154,50,.62);outline-offset:2px}
+.gameCard.chosenPulse{animation:r13Chosen .62s cubic-bezier(.2,.8,.2,1)}
+@keyframes r13Chosen{
+  0%{transform:scale(1)}
+  36%{transform:scale(1.025);border-color:rgba(243,154,50,.58);box-shadow:0 18px 46px rgba(0,0,0,.24),0 0 0 2px rgba(243,154,50,.13)}
+  100%{transform:scale(1)}
+}
+.gameCardAura{
+  position:absolute;z-index:-1;width:150px;height:150px;border-radius:50%;right:-58px;top:-58px;
+  filter:blur(2px);opacity:.44;pointer-events:none
+}
+.gameCard.circa{background:radial-gradient(circle at 88% 3%,rgba(95,143,255,.23),transparent 34%),linear-gradient(150deg,#303641,#202329)}
+.gameCard.circa .gameCardAura{background:radial-gradient(circle,var(--circa-accent),transparent 68%)}
+.gameCard.classic{background:radial-gradient(circle at 88% 3%,rgba(243,154,50,.23),transparent 34%),linear-gradient(150deg,#3b342e,#232222)}
+.gameCard.classic .gameCardAura{background:radial-gradient(circle,var(--classic-accent),transparent 68%)}
+.gameCard.whoami{background:radial-gradient(circle at 88% 3%,rgba(157,123,255,.23),transparent 34%),linear-gradient(150deg,#35323f,#232329)}
+.gameCard.whoami .gameCardAura{background:radial-gradient(circle,var(--whoami-accent),transparent 68%)}
+.gameCard.charades{background:radial-gradient(circle at 88% 3%,rgba(72,196,167,.23),transparent 34%),linear-gradient(150deg,#303b38,#222625)}
+.gameCard.charades .gameCardAura{background:radial-gradient(circle,var(--charades-accent),transparent 68%)}
+.gameCard.personal{background:radial-gradient(circle at 88% 3%,rgba(225,92,177,.23),transparent 34%),linear-gradient(150deg,#3c3039,#252227)}
+.gameCard.personal .gameCardAura{background:radial-gradient(circle,var(--personal-accent),transparent 68%)}
+.gameCard.circa .gameIcon{box-shadow:inset 0 0 0 1px rgba(95,143,255,.16)}
+.gameCard.classic .gameIcon{box-shadow:inset 0 0 0 1px rgba(243,154,50,.16)}
+.gameCard.whoami .gameIcon{box-shadow:inset 0 0 0 1px rgba(157,123,255,.16)}
+.gameCard.charades .gameIcon{box-shadow:inset 0 0 0 1px rgba(72,196,167,.16)}
+.gameCard.personal .gameIcon{box-shadow:inset 0 0 0 1px rgba(225,92,177,.16)}
+.gameCardProgress{height:4px;margin-top:13px;border-radius:999px;background:rgba(255,255,255,.065);overflow:hidden}
+.gameCardProgress i{display:block;width:0;height:100%;border-radius:inherit;transition:width .3s ease}
+.gameCard.circa .gameCardProgress i{background:var(--circa-accent)}
+.gameCard.classic .gameCardProgress i{background:var(--classic-accent)}
+.gameCard.whoami .gameCardProgress i{background:var(--whoami-accent)}
+.gameCard.charades .gameCardProgress i{background:var(--charades-accent)}
+.gameCard.personal .gameCardProgress i{background:var(--personal-accent)}
+.gameProgressMeta{margin-top:5px;color:#777a81;font-size:8px;font-weight:800;line-height:1.25}
+.gameAction strong{font-size:11px}
+.surpriseGameButton{display:inline-flex;align-items:center;gap:4px}
+.sessionSpotlight{
+  margin:2px 0 12px;padding:14px;border-radius:18px;
+  display:grid;grid-template-columns:48px minmax(0,1fr);gap:12px;align-items:center;
+  background:radial-gradient(circle at 92% 0,rgba(243,154,50,.12),transparent 35%),#25262b;
+  border:1px solid rgba(243,154,50,.16)
+}
+.sessionSpotlightIcon{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;background:rgba(243,154,50,.10);font-size:24px}
+.sessionSpotlight>div{display:flex;flex-direction:column;min-width:0}
+.sessionSpotlight small{color:#b07d47;font-size:7px;font-weight:950;letter-spacing:.8px}
+.sessionSpotlight strong{margin-top:3px;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sessionSpotlight span:last-child{margin-top:3px;color:#8c8e95;font-size:9px;line-height:1.35}
+.roundButton,.textButton,.presetCard,.sessionCard,.sessionContinueButton,.crewPassCard,.playerEdit,.tab,.primaryButton,.settingAction{
+  transition:transform .14s ease,filter .14s ease,background-color .14s ease,border-color .14s ease
+}
+.roundButton:active,.textButton:active,.presetCard:active,.sessionCard:active,.sessionContinueButton:active,.crewPassCard:active,.playerEdit:active,.primaryButton:active,.settingAction:active{transform:scale(.975)}
+@media(max-width:460px){
+  .heroPanel{min-height:238px;padding:18px}
+  .heroMark{width:58px;height:58px;border-radius:19px;font-size:31px}
+  .heroGoal{grid-template-columns:36px minmax(0,1fr) 48px}
+  .gameCard{min-height:228px;padding:14px}
+  .gameTitle{font-size:21px}
+}
+@media(prefers-reduced-motion:reduce){
+  .gameCard,.heroGoalProgress i,.gameCardProgress i,.roundButton,.textButton,.presetCard,.sessionCard,.sessionContinueButton,.crewPassCard,.playerEdit,.tab,.primaryButton,.settingAction{transition:none!important}
+}
+.reduceExperimentMotion .gameCard,.reduceExperimentMotion .heroGoalProgress i,.reduceExperimentMotion .gameCardProgress i{transition:none!important}

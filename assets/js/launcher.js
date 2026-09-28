@@ -21,6 +21,7 @@ var selectedCrew=null;
 var statsScope="profile";
 var currentView="home";
 var launcherAudioCtx=null;
+var heroGoalAction=null;
 var circaMetadataItems=null;
 var circaMetadataPromise=null;
 var GAME_META={
@@ -378,8 +379,90 @@ function renderHeader(){
   if(store.getProfileLevel){
     var level=store.getProfileLevel(p.id);
     byId("headerLevel").textContent=level?("LVL "+level.level+" · "+level.title):"LVL 1 · Neuling";
+    byId("headerAvatar").style.setProperty("--profile-progress",Math.round((level?level.progress:0)*360)+"deg");
   }
   updateGreeting();
+}
+
+function renderGameCards(){
+  var selected=store.getSelectedProfile?store.getSelectedProfile():store.getPrimaryProfile();
+  var st=store.getProfileStats?store.getProfileStats(selected.id):{};
+  var defs={
+    circa:{rounds:Number(st.circaRounds)||0,seen:(st.circaQids||[]).length,total:520},
+    classic:{rounds:Number(st.classicRounds)||0,seen:(st.classicWids||[]).length,total:250},
+    whoami:{rounds:Number(st.whoamiRounds)||0,seen:(st.whoamiTermIds||[]).length,total:275},
+    charades:{rounds:Number(st.charadesRounds)||0,seen:(st.charadesTermIds||[]).length,total:300},
+    personal:{rounds:Number(st.personalRounds)||0,seen:(st.personalQids||[]).length,total:100}
+  };
+  Object.keys(defs).forEach(function(game){
+    var d=defs[game],ratio=Math.max(0,Math.min(1,d.seen/Math.max(1,d.total)));
+    var fill=byId("gameProgress-"+game),meta=byId("gameMeta-"+game),action=byId("gameAction-"+game);
+    if(fill)fill.style.width=Math.round(ratio*100)+"%";
+    if(meta)meta.textContent=d.rounds?d.rounds+" "+(d.rounds===1?"Runde":"Runden")+" · "+Math.round(ratio*100)+" % entdeckt":"Noch keine Runde gespielt";
+    if(action)action.textContent=d.rounds?"Weiterspielen":"Spielen";
+  });
+}
+
+function renderMotivationHero(){
+  var selected=store.getSelectedProfile?store.getSelectedProfile():store.getPrimaryProfile();
+  var active=store.getActiveSession?store.getActiveSession():null;
+  var sessions=store.getSessions?store.getSessions().filter(function(s){return !!s.endedAt;}):[];
+  var last=sessions[0]||null;
+  var heroPrimary=byId("heroPrimary");
+  heroPrimary.classList.add("hidden");
+  heroPrimary.onclick=null;
+
+  if(active){
+    var meta=gameMeta(sessionGame(active));
+    byId("heroEyebrow").textContent="PARTY LÄUFT";
+    byId("homeTitle").textContent=meta.full+" läuft";
+    byId("heroSubtitle").textContent=(active.profileIds||[]).length+" Spieler · "+active.rounds.length+" "+(active.rounds.length===1?"Runde":"Runden")+" · "+fmtDuration(active.startedAt,null);
+    byId("heroPrimaryIcon").textContent=meta.icon;
+    byId("heroPrimaryText").textContent="Session fortsetzen";
+    heroPrimary.classList.remove("hidden");
+    heroPrimary.onclick=function(){launchSessionGroup(active);};
+  }else{
+    byId("heroEyebrow").textContent="IMPOSTER GAMES";
+    byId("homeTitle").textContent="Bereit für die nächste Runde?";
+    byId("heroSubtitle").textContent=last?"Letzter Spieleabend: "+last.rounds.length+" Runden · "+fmtDuration(last.startedAt,last.endedAt):"Wähle ein Spiel oder starte mit einem Preset.";
+    if(last&&activeProfilesForLaunch(last).length>=gameMeta(sessionGame(last)).min){
+      byId("heroPrimaryIcon").textContent="↻";
+      byId("heroPrimaryText").textContent="Letzte Gruppe nochmal";
+      heroPrimary.classList.remove("hidden");
+      heroPrimary.onclick=function(){launchSessionGroup(last);};
+    }
+  }
+
+  heroGoalAction=function(){setView("stats");};
+  var goal={icon:"⭐",label:"DEIN NÄCHSTES ZIEL",title:"Spieler-Level",meta:"Weiter spielen",ratio:0};
+  var level=store.getProfileLevel?store.getProfileLevel(selected.id):null;
+  if(level){
+    goal.title="LVL "+level.level+" · "+level.title;
+    goal.meta=level.remaining>0?"Noch "+level.remaining+" XP bis LVL "+(level.level+1):"Maximales Level erreicht";
+    goal.ratio=level.progress;
+  }
+
+  var category=store.getCategoryProgress?store.getCategoryProgress():null;
+  if(!active&&category&&category.tickets&&Number(category.tickets.available)>0){
+    goal={icon:"🔓",label:"FREIE FREISCHALTUNG",title:"Neue Bonus-Kategorie",meta:category.tickets.available+" "+(category.tickets.available===1?"Freischaltung verfügbar":"Freischaltungen verfügbar"),ratio:1};
+  }else if(!active&&category&&category.tickets&&category.tickets.nextThreshold&&Number(category.tickets.roundsToNext)<=4){
+    var done=Math.max(0,category.tickets.nextThreshold-category.tickets.roundsToNext);
+    goal={icon:"🔓",label:"FAST FREIGESCHALTET",title:"Nächste freie Kategorie",meta:"Noch "+category.tickets.roundsToNext+" "+(category.tickets.roundsToNext===1?"Runde":"Runden"),ratio:done/category.tickets.nextThreshold};
+  }
+
+  if(active&&store.getCrew&&(active.profileIds||[]).length>=2){
+    var crew=store.getCrew(active.profileIds);
+    if(crew&&crew.selectedChallenge){
+      var ch=crew.selectedChallenge;
+      goal={icon:ch.icon||"🤝",label:"CREW-ZIEL",title:ch.title,meta:ch.done?"Geschafft · neues Ziel wählen":ch.progress+" · noch "+ch.remaining,ratio:Math.max(0,Math.min(1,Number(ch.ratio)||0))};
+      heroGoalAction=function(){openCrewSheet(crew);};
+    }
+  }
+  byId("heroGoalIcon").textContent=goal.icon;
+  byId("heroGoalLabel").textContent=goal.label;
+  byId("heroGoalTitle").textContent=goal.title;
+  byId("heroGoalMeta").textContent=goal.meta;
+  byId("heroGoalFill").style.width=Math.round(goal.ratio*100)+"%";
 }
 function renderPlayers(){
   var box=byId("playerList"),profiles=store.getProfiles(),selected=store.getSelectedProfile?store.getSelectedProfile():store.getPrimaryProfile();
@@ -600,6 +683,15 @@ function renderSessionSheet(session){
   }
 
   var sessionCrew=store.getCrew&&((session.profileIds||[]).length>=2)?store.getCrew(session.profileIds):null;
+  var spotlight=byId("sessionSpotlight");
+  if(session.endedAt){
+    var awardsList=session.awards||[],topAward=awardsList[0]||null;
+    spotlight.classList.remove("hidden");
+    byId("sessionSpotlightIcon").textContent=topAward?(topAward.icon||"🏆"):(sessionCrew?"🤝":"✨");
+    byId("sessionSpotlightLabel").textContent=topAward?"HIGHLIGHT":sessionCrew?"CREW-FORTSCHRITT":"SPIELEABEND";
+    byId("sessionSpotlightTitle").textContent=topAward?(profileName(topAward.profileId)+" · "+topAward.title):(sessionCrew?"Crew LVL "+sessionCrew.level.level+" · "+sessionCrew.level.title:"Runde abgeschlossen");
+    byId("sessionSpotlightMeta").textContent=topAward?topAward.detail:(sessionCrew?sessionCrew.stats.rounds+" gemeinsame Runden · "+sessionCrew.completedChallenges+"/5 Ziele":(session.rounds||[]).length+" Runden · "+fmtDuration(session.startedAt,session.endedAt));
+  }else spotlight.classList.add("hidden");
   var sessionCrewButton=byId("sessionCrewOpen");
   sessionCrewButton.classList.toggle("hidden",!sessionCrew);
   if(sessionCrew){
@@ -876,7 +968,7 @@ function renderSettings(){
   document.documentElement.classList.toggle("reduceExperimentMotion",p.animations===false);
 }
 function renderAll(){
-  renderHeader();renderPlayers();renderPresets();renderSessions();renderCrewHome();renderStats();renderCategoryProgress();renderSettings();
+  renderHeader();renderPlayers();renderPresets();renderSessions();renderCrewHome();renderMotivationHero();renderGameCards();renderStats();renderCategoryProgress();renderSettings();
 }
 window.addEventListener("ci:category-unlocked",function(){
   renderPresets();renderPresetCategories();renderCategoryProgress();
@@ -941,6 +1033,15 @@ document.querySelectorAll(".tab").forEach(function(tab){tab.addEventListener("cl
 });});
 byId("profileButton").addEventListener("click",function(){uiSound("tap");setView("profile");});
 byId("settingsShortcut").addEventListener("click",function(){uiSound("tap");setView("settings");});
+byId("heroGoal").addEventListener("click",function(){uiSound("tap");if(heroGoalAction)heroGoalAction();});
+byId("surpriseGame").addEventListener("click",function(){
+  var games=Object.keys(GAME_META),game=games[Math.floor(Math.random()*games.length)],card=document.querySelector('[data-game-card="'+game+'"]');
+  document.querySelectorAll(".gameCard.chosenPulse").forEach(function(el){el.classList.remove("chosenPulse");});
+  if(card){card.classList.add("chosenPulse");card.scrollIntoView({behavior:store.getPreferences().animations===false?"auto":"smooth",block:"center"});}
+  uiSound("select");
+  appToast("Heute entscheidet der Zufall",gameMeta(game).full+" wurde ausgewählt.",gameMeta(game).icon);
+  setTimeout(function(){navigateWithSound(gameMeta(game).path);},store.getPreferences().animations===false?80:650);
+});
 byId("addPlayer").addEventListener("click",function(){uiSound("tap");openProfileEditor(null,null);});
 byId("addPreset").addEventListener("click",function(){uiSound("tap");openPresetEditor();});
 byId("presetGameInput").addEventListener("change",function(){

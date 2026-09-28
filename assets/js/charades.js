@@ -233,7 +233,16 @@ function startCountdown(){
   setTimeout(step,700);
 }
 function tickTimer(){if(!turnRunning)return;var now=Date.now(),elapsed=(now-lastTick)/1000;if(elapsed<.18)return;var whole=Math.floor(elapsed);if(whole<1)return;remaining=Math.max(0,remaining-whole);lastTick+=whole*1000;updateTimer();if(remaining<=0)endTurn("timer");}
-function updateTimer(){byId("topTimer").textContent=remaining+"s";}
+function updateTimer(){
+  byId("topTimer").textContent=remaining+"s";
+  var rail=byId("charadesTimeRail"),fill=byId("charadesTimeFill");
+  if(rail&&fill){
+    var ratio=Math.max(0,Math.min(1,remaining/Math.max(1,timerSeconds)));
+    fill.style.width=Math.round(ratio*100)+"%";
+    rail.classList.toggle("urgent",remaining<=10&&remaining>5);
+    rail.classList.toggle("critical",remaining<=5);
+  }
+}
 function syncScore(){byId("scorePill").textContent="✓ "+turnCorrect+" · ↷ "+turnSkipped;}
 function renderTerm(){if(!currentItem)return;byId("termCategory").textContent=currentItem.cat;byId("termText").textContent=currentItem.term;}
 function feedback(type){var card=byId("termCard"),label=byId("motionFeedback");card.classList.remove("feedback-correct","feedback-skip");if(type==="correct"){card.classList.add("feedback-correct");label.textContent="✓ Richtig";tone(780,.055);pulse(10);}else{card.classList.add("feedback-skip");label.textContent="↷ Übersprungen";tone(330,.045);pulse(6);}setTimeout(function(){card.classList.remove("feedback-correct","feedback-skip");if(turnRunning&&actionCooldownRemaining()<=0)label.textContent=motionPermission==="granted"?"Zur Mitte zurück · bereit fürs nächste Wippen":"Touch-Tasten bereit";},420);}

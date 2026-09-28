@@ -204,7 +204,7 @@ const readme=read("README.md");
 assert(!readme.includes("\\n"),"README contains literal \\n text");
 assert(["Circa Imposter","Klassisches Imposter","Wer bin ich?","Scharade","Persönlicher Impostor"].every(name=>readme.includes(name)),"README must describe the five-game app");
 const changelog=read("CHANGELOG.md");
-assert(changelog.includes("V74R12")&&changelog.includes("Offline-Cache **r12**"),"V74R12 changelog entry missing");
+assert(changelog.includes("V74R13")&&changelog.includes("Offline-Cache **r13**"),"V74R13 changelog entry missing");
 
 const appStateSource=read("assets/js/app-state.js");
 const launcherSource=read("assets/js/launcher.js");
@@ -261,7 +261,14 @@ assert(prototypePersonalSource.includes('PREFIX="imposterGames.prototype.game.pe
 assert(!prototypePersonalSource.includes('PREFIX="imposterGames.v74.game.personal."'),"prototype Personal must not use production storage");
 assert(!html["index.html"].includes("APP-SHELL TEST"),"production launcher still contains experiment badge");
 assert(launcherCss.includes("padding:calc(18px + var(--safeTop)) 16px 26px"),"launcher safe-area top padding missing");
-assert(sw.includes('const CACHE_REVISION="r12"'),"V74 cache revision mismatch");
+assert(html["index.html"].includes('id="heroGoal"')&&html["index.html"].includes('id="surpriseGame"'),"R13 motivational launcher surfaces missing");
+assert(launcherSource.includes("function renderMotivationHero()")&&launcherSource.includes("function renderGameCards()"),"R13 contextual launcher logic missing");
+assert(launcherCss.includes("V74R13 motivational design pass")&&launcherCss.includes(".gameCard.chosenPulse"),"R13 launcher design layer missing");
+assert(gameCss.includes("V74R13 game feel")&&gameCss.includes('body[data-game="classic"] .classicRoleCard.isImpostor'),"R13 shared game feel missing");
+assert(engineSource.includes('card.classList.toggle("isImpostor",isImp)'),"R13 Classic role styling state missing");
+assert(html["games/charades/index.html"].includes('id="charadesTimeRail"'),"R13 Scharade time rail markup missing");
+assert(charadesSource.includes('byId("charadesTimeFill")')&&charadesCss.includes(".charadesTimeRail.critical"),"R13 Scharade time rail behavior missing");
+assert(sw.includes('const CACHE_REVISION="r13"'),"V74 cache revision mismatch");
 assert(sw.includes('versioned("/assets/js/launcher-dev.js")'),"service worker launcher DEV cache missing");
 assert(appStateSource.includes("var BACKUP_VERSION=3"),"backup format v3 missing");
 assert(engineSource.includes("experimentRecordCirca(null);"),"Circa shared base-round recording missing");

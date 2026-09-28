@@ -2091,3 +2091,105 @@ button.ghost,#restart,#classicRestart{
 @media(max-height:760px){
   .gameTopbar{margin-top:3px!important}
 }
+
+
+/* V74R13 game feel */
+body[data-game="circa"]{--accent:#5f8fff;--gameGlow:95,143,255}
+body[data-game="classic"]{--accent:#f39a32;--gameGlow:243,154,50}
+body[data-game="whoami"]{--accent:#9d7bff;--gameGlow:157,123,255}
+body[data-game="charades"]{--accent:#48c4a7;--gameGlow:72,196,167}
+body[data-game="personal-impostor"]{--accent:#e15cb1;--gameGlow:225,92,177}
+body[data-game]{
+  background:
+    radial-gradient(circle at 50% -12%,rgba(var(--gameGlow),.11),transparent 34%),
+    var(--bg);
+}
+body[data-game] .app{position:relative}
+body[data-game] .gameTopbar{
+  position:relative;padding-bottom:3px;
+}
+body[data-game] .gameTopbar:after{
+  content:"";position:absolute;left:3px;right:3px;bottom:-1px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(var(--gameGlow),.34),transparent);
+  opacity:.72
+}
+body[data-game] .toolbarBadge{
+  background:linear-gradient(145deg,rgba(var(--gameGlow),.08),var(--card2));
+  border-color:rgba(var(--gameGlow),.16)
+}
+body[data-game] .iconButton{
+  transition:transform .13s ease,background .13s ease,border-color .13s ease
+}
+body[data-game] .iconButton:active{transform:scale(.90);background:rgba(var(--gameGlow),.10);border-color:rgba(var(--gameGlow),.18)}
+body[data-game] button:not(.iconButton){
+  transition:transform .13s ease,filter .13s ease,box-shadow .13s ease,border-color .13s ease
+}
+body[data-game] button:not(.iconButton):active{transform:scale(.975) translateY(1px);filter:brightness(.96)}
+body[data-game] #setup .hero h1{
+  letter-spacing:-1px;text-wrap:balance
+}
+body[data-game] #setup .hero .sub{max-width:520px;margin-left:auto;margin-right:auto}
+body[data-game] .gameHubBack{
+  border-color:rgba(var(--gameGlow),.12);
+  background:rgba(var(--gameGlow),.045)
+}
+body[data-game] .sectionEyebrow{color:rgba(var(--gameGlow),.80)}
+body[data-game] .handoffAvatar,
+body[data-game] .miniAvatar{
+  box-shadow:0 0 0 1px rgba(var(--gameGlow),.17),0 12px 30px rgba(0,0,0,.20)
+}
+body[data-game="circa"] .questionCard{
+  box-shadow:0 20px 54px rgba(0,0,0,.24),0 0 0 1px rgba(95,143,255,.10)
+}
+body[data-game="circa"] .sliderFill{
+  box-shadow:0 0 18px rgba(95,143,255,.22)
+}
+body[data-game="classic"] .classicRoleCard{
+  position:relative;overflow:hidden;
+  box-shadow:0 24px 58px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.035);
+  transition:border-color .2s ease,box-shadow .2s ease,background .2s ease
+}
+body[data-game="classic"] .classicRoleCard:before{
+  content:"";position:absolute;width:190px;height:190px;border-radius:50%;right:-80px;top:-90px;
+  background:radial-gradient(circle,rgba(243,154,50,.12),transparent 68%);pointer-events:none
+}
+body[data-game="classic"] .classicRoleCard.isImpostor{
+  border-color:rgba(243,94,70,.42);
+  background:radial-gradient(circle at 50% 12%,rgba(243,94,70,.15),transparent 40%),linear-gradient(155deg,#382a28,#232225);
+  box-shadow:0 24px 62px rgba(0,0,0,.30),0 0 0 1px rgba(243,94,70,.08) inset,0 0 38px rgba(243,94,70,.08)
+}
+body[data-game="classic"] .classicRoleCard.isImpostor:before{
+  background:radial-gradient(circle,rgba(243,94,70,.20),transparent 68%)
+}
+body[data-game="classic"] .classicRoleCard.isImpostor .classicRoleEyebrow{color:#f39a78}
+body[data-game="classic"] .classicRoleCard.isImpostor .impostorWord{text-shadow:0 0 26px rgba(243,94,70,.18)}
+body[data-game="classic"] .classicResultMain{
+  background:radial-gradient(circle at 50% 0,rgba(243,154,50,.10),transparent 42%)
+}
+body[data-game="whoami"] .whoStageCard,
+body[data-game="whoami"] .whoTermsList>*{
+  border-color:rgba(157,123,255,.12)!important
+}
+body[data-game="charades"] .charadesTermCard{
+  box-shadow:0 24px 62px rgba(0,0,0,.26),0 0 0 1px rgba(72,196,167,.06) inset
+}
+body[data-game="personal-impostor"] .personalQuestionCard{
+  box-shadow:0 24px 62px rgba(0,0,0,.24),0 0 0 1px rgba(225,92,177,.06) inset
+}
+body[data-game] .roundIntro{
+  background:
+    radial-gradient(circle at 50% 35%,rgba(var(--gameGlow),.18),transparent 30%),
+    #17181b
+}
+body[data-game] .roundIntroIcon{filter:drop-shadow(0 8px 20px rgba(var(--gameGlow),.22))}
+@keyframes r13CardRise{
+  from{opacity:.7;transform:translateY(7px) scale(.992)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+body[data-game] .gameScreen:not(.hidden){animation:r13CardRise .22s cubic-bezier(.2,.8,.2,1)}
+.experimentReduceMotion .gameScreen:not(.hidden){animation:none!important}
+.experimentReduceMotion button,.experimentReduceMotion .iconButton{transition:none!important}
+@media(prefers-reduced-motion:reduce){
+  body[data-game] .gameScreen:not(.hidden){animation:none!important}
+  body[data-game] button,body[data-game] .iconButton{transition:none!important}
+}

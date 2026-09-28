@@ -1835,8 +1835,10 @@ function classicOpenRole(){
   byId("classicRoleDone").textContent=active<players.length-1?"Verstanden · weitergeben":"Verstanden · Runde starten";
   show("classicRole");
   var card=byId("classicRoleCard");
+  card.classList.toggle("isImpostor",isImp);
   card.classList.remove("revealFlip");void card.offsetWidth;card.classList.add("revealFlip");
   tone(isImp?260:420,0.06,0.016,"sine",0);
+  softHaptic(isImp?[18,28,36]:10);
 }
 function classicRoleDone(){
   ensureAudio();
