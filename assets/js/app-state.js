@@ -1121,10 +1121,10 @@ function recordRound(input){
   var unlocked=evaluateAchievements();
   var feedback=buildRoundFeedback(round,session,feedbackContext,unlocked,categoryUnlocked);
   save();
-  emitMotivationalFeedback(feedback);
   emitAchievementUnlocks(unlocked);
   emitCategoryUnlocks(categoryUnlocked);
   emitCategoryTicketEarned(ticketEarned);
+  emitMotivationalFeedback(feedback);
   return true;
 }
 function computeAwards(session){
@@ -1167,9 +1167,9 @@ function endSession(){
   var unlocked=evaluateAchievements();
   var feedback=buildSessionFeedback(s);
   save();
-  emitMotivationalFeedback(feedback);
   emitAchievementUnlocks(unlocked);
   emitCategoryUnlocks(categoryUnlocked);
+  emitMotivationalFeedback(feedback);
   return clone(s);
 }
 function getAchievements(){
