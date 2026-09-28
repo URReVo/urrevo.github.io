@@ -184,6 +184,128 @@ function handleAchievement(event){
     },index*480);
   });
 }
+function handleCategoryUnlock(event){
+  var items=event&&event.detail&&Array.isArray(event.detail.items)?event.detail.items:[];
+  items.slice(0,3).forEach(function(item,index){
+    setTimeout(function(){
+      haptic("success");
+      toast({
+        icon:item.icon||"🔓",
+        title:"Neue Kategorien freigeschaltet",
+        message:item.title||"Neues Kategorien-Paket",
+        kind:"Progression",
+        duration:4600
+      });
+    },index*520);
+  });
+}
+function categoryGameLabel(game){
+  return {circa:"Circa",classic:"Classic",whoami:"Wer bin ich?",charades:"Scharade"}[game]||game;
+}
+function ensureCategoryUnlockOverlay(){
+  var existing=document.getElementById("ciCategoryUnlockOverlay");
+  if(existing)return existing;
+  var overlay=document.createElement("div");overlay.id="ciCategoryUnlockOverlay";overlay.className="ciProgressOverlay hidden";overlay.setAttribute("aria-hidden","true");
+  var sheet=document.createElement("section");sheet.className="ciProgressSheet";sheet.setAttribute("role","dialog");sheet.setAttribute("aria-modal","true");sheet.setAttribute("aria-labelledby","ciProgressTitle");
+  var handle=document.createElement("div");handle.className="ciProgressHandle";
+  var header=document.createElement("div");header.className="ciProgressHeader";
+  var headText=document.createElement("div");
+  var eyebrow=document.createElement("span");eyebrow.className="ciProgressEyebrow";eyebrow.textContent="KATEGORIE GESPERRT";
+  var title=document.createElement("h2");title.id="ciProgressTitle";
+  headText.append(eyebrow,title);
+  var close=document.createElement("button");close.type="button";close.className="ciProgressClose";close.textContent="×";close.setAttribute("aria-label","Schließen");
+  header.append(headText,close);
+  var body=document.createElement("div");body.id="ciProgressBody";
+  sheet.append(handle,header,body);overlay.appendChild(sheet);document.body.appendChild(overlay);
+  function closeOverlay(){overlay.classList.add("hidden");overlay.setAttribute("aria-hidden","true");}
+  close.addEventListener("click",closeOverlay);
+  overlay.addEventListener("click",function(event){if(event.target===overlay)closeOverlay();});
+  document.addEventListener("keydown",function(event){if(event.key==="Escape"&&!overlay.classList.contains("hidden"))closeOverlay();});
+  overlay._closeProgress=closeOverlay;
+  return overlay;
+}
+function categoryPackCoverage(pack){
+  var lines=[];
+  Object.keys(pack.categories||{}).forEach(function(game){
+    var cats=pack.categories[game]||[];
+    if(cats.length)lines.push(categoryGameLabel(game)+": "+cats.join(", "));
+  });
+  return lines;
+}
+function openCategoryUnlock(game,category){
+  var store=window.CIAppState;
+  if(!store||!store.getCategoryLock)return false;
+  var lock=store.getCategoryLock(game,category);
+  if(!lock){
+    toast({icon:"✓",title:"Kategorie verfügbar",message:String(category||""),duration:2200});
+    return false;
+  }
+  var overlay=ensureCategoryUnlockOverlay(),body=document.getElementById("ciProgressBody"),title=document.getElementById("ciProgressTitle");
+  title.textContent=(lock.icon||"🔒")+" "+lock.title;
+  body.textContent="";
+
+  var intro=document.createElement("p");intro.className="ciProgressIntro";
+  intro.textContent="Diese Kategorie gehört zu einem Bonus-Paket. Du kannst sie über die Challenge erspielen oder eine freie Freischaltung einsetzen.";
+  body.appendChild(intro);
+
+  var coverage=document.createElement("div");coverage.className="ciProgressCoverage";
+  var coverageTitle=document.createElement("strong");coverageTitle.textContent="WIRD FREIGESCHALTET";
+  coverage.appendChild(coverageTitle);
+  categoryPackCoverage(lock).forEach(function(line){var row=document.createElement("span");row.textContent=line;coverage.appendChild(row);});
+  body.appendChild(coverage);
+
+  var challenge=document.createElement("div");challenge.className="ciProgressCard";
+  var challengeTop=document.createElement("div");challengeTop.className="ciProgressCardTop";
+  var challengeText=document.createElement("div");
+  var challengeEyebrow=document.createElement("span");challengeEyebrow.textContent="DIREKT-CHALLENGE";
+  var challengeTitle=document.createElement("strong");challengeTitle.textContent=lock.challenge.title;
+  challengeText.append(challengeEyebrow,challengeTitle);
+  var challengeCount=document.createElement("b");challengeCount.textContent=lock.challenge.progress;
+  challengeTop.append(challengeText,challengeCount);
+  var desc=document.createElement("p");desc.textContent=lock.challenge.text;
+  var track=document.createElement("div");track.className="ciProgressTrack";
+  var fill=document.createElement("div");fill.className="ciProgressFill";fill.style.width=Math.round(lock.challenge.ratio*100)+"%";track.appendChild(fill);
+  var auto=document.createElement("small");auto.textContent="Fortschritt wird automatisch gezählt.";
+  challenge.append(challengeTop,desc,track,auto);body.appendChild(challenge);
+
+  var tickets=lock.tickets||{};
+  var ticket=document.createElement("div");ticket.className="ciProgressCard ciProgressTicketCard";
+  var ticketTop=document.createElement("div");ticketTop.className="ciProgressCardTop";
+  var ticketText=document.createElement("div");
+  var ticketEyebrow=document.createElement("span");ticketEyebrow.textContent="FREIE WAHL";
+  var ticketTitle=document.createElement("strong");
+  ticketTitle.textContent=(tickets.available||0)>0?(tickets.available+" Freischaltung"+(tickets.available===1?"":"en")+" verfügbar"):"Noch keine freie Freischaltung";
+  ticketText.append(ticketEyebrow,ticketTitle);
+  ticketTop.appendChild(ticketText);ticket.appendChild(ticketTop);
+  var ticketDesc=document.createElement("p");
+  ticketDesc.textContent=(tickets.available||0)>0
+    ?"Du entscheidest selbst, für welches gesperrte Paket du sie einsetzt."
+    :(tickets.nextThreshold?("Nächste freie Freischaltung bei "+tickets.nextThreshold+" Gesamtrunden · noch "+tickets.roundsToNext+"."):"Alle Freischaltungen wurden bereits verdient.");
+  ticket.appendChild(ticketDesc);
+  if((tickets.available||0)>0){
+    var use=document.createElement("button");use.type="button";use.className="ciProgressUnlockButton";use.textContent="Freischaltung für "+lock.title+" einsetzen";
+    use.addEventListener("click",function(){
+      var result=store.unlockCategoryPack(lock.id,"ticket");
+      if(result&&result.ok){
+        overlay._closeProgress();haptic("success");
+      }else{
+        toast({icon:"ℹ️",title:"Nicht verfügbar",message:"Die Freischaltung konnte gerade nicht eingesetzt werden.",duration:3000});
+      }
+    });
+    ticket.appendChild(use);
+  }else if(tickets.nextThreshold){
+    var ticketTrack=document.createElement("div");ticketTrack.className="ciProgressTrack";
+    var prev=0;
+    (tickets.thresholds||[]).forEach(function(t){if(t<tickets.nextThreshold)prev=t;});
+    var span=Math.max(1,tickets.nextThreshold-prev);
+    var ratio=Math.max(0,Math.min(1,(tickets.rounds-prev)/span));
+    var ticketFill=document.createElement("div");ticketFill.className="ciProgressFill";ticketFill.style.width=Math.round(ratio*100)+"%";ticketTrack.appendChild(ticketFill);ticket.appendChild(ticketTrack);
+  }
+  body.appendChild(ticket);
+
+  overlay.classList.remove("hidden");overlay.setAttribute("aria-hidden","false");
+  return true;
+}
 function closeDevPanelForPreview(){
   var gamePanel=document.getElementById("devPanelOverlay");
   if(gamePanel&&!gamePanel.classList.contains("hidden")){
@@ -344,10 +466,11 @@ function installDevUiTests(){
   });
 }
 
-window.CIAppUI={toast:toast,navigate:navigate,haptic:haptic,showUpdateReady:showUpdateReady,devTest:runDevUiTest};
+window.CIAppUI={toast:toast,navigate:navigate,haptic:haptic,showUpdateReady:showUpdateReady,openCategoryUnlock:openCategoryUnlock,devTest:runDevUiTest};
 installInteractionLayer();
 installDevUiTests();
 window.addEventListener("ci:achievement-unlocked",handleAchievement);
+window.addEventListener("ci:category-unlocked",handleCategoryUnlock);
 
 if(document.readyState==="complete")registerOfflineSupport();
 else window.addEventListener("load",registerOfflineSupport,{once:true});
