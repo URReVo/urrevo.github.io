@@ -462,6 +462,48 @@ function renderSessions(){
     byId("lastSessionCard").onclick=function(){uiSound("tap");renderSessionSheet(last);};
   }
 }
+function achievementRequiredAmount(id){
+  var required={
+    "first-session":1,
+    "perfect":1,
+    "charades-clean":1,
+    "app-hour-1":1,
+    "session-games-3":3,
+    "escape-3":3,
+    "all-games":5,
+    "session-games-5":5,
+    "charades-clean-5":5,
+    "app-hours-5":5,
+    "warmup-10":10,
+    "whoami-10":10,
+    "personal-10":10,
+    "escape-10":10,
+    "impostor-10":10,
+    "charades-10":10,
+    "app-hours-10":10,
+    "session-20":20,
+    "circa-precision-20":20,
+    "circa-25":25,
+    "classic-25":25,
+    "whoami-25":25,
+    "charades-25":25,
+    "personal-25":25,
+    "impostor-25":25,
+    "fifty-rounds":50,
+    "charades-50":50,
+    "marathon":60,
+    "hundred-rounds":100,
+    "charades-100":100,
+    "collector-100":100
+  };
+  return Object.prototype.hasOwnProperty.call(required,id)?required[id]:Number.MAX_SAFE_INTEGER;
+}
+function sortAchievementsByRequirement(items){
+  return items.map(function(item,index){return {item:item,index:index};}).sort(function(a,b){
+    var amountDiff=achievementRequiredAmount(a.item.id)-achievementRequiredAmount(b.item.id);
+    return amountDiff||a.index-b.index;
+  }).map(function(entry){return entry.item;});
+}
 function renderStats(){
   var selected=store.getSelectedProfile?store.getSelectedProfile():store.getPrimaryProfile();
   var personal=statsScope==="profile";
@@ -523,6 +565,7 @@ function renderStats(){
 
   byId("achievementHeading").textContent=personal?"Persönliche Sammlung":"Gesamte Sammlung";
   var achievementData=personal&&store.getProfileAchievements?store.getProfileAchievements(selected.id):store.getAchievements();
+  achievementData=sortAchievementsByRequirement(achievementData);
   var unlockedCount=achievementData.filter(function(a){return a.unlocked;}).length;
   byId("achievementCount").textContent=unlockedCount+" / "+achievementData.length;
   var box=byId("achievementList");box.textContent="";
