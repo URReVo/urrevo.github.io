@@ -482,9 +482,14 @@ function evaluateCategoryTicketNotices(){
   var earned=ticketsEarnedForRounds(data.stats.rounds);
   var previous=Math.max(0,Number(data.categoryProgress.ticketNotices)||0);
   if(earned<=previous)return [];
-  var items=[];
-  for(var i=previous;i<earned;i++)items.push({index:i+1,threshold:CATEGORY_TICKET_THRESHOLDS[i]});
   data.categoryProgress.ticketNotices=earned;
+  var usable=categoryTicketStatus().available;
+  if(usable<1)return [];
+  var items=[],count=Math.min(earned-previous,usable);
+  for(var i=0;i<count;i++){
+    var thresholdIndex=Math.min(CATEGORY_TICKET_THRESHOLDS.length-1,previous+i);
+    items.push({index:thresholdIndex+1,threshold:CATEGORY_TICKET_THRESHOLDS[thresholdIndex]});
+  }
   return items;
 }
 function emitCategoryTicketEarned(items){
