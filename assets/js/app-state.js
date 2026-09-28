@@ -84,10 +84,16 @@ function baseStats(){
 function baseUsage(){
   return {appMs:0,games:{circa:0,classic:0,whoami:0,charades:0,personal:0},lastTickAt:null,activeGame:null};
 }
-function baseCategoryProgress(){return {unlocks:{}};}
+function baseCategoryProgress(){return {unlocks:{},ticketNotices:0};}
+function ticketsEarnedForRounds(rounds){
+  rounds=Math.max(0,Number(rounds)||0);
+  return CATEGORY_TICKET_THRESHOLDS.filter(function(target){return rounds>=target;}).length;
+}
 function normalizeCategoryProgress(src){
+  var valid=src&&typeof src==="object"&&!Array.isArray(src);
   var out=baseCategoryProgress();
-  src=src&&typeof src==="object"&&!Array.isArray(src)?src:{};
+  src=valid?src:{};
+  out.ticketNotices=Number.isFinite(Number(src.ticketNotices))?Math.max(0,Math.min(CATEGORY_TICKET_THRESHOLDS.length,Math.floor(Number(src.ticketNotices)))):null;
   var unlocks=src.unlocks&&typeof src.unlocks==="object"&&!Array.isArray(src.unlocks)?src.unlocks:{};
   CATEGORY_PACKS.forEach(function(def){
     var item=unlocks[def.id];
@@ -364,6 +370,7 @@ function load(){
   ["rounds","circaRounds","classicRounds","whoamiRounds","charadesRounds","personalRounds","impostor","personalImpostor","perfectEstimates","charadesCorrect","charadesSkipped","charadesTurns","charadesBestTurn","charadesCleanTurns"].forEach(function(k){data.stats[k]=Math.max(0,Number(data.stats[k])||0);});
   data.usage=normalizeUsage(data.usage);
   data.categoryProgress=normalizeCategoryProgress(data.categoryProgress);
+  if(data.categoryProgress.ticketNotices===null)data.categoryProgress.ticketNotices=ticketsEarnedForRounds(data.stats.rounds);
   /* A persisted heartbeat is never trusted after a reload; page lifecycle code starts a fresh foreground interval. */
   data.usage.lastTickAt=null;data.usage.activeGame=null;
   if(!Array.isArray(data.sessions))data.sessions=[];
@@ -454,7 +461,7 @@ function categoryChallengeState(def){
 }
 function categoryTicketStatus(){
   var rounds=Math.max(0,Number(data.stats.rounds)||0);
-  var earned=CATEGORY_TICKET_THRESHOLDS.filter(function(target){return rounds>=target;}).length;
+  var earned=ticketsEarnedForRounds(rounds);
   var spent=0;
   Object.keys(data.categoryProgress.unlocks||{}).forEach(function(id){
     if(data.categoryProgress.unlocks[id]&&data.categoryProgress.unlocks[id].method==="ticket")spent++;
@@ -468,6 +475,19 @@ function categoryTicketStatus(){
     earned:earned,spent:spent,available:Math.max(0,earned-spent),
     rounds:rounds,nextThreshold:next,roundsToNext:next===null?0:Math.max(0,next-rounds)
   };
+}
+function evaluateCategoryTicketNotices(){
+  var earned=ticketsEarnedForRounds(data.stats.rounds);
+  var previous=Math.max(0,Number(data.categoryProgress.ticketNotices)||0);
+  if(earned<=previous)return [];
+  var items=[];
+  for(var i=previous;i<earned;i++)items.push({index:i+1,threshold:CATEGORY_TICKET_THRESHOLDS[i]});
+  data.categoryProgress.ticketNotices=earned;
+  return items;
+}
+function emitCategoryTicketEarned(items){
+  if(!items||!items.length||!window||typeof window.dispatchEvent!=="function"||typeof CustomEvent==="undefined")return;
+  try{window.dispatchEvent(new CustomEvent("ci:category-ticket-earned",{detail:{items:clone(items),tickets:categoryTicketStatus()}}));}catch(e){}
 }
 function categoryPackInfo(def){
   var unlock=data.categoryProgress.unlocks[def.id]||null;
@@ -897,7 +917,8 @@ function recordRound(input){
   if(roundProfileIds.length)session.lastProfileIds=roundProfileIds;
 
   var categoryUnlocked=evaluateCategoryUnlocks();
-  var unlocked=evaluateAchievements();save();emitAchievementUnlocks(unlocked);emitCategoryUnlocks(categoryUnlocked);return true;
+  var ticketEarned=evaluateCategoryTicketNotices();
+  var unlocked=evaluateAchievements();save();emitAchievementUnlocks(unlocked);emitCategoryUnlocks(categoryUnlocked);emitCategoryTicketEarned(ticketEarned);return true;
 }
 function computeAwards(session){
   var best=null,wild=null,escapes={},impostors={},charadesCorrect={},charadesSkipped={},charadesTurns={};
@@ -1439,6 +1460,7 @@ async function importSnapshot(input){
   var activeId=String(src.activeSessionId||"");
   if(activeId&&imported.sessions.some(function(x){return x.id===activeId&&!x.endedAt;}))imported.activeSessionId=activeId;
 
+  if(imported.categoryProgress.ticketNotices===null)imported.categoryProgress.ticketNotices=ticketsEarnedForRounds(imported.stats.rounds);
   data=imported;
   evaluateCategoryUnlocks();
   evaluateAchievements();
