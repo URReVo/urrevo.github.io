@@ -332,6 +332,7 @@ function renderCrewHome(){
   byId("crewHomeTitle").textContent=crewDisplayName(crew);
   renderCrewAvatars(byId("crewHomeAvatars"),crew,5);
   byId("crewHomeLevel").textContent=crew.level.level;
+  byId("crewHomeLevelOrb").style.setProperty("--crew-progress",Math.round(crew.level.progress*360)+"deg");
   byId("crewHomeLevelTitle").textContent=crew.level.title;
   byId("crewHomeMeta").textContent=crew.hasHistory?(crew.stats.sessions+" "+(crew.stats.sessions===1?"Spieleabend":"Spieleabende")+" · "+crew.stats.rounds+" Runden · "+crewLastSeenText(crew)):"Heute beginnt euer Party-Pass";
   byId("crewHomeLevelFill").style.width=Math.round(crew.level.progress*100)+"%";
