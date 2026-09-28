@@ -6,6 +6,10 @@ var waitingWorker=null;
 var controllerReloadPending=false;
 var lastOnlineState=navigator.onLine;
 var toastHost=null;
+var feedbackQueue=[];
+var feedbackBusy=false;
+var feedbackRecent={};
+var feedbackAudioContext=null;
 var DEV_SESSION_KEY="ci.diag.session.v1";
 
 function statusElement(){return document.getElementById("offlineStatus");}
@@ -13,13 +17,32 @@ function preferences(){
   try{
     if(window.CIAppState&&window.CIAppState.getPreferences)return window.CIAppState.getPreferences();
   }catch(e){}
-  return {haptics:true,animations:true};
+  return {sound:true,haptics:true,animations:true};
 }
 function animationsEnabled(){return preferences().animations!==false&&!window.matchMedia("(prefers-reduced-motion: reduce)").matches;}
 function haptic(kind){
   if(preferences().haptics===false||typeof navigator.vibrate!=="function")return false;
-  var pattern=kind==="success"?[10,30,14]:kind==="warning"?[18,35,18]:[8];
+  var pattern=kind==="feedback3"?[14,28,18,30,24]:kind==="feedback2"?[10,24,14]:kind==="success"?[10,30,14]:kind==="warning"?[18,35,18]:[8];
   try{return navigator.vibrate(pattern);}catch(e){return false;}
+}
+function feedbackSound(level){
+  if(preferences().sound===false)return false;
+  var AudioCtx=window.AudioContext||window.webkitAudioContext;
+  if(!AudioCtx)return false;
+  try{
+    if(!feedbackAudioContext)feedbackAudioContext=new AudioCtx();
+    var ctx=feedbackAudioContext;
+    if(ctx.state==="suspended"&&ctx.resume)ctx.resume();
+    var nowAt=ctx.currentTime;
+    var notes=level>=3?[523.25,659.25,783.99]:level===2?[523.25,659.25]:[587.33];
+    notes.forEach(function(freq,index){
+      var osc=ctx.createOscillator(),gain=ctx.createGain(),start=nowAt+index*.07,end=start+(level>=3?.16:.1);
+      osc.type=level>=3?"sine":"triangle";osc.frequency.setValueAtTime(freq,start);
+      gain.gain.setValueAtTime(0.0001,start);gain.gain.exponentialRampToValueAtTime(level>=3?.055:.035,start+.015);gain.gain.exponentialRampToValueAtTime(0.0001,end);
+      osc.connect(gain);gain.connect(ctx.destination);osc.start(start);osc.stop(end+.02);
+    });
+    return true;
+  }catch(e){return false;}
 }
 function ensureToastHost(){
   if(toastHost&&toastHost.isConnected)return toastHost;
@@ -62,6 +85,73 @@ function toast(options){
   var duration=Number(options.duration);
   if(!options.persistent)setTimeout(function(){dismissToast(node);},duration>0?duration:3200);
   return node;
+}
+function feedbackHero(item){
+  var old=document.getElementById("ciFeedbackHero");
+  if(old)old.remove();
+  var overlay=document.createElement("div");overlay.id="ciFeedbackHero";overlay.className="ciFeedbackHero ciFeedbackLevel"+item.intensity;
+  overlay.setAttribute("aria-live","polite");
+  var card=document.createElement("div");card.className="ciFeedbackHeroCard";
+  var label=document.createElement("span");label.className="ciFeedbackHeroLabel";label.textContent=item.label||"STARKER MOMENT";
+  var icon=document.createElement("div");icon.className="ciFeedbackHeroIcon";icon.textContent=item.icon||"✨";
+  var title=document.createElement("strong");title.textContent=item.title||"Stark!";
+  var message=document.createElement("span");message.className="ciFeedbackHeroMessage";message.textContent=item.message||"";
+  card.append(label,icon,title,message);
+  if(animationsEnabled()){
+    var burst=document.createElement("div");burst.className="ciFeedbackBurst";
+    for(var i=0;i<10;i++){var dot=document.createElement("i");dot.style.setProperty("--i",String(i));burst.appendChild(dot);}
+    card.appendChild(burst);
+  }
+  overlay.appendChild(card);document.body.appendChild(overlay);
+  setTimeout(function(){overlay.classList.add("ciFeedbackHeroLeaving");},1650);
+  setTimeout(function(){if(overlay.isConnected)overlay.remove();},1950);
+}
+function normalizeFeedbackItem(item){
+  item=item&&typeof item==="object"?item:{};
+  return {
+    id:String(item.id||("feedback-"+Date.now()+"-"+Math.random())).slice(0,160),
+    type:String(item.type||"feedback").slice(0,40),
+    icon:String(item.icon||"✨").slice(0,8),
+    title:String(item.title||"Starker Moment").slice(0,80),
+    message:String(item.message||"").slice(0,180),
+    label:String(item.label||"").slice(0,40),
+    intensity:Math.max(1,Math.min(3,Math.round(Number(item.intensity)||1)))
+  };
+}
+function presentFeedback(item){
+  feedbackSound(item.intensity);
+  haptic("feedback"+item.intensity);
+  if(item.intensity>=3){
+    feedbackHero(item);
+    return 2050;
+  }
+  toast({
+    icon:item.icon,
+    title:item.title,
+    message:item.message,
+    kind:"Feedback"+item.intensity,
+    duration:item.intensity===2?3900:3000
+  });
+  return item.intensity===2?1350:1050;
+}
+function pumpFeedback(){
+  if(feedbackBusy||!feedbackQueue.length)return;
+  feedbackBusy=true;
+  var item=feedbackQueue.shift(),delay=presentFeedback(item);
+  setTimeout(function(){feedbackBusy=false;pumpFeedback();},delay);
+}
+function queueFeedback(items){
+  if(!Array.isArray(items))items=[items];
+  var nowMs=Date.now(),fresh=[];
+  items.forEach(function(raw){
+    var item=normalizeFeedbackItem(raw),last=feedbackRecent[item.id]||0;
+    if(nowMs-last<8000)return;
+    feedbackRecent[item.id]=nowMs;fresh.push(item);
+  });
+  Object.keys(feedbackRecent).forEach(function(id){if(nowMs-feedbackRecent[id]>60000)delete feedbackRecent[id];});
+  fresh.sort(function(a,b){return b.intensity-a.intensity;});
+  feedbackQueue=feedbackQueue.concat(fresh).slice(-12);
+  pumpFeedback();
 }
 function setOfflineStatus(text,state){
   var el=statusElement();
@@ -169,46 +259,38 @@ function installInteractionLayer(){
     event.preventDefault();navigate(href);
   });
 }
+function handleMotivationalFeedback(event){
+  var items=event&&event.detail&&Array.isArray(event.detail.items)?event.detail.items:[];
+  queueFeedback(items);
+}
 function handleAchievement(event){
   var items=event&&event.detail&&Array.isArray(event.detail.items)?event.detail.items:[];
-  items.slice(0,3).forEach(function(item,index){
-    setTimeout(function(){
-      haptic("success");
-      toast({
-        icon:item.icon||"🏆",
-        title:"Achievement freigeschaltet",
-        message:item.title||"Neuer Meilenstein",
-        kind:"Achievement",
-        duration:4300
-      });
-    },index*480);
-  });
+  var heroIds={perfect:true,"hundred-rounds":true,"charades-10":true,"session-games-5":true};
+  queueFeedback(items.slice(0,3).map(function(item){
+    return {
+      id:"achievement-"+item.id,icon:item.icon||"🏆",title:"Achievement · "+(item.title||"Freigeschaltet"),
+      message:item.text||"Neuer Meilenstein",type:"achievement",label:"ACHIEVEMENT FREIGESCHALTET",
+      intensity:heroIds[item.id]?3:2
+    };
+  }));
 }
 function handleCategoryUnlock(event){
   var items=event&&event.detail&&Array.isArray(event.detail.items)?event.detail.items:[];
-  items.slice(0,3).forEach(function(item,index){
-    setTimeout(function(){
-      haptic("success");
-      toast({
-        icon:item.icon||"🔓",
-        title:"Neue Kategorien freigeschaltet",
-        message:item.title||"Neues Kategorien-Paket",
-        kind:"Progression",
-        duration:4600
-      });
-    },index*520);
-  });
+  queueFeedback(items.slice(0,3).map(function(item){
+    return {
+      id:"category-"+item.id,icon:item.icon||"🔓",title:item.title||"Neue Kategorien",
+      message:"Bonus-Kategorien freigeschaltet.",type:"progression",label:"NEUER CONTENT",intensity:3
+    };
+  }));
 }
 function handleCategoryTicketEarned(event){
   var items=event&&event.detail&&Array.isArray(event.detail.items)?event.detail.items:[];
   if(!items.length)return;
-  haptic("success");
-  toast({
-    icon:"🔓",
-    title:"Freie Freischaltung verdient",
+  queueFeedback({
+    id:"category-ticket-"+items.map(function(item){return item.threshold;}).join("-"),
+    icon:"🔓",title:"Freie Freischaltung verdient",
     message:items.length>1?(items.length+" neue Freischaltungen verfügbar."):"Du kannst jetzt selbst ein Bonus-Paket auswählen.",
-    kind:"Progression",
-    duration:4800
+    type:"progression",intensity:2
   });
 }
 function categoryGameLabel(game){
@@ -357,7 +439,7 @@ function previewMiniSession(){
 }
 function runDevUiTest(action){
   action=String(action||"");
-  if(["achievement","achievement-stack","success","offline","update"].indexOf(action)!==-1)closeDevPanelForPreview();
+  if(["achievement","achievement-stack","success","offline","update","feedback-1","feedback-2","feedback-3","feedback-session"].indexOf(action)!==-1)closeDevPanelForPreview();
   setTimeout(function(){
     if(action==="achievement"){
       emitTestAchievements([{id:"dev-preview",icon:"🏆",title:"Warmgelaufen",text:"DEV-Vorschau"}]);
@@ -379,6 +461,14 @@ function runDevUiTest(action){
       }).dataset.devUpdatePreview="1";
     }else if(action==="mini-session"){
       previewMiniSession();
+    }else if(action==="feedback-1"){
+      queueFeedback({id:"dev-feedback-1-"+Date.now(),icon:"🎯",title:"Starke Schätzung",message:"Nur 8,4 % daneben.",intensity:1,type:"performance"});
+    }else if(action==="feedback-2"){
+      queueFeedback({id:"dev-feedback-2-"+Date.now(),icon:"🔥",title:"Persönlicher Rekord",message:"Neue Bestleistung in dieser Kategorie.",intensity:2,type:"record"});
+    }else if(action==="feedback-3"){
+      queueFeedback({id:"dev-feedback-3-"+Date.now(),icon:"🎯",title:"Punktlandung!",message:"Exakt richtig geschätzt.",label:"AUSSERGEWÖHNLICH",intensity:3,type:"performance"});
+    }else if(action==="feedback-session"){
+      queueFeedback({id:"dev-feedback-session-"+Date.now(),icon:"🏁",title:"Starker Spieleabend",message:"20 Runden · 4 Awards",label:"SESSION ABGESCHLOSSEN",intensity:3,type:"session-end"});
     }else if(action==="haptic"){
       var ok=haptic("success");
       toast({
@@ -408,6 +498,10 @@ function buildGameDevTestCard(){
     ["3 Achievements","achievement-stack"],
     ["Erfolgs-Toast","success"],
     ["Offline-Hinweis","offline"],
+    ["Feedback · klein","feedback-1"],
+    ["Feedback · mittel","feedback-2"],
+    ["Feedback · Hero","feedback-3"],
+    ["Session-Finale","feedback-session"],
     ["Update-Hinweis","update"],
     ["Haptik testen","haptic"]
   ].forEach(function(item){buttons.appendChild(devTestButton(item[0],item[1],"secondary"));});
@@ -459,6 +553,10 @@ function installDevUiTests(){
       ["3 Achievements","achievement-stack"],
       ["Erfolgs-Toast","success"],
       ["Offline","offline"],
+      ["Feedback 1","feedback-1"],
+      ["Feedback 2","feedback-2"],
+      ["Feedback 3","feedback-3"],
+      ["Session-Finale","feedback-session"],
       ["Update","update"],
       ["Haptik","haptic"],
       ["Mini-Session","mini-session"]
@@ -478,9 +576,10 @@ function installDevUiTests(){
   });
 }
 
-window.CIAppUI={toast:toast,navigate:navigate,haptic:haptic,showUpdateReady:showUpdateReady,openCategoryUnlock:openCategoryUnlock,devTest:runDevUiTest};
+window.CIAppUI={toast:toast,navigate:navigate,haptic:haptic,queueFeedback:queueFeedback,showUpdateReady:showUpdateReady,openCategoryUnlock:openCategoryUnlock,devTest:runDevUiTest};
 installInteractionLayer();
 installDevUiTests();
+window.addEventListener("ci:motivational-feedback",handleMotivationalFeedback);
 window.addEventListener("ci:achievement-unlocked",handleAchievement);
 window.addEventListener("ci:category-unlocked",handleCategoryUnlock);
 window.addEventListener("ci:category-ticket-earned",handleCategoryTicketEarned);
