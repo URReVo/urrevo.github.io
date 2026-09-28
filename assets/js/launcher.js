@@ -252,6 +252,10 @@ function renderCrewAvatars(box,crew,limit){
     var more=document.createElement("span");more.className="crewAvatarMore";more.textContent="+"+(crew.members.length-limit);box.appendChild(more);
   }
 }
+function crewMemberLabel(crew,id){
+  var member=(crew&&crew.members||[]).find(function(item){return item.id===id;});
+  return member?member.name:profileName(id);
+}
 function crewRecordRow(icon,title,value){
   var row=document.createElement("div");row.className="crewMemory";
   var em=document.createElement("span");em.className="crewMemoryIcon";em.textContent=icon;
@@ -305,10 +309,10 @@ function openCrewSheet(crew){
 
   var memories=byId("crewMemoryList");memories.textContent="";
   var records=[];
-  if(crew.stats.bestCirca)records.push(crewRecordRow("🎯","Beste Circa-Schätzung",profileName(crew.stats.bestCirca.profileId)+" · "+crew.stats.bestCirca.error.toLocaleString("de-DE",{maximumFractionDigits:1})+" % daneben"));
-  if(crew.stats.bestCharades&&crew.stats.bestCharades.correct>0)records.push(crewRecordRow("🎭","Scharade-Rekord",profileName(crew.stats.bestCharades.profileId)+" · "+crew.stats.bestCharades.correct+" richtig"));
-  if(crew.stats.escapeLeader)records.push(crewRecordRow("🕵️","Meiste Impostor-Fluchten",profileName(crew.stats.escapeLeader.profileId)+" · "+crew.stats.escapeLeader.escapes+"× unentdeckt"));
-  if(crew.stats.wildCirca)records.push(crewRecordRow("😵","Wildeste Schätzung",profileName(crew.stats.wildCirca.profileId)+" · "+crew.stats.wildCirca.error.toLocaleString("de-DE",{maximumFractionDigits:0})+" % daneben"));
+  if(crew.stats.bestCirca)records.push(crewRecordRow("🎯","Beste Circa-Schätzung",crewMemberLabel(crew,crew.stats.bestCirca.profileId)+" · "+crew.stats.bestCirca.error.toLocaleString("de-DE",{maximumFractionDigits:1})+" % daneben"));
+  if(crew.stats.bestCharades&&crew.stats.bestCharades.correct>0)records.push(crewRecordRow("🎭","Scharade-Rekord",crewMemberLabel(crew,crew.stats.bestCharades.profileId)+" · "+crew.stats.bestCharades.correct+" richtig"));
+  if(crew.stats.escapeLeader)records.push(crewRecordRow("🕵️","Meiste Impostor-Fluchten",crewMemberLabel(crew,crew.stats.escapeLeader.profileId)+" · "+crew.stats.escapeLeader.escapes+"× unentdeckt"));
+  if(crew.stats.wildCirca)records.push(crewRecordRow("😵","Wildeste Schätzung",crewMemberLabel(crew,crew.stats.wildCirca.profileId)+" · "+crew.stats.wildCirca.error.toLocaleString("de-DE",{maximumFractionDigits:0})+" % daneben"));
   if(crew.stats.longestSessionRounds)records.push(crewRecordRow("🌙","Längster Abend",crew.stats.longestSessionRounds+" Runden"));
   records.slice(0,5).forEach(function(row){memories.appendChild(row);});
   if(!records.length){
