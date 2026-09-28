@@ -6,7 +6,7 @@ var LEGACY_KEY="imposterGames.appState.legacy";
 var MAX_SESSIONS=50;
 var BACKUP_FORMAT="imposter-games-backup";
 var BACKUP_VERSION=3;
-var GAME_STORAGE_PREFIX="imposterGames.v73.game.";
+var GAME_STORAGE_PREFIX="imposterGames.v74.game.";
 var GAME_STORAGE_KEYS=[
   "circa.players.v1","classic.players.v1",
   "circa.categories.v1","classic.categories.v1",
@@ -15,9 +15,12 @@ var GAME_STORAGE_KEYS=[
   "classic.deck.v1","classic.hint.v1","classic.timer.v1",
   "whoami.players.v1","whoami.categories.v1","whoami.deck.v1",
   "charades.players.v1","charades.categories.v1","charades.deck.v1","charades.timer.v1","charades.motionFlip.v2",
-  "v72Migration.v1"
+  "personal.players.v1","personal.deck.v1",
+  "v72Migration.v1","v73Migration.v1"
 ];
 var DEFAULT_AVATARS=["😎","🕵️","🥷","🤠","👻","🤖","🦊","🐼","🐸","🦁","🐙","🦄"];
+var GAME_IDS=["circa","classic","whoami","charades","personal"];
+function normalizeGame(game){return GAME_IDS.indexOf(game)!==-1?game:"circa";}
 
 function uid(prefix){
   try{
@@ -35,10 +38,33 @@ function isGenericPlayerName(v){
 function clone(v){return JSON.parse(JSON.stringify(v));}
 function now(){return new Date().toISOString();}
 function baseProfileStats(){
-  return {rounds:0,circaRounds:0,classicRounds:0,impostor:0,impostorEscapes:0,closest:0,farthest:0,perfect:0,errorSum:0,errorSamples:0,circaQids:[],classicWids:[],categories:[],legacyPerfectUnknown:false,legacyCategoryUnknown:false};
+  return {
+    rounds:0,circaRounds:0,classicRounds:0,whoamiRounds:0,charadesRounds:0,personalRounds:0,
+    impostor:0,personalImpostor:0,impostorEscapes:0,closest:0,farthest:0,perfect:0,errorSum:0,errorSamples:0,
+    charadesCorrect:0,charadesSkipped:0,charadesTurns:0,charadesBestTurn:0,charadesCleanTurns:0,
+    circaQids:[],classicWids:[],whoamiTermIds:[],charadesTermIds:[],personalQids:[],categories:[],
+    legacyPerfectUnknown:false,legacyCategoryUnknown:false
+  };
 }
 function baseStats(){
-  return {rounds:0,circaRounds:0,classicRounds:0,perfectEstimates:0,circaQids:[],classicWids:[],categories:[]};
+  return {
+    rounds:0,circaRounds:0,classicRounds:0,whoamiRounds:0,charadesRounds:0,personalRounds:0,
+    impostor:0,personalImpostor:0,perfectEstimates:0,
+    charadesCorrect:0,charadesSkipped:0,charadesTurns:0,charadesBestTurn:0,charadesCleanTurns:0,
+    circaQids:[],classicWids:[],whoamiTermIds:[],charadesTermIds:[],personalQids:[],categories:[]
+  };
+}
+function baseUsage(){
+  return {appMs:0,games:{circa:0,classic:0,whoami:0,charades:0,personal:0},lastTickAt:null,activeGame:null};
+}
+function normalizeUsage(src){
+  src=src&&typeof src==="object"&&!Array.isArray(src)?src:{};
+  var out=baseUsage();out.appMs=Math.max(0,Number(src.appMs)||0);
+  var games=src.games&&typeof src.games==="object"&&!Array.isArray(src.games)?src.games:{};
+  GAME_IDS.forEach(function(game){out.games[game]=Math.max(0,Number(games[game])||0);});
+  out.lastTickAt=Number(src.lastTickAt)>0?Number(src.lastTickAt):null;
+  out.activeGame=GAME_IDS.indexOf(src.activeGame)!==-1?src.activeGame:null;
+  return out;
 }
 function defaults(){
   var id=uid("player");
@@ -50,6 +76,7 @@ function defaults(){
     profileStats:{},
     profileArchive:{},
     stats:baseStats(),
+    usage:baseUsage(),
     sessions:[],
     activeSessionId:null,
     achievements:{},
@@ -67,6 +94,21 @@ function readLegacyJson(key,fallback){
     var parsed=JSON.parse(raw);
     return parsed==null?fallback:parsed;
   }catch(e){return fallback;}
+}
+var PREVIOUS_GAME_STORAGE_PREFIX="imposterGames.v73.game.";
+function migrateV73GameStorageOnce(){
+  var marker=GAME_STORAGE_PREFIX+"v73Migration.v1";
+  try{
+    if(localStorage.getItem(marker)!==null)return;
+    GAME_STORAGE_KEYS.forEach(function(suffix){
+      if(suffix==="v73Migration.v1")return;
+      var target=GAME_STORAGE_PREFIX+suffix;
+      if(localStorage.getItem(target)!==null)return;
+      var previous=localStorage.getItem(PREVIOUS_GAME_STORAGE_PREFIX+suffix);
+      if(previous!==null)localStorage.setItem(target,previous);
+    });
+    localStorage.setItem(marker,JSON.stringify({completed:true,from:"V73",at:now()}));
+  }catch(e){}
 }
 function migrateV72(){
   var migrated=defaults();
@@ -230,15 +272,18 @@ function load(){
   Object.keys(data.profileStats).forEach(function(id){
     var st=data.profileStats[id];
     if(!st||typeof st!=="object"){data.profileStats[id]=baseProfileStats();return;}
-    ["rounds","circaRounds","classicRounds","impostor","impostorEscapes","closest","farthest","perfect","errorSum","errorSamples"].forEach(function(k){st[k]=Math.max(0,Number(st[k])||0);});
-    ["circaQids","classicWids","categories"].forEach(function(k){if(!Array.isArray(st[k]))st[k]=[];});
+    ["rounds","circaRounds","classicRounds","whoamiRounds","charadesRounds","personalRounds","impostor","personalImpostor","impostorEscapes","closest","farthest","perfect","errorSum","errorSamples","charadesCorrect","charadesSkipped","charadesTurns","charadesBestTurn","charadesCleanTurns"].forEach(function(k){st[k]=Math.max(0,Number(st[k])||0);});
+    ["circaQids","classicWids","whoamiTermIds","charadesTermIds","personalQids","categories"].forEach(function(k){if(!Array.isArray(st[k]))st[k]=[];});
     st.legacyPerfectUnknown=st.legacyPerfectUnknown===true;
     st.legacyCategoryUnknown=st.legacyCategoryUnknown===true;
   });
   if(!data.profileArchive||typeof data.profileArchive!=="object"||Array.isArray(data.profileArchive))data.profileArchive={};
   if(!data.stats||typeof data.stats!=="object")data.stats=baseStats();
-  ["circaQids","classicWids","categories"].forEach(function(k){if(!Array.isArray(data.stats[k]))data.stats[k]=[];});
-  ["rounds","circaRounds","classicRounds","perfectEstimates"].forEach(function(k){data.stats[k]=Math.max(0,Number(data.stats[k])||0);});
+  ["circaQids","classicWids","whoamiTermIds","charadesTermIds","personalQids","categories"].forEach(function(k){if(!Array.isArray(data.stats[k]))data.stats[k]=[];});
+  ["rounds","circaRounds","classicRounds","whoamiRounds","charadesRounds","personalRounds","impostor","personalImpostor","perfectEstimates","charadesCorrect","charadesSkipped","charadesTurns","charadesBestTurn","charadesCleanTurns"].forEach(function(k){data.stats[k]=Math.max(0,Number(data.stats[k])||0);});
+  data.usage=normalizeUsage(data.usage);
+  /* A persisted heartbeat is never trusted after a reload; page lifecycle code starts a fresh foreground interval. */
+  data.usage.lastTickAt=null;data.usage.activeGame=null;
   if(!Array.isArray(data.sessions))data.sessions=[];
   data.sessions.forEach(function(session){
     (session&&Array.isArray(session.rounds)?session.rounds:[]).forEach(function(round){
@@ -248,9 +293,15 @@ function load(){
         if(!pst){pst=baseProfileStats();data.profileStats[rp.profileId]=pst;}
         if(!Array.isArray(pst.circaQids))pst.circaQids=[];
         if(!Array.isArray(pst.classicWids))pst.classicWids=[];
+        if(!Array.isArray(pst.whoamiTermIds))pst.whoamiTermIds=[];
+        if(!Array.isArray(pst.charadesTermIds))pst.charadesTermIds=[];
+        if(!Array.isArray(pst.personalQids))pst.personalQids=[];
         if(!Array.isArray(pst.categories))pst.categories=[];
         if(round.game==="circa"&&round.qid)addUnique(pst.circaQids,round.qid);
         if(round.game==="classic"&&round.wid)addUnique(pst.classicWids,round.wid);
+        if(round.game==="whoami"&&rp.termId)addUnique(pst.whoamiTermIds,rp.termId);
+        if(round.game==="charades"&&Array.isArray(rp.termIds))rp.termIds.forEach(function(id){addUnique(pst.charadesTermIds,id);});
+        if(round.game==="personal"&&round.qid)addUnique(pst.personalQids,round.qid);
         if(round.category)addUnique(pst.categories,round.category);
       });
     });
@@ -265,6 +316,7 @@ function load(){
 
   return data;
 }
+migrateV73GameStorageOnce();
 var data=load();
 
 function save(){
@@ -374,7 +426,7 @@ function beginSession(players){
     var id=ensureProfileForPlayer(p);
     if(profileIds.indexOf(id)===-1)profileIds.push(id);
   });
-  var session={id:uid("session"),startedAt:now(),endedAt:null,profileIds:profileIds,lastProfileIds:profileIds.slice(),rounds:[],awards:[]};
+  var session={id:uid("session"),startedAt:now(),endedAt:null,profileIds:profileIds,lastProfileIds:profileIds.slice(),rounds:[],awards:[],lastGame:null,gameStartedAt:null,activity:null};
   data.sessions.push(session);
   data.activeSessionId=session.id;
   if(data.sessions.length>MAX_SESSIONS)data.sessions.splice(0,data.sessions.length-MAX_SESSIONS);
@@ -385,16 +437,23 @@ function addUnique(arr,value){
 }
 function contribution(round,dir){
   dir=dir||1;
+  var game=normalizeGame(round.game);
+  var roundField={circa:"circaRounds",classic:"classicRounds",whoami:"whoamiRounds",charades:"charadesRounds",personal:"personalRounds"}[game];
   data.stats.rounds=Math.max(0,data.stats.rounds+dir);
-  if(round.game==="circa")data.stats.circaRounds=Math.max(0,data.stats.circaRounds+dir);
-  if(round.game==="classic")data.stats.classicRounds=Math.max(0,data.stats.classicRounds+dir);
+  data.stats[roundField]=Math.max(0,(Number(data.stats[roundField])||0)+dir);
 
   (round.players||[]).forEach(function(rp){
     var st=ensureStat(rp.profileId);
     st.rounds=Math.max(0,st.rounds+dir);
-    if(round.game==="circa")st.circaRounds=Math.max(0,st.circaRounds+dir);
-    if(round.game==="classic")st.classicRounds=Math.max(0,st.classicRounds+dir);
-    if(rp.role==="impostor")st.impostor=Math.max(0,st.impostor+dir);
+    st[roundField]=Math.max(0,(Number(st[roundField])||0)+dir);
+    if(rp.role==="impostor"){
+      st.impostor=Math.max(0,st.impostor+dir);
+      data.stats.impostor=Math.max(0,(Number(data.stats.impostor)||0)+dir);
+      if(game==="personal"){
+        st.personalImpostor=Math.max(0,st.personalImpostor+dir);
+        data.stats.personalImpostor=Math.max(0,(Number(data.stats.personalImpostor)||0)+dir);
+      }
+    }
     if(rp.role==="impostor"&&round.impostorEscaped===true)st.impostorEscapes=Math.max(0,st.impostorEscapes+dir);
     if(rp.closest)st.closest=Math.max(0,st.closest+dir);
     if(rp.farthest)st.farthest=Math.max(0,st.farthest+dir);
@@ -402,31 +461,109 @@ function contribution(round,dir){
       st.perfect=Math.max(0,st.perfect+dir);
       data.stats.perfectEstimates=Math.max(0,data.stats.perfectEstimates+dir);
     }
+    if(game==="charades"){
+      var correct=Math.max(0,Number(rp.correct)||0),skipped=Math.max(0,Number(rp.skipped)||0);
+      st.charadesCorrect=Math.max(0,st.charadesCorrect+dir*correct);
+      st.charadesSkipped=Math.max(0,st.charadesSkipped+dir*skipped);
+      st.charadesTurns=Math.max(0,st.charadesTurns+dir);
+      data.stats.charadesCorrect=Math.max(0,data.stats.charadesCorrect+dir*correct);
+      data.stats.charadesSkipped=Math.max(0,data.stats.charadesSkipped+dir*skipped);
+      data.stats.charadesTurns=Math.max(0,data.stats.charadesTurns+dir);
+      if(dir>0){
+        st.charadesBestTurn=Math.max(st.charadesBestTurn,correct);
+        data.stats.charadesBestTurn=Math.max(data.stats.charadesBestTurn,correct);
+        if(correct>=5&&skipped===0){st.charadesCleanTurns++;data.stats.charadesCleanTurns++;}
+      }
+    }
     if(dir>0){
-      if(round.game==="circa"&&round.qid)addUnique(st.circaQids,round.qid);
-      if(round.game==="classic"&&round.wid)addUnique(st.classicWids,round.wid);
+      if(game==="circa"&&round.qid)addUnique(st.circaQids,round.qid);
+      if(game==="classic"&&round.wid)addUnique(st.classicWids,round.wid);
+      if(game==="whoami"&&rp.termId)addUnique(st.whoamiTermIds,rp.termId);
+      if(game==="charades"&&Array.isArray(rp.termIds))rp.termIds.forEach(function(id){addUnique(st.charadesTermIds,id);});
+      if(game==="personal"&&round.qid)addUnique(st.personalQids,round.qid);
       if(round.category)addUnique(st.categories,round.category);
     }
-    if(round.game==="circa"&&Number.isFinite(Number(rp.error))){
+    if(game==="circa"&&Number.isFinite(Number(rp.error))){
       st.errorSum=Math.max(0,st.errorSum+dir*Number(rp.error));
       st.errorSamples=Math.max(0,st.errorSamples+dir);
     }
   });
 
   if(dir>0){
-    if(round.game==="circa"&&round.qid)addUnique(data.stats.circaQids,round.qid);
-    if(round.game==="classic"&&round.wid)addUnique(data.stats.classicWids,round.wid);
+    if(game==="circa"&&round.qid)addUnique(data.stats.circaQids,round.qid);
+    if(game==="classic"&&round.wid)addUnique(data.stats.classicWids,round.wid);
+    if(game==="whoami") (round.players||[]).forEach(function(rp){if(rp.termId)addUnique(data.stats.whoamiTermIds,rp.termId);});
+    if(game==="charades") (round.players||[]).forEach(function(rp){if(Array.isArray(rp.termIds))rp.termIds.forEach(function(id){addUnique(data.stats.charadesTermIds,id);});});
+    if(game==="personal"&&round.qid)addUnique(data.stats.personalQids,round.qid);
     if(round.category)addUnique(data.stats.categories,round.category);
   }
 }
+function hourSessionDone(){return data.sessions.some(function(s){if(!s.endedAt||!(s.rounds||[]).length)return false;return new Date(s.endedAt).getTime()-new Date(s.startedAt).getTime()>=60*60*1000;});}
+function allGamesDone(st){return ["circaRounds","classicRounds","whoamiRounds","charadesRounds","personalRounds"].every(function(k){return Number(st[k])>0;});}
+function roundHasProfile(round,id){return !id||(round.players||[]).some(function(p){return p.profileId===id;});}
+function sessionRoundPeak(id){
+  var best=0;data.sessions.forEach(function(s){if(!s.endedAt)return;var count=id?(s.rounds||[]).filter(function(r){return roundHasProfile(r,id);}).length:(s.rounds||[]).length;best=Math.max(best,count);});return best;
+}
+function sessionGamePeak(id){
+  var best=0;data.sessions.forEach(function(s){if(!s.endedAt)return;var seen={};(s.rounds||[]).forEach(function(r){if(roundHasProfile(r,id))seen[normalizeGame(r.game)]=true;});best=Math.max(best,Object.keys(seen).length);});return best;
+}
+function uniqueContentCount(st){
+  return ["circaQids","classicWids","whoamiTermIds","charadesTermIds","personalQids"].reduce(function(total,key){return total+(Array.isArray(st[key])?st[key].length:0);},0);
+}
+function circaPrecision(st){
+  var samples=Math.max(0,Number(st.errorSamples)||0),sum=Math.max(0,Number(st.errorSum)||0);
+  return {samples:samples,average:samples?sum/samples:null};
+}
+function bestGlobalCircaPrecision(){
+  var best=null,maxSamples=0;
+  Object.values(data.profileStats).forEach(function(st){
+    var item=circaPrecision(st);maxSamples=Math.max(maxSamples,item.samples);
+    if(item.samples>=20&&item.average!==null&&(!best||item.average<best.average))best=item;
+  });
+  return {best:best,maxSamples:maxSamples};
+}
 function achievementDefs(){
+  function maxProfileValue(key){var m=0;Object.values(data.profileStats).forEach(function(s){m=Math.max(m,Number(s[key])||0);});return m;}
+  function globalPrecisionDone(){var p=bestGlobalCircaPrecision();return !!p.best&&p.best.average<=10;}
+  function globalPrecisionProgress(){var p=bestGlobalCircaPrecision();if(p.maxSamples<20)return Math.min(20,p.maxSamples)+"/20";if(!p.best)return "20/20";return "Ø "+p.best.average.toLocaleString("de-DE",{maximumFractionDigits:1})+" %";}
+  function usageHours(ms){return Math.floor(Math.max(0,Number(ms)||0)/360000)/10;}
   return [
     {id:"first-session",icon:"🎬",title:"Erster Abend",text:"Eine Session mit mindestens einer Runde abgeschlossen",done:function(){return data.sessions.some(function(s){return !!s.endedAt&&Array.isArray(s.rounds)&&s.rounds.length>0;});},progress:function(){return data.sessions.some(function(s){return !!s.endedAt&&Array.isArray(s.rounds)&&s.rounds.length>0;})?"1/1":"0/1";}},
-    {id:"perfect",icon:"🎯",title:"Punktlandung",text:"Eine Circa-Schätzung exakt treffen",done:function(){return data.stats.perfectEstimates>=1;},progress:function(){return data.stats.perfectEstimates>=1?"1/1":data.imports&&data.imports.v72PerfectUnknown?"V72: nicht erfasst":"0/1";}},
-    {id:"escape-3",icon:"🕵️",title:"Unentdeckt",text:"3× als Imposter davonkommen",done:function(){return Object.values(data.profileStats).some(function(s){return s.impostorEscapes>=3;});},progress:function(){var m=0;Object.values(data.profileStats).forEach(function(s){m=Math.max(m,s.impostorEscapes||0);});return Math.min(3,m)+"/3";}},
-    {id:"all-categories",icon:"🗺️",title:"Alles gesehen",text:"Alle 10 Kategorien mindestens einmal",done:function(){return data.stats.categories.length>=10;},progress:function(){return Math.min(10,data.stats.categories.length)+"/10";}},
+    {id:"warmup-10",icon:"🏁",title:"Warmgelaufen",text:"10 Runden insgesamt spielen",done:function(){return data.stats.rounds>=10;},progress:function(){return Math.min(10,data.stats.rounds)+"/10";}},
+    {id:"fifty-rounds",icon:"🎮",title:"Stammspieler",text:"50 Runden insgesamt spielen",done:function(){return data.stats.rounds>=50;},progress:function(){return Math.min(50,data.stats.rounds)+"/50";}},
     {id:"hundred-rounds",icon:"💯",title:"Veteran",text:"100 Runden insgesamt spielen",done:function(){return data.stats.rounds>=100;},progress:function(){return Math.min(100,data.stats.rounds)+"/100";}},
-    {id:"classic-50",icon:"🎭",title:"Schauspieler",text:"50 Classic-Runden spielen",done:function(){return data.stats.classicRounds>=50;},progress:function(){return Math.min(50,data.stats.classicRounds)+"/50";}}
+    {id:"all-games",icon:"🎲",title:"Allrounder",text:"Alle fünf Spielmodi mindestens einmal spielen",done:function(){return allGamesDone(data.stats);},progress:function(){var n=["circaRounds","classicRounds","whoamiRounds","charadesRounds","personalRounds"].filter(function(k){return Number(data.stats[k])>0;}).length;return n+"/5";}},
+    {id:"session-20",icon:"🌙",title:"Langer Abend",text:"20 Runden in einer einzigen Session spielen",done:function(){return sessionRoundPeak(null)>=20;},progress:function(){return Math.min(20,sessionRoundPeak(null))+"/20";}},
+    {id:"session-games-3",icon:"🔀",title:"Spielwechsel",text:"3 verschiedene Modi in einer Session spielen",done:function(){return sessionGamePeak(null)>=3;},progress:function(){return Math.min(3,sessionGamePeak(null))+"/3";}},
+    {id:"session-games-5",icon:"🧩",title:"Volles Programm",text:"Alle 5 Modi in einer Session spielen",done:function(){return sessionGamePeak(null)>=5;},progress:function(){return Math.min(5,sessionGamePeak(null))+"/5";}},
+
+    {id:"circa-25",icon:"📏",title:"Schätzroutine",text:"25 Circa-Runden spielen",done:function(){return data.stats.circaRounds>=25;},progress:function(){return Math.min(25,data.stats.circaRounds)+"/25";}},
+    {id:"classic-25",icon:"😶",title:"Pokerface",text:"25 Classic-Runden spielen",done:function(){return data.stats.classicRounds>=25;},progress:function(){return Math.min(25,data.stats.classicRounds)+"/25";}},
+    {id:"whoami-10",icon:"❓",title:"Identitätskrise",text:"10 Runden Wer bin ich? spielen",done:function(){return data.stats.whoamiRounds>=10;},progress:function(){return Math.min(10,data.stats.whoamiRounds)+"/10";}},
+    {id:"whoami-25",icon:"🤔",title:"Wer war ich nochmal?",text:"25 Runden Wer bin ich? spielen",done:function(){return data.stats.whoamiRounds>=25;},progress:function(){return Math.min(25,data.stats.whoamiRounds)+"/25";}},
+    {id:"charades-25",icon:"🎭",title:"Bühnenreif",text:"25 Scharade-Partien spielen",done:function(){return data.stats.charadesRounds>=25;},progress:function(){return Math.min(25,data.stats.charadesRounds)+"/25";}},
+    {id:"personal-10",icon:"💬",title:"Persönlich geworden",text:"10 Runden Persönlicher Impostor spielen",done:function(){return data.stats.personalRounds>=10;},progress:function(){return Math.min(10,data.stats.personalRounds)+"/10";}},
+    {id:"personal-25",icon:"📖",title:"Offenes Buch",text:"25 Runden Persönlicher Impostor spielen",done:function(){return data.stats.personalRounds>=25;},progress:function(){return Math.min(25,data.stats.personalRounds)+"/25";}},
+
+    {id:"perfect",icon:"🎯",title:"Punktlandung",text:"Eine Circa-Schätzung exakt treffen",done:function(){return data.stats.perfectEstimates>=1;},progress:function(){return data.stats.perfectEstimates>=1?"1/1":"0/1";}},
+    {id:"circa-precision-20",icon:"📐",title:"Präzisionsarbeit",text:"20 Circa-Schätzungen mit höchstens 10 % Durchschnittsfehler",done:globalPrecisionDone,progress:globalPrecisionProgress},
+    {id:"escape-3",icon:"🕵️",title:"Unentdeckt",text:"3× als Impostor davonkommen",done:function(){return maxProfileValue("impostorEscapes")>=3;},progress:function(){return Math.min(3,maxProfileValue("impostorEscapes"))+"/3";}},
+    {id:"escape-10",icon:"👻",title:"Phantom",text:"10× als Impostor davonkommen",done:function(){return maxProfileValue("impostorEscapes")>=10;},progress:function(){return Math.min(10,maxProfileValue("impostorEscapes"))+"/10";}},
+    {id:"impostor-10",icon:"🥷",title:"Stammverdächtig",text:"10× die Impostor-Rolle bekommen",done:function(){return data.stats.impostor>=10;},progress:function(){return Math.min(10,data.stats.impostor)+"/10";}},
+    {id:"impostor-25",icon:"🕶️",title:"Berufsverdächtig",text:"25× die Impostor-Rolle bekommen",done:function(){return data.stats.impostor>=25;},progress:function(){return Math.min(25,data.stats.impostor)+"/25";}},
+
+    {id:"charades-50",icon:"🎬",title:"Begriffjäger",text:"50 Begriffe bei Scharade richtig erraten",done:function(){return data.stats.charadesCorrect>=50;},progress:function(){return Math.min(50,data.stats.charadesCorrect)+"/50";}},
+    {id:"charades-100",icon:"🗣️",title:"100 Begriffe später",text:"100 Scharade-Begriffe richtig erraten",done:function(){return data.stats.charadesCorrect>=100;},progress:function(){return Math.min(100,data.stats.charadesCorrect)+"/100";}},
+    {id:"charades-10",icon:"⚡️",title:"Zehnerlauf",text:"10 richtige Begriffe in einer Scharade-Runde",done:function(){return data.stats.charadesBestTurn>=10;},progress:function(){return Math.min(10,data.stats.charadesBestTurn)+"/10";}},
+    {id:"charades-clean",icon:"✨",title:"Saubere Runde",text:"Mindestens 5 richtige Begriffe ohne Überspringen",done:function(){return data.stats.charadesCleanTurns>=1;},progress:function(){return data.stats.charadesCleanTurns>=1?"1/1":"0/1";}},
+    {id:"charades-clean-5",icon:"💎",title:"Makellos",text:"5 Scharade-Spieler-Runden mit mindestens 5 richtigen und keinem Skip",done:function(){return data.stats.charadesCleanTurns>=5;},progress:function(){return Math.min(5,data.stats.charadesCleanTurns)+"/5";}},
+
+    {id:"collector-100",icon:"🗃️",title:"Sammler",text:"100 unterschiedliche Fragen, Wörter oder Begriffe erleben",done:function(){return uniqueContentCount(data.stats)>=100;},progress:function(){return Math.min(100,uniqueContentCount(data.stats))+"/100";}},
+    {id:"marathon",icon:"🕐",title:"Marathon",text:"Eine Session mindestens 60 Minuten spielen",done:hourSessionDone,progress:function(){return hourSessionDone()?"1/1":"0/1";}},
+
+    {id:"app-hour-1",icon:"⏱️",title:"Eingespielt",text:"1 Stunde sichtbare Zeit in der App verbringen",done:function(){return getUsageStats().appMs>=3600000;},progress:function(){var u=getUsageStats().appMs;return Math.min(60,Math.floor(u/60000))+"/60 Min.";}},
+    {id:"app-hours-5",icon:"🕔",title:"Stammgast",text:"5 Stunden sichtbare Zeit in der App verbringen",done:function(){return getUsageStats().appMs>=18000000;},progress:function(){var u=getUsageStats().appMs;return Math.min(5,usageHours(u)).toLocaleString("de-DE",{maximumFractionDigits:1})+"/5 h";}},
+    {id:"app-hours-10",icon:"🕙",title:"Dauergast",text:"10 Stunden sichtbare Zeit in der App verbringen",done:function(){return getUsageStats().appMs>=36000000;},progress:function(){var u=getUsageStats().appMs;return Math.min(10,usageHours(u)).toLocaleString("de-DE",{maximumFractionDigits:1})+"/10 h";}}
   ];
 }
 function evaluateAchievements(){
@@ -437,13 +574,42 @@ function evaluateAchievements(){
 function profileAchievementDefs(id){
   var st=ensureStat(id);
   function endedSession(){return data.sessions.some(function(s){return !!s.endedAt&&Array.isArray(s.rounds)&&s.rounds.length>0&&Array.isArray(s.profileIds)&&s.profileIds.indexOf(id)!==-1;});}
+  function marathon(){return data.sessions.some(function(s){if(!s.endedAt)return false;var rounds=(s.rounds||[]).filter(function(r){return roundHasProfile(r,id);});if(!rounds.length)return false;return new Date(s.endedAt).getTime()-new Date(s.startedAt).getTime()>=60*60*1000;});}
+  function precisionDone(){var p=circaPrecision(st);return p.samples>=20&&p.average!==null&&p.average<=10;}
+  function precisionProgress(){var p=circaPrecision(st);if(p.samples<20)return Math.min(20,p.samples)+"/20";return "Ø "+p.average.toLocaleString("de-DE",{maximumFractionDigits:1})+" %";}
   return [
     {id:"first-session",icon:"🎬",title:"Erster Abend",text:"Eine Session abgeschlossen",done:endedSession,progress:function(){return endedSession()?"1/1":"0/1";}},
-    {id:"perfect",icon:"🎯",title:"Punktlandung",text:"Eine Circa-Schätzung exakt treffen",done:function(){return st.perfect>=1;},progress:function(){return st.perfect>=1?"1/1":st.legacyPerfectUnknown?"V72: nicht erfasst":"0/1";}},
-    {id:"escape-3",icon:"🕵️",title:"Unentdeckt",text:"3× als Imposter davonkommen",done:function(){return st.impostorEscapes>=3;},progress:function(){return Math.min(3,st.impostorEscapes)+"/3";}},
-    {id:"all-categories",icon:"🗺️",title:"Alles gesehen",text:"Alle 10 Kategorien mindestens einmal",done:function(){return st.categories.length>=10;},progress:function(){var p=Math.min(10,st.categories.length)+"/10";return st.categories.length>=10?p:st.legacyCategoryUnknown?p+" · V72 teils":p;}},
+    {id:"warmup-10",icon:"🏁",title:"Warmgelaufen",text:"10 Runden insgesamt spielen",done:function(){return st.rounds>=10;},progress:function(){return Math.min(10,st.rounds)+"/10";}},
+    {id:"fifty-rounds",icon:"🎮",title:"Stammspieler",text:"50 Runden insgesamt spielen",done:function(){return st.rounds>=50;},progress:function(){return Math.min(50,st.rounds)+"/50";}},
     {id:"hundred-rounds",icon:"💯",title:"Veteran",text:"100 Runden insgesamt spielen",done:function(){return st.rounds>=100;},progress:function(){return Math.min(100,st.rounds)+"/100";}},
-    {id:"classic-50",icon:"🎭",title:"Schauspieler",text:"50 Classic-Runden spielen",done:function(){return st.classicRounds>=50;},progress:function(){return Math.min(50,st.classicRounds)+"/50";}}
+    {id:"all-games",icon:"🎲",title:"Allrounder",text:"Alle fünf Spielmodi mindestens einmal spielen",done:function(){return allGamesDone(st);},progress:function(){var n=["circaRounds","classicRounds","whoamiRounds","charadesRounds","personalRounds"].filter(function(k){return Number(st[k])>0;}).length;return n+"/5";}},
+    {id:"session-20",icon:"🌙",title:"Langer Abend",text:"20 Runden in einer Session mitspielen",done:function(){return sessionRoundPeak(id)>=20;},progress:function(){return Math.min(20,sessionRoundPeak(id))+"/20";}},
+    {id:"session-games-3",icon:"🔀",title:"Spielwechsel",text:"3 verschiedene Modi in einer Session mitspielen",done:function(){return sessionGamePeak(id)>=3;},progress:function(){return Math.min(3,sessionGamePeak(id))+"/3";}},
+    {id:"session-games-5",icon:"🧩",title:"Volles Programm",text:"Alle 5 Modi in einer Session mitspielen",done:function(){return sessionGamePeak(id)>=5;},progress:function(){return Math.min(5,sessionGamePeak(id))+"/5";}},
+
+    {id:"circa-25",icon:"📏",title:"Schätzroutine",text:"25 Circa-Runden spielen",done:function(){return st.circaRounds>=25;},progress:function(){return Math.min(25,st.circaRounds)+"/25";}},
+    {id:"classic-25",icon:"😶",title:"Pokerface",text:"25 Classic-Runden spielen",done:function(){return st.classicRounds>=25;},progress:function(){return Math.min(25,st.classicRounds)+"/25";}},
+    {id:"whoami-10",icon:"❓",title:"Identitätskrise",text:"10 Runden Wer bin ich? spielen",done:function(){return st.whoamiRounds>=10;},progress:function(){return Math.min(10,st.whoamiRounds)+"/10";}},
+    {id:"whoami-25",icon:"🤔",title:"Wer war ich nochmal?",text:"25 Runden Wer bin ich? spielen",done:function(){return st.whoamiRounds>=25;},progress:function(){return Math.min(25,st.whoamiRounds)+"/25";}},
+    {id:"charades-25",icon:"🎭",title:"Bühnenreif",text:"25 Scharade-Partien spielen",done:function(){return st.charadesRounds>=25;},progress:function(){return Math.min(25,st.charadesRounds)+"/25";}},
+    {id:"personal-10",icon:"💬",title:"Persönlich geworden",text:"10 persönliche Runden spielen",done:function(){return st.personalRounds>=10;},progress:function(){return Math.min(10,st.personalRounds)+"/10";}},
+    {id:"personal-25",icon:"📖",title:"Offenes Buch",text:"25 persönliche Runden spielen",done:function(){return st.personalRounds>=25;},progress:function(){return Math.min(25,st.personalRounds)+"/25";}},
+
+    {id:"perfect",icon:"🎯",title:"Punktlandung",text:"Eine Circa-Schätzung exakt treffen",done:function(){return st.perfect>=1;},progress:function(){return st.perfect>=1?"1/1":"0/1";}},
+    {id:"circa-precision-20",icon:"📐",title:"Präzisionsarbeit",text:"20 Circa-Schätzungen mit höchstens 10 % Durchschnittsfehler",done:precisionDone,progress:precisionProgress},
+    {id:"escape-3",icon:"🕵️",title:"Unentdeckt",text:"3× als Impostor davonkommen",done:function(){return st.impostorEscapes>=3;},progress:function(){return Math.min(3,st.impostorEscapes)+"/3";}},
+    {id:"escape-10",icon:"👻",title:"Phantom",text:"10× als Impostor davonkommen",done:function(){return st.impostorEscapes>=10;},progress:function(){return Math.min(10,st.impostorEscapes)+"/10";}},
+    {id:"impostor-10",icon:"🥷",title:"Stammverdächtig",text:"10× die Impostor-Rolle bekommen",done:function(){return st.impostor>=10;},progress:function(){return Math.min(10,st.impostor)+"/10";}},
+    {id:"impostor-25",icon:"🕶️",title:"Berufsverdächtig",text:"25× die Impostor-Rolle bekommen",done:function(){return st.impostor>=25;},progress:function(){return Math.min(25,st.impostor)+"/25";}},
+
+    {id:"charades-50",icon:"🎬",title:"Begriffjäger",text:"50 Scharade-Begriffe richtig erraten",done:function(){return st.charadesCorrect>=50;},progress:function(){return Math.min(50,st.charadesCorrect)+"/50";}},
+    {id:"charades-100",icon:"🗣️",title:"100 Begriffe später",text:"100 Scharade-Begriffe richtig erraten",done:function(){return st.charadesCorrect>=100;},progress:function(){return Math.min(100,st.charadesCorrect)+"/100";}},
+    {id:"charades-10",icon:"⚡️",title:"Zehnerlauf",text:"10 richtige Begriffe in einer Scharade-Runde",done:function(){return st.charadesBestTurn>=10;},progress:function(){return Math.min(10,st.charadesBestTurn)+"/10";}},
+    {id:"charades-clean",icon:"✨",title:"Saubere Runde",text:"5 richtige Begriffe ohne Überspringen",done:function(){return st.charadesCleanTurns>=1;},progress:function(){return st.charadesCleanTurns>=1?"1/1":"0/1";}},
+    {id:"charades-clean-5",icon:"💎",title:"Makellos",text:"5 Scharade-Runden mit mindestens 5 richtigen und keinem Skip",done:function(){return st.charadesCleanTurns>=5;},progress:function(){return Math.min(5,st.charadesCleanTurns)+"/5";}},
+
+    {id:"collector-100",icon:"🗃️",title:"Sammler",text:"100 unterschiedliche Fragen, Wörter oder Begriffe erleben",done:function(){return uniqueContentCount(st)>=100;},progress:function(){return Math.min(100,uniqueContentCount(st))+"/100";}},
+    {id:"marathon",icon:"🕐",title:"Marathon",text:"Bei einer Session mindestens 60 Minuten dabei sein",done:marathon,progress:function(){return marathon()?"1/1":"0/1";}}
   ];
 }
 function recordRound(input){
@@ -457,7 +623,8 @@ function recordRound(input){
   var round=clone(input);
   round.at=round.at||now();
   round.roundKey=String(round.roundKey||uid("round"));
-  session.lastGame=round.game==="classic"?"classic":"circa";
+  session.lastGame=normalizeGame(round.game);
+  if(!session.gameStartedAt)session.gameStartedAt=round.at||now();
   round.players=(round.players||[]).map(function(p){
     var profileId=p&&p.profileId&&profileById(p.profileId)?p.profileId:null;
     if(!profileId&&p&&cleanName(p.name))profileId=ensureProfileForPlayer(p);
@@ -486,7 +653,7 @@ function recordRound(input){
   evaluateAchievements();save();return true;
 }
 function computeAwards(session){
-  var best=null,wild=null,escapes={},impostors={};
+  var best=null,wild=null,escapes={},impostors={},charadesCorrect={},charadesSkipped={},charadesTurns={};
   (session.rounds||[]).forEach(function(round){
     (round.players||[]).forEach(function(p){
       if(p.role==="impostor"){
@@ -498,17 +665,23 @@ function computeAwards(session){
         if(!best||item.error<best.error)best=item;
         if(!wild||item.error>wild.error)wild=item;
       }
+      if(round.game==="charades"){
+        charadesCorrect[p.profileId]=(charadesCorrect[p.profileId]||0)+Math.max(0,Number(p.correct)||0);
+        charadesSkipped[p.profileId]=(charadesSkipped[p.profileId]||0)+Math.max(0,Number(p.skipped)||0);
+        charadesTurns[p.profileId]=(charadesTurns[p.profileId]||0)+1;
+      }
     });
   });
   function maxEntry(map){
     var entries=Object.entries(map);if(!entries.length)return null;
     entries.sort(function(a,b){return b[1]-a[1];});return {profileId:entries[0][0],value:entries[0][1]};
   }
-  var deception=maxEntry(escapes),frequent=maxEntry(impostors),out=[];
+  var deception=maxEntry(escapes),frequent=maxEntry(impostors),charadesStar=maxEntry(charadesCorrect),out=[];
   if(best)out.push({type:"best",icon:"🎯",title:"Beste Schätzung",profileId:best.profileId,detail:best.error.toLocaleString("de-DE",{maximumFractionDigits:1})+" % daneben"});
+  if(charadesStar&&charadesStar.value>0)out.push({type:"charades",icon:"🎬",title:"Begriffjäger",profileId:charadesStar.profileId,detail:charadesStar.value+" richtig"});
   if(deception)out.push({type:"deception",icon:"🕵️",title:"Täuschungsmeister",profileId:deception.profileId,detail:deception.value+"× unentdeckt"});
-  if(wild)out.push({type:"wild",icon:"😵",title:"Wildeste Schätzung",profileId:wild.profileId,detail:wild.error.toLocaleString("de-DE",{maximumFractionDigits:0})+" % daneben"});
   if(frequent)out.push({type:"impostor",icon:"🔥",title:"Dauerverdächtig",profileId:frequent.profileId,detail:frequent.value+"× Imposter"});
+  if(wild)out.push({type:"wild",icon:"😵",title:"Wildeste Schätzung",profileId:wild.profileId,detail:wild.error.toLocaleString("de-DE",{maximumFractionDigits:0})+" % daneben"});
   return out.slice(0,4);
 }
 function endSession(){
@@ -529,6 +702,41 @@ function getProfileAchievements(id){
     return {id:def.id,icon:def.icon,title:def.title,text:def.text,unlocked:!!def.done(),progress:def.progress()};
   });
 }
+function usageCommit(ts){
+  data.usage=normalizeUsage(data.usage);
+  var last=Number(data.usage.lastTickAt);
+  if(last>0){
+    var delta=Math.max(0,Number(ts)-last);
+    /* Heartbeats run every 15 s. Ignore long gaps so background/sleep time is never counted. */
+    if(delta>0&&delta<=60000){
+      data.usage.appMs+=delta;
+      if(GAME_IDS.indexOf(data.usage.activeGame)!==-1)data.usage.games[data.usage.activeGame]+=delta;
+    }
+  }
+}
+function trackUsage(game){
+  var ts=Date.now();usageCommit(ts);
+  data.usage.lastTickAt=ts;
+  data.usage.activeGame=GAME_IDS.indexOf(game)!==-1?game:null;
+  save();return true;
+}
+function pauseUsage(){
+  var ts=Date.now();usageCommit(ts);
+  data.usage.lastTickAt=null;data.usage.activeGame=null;
+  save();return true;
+}
+function getUsageStats(){
+  var out=normalizeUsage(data.usage),last=Number(data.usage&&data.usage.lastTickAt);
+  if(last>0){
+    var delta=Math.max(0,Date.now()-last);
+    if(delta>0&&delta<=60000){
+      out.appMs+=delta;
+      if(GAME_IDS.indexOf(data.usage.activeGame)!==-1)out.games[data.usage.activeGame]+=delta;
+    }
+  }
+  out.lastTickAt=null;out.activeGame=null;
+  return clone(out);
+}
 function getStats(){return clone(data.stats);}
 function getProfileStats(id){return clone(data.profileStats[id]||baseProfileStats());}
 function getSessions(){return clone(data.sessions.slice().reverse());}
@@ -540,26 +748,42 @@ function setPreference(key,value){
 }
 function builtInPresets(){
   return [
-    {id:"builtin-quick",builtIn:true,name:"Schnelle Runde",icon:"⚡️",game:"circa",playerCount:4,categories:["Alle"],difficulty:"zufaellig",summary:"Circa · 4 Spieler · Zufall"},
-    {id:"builtin-party",builtIn:true,name:"Party",icon:"🥳",game:"classic",playerCount:6,categories:["Alle"],hint:true,timer:180,summary:"Classic · 6 Spieler · 3 Min."},
-    {id:"builtin-spicy",builtIn:true,name:"Spicy",icon:"🌶️",game:"circa",playerCount:5,categories:["Spicy 🌶️"],difficulty:"mittel",summary:"Circa · 5 Spieler · Spicy"}
+    {id:"builtin-quick",builtIn:true,name:"Schnelle Runde",icon:"⚡️",game:"circa",playerCount:4,profileIds:[],categories:["Alle"],difficulty:"zufaellig",summary:"Circa · 4 Spieler · Zufall"},
+    {id:"builtin-party",builtIn:true,name:"Party",icon:"🥳",game:"classic",playerCount:6,profileIds:[],categories:["Alle"],hint:true,timer:180,summary:"Classic · 6 Spieler · 3 Min."},
+    {id:"builtin-spicy",builtIn:true,name:"Spicy",icon:"🌶️",game:"circa",playerCount:5,profileIds:[],categories:["Spicy 🌶️"],difficulty:"mittel",summary:"Circa · 5 Spieler · Spicy"},
+    {id:"builtin-charades",builtIn:true,name:"Scharade 60",icon:"🎬",game:"charades",playerCount:4,profileIds:[],categories:["Alle"],timer:60,summary:"Scharade · 4 Spieler · 60 Sek."},
+    {id:"builtin-personal",builtIn:true,name:"Persönlich",icon:"💬",game:"personal",playerCount:4,profileIds:[],categories:[],summary:"Persönlich · 4 Spieler"}
   ];
 }
 function getPresets(){return builtInPresets().concat(clone(data.presets));}
 function savePreset(input){
+  input=input||{};
+  var game=GAME_IDS.indexOf(input.game)!==-1?input.game:"circa";
+  var minPlayers=(game==="whoami"||game==="charades")?2:3;
+  var profileIds=[];
+  (Array.isArray(input.profileIds)?input.profileIds:[]).forEach(function(id){if(profileById(id)&&profileIds.indexOf(id)===-1&&profileIds.length<12)profileIds.push(id);});
+  var playerCount=profileIds.length||Math.max(minPlayers,Math.min(12,Number(input.playerCount)||4));
+  var categories=game==="personal"?[]:(Array.isArray(input.categories)&&input.categories.length?input.categories.map(String).slice(0,20):["Alle"]);
+  if(categories.indexOf("Alle")!==-1)categories=["Alle"];
+  var allowedClassicTimers=[0,60,90,120,150,180,210,240,270,300];
+  var allowedCharadesTimers=[30,45,60,90,120];
   var p={
     id:input.id&&String(input.id).indexOf("custom-")===0?input.id:uid("custom"),
     builtIn:false,
     name:String(input.name||"Eigenes Preset").trim().slice(0,22)||"Eigenes Preset",
-    icon:String(input.icon||"⭐️").slice(0,8),
-    game:input.game==="classic"?"classic":"circa",
-    playerCount:Math.max(3,Math.min(12,Number(input.playerCount)||4)),
-    categories:Array.isArray(input.categories)&&input.categories.length?input.categories.slice(0,10):["Alle"],
+    icon:String(input.icon||({circa:"🎯",classic:"🎭",whoami:"❓",charades:"🎬",personal:"💬"}[game]||"⭐️")).slice(0,8),
+    game:game,
+    playerCount:playerCount,
+    profileIds:profileIds,
+    categories:categories,
     difficulty:["leicht","mittel","schwer","zufaellig"].indexOf(input.difficulty)!==-1?input.difficulty:"mittel",
     hint:input.hint!==false,
-    timer:[0,60,90,120,150,180,210,240,270,300].indexOf(Number(input.timer))!==-1?Number(input.timer):0
+    timer:game==="charades"?(allowedCharadesTimers.indexOf(Number(input.timer))!==-1?Number(input.timer):60):(allowedClassicTimers.indexOf(Number(input.timer))!==-1?Number(input.timer):0)
   };
-  p.summary=p.game==="classic"?"Classic · "+p.playerCount+" Spieler"+(p.timer?" · "+Math.round(p.timer/60)+" Min.":""):"Circa · "+p.playerCount+" Spieler · "+(p.categories[0]||"Alle");
+  var label={circa:"Circa",classic:"Classic",whoami:"Wer bin ich?",charades:"Scharade",personal:"Persönlich"}[game];
+  var categoryText=!p.categories.length?"":p.categories[0]==="Alle"?" · Alle":p.categories.length===1?" · "+p.categories[0]:" · "+p.categories.length+" Kat.";
+  var optionText=game==="circa"?" · "+(p.difficulty==="zufaellig"?"Zufall":p.difficulty):game==="classic"&&p.timer?" · "+Math.round(p.timer/60)+" Min.":game==="charades"?" · "+p.timer+" Sek.":"";
+  p.summary=label+" · "+p.playerCount+" Spieler"+categoryText+optionText;
   var idx=data.presets.findIndex(function(x){return x.id===p.id;});
   if(idx>=0)data.presets[idx]=p;else data.presets.push(p);
   save();return clone(p);
@@ -592,10 +816,14 @@ function consumeLaunchGroup(){
   if(!ids||!ids.length)return null;
   return ids.map(function(id){return profileById(id);}).filter(Boolean).map(clone);
 }
-function setActiveSessionGame(game){
+function setActiveSessionGame(game,activity,resetClock){
   var session=data.activeSessionId&&sessionById(data.activeSessionId);
   if(!session||session.endedAt)return false;
-  session.lastGame=game==="classic"?"classic":"circa";save();return true;
+  var normalized=normalizeGame(game);
+  if(resetClock===true||session.lastGame!==normalized||!session.gameStartedAt)session.gameStartedAt=now();
+  session.lastGame=normalized;
+  session.activity=activity?String(activity).slice(0,80):session.activity||null;
+  save();return true;
 }
 function sanitizeLegacyCircaSource(){
   var legacyStats={},legacyDevice={},legacyCompleted=[];
@@ -710,23 +938,26 @@ function sanitizeImportedProfile(p){
 }
 function sanitizeImportedStats(src){
   src=src&&typeof src==="object"?src:{};
-  return {
-    rounds:Math.max(0,Number(src.rounds)||0),
-    circaRounds:Math.max(0,Number(src.circaRounds)||0),
-    classicRounds:Math.max(0,Number(src.classicRounds)||0),
-    perfectEstimates:Math.max(0,Number(src.perfectEstimates)||0),
-    circaQids:Array.isArray(src.circaQids)?src.circaQids.map(String).slice(0,520):[],
-    classicWids:Array.isArray(src.classicWids)?src.classicWids.map(String).slice(0,250):[],
-    categories:Array.isArray(src.categories)?src.categories.map(String).slice(0,30):[]
-  };
+  var safe=baseStats();
+  ["rounds","circaRounds","classicRounds","whoamiRounds","charadesRounds","personalRounds","impostor","personalImpostor","perfectEstimates","charadesCorrect","charadesSkipped","charadesTurns","charadesBestTurn","charadesCleanTurns"].forEach(function(k){safe[k]=Math.max(0,Number(src[k])||0);});
+  safe.circaQids=Array.isArray(src.circaQids)?src.circaQids.map(String).slice(0,520):[];
+  safe.classicWids=Array.isArray(src.classicWids)?src.classicWids.map(String).slice(0,250):[];
+  safe.whoamiTermIds=Array.isArray(src.whoamiTermIds)?src.whoamiTermIds.map(String).slice(0,275):[];
+  safe.charadesTermIds=Array.isArray(src.charadesTermIds)?src.charadesTermIds.map(String).slice(0,300):[];
+  safe.personalQids=Array.isArray(src.personalQids)?src.personalQids.map(String).slice(0,500):[];
+  safe.categories=Array.isArray(src.categories)?src.categories.map(String).slice(0,30):[];
+  return safe;
 }
 function sanitizeImportedProfileStats(src){
   var out={};if(!src||typeof src!=="object"||Array.isArray(src))return out;
   Object.keys(src).slice(0,250).forEach(function(id){
     var item=src[id]||{},safe=baseProfileStats();
-    ["rounds","circaRounds","classicRounds","impostor","impostorEscapes","closest","farthest","perfect","errorSum","errorSamples"].forEach(function(k){safe[k]=Math.max(0,Number(item[k])||0);});
+    ["rounds","circaRounds","classicRounds","whoamiRounds","charadesRounds","personalRounds","impostor","personalImpostor","impostorEscapes","closest","farthest","perfect","errorSum","errorSamples","charadesCorrect","charadesSkipped","charadesTurns","charadesBestTurn","charadesCleanTurns"].forEach(function(k){safe[k]=Math.max(0,Number(item[k])||0);});
     safe.circaQids=Array.isArray(item.circaQids)?item.circaQids.map(String).slice(0,520):[];
     safe.classicWids=Array.isArray(item.classicWids)?item.classicWids.map(String).slice(0,250):[];
+    safe.whoamiTermIds=Array.isArray(item.whoamiTermIds)?item.whoamiTermIds.map(String).slice(0,275):[];
+    safe.charadesTermIds=Array.isArray(item.charadesTermIds)?item.charadesTermIds.map(String).slice(0,300):[];
+    safe.personalQids=Array.isArray(item.personalQids)?item.personalQids.map(String).slice(0,500):[];
     safe.categories=Array.isArray(item.categories)?item.categories.map(String).slice(0,30):[];
     safe.legacyPerfectUnknown=item.legacyPerfectUnknown===true;
     safe.legacyCategoryUnknown=item.legacyCategoryUnknown===true;
@@ -745,7 +976,9 @@ function sanitizeImportedSessions(src){
       lastProfileIds:Array.isArray(x.lastProfileIds)?x.lastProfileIds.map(String).slice(0,20):[],
       rounds:Array.isArray(x.rounds)?clone(x.rounds.slice(0,500)):[],
       awards:Array.isArray(x.awards)?clone(x.awards.slice(0,12)):[],
-      lastGame:x.lastGame==="classic"?"classic":x.lastGame==="circa"?"circa":null
+      lastGame:GAME_IDS.indexOf(x.lastGame)!==-1?x.lastGame:null,
+      gameStartedAt:x.gameStartedAt||null,
+      activity:x.activity?String(x.activity).slice(0,80):null
     };
   });
 }
@@ -761,7 +994,7 @@ function snapshotGameStorage(){
   });
   return out;
 }
-function clearV73GameStorage(){
+function clearCurrentGameStorage(){
   try{
     var keys=[];
     for(var i=0;i<localStorage.length;i++){
@@ -773,7 +1006,7 @@ function clearV73GameStorage(){
   }catch(e){return false;}
 }
 function restoreGameStorage(snapshot){
-  clearV73GameStorage();
+  clearCurrentGameStorage();
   if(snapshot&&typeof snapshot==="object"&&!Array.isArray(snapshot)){
     GAME_STORAGE_KEYS.forEach(function(suffix){
       if(!Object.prototype.hasOwnProperty.call(snapshot,suffix))return;
@@ -783,6 +1016,9 @@ function restoreGameStorage(snapshot){
   try{
     if(localStorage.getItem(GAME_STORAGE_PREFIX+"v72Migration.v1")===null){
       localStorage.setItem(GAME_STORAGE_PREFIX+"v72Migration.v1",JSON.stringify({completed:true,restored:true,at:now()}));
+    }
+    if(localStorage.getItem(GAME_STORAGE_PREFIX+"v73Migration.v1")===null){
+      localStorage.setItem(GAME_STORAGE_PREFIX+"v73Migration.v1",JSON.stringify({completed:true,restored:true,at:now()}));
     }
   }catch(e){}
 }
@@ -861,6 +1097,7 @@ async function importSnapshot(input){
     profileStats:sanitizeImportedProfileStats(src.profileStats),
     profileArchive:archive,
     stats:sanitizeImportedStats(src.stats),
+    usage:normalizeUsage(src.usage),
     sessions:sanitizeImportedSessions(src.sessions),
     activeSessionId:null,
     achievements:src.achievements&&typeof src.achievements==="object"&&!Array.isArray(src.achievements)?clone(src.achievements):{},
@@ -874,6 +1111,7 @@ async function importSnapshot(input){
     },
     imports:src.imports&&typeof src.imports==="object"&&!Array.isArray(src.imports)?clone(src.imports):{}
   };
+  imported.usage.lastTickAt=null;imported.usage.activeGame=null;
   imported.imports.restoredFromBackupAt=now();
   imported.imports.v72DetailBackfillV1=true;
 
@@ -931,8 +1169,9 @@ function reset(){
   try{
     localStorage.removeItem(KEY);
     localStorage.removeItem(LEGACY_KEY);
-    clearV73GameStorage();
+    clearCurrentGameStorage();
     localStorage.setItem(GAME_STORAGE_PREFIX+"v72Migration.v1",JSON.stringify({completed:true,reset:true,at:now()}));
+    localStorage.setItem(GAME_STORAGE_PREFIX+"v73Migration.v1",JSON.stringify({completed:true,reset:true,at:now()}));
   }catch(e){}
   data=defaults();
   data.imports={
@@ -985,6 +1224,9 @@ window.CIAppState={
   getActiveSession:getActiveSession,
   getStats:getStats,
   getProfileStats:getProfileStats,
+  getUsageStats:getUsageStats,
+  trackUsage:trackUsage,
+  pauseUsage:pauseUsage,
   getAchievements:getAchievements,
   getProfileAchievements:getProfileAchievements,
   getPreferences:getPreferences,

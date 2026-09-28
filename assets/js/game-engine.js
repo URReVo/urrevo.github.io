@@ -73,9 +73,9 @@ var roundStatsRecorded=false;
 var roundOutcomeChoice=null;
 var diagRoundDirty=false;
 
-/* V73 uses its own game-local keys. V72 keys are copied once and then
+/* V74 uses its own game-local keys. V72 keys are copied once and then
    left untouched as a rollback-safe snapshot. */
-var EXP_STORAGE="imposterGames.v73.game.";
+var EXP_STORAGE="imposterGames.v74.game.";
 var STORAGE_PLAYERS=EXP_STORAGE+(gameMode==="classic"?"classic.players.v1":"circa.players.v1");
 var STORAGE_CATEGORIES=EXP_STORAGE+(gameMode==="classic"?"classic.categories.v1":"circa.categories.v1");
 var STORAGE_DECK=EXP_STORAGE+"circa.deckProgress.v1";
@@ -196,9 +196,10 @@ function experimentRecordClassic(){
 }
 function experimentApplyLaunchPreset(){
   if(!experimentAppState)return;
-  var preset=experimentAppState.consumeLaunchPreset(gameMode);
+  var preset=experimentAppState.consumeLaunchPreset(gameMode),presetProfiles=[];
   if(preset){
-    count=Math.max(3,Math.min(12,Number(preset.playerCount)||count));
+    if(Array.isArray(preset.profileIds))presetProfiles=preset.profileIds.map(function(id){return experimentAppState.getProfileById(id);}).filter(function(p){return p&&!p.deletedAt;});
+    count=presetProfiles.length?Math.max(3,Math.min(12,presetProfiles.length)):Math.max(3,Math.min(12,Number(preset.playerCount)||count));
     if(Array.isArray(preset.categories)&&preset.categories.length)selectedCategories=preset.categories.slice();
     if(gameMode==="classic"){
       classicHintEnabled=preset.hint!==false;
@@ -213,7 +214,7 @@ function experimentApplyLaunchPreset(){
   }
 
   var launchGroup=experimentAppState.consumeLaunchGroup?experimentAppState.consumeLaunchGroup():null;
-  var preferred=launchGroup&&launchGroup.length?launchGroup:experimentAppState.getPreferredPlayers(count);
+  var preferred=presetProfiles.length?presetProfiles:(launchGroup&&launchGroup.length?launchGroup:experimentAppState.getPreferredPlayers(count));
   if(launchGroup&&launchGroup.length)count=Math.max(3,Math.min(12,launchGroup.length));
   if(preferred.length){
     savedPlayerNames=[];savedPlayerProfileIds=[];avatarSelections=[];
@@ -572,6 +573,7 @@ function classicPickWord(){
   impIndex=selectImpostor();
   active=0;
   round++;
+  if(experimentAppState&&experimentAppState.setActiveSessionGame)experimentAppState.setActiveSessionGame("classic","Runde "+round,true);
   classicResolved=false;
   classicDiscussionStarter=Math.floor(randomUnit()*players.length);
   updateToolbar();
@@ -1618,6 +1620,7 @@ function pickRound(){
   rememberQuestion(current);
   impIndex=selectImpostor();
   active=0;round++;
+  if(experimentAppState&&experimentAppState.setActiveSessionGame)experimentAppState.setActiveSessionGame("circa","Runde "+round,true);
   updateToolbar();
   diagLog("Runde","R"+round+" · "+current.qid+" · "+current.cat+" · "+diagDifficultyName(current));
   return true;
@@ -3279,6 +3282,12 @@ if(!window.PointerEvent){
 }
 }
 
+if(experimentAppState&&experimentAppState.trackUsage){
+  experimentAppState.trackUsage(gameMode);
+  setInterval(function(){if(!document.hidden)experimentAppState.trackUsage(gameMode);},15000);
+  window.addEventListener("pagehide",function(){if(experimentAppState.pauseUsage)experimentAppState.pauseUsage();});
+  document.addEventListener("visibilitychange",function(){if(document.hidden){if(experimentAppState.pauseUsage)experimentAppState.pauseUsage();}else experimentAppState.trackUsage(gameMode);});
+}
 migrateV72GameStorageOnce();
 if(gameMode==="circa"&&experimentAppState&&experimentAppState.applyCircaQuestionMetadata){
   experimentAppState.applyCircaQuestionMetadata(bank);

@@ -1,0 +1,54 @@
+/* Persoenlicher Impostor · prototype-only game */
+.personalSetupHero{margin-bottom:18px}
+.personalLogo{width:78px;height:78px;border-radius:25px;display:grid;place-items:center;margin:0 auto 12px;background:radial-gradient(circle at 30% 20%,rgba(236,127,199,.28),transparent 44%),#353139;border:1px solid rgba(255,255,255,.07);font-size:39px}
+.personalInfoCard{display:grid;grid-template-columns:46px 1fr;gap:12px;align-items:center;padding:14px;margin:6px 0 19px;border:1px solid rgba(255,255,255,.07);border-radius:17px;background:#242529}
+.personalInfoIcon{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:rgba(225,92,177,.12);color:#e98cc8;font-size:24px;font-weight:900}
+.personalInfoCard div:last-child{display:flex;flex-direction:column;gap:3px}.personalInfoCard strong{font-size:12px}.personalInfoCard span{color:#85878e;font-size:9px;line-height:1.45}
+.personalHandoffScreen{justify-content:space-between}
+.personalPlayerMeta{display:grid;grid-template-columns:36px 1fr auto;gap:9px;align-items:center;margin-bottom:10px}.personalPlayerMeta strong{font-size:13px}.personalPlayerMeta>span:last-child{color:#85878e;font-size:10px;font-weight:900}
+.personalQuestionScreen,.personalAnswersScreen,.personalResultScreen{min-height:0}
+.personalQuestionScreen{gap:10px}
+.personalQuestionCard{flex:1;min-height:250px;padding:24px 19px;border-radius:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:radial-gradient(circle at 50% 0,rgba(225,92,177,.13),transparent 42%),linear-gradient(160deg,#343039,#242529);border:1px solid rgba(255,255,255,.075)}
+.personalQuestionCard h2{margin:9px 0 8px;max-width:560px;font-size:clamp(25px,7.2vw,34px);line-height:1.08;letter-spacing:-.55px}.personalQuestionCard p{margin:0;max-width:450px;color:#85878e;font-size:10px;line-height:1.45}
+.personalAnswerLabel{color:#898b91;font-size:9px;font-weight:950;letter-spacing:.9px;margin:4px 2px 0}
+.personalAnswerWrap{display:block;min-height:74px;border:1px solid rgba(255,255,255,.08);border-radius:17px;background:#202125;overflow:hidden}
+.personalAnswerWrap{position:relative}
+.personalAnswerWrap input,.personalAnswerWrap textarea{display:block;min-width:0;width:100%;height:74px;border:0;outline:0;background:transparent;color:#fff;padding:13px 15px;font:700 17px/1.3 -apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}
+.personalAnswerWrap textarea{resize:none}
+.personalAnswerWrap input[type="number"],.personalAnswerWrap input[type="time"]{padding-right:76px;font-size:22px}
+.personalAnswerWrap input::placeholder,.personalAnswerWrap textarea::placeholder{color:#62646a;font-size:14px;font-weight:700}
+.personalAnswerUnitBadge{position:absolute;right:13px;top:50%;transform:translateY(-50%);max-width:62px;color:#e9a8d2;font-size:10px;font-weight:900;text-align:right;pointer-events:none}
+.personalAnswerHint{margin:-3px 2px 0;color:#777980;font-size:9px;font-weight:750;line-height:1.35}
+.personalBottomButton{flex:0 0 auto;margin-top:auto!important;min-height:50px}
+.personalAnswersHeader{margin:0 2px 8px}.personalAnswersHeader h2{margin:4px 0 4px;font-size:27px}.personalAnswersHeader p{margin:0;color:#85878e;font-size:11px;line-height:1.45}
+.personalAnswersList{flex:1 1 auto;min-height:0;overflow:auto;display:grid;align-content:start;gap:8px;padding:2px 0 8px}
+.personalAnswerRow{position:relative;display:grid;grid-template-columns:44px 1fr;gap:11px;align-items:center;padding:13px;border-radius:16px;background:#242529;border:1px solid rgba(255,255,255,.06);overflow:hidden;transition:opacity .18s ease,transform .18s ease,border-color .18s ease,background .18s ease}
+.personalAnswerAvatar{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:#35363b;font-size:23px}.personalAnswerInfo{display:flex;flex-direction:column;min-width:0}.personalAnswerInfo span{color:#85878e;font-size:9px;font-weight:800}.personalAnswerInfo strong{margin-top:3px;font-size:17px;line-height:1.2;white-space:normal;overflow-wrap:anywhere}
+.personalAnswerRow.dimmed{opacity:.28;transform:scale(.985)}
+.personalAnswerRow.focused{opacity:1;transform:scale(1.015);border-color:rgba(243,154,50,.48);background:linear-gradient(145deg,rgba(243,154,50,.08),#242529)}
+.personalAnswerRow.impostorCaught{opacity:1;border-color:rgba(255,55,80,.52);background:linear-gradient(145deg,rgba(160,66,77,.16),#242529);animation:cardHit .48s cubic-bezier(.2,.8,.2,1)}
+.personalAnswerRow.impostorCaught .personalAnswerInfo span,.personalAnswerRow.impostorCaught .personalAnswerInfo strong{color:#f1a2aa}
+.personalAnswerRow .impostorX{z-index:3}
+.personalAnswerRow.impostorCaught .impostorX{animation:stampX .58s cubic-bezier(.18,.9,.25,1.25) forwards}
+.personalAnswersScreen.revealRunning .personalAnswersHeader{opacity:.72}
+.personalAnswersScreen.revealRunning #reveal{opacity:.62}
+.personalResultScreen{gap:0;overflow:hidden}
+.personalResultContent{flex:1 1 auto;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:11px;padding-bottom:10px;-webkit-overflow-scrolling:touch}
+.personalResultHero{text-align:center;padding:4px 0 8px}.personalResultAvatar{font-size:62px}.personalResultHero h2{margin:4px 0 0;font-size:29px}
+.personalRevealCard{padding:18px;border-radius:20px;background:#242529;border:1px solid rgba(255,255,255,.07)}.personalRevealCard strong{display:block;margin-top:8px;font-size:20px;line-height:1.18}.personalRevealCard.normal{box-shadow:inset 3px 0 0 #78c98a}.personalRevealCard.impostor{box-shadow:inset 3px 0 0 #e98cc8}.personalRevealCard.normal .sectionEyebrow{color:#83cf92}.personalRevealCard.impostor .sectionEyebrow{color:#e98cc8}
+.personalRevealItem{opacity:1;transform:none}
+.personalResultScreen.revealSequence .personalRevealItem{opacity:0;transform:translateY(12px) scale(.985)}
+.personalResultScreen.revealSequence .personalRevealItem.revealed{animation:personalRevealIn .42s cubic-bezier(.2,.8,.2,1) forwards}
+@keyframes personalRevealIn{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:none}}
+.personalResultActions{display:grid;grid-template-columns:1fr 1fr;gap:9px;flex:0 0 auto;margin-top:auto;padding-top:8px}
+.personalResultActions>button{min-height:50px}
+@media(prefers-reduced-motion:reduce){
+  .personalAnswerRow,.personalRevealItem{transition:none!important;animation:none!important}
+  .personalAnswerRow.impostorCaught .impostorX{transform:rotate(-10deg) scale(1)!important;opacity:1!important;animation:none!important}
+  .personalResultScreen.revealSequence .personalRevealItem{opacity:1!important;transform:none!important}
+}
+@media(max-width:390px){
+  .personalQuestionCard{min-height:225px;padding:20px 15px}.personalQuestionCard h2{font-size:25px}
+  .personalAnswerRow{grid-template-columns:40px 1fr}.personalAnswerAvatar{width:40px;height:40px}
+  .personalResultActions{grid-template-columns:1fr}
+}

@@ -1516,7 +1516,7 @@ body.setup-fits:not(.game-active){
 .gameHubBack span{font-size:19px;line-height:1}
 .experimentReduceMotion *{scroll-behavior:auto!important;transition:none!important;animation:none!important}
 
-/* === V73 launcher-aligned game makeover === */
+/* === V74 launcher-aligned game makeover === */
 :root{
   --bg:#292929;
   --panel:#1f2024;
@@ -1900,7 +1900,7 @@ button.ghost,#restart,#classicRestart{
 }
 
 
-/* V73 Classic option-card overflow fix */
+/* V74 Classic option-card overflow fix */
 .classicOptionCard{
   padding:13px 14px 12px!important;
   overflow:hidden;
@@ -1934,7 +1934,7 @@ button.ghost,#restart,#classicRestart{
 }
 
 
-/* V73 Classic transition alignment */
+/* V74 Classic transition alignment */
 /* All Classic stages share one vertical skeleton:
    38px context row -> flexible content card -> bottom action zone. */
 .classicRoleScreen:not(.hidden),
@@ -2036,7 +2036,7 @@ button.ghost,#restart,#classicRestart{
 
 
 
-/* V73 visibility safety */
+/* V74 visibility safety */
 .classicRoleScreen.hidden,
 .classicDiscussionScreen.hidden,
 .classicResultScreen.hidden{
@@ -2044,7 +2044,7 @@ button.ghost,#restart,#classicRestart{
 }
 
 
-/* V73 Classic compact role card */
+/* V74 Classic compact role card */
 .classicRoleCard{
   flex:0 1 320px!important;
   min-height:220px!important;
@@ -2067,13 +2067,13 @@ button.ghost,#restart,#classicRestart{
 }
 
 
-/* V73 Circa result question spacing */
+/* V74 Circa result question spacing */
 .resolutionQuestion{
   padding-top:4px;
 }
 
 
-/* V73 result glow and toolbar safe-area spacing */
+/* V74 result glow and toolbar safe-area spacing */
 /* Bring back a restrained success glow on the revealed correct values. */
 .resolutionNumber.locked,
 .impNumber.locked{
