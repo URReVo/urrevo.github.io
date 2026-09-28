@@ -22,3 +22,5 @@ body.ciPageLeaving{opacity:.02;transform:scale(.992)}
 @media(prefers-reduced-motion:reduce){body,.ciPressable{transition:none!important}.ciToast{animation:none!important}}
 .reduceExperimentMotion body,.reduceExperimentMotion .ciPressable,.experimentReduceMotion body,.experimentReduceMotion .ciPressable{transition:none!important}
 .reduceExperimentMotion .ciToast,.experimentReduceMotion .ciToast{animation:none!important}
+
+body.game-active .ciToastHost{top:calc(12px + env(safe-area-inset-top));bottom:auto}
