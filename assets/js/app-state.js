@@ -4,6 +4,11 @@
 var KEY="imposterGames.appState.v1";
 var LEGACY_KEY="imposterGames.appState.legacy";
 var DEV_STORAGE_KEY="imposterGames.devState.v1";
+var INTEGRITY_DB_NAME="imposterGames.progressIntegrity.v1";
+var INTEGRITY_STORE_NAME="integrity";
+var INTEGRITY_MARKER_KEY="imposterGames.progressIntegrity.marker.v1";
+var INTEGRITY_VERSION=1;
+var INTEGRITY_USAGE_ACHIEVEMENTS={"app-hour-1":true,"app-hours-5":true,"app-hours-10":true};
 var MAX_SESSIONS=50;
 var BACKUP_FORMAT="imposter-games-backup";
 var BACKUP_VERSION=3;
@@ -448,6 +453,456 @@ function save(){
   try{localStorage.setItem(KEY,JSON.stringify(data));return true;}catch(e){return false;}
 }
 
+/* -------------------------------------------------------------------------
+ * Local Progress Integrity V1
+ *
+ * Progress remains fully local. A non-exportable HMAC key plus the last
+ * trusted progress checkpoint live in IndexedDB. The normal app-state stays
+ * unchanged in localStorage; only progression-relevant fields are mirrored
+ * into the signed checkpoint. This is intentionally a local tamper barrier,
+ * not a claim of server-grade anti-cheat.
+ * ---------------------------------------------------------------------- */
+var integrityStarted=false;
+var integrityReadyPromise=Promise.resolve({ok:true,protected:false,reason:"not-started"});
+var integritySealPromise=Promise.resolve();
+var integrityStatus={ok:true,protected:false,reason:"not-started"};
+var integrityDevDirty=false;
+
+function integritySupported(){
+  return typeof indexedDB!=="undefined"&&typeof TextEncoder!=="undefined"&&
+    !!(window&&window.crypto&&window.crypto.subtle&&
+      typeof window.crypto.subtle.generateKey==="function"&&
+      typeof window.crypto.subtle.sign==="function"&&
+      typeof window.crypto.subtle.verify==="function");
+}
+function integrityOpenDb(){
+  return new Promise(function(resolve,reject){
+    var request;
+    try{request=indexedDB.open(INTEGRITY_DB_NAME,1);}catch(e){reject(e);return;}
+    request.onupgradeneeded=function(){
+      var db=request.result;
+      if(!db.objectStoreNames.contains(INTEGRITY_STORE_NAME))db.createObjectStore(INTEGRITY_STORE_NAME,{keyPath:"id"});
+    };
+    request.onsuccess=function(){resolve(request.result);};
+    request.onerror=function(){reject(request.error||new Error("integrity-db-open"));};
+  });
+}
+function integrityGet(db,id){
+  return new Promise(function(resolve,reject){
+    var request;
+    try{request=db.transaction(INTEGRITY_STORE_NAME,"readonly").objectStore(INTEGRITY_STORE_NAME).get(id);}catch(e){reject(e);return;}
+    request.onsuccess=function(){resolve(request.result||null);};
+    request.onerror=function(){reject(request.error||new Error("integrity-db-get"));};
+  });
+}
+function integrityPut(db,value){
+  return new Promise(function(resolve,reject){
+    var request;
+    try{request=db.transaction(INTEGRITY_STORE_NAME,"readwrite").objectStore(INTEGRITY_STORE_NAME).put(value);}catch(e){reject(e);return;}
+    request.onsuccess=function(){resolve(true);};
+    request.onerror=function(){reject(request.error||new Error("integrity-db-put"));};
+  });
+}
+function integrityDeleteDb(){
+  return new Promise(function(resolve){
+    if(typeof indexedDB==="undefined"){resolve(true);return;}
+    var request;
+    try{request=indexedDB.deleteDatabase(INTEGRITY_DB_NAME);}catch(e){resolve(false);return;}
+    request.onsuccess=function(){resolve(true);};
+    request.onerror=function(){resolve(false);};
+    request.onblocked=function(){resolve(false);};
+  });
+}
+function integrityCloseDb(db){try{if(db&&typeof db.close==="function")db.close();}catch(e){}}
+function integrityBase64(bytes){
+  var binary="",view=bytes instanceof Uint8Array?bytes:new Uint8Array(bytes);
+  for(var i=0;i<view.length;i++)binary+=String.fromCharCode(view[i]);
+  return btoa(binary);
+}
+function integrityBytesFromBase64(value){
+  var binary=atob(String(value||"")),out=new Uint8Array(binary.length);
+  for(var i=0;i<binary.length;i++)out[i]=binary.charCodeAt(i);
+  return out;
+}
+function integrityCanonical(value){return canonicalBackupJson(value);}
+function integrityUniqueStrings(list,limit){
+  var out=[];
+  (Array.isArray(list)?list:[]).forEach(function(value){
+    value=String(value);
+    if(value&&out.indexOf(value)===-1&&(!limit||out.length<limit))out.push(value);
+  });
+  return out;
+}
+function integrityProfileHasProgress(st){
+  if(!st||typeof st!=="object")return false;
+  var numeric=["rounds","circaRounds","classicRounds","whoamiRounds","charadesRounds","personalRounds","impostor","personalImpostor","impostorEscapes","closest","farthest","perfect","errorSum","errorSamples","charadesCorrect","charadesSkipped","charadesTurns","charadesBestTurn","charadesCleanTurns"];
+  if(numeric.some(function(key){return Number(st[key])>0;}))return true;
+  var arrays=["circaQids","classicWids","whoamiTermIds","charadesTermIds","personalQids","categories"];
+  return arrays.some(function(key){return Array.isArray(st[key])&&st[key].length>0;})||st.legacyPerfectUnknown===true||st.legacyCategoryUnknown===true;
+}
+function integrityProfileStatsSnapshot(src){
+  var safe=sanitizeImportedProfileStats(src&&src.profileStats),out={};
+  Object.keys(safe).sort().forEach(function(id){if(integrityProfileHasProgress(safe[id]))out[id]=safe[id];});
+  return out;
+}
+function integrityAchievementsSnapshot(src){
+  var source=src&&src.achievements&&typeof src.achievements==="object"&&!Array.isArray(src.achievements)?src.achievements:{},out={};
+  Object.keys(source).sort().slice(0,500).forEach(function(id){
+    if(INTEGRITY_USAGE_ACHIEVEMENTS[id])return;
+    var item=source[id];
+    if(item&&typeof item==="object"&&!Array.isArray(item))out[String(id).slice(0,100)]={unlockedAt:item.unlockedAt||null};
+  });
+  return out;
+}
+function integritySessionsSnapshot(src){
+  return sanitizeImportedSessions(src&&src.sessions).filter(function(session){
+    return Array.isArray(session.rounds)&&session.rounds.length>0;
+  }).map(function(session){
+    return {
+      id:session.id,
+      startedAt:session.startedAt||null,
+      endedAt:session.endedAt||null,
+      profileIds:integrityUniqueStrings(session.profileIds,20),
+      lastProfileIds:integrityUniqueStrings(session.lastProfileIds,20),
+      rounds:clone(session.rounds),
+      awards:Array.isArray(session.awards)?clone(session.awards):[]
+    };
+  });
+}
+function integrityProtectedState(src){
+  src=src&&typeof src==="object"&&!Array.isArray(src)?src:{};
+  var imports=src.imports&&typeof src.imports==="object"&&!Array.isArray(src.imports)?src.imports:{};
+  return {
+    stats:sanitizeImportedStats(src.stats),
+    profileStats:integrityProfileStatsSnapshot(src),
+    categoryProgress:normalizeCategoryProgress(src.categoryProgress),
+    achievements:integrityAchievementsSnapshot(src),
+    sessions:integritySessionsSnapshot(src),
+    legacyCircaData:imports.legacyCircaData?clone(imports.legacyCircaData):null
+  };
+}
+function integritySame(a,b){return integrityCanonical(a)===integrityCanonical(b);}
+function integrityCheckpointPayload(checkpoint){
+  return {
+    version:Number(checkpoint.version)||INTEGRITY_VERSION,
+    revision:Math.max(1,Number(checkpoint.revision)||1),
+    createdAt:checkpoint.createdAt||null,
+    state:checkpoint.state
+  };
+}
+async function integritySignCheckpoint(key,checkpoint){
+  var bytes=new TextEncoder().encode(integrityCanonical(integrityCheckpointPayload(checkpoint)));
+  var signature=await window.crypto.subtle.sign("HMAC",key,bytes);
+  return integrityBase64(signature);
+}
+async function integrityVerifyCheckpoint(key,checkpoint){
+  if(!key||!checkpoint||checkpoint.version!==INTEGRITY_VERSION||typeof checkpoint.signature!=="string"||!checkpoint.state)return false;
+  try{
+    var bytes=new TextEncoder().encode(integrityCanonical(integrityCheckpointPayload(checkpoint)));
+    var signature=integrityBytesFromBase64(checkpoint.signature);
+    return await window.crypto.subtle.verify("HMAC",key,signature,bytes);
+  }catch(e){return false;}
+}
+async function integrityGetOrCreateKey(db){
+  var record=await integrityGet(db,"hmac-key");
+  if(record&&record.key)return record.key;
+  var key=await window.crypto.subtle.generateKey({name:"HMAC",hash:"SHA-256",length:256},false,["sign","verify"]);
+  await integrityPut(db,{id:"hmac-key",key:key,createdAt:now()});
+  return key;
+}
+async function integrityCreateCheckpoint(db,key,revision){
+  var checkpoint={
+    id:"checkpoint",
+    version:INTEGRITY_VERSION,
+    revision:Math.max(1,Number(revision)||1),
+    createdAt:now(),
+    state:integrityProtectedState(data)
+  };
+  checkpoint.signature=await integritySignCheckpoint(key,checkpoint);
+  await integrityPut(db,checkpoint);
+  return checkpoint;
+}
+function integrityApplyProtectedState(state){
+  if(!state||typeof state!=="object")return false;
+  data.stats=sanitizeImportedStats(state.stats);
+
+  var keepZero={};
+  Object.keys(data.profileStats||{}).forEach(function(id){
+    var source={};source[id]=data.profileStats[id];
+    var safe=sanitizeImportedProfileStats(source)[id];
+    if(safe&&!integrityProfileHasProgress(safe))keepZero[id]=safe;
+  });
+  data.profileStats=keepZero;
+  var restoredProfiles=sanitizeImportedProfileStats(state.profileStats);
+  Object.keys(restoredProfiles).forEach(function(id){data.profileStats[id]=restoredProfiles[id];});
+
+  data.categoryProgress=normalizeCategoryProgress(state.categoryProgress);
+
+  var achievements={};
+  Object.keys(data.achievements||{}).forEach(function(id){
+    if(INTEGRITY_USAGE_ACHIEVEMENTS[id])achievements[id]=clone(data.achievements[id]);
+  });
+  Object.keys(state.achievements||{}).forEach(function(id){achievements[id]=clone(state.achievements[id]);});
+  data.achievements=achievements;
+
+  var currentById={};
+  (data.sessions||[]).forEach(function(session){if(session&&session.id)currentById[session.id]=session;});
+  var restored=(Array.isArray(state.sessions)?state.sessions:[]).map(function(source){
+    var old=currentById[source.id]||{};
+    return {
+      id:String(source.id||uid("session")).slice(0,100),
+      startedAt:source.startedAt||now(),
+      endedAt:source.endedAt||null,
+      profileIds:integrityUniqueStrings(source.profileIds,20),
+      lastProfileIds:integrityUniqueStrings(source.lastProfileIds,20),
+      rounds:Array.isArray(source.rounds)?clone(source.rounds.slice(0,500)):[],
+      awards:Array.isArray(source.awards)?clone(source.awards.slice(0,12)):[],
+      lastGame:GAME_IDS.indexOf(old.lastGame)!==-1?old.lastGame:null,
+      gameStartedAt:old.gameStartedAt||null,
+      activity:old.activity?String(old.activity).slice(0,80):null
+    };
+  });
+  var restoredIds={};restored.forEach(function(session){restoredIds[session.id]=true;});
+  (data.sessions||[]).forEach(function(session){
+    if(!session||restoredIds[session.id]||(session.rounds||[]).length)return;
+    restored.push(session);
+  });
+  data.sessions=restored.slice(-MAX_SESSIONS);
+  if(data.activeSessionId&&!data.sessions.some(function(session){return session.id===data.activeSessionId&&!session.endedAt;}))data.activeSessionId=null;
+
+  if(!data.imports||typeof data.imports!=="object"||Array.isArray(data.imports))data.imports={};
+  if(state.legacyCircaData)data.imports.legacyCircaData=clone(state.legacyCircaData);
+  else delete data.imports.legacyCircaData;
+  return save();
+}
+function integrityRepairInitialProgressState(target){
+  if(!target||typeof target!=="object")return {changed:false,fixes:0};
+  var fixes=0;
+  function setIfDifferent(obj,key,value){
+    if(obj[key]!==value){obj[key]=value;fixes++;}
+  }
+  function cap(obj,key,max){
+    var value=Math.max(0,Number(obj[key])||0),next=Math.min(value,Math.max(0,Number(max)||0));
+    setIfDifferent(obj,key,next);
+  }
+  function cleanLists(st){
+    [["circaQids",520],["classicWids",250],["whoamiTermIds",275],["charadesTermIds",300],["personalQids",500],["categories",30]].forEach(function(pair){
+      var next=integrityUniqueStrings(st[pair[0]],pair[1]);
+      if(!integritySame(next,st[pair[0]]||[])){st[pair[0]]=next;fixes++;}
+    });
+  }
+
+  target.stats=sanitizeImportedStats(target.stats);
+  cleanLists(target.stats);
+  var globalModeSum=["circaRounds","classicRounds","whoamiRounds","charadesRounds","personalRounds"].reduce(function(sum,key){return sum+Math.max(0,Number(target.stats[key])||0);},0);
+  setIfDifferent(target.stats,"rounds",globalModeSum);
+  cap(target.stats,"impostor",target.stats.rounds);
+  cap(target.stats,"personalImpostor",Math.min(target.stats.personalRounds,target.stats.impostor));
+  cap(target.stats,"charadesCleanTurns",target.stats.charadesTurns);
+  cap(target.stats,"charadesBestTurn",target.stats.charadesCorrect);
+
+  var normalizedProfiles=sanitizeImportedProfileStats(target.profileStats);
+  Object.keys(normalizedProfiles).forEach(function(id){
+    var st=normalizedProfiles[id];cleanLists(st);
+    var modeSum=["circaRounds","classicRounds","whoamiRounds","charadesRounds","personalRounds"].reduce(function(sum,key){return sum+Math.max(0,Number(st[key])||0);},0);
+    setIfDifferent(st,"rounds",modeSum);
+    cap(st,"impostor",st.rounds);
+    cap(st,"personalImpostor",Math.min(st.personalRounds,st.impostor));
+    cap(st,"impostorEscapes",st.impostor);
+    cap(st,"closest",st.circaRounds);
+    cap(st,"farthest",st.circaRounds);
+    cap(st,"perfect",st.circaRounds);
+    cap(st,"errorSamples",st.circaRounds);
+    cap(st,"charadesTurns",st.charadesRounds);
+    cap(st,"charadesCleanTurns",st.charadesTurns);
+    cap(st,"charadesBestTurn",st.charadesCorrect);
+  });
+  target.profileStats=normalizedProfiles;
+
+  target.categoryProgress=normalizeCategoryProgress(target.categoryProgress);
+  CATEGORY_PACKS.forEach(function(def){
+    var unlock=target.categoryProgress.unlocks[def.id];
+    if(!unlock||unlock.method!=="challenge")return;
+    var challenge=def.challenge||{},done=true;
+    if(challenge.type==="gameVariety"){
+      done=["circaRounds","classicRounds","whoamiRounds","charadesRounds","personalRounds"].filter(function(key){return Number(target.stats[key])>0;}).length>=Math.max(1,Number(challenge.target)||1);
+    }else if(challenge.type==="uniqueContent"){
+      done=uniqueContentCount(target.stats)>=Math.max(1,Number(challenge.target)||1);
+    }else if(challenge.type==="sessionRounds"){
+      /* A legitimate long-session unlock can outlive the retained 50-session history. */
+      return;
+    }
+    if(!done){delete target.categoryProgress.unlocks[def.id];fixes++;}
+  });
+  var earned=ticketsEarnedForRounds(target.stats.rounds);
+  var ticketIds=Object.keys(target.categoryProgress.unlocks||{}).filter(function(id){
+    return target.categoryProgress.unlocks[id]&&target.categoryProgress.unlocks[id].method==="ticket";
+  }).sort(function(a,b){
+    return String(target.categoryProgress.unlocks[a].at||"").localeCompare(String(target.categoryProgress.unlocks[b].at||""));
+  });
+  ticketIds.slice(earned).forEach(function(id){delete target.categoryProgress.unlocks[id];fixes++;});
+  if(Number(target.categoryProgress.ticketNotices)>earned){target.categoryProgress.ticketNotices=earned;fixes++;}
+
+  var seenRoundKeys={};
+  (target.sessions||[]).forEach(function(session){
+    if(!session||!Array.isArray(session.rounds))return;
+    var before=session.rounds.length;
+    session.rounds=session.rounds.filter(function(round){
+      var key=round&&String(round.roundKey||"");
+      if(!key)return true;
+      if(seenRoundKeys[key])return false;
+      seenRoundKeys[key]=true;return true;
+    });
+    if(session.rounds.length!==before){
+      fixes+=before-session.rounds.length;
+      if(session.endedAt)session.awards=computeAwards(session);
+    }
+  });
+  return {changed:fixes>0,fixes:fixes};
+}
+function integrityReadMarker(){
+  try{
+    var raw=localStorage.getItem(INTEGRITY_MARKER_KEY);
+    return raw?JSON.parse(raw):null;
+  }catch(e){return null;}
+}
+function integrityWriteMarker(){
+  try{localStorage.setItem(INTEGRITY_MARKER_KEY,JSON.stringify({version:INTEGRITY_VERSION,initializedAt:now()}));return true;}catch(e){return false;}
+}
+function integrityStateWasInitialized(){
+  return !!(data&&data.imports&&data.imports.progressIntegrityV1InitializedAt);
+}
+function integrityMarkStateInitialized(){
+  if(!data.imports||typeof data.imports!=="object"||Array.isArray(data.imports))data.imports={};
+  if(!data.imports.progressIntegrityV1InitializedAt)data.imports.progressIntegrityV1InitializedAt=now();
+  save();return true;
+}
+async function initializeProgressIntegrity(skipRecovery,allowReinitialize){
+  if(!integritySupported()){
+    integrityStatus={ok:true,protected:false,reason:"unsupported"};
+    return integrityStatus;
+  }
+  var db=null;
+  try{
+    db=await integrityOpenDb();
+    var marker=integrityReadMarker();
+    var keyRecord=await integrityGet(db,"hmac-key");
+    var checkpoint=await integrityGet(db,"checkpoint");
+
+    if(keyRecord&&keyRecord.key&&checkpoint){
+      var valid=await integrityVerifyCheckpoint(keyRecord.key,checkpoint);
+      if(!valid){
+        integrityStatus={ok:false,protected:true,reason:"checkpoint-invalid"};
+        return integrityStatus;
+      }
+      var current=integrityProtectedState(data);
+      var persisted=null,raw=null;
+      try{raw=localStorage.getItem(KEY);persisted=raw?JSON.parse(raw):null;}catch(e){}
+      var persistedState=persisted&&typeof persisted==="object"&&!Array.isArray(persisted)?integrityProtectedState(persisted):null;
+      var repaired=!integritySame(current,checkpoint.state)||!persistedState||!integritySame(persistedState,checkpoint.state);
+      if(repaired)integrityApplyProtectedState(checkpoint.state);
+      if(!marker)integrityWriteMarker();
+      integrityDevDirty=false;
+      integrityStatus={ok:true,protected:true,repaired:repaired,revision:checkpoint.revision};
+      return integrityStatus;
+    }
+
+    if(marker||(!allowReinitialize&&integrityStateWasInitialized())){
+      integrityStatus={ok:false,protected:true,reason:"checkpoint-missing"};
+      return integrityStatus;
+    }
+
+    if(!skipRecovery){
+      var recovery=await integrityGet(db,"pre-r17-recovery");
+      if(!recovery){
+        var rawState=null;try{rawState=localStorage.getItem(KEY);}catch(e){}
+        if(rawState)await integrityPut(db,{id:"pre-r17-recovery",createdAt:now(),rawState:rawState});
+      }
+    }
+
+    var repair=integrityRepairInitialProgressState(data);
+    if(repair.changed)save();
+    var key=keyRecord&&keyRecord.key?keyRecord.key:await integrityGetOrCreateKey(db);
+    var first=await integrityCreateCheckpoint(db,key,1);
+    integrityWriteMarker();
+    integrityMarkStateInitialized();
+    integrityDevDirty=false;
+    integrityStatus={ok:true,protected:true,initialized:true,repaired:repair.changed,fixes:repair.fixes,revision:first.revision};
+    return integrityStatus;
+  }catch(e){
+    integrityStatus={ok:true,protected:false,reason:"unavailable"};
+    return integrityStatus;
+  }finally{integrityCloseDb(db);}
+}
+function queueProgressIntegritySeal(){
+  if(!integrityStarted)return Promise.resolve({ok:true,protected:false,reason:"not-started"});
+  integritySealPromise=integritySealPromise.then(async function(){
+    var ready=await integrityReadyPromise;
+    if(!ready||!ready.ok||!ready.protected||integrityDevDirty)return ready||integrityStatus;
+    var db=null;
+    try{
+      db=await integrityOpenDb();
+      var keyRecord=await integrityGet(db,"hmac-key"),checkpoint=await integrityGet(db,"checkpoint");
+      if(!keyRecord||!keyRecord.key||!checkpoint||!(await integrityVerifyCheckpoint(keyRecord.key,checkpoint))){
+        integrityStatus={ok:false,protected:true,reason:"checkpoint-invalid"};
+        return integrityStatus;
+      }
+      var next=await integrityCreateCheckpoint(db,keyRecord.key,(Number(checkpoint.revision)||0)+1);
+      integrityStatus={ok:true,protected:true,repaired:false,revision:next.revision};
+      return integrityStatus;
+    }catch(e){
+      integrityStatus={ok:false,protected:true,reason:"seal-failed"};
+      return integrityStatus;
+    }finally{integrityCloseDb(db);}
+  }).catch(function(){return integrityStatus;});
+  return integritySealPromise;
+}
+async function validateProgressIntegrity(){
+  var ready=await integrityReadyPromise;
+  await integritySealPromise;
+  if(!ready||!ready.ok||!ready.protected)return ready||integrityStatus;
+  var db=null;
+  try{
+    db=await integrityOpenDb();
+    var keyRecord=await integrityGet(db,"hmac-key"),checkpoint=await integrityGet(db,"checkpoint");
+    if(!keyRecord||!keyRecord.key||!checkpoint||!(await integrityVerifyCheckpoint(keyRecord.key,checkpoint))){
+      integrityStatus={ok:false,protected:true,reason:"checkpoint-invalid"};
+      return integrityStatus;
+    }
+    var raw=null,persisted=null;
+    try{raw=localStorage.getItem(KEY);persisted=raw?JSON.parse(raw):null;}catch(e){}
+    var persistedState=persisted&&typeof persisted==="object"&&!Array.isArray(persisted)?integrityProtectedState(persisted):null;
+    var current=integrityProtectedState(data);
+    var mismatch=!persistedState||!integritySame(persistedState,checkpoint.state)||!integritySame(current,checkpoint.state);
+    if(mismatch)integrityApplyProtectedState(checkpoint.state);
+    integrityDevDirty=false;
+    integrityStatus={ok:true,protected:true,repaired:mismatch,revision:checkpoint.revision};
+    return integrityStatus;
+  }catch(e){
+    integrityStatus={ok:false,protected:true,reason:"validation-failed"};
+    return integrityStatus;
+  }finally{integrityCloseDb(db);}
+}
+async function acceptCurrentProgressAsTrusted(){
+  if(!integritySupported())return {ok:true,protected:false,reason:"unsupported"};
+  try{localStorage.removeItem(INTEGRITY_MARKER_KEY);}catch(e){}
+  await integrityDeleteDb();
+  integritySealPromise=Promise.resolve();
+  integrityReadyPromise=initializeProgressIntegrity(true,true);
+  integrityStatus=await integrityReadyPromise;
+  return integrityStatus;
+}
+function restartProgressIntegrityFromCurrent(){
+  if(!integrityStarted)return;
+  integrityReadyPromise=(async function(){
+    try{localStorage.removeItem(INTEGRITY_MARKER_KEY);}catch(e){}
+    await integrityDeleteDb();
+    return initializeProgressIntegrity(true,true);
+  })();
+  integritySealPromise=Promise.resolve();
+}
+function markIntegrityDevDirty(){integrityDevDirty=true;}
+
 function normalizeCrewIds(profileIds){
   var out=[];
   (Array.isArray(profileIds)?profileIds:[]).forEach(function(id){
@@ -755,7 +1210,7 @@ function emitCategoryUnlocks(items){
 }
 function getCategoryProgress(){
   var newlyUnlocked=evaluateCategoryUnlocks();
-  if(newlyUnlocked.length)save();
+  if(newlyUnlocked.length){save();queueProgressIntegritySeal();}
   return {
     packs:CATEGORY_PACKS.map(categoryPackInfo),
     tickets:categoryTicketStatus()
@@ -797,6 +1252,7 @@ function unlockCategoryPack(id,method){
   }
   data.categoryProgress.unlocks[def.id]={method:method,at:now()};
   save();
+  queueProgressIntegritySeal();
   var info=categoryPackInfo(def);
   emitCategoryUnlocks([info]);
   return {ok:true,pack:info,tickets:categoryTicketStatus()};
@@ -1371,6 +1827,7 @@ function recordRound(input){
   var unlocked=evaluateAchievements();
   var feedback=buildRoundFeedback(round,session,feedbackContext,unlocked,categoryUnlocked);
   save();
+  queueProgressIntegritySeal();
   emitAchievementUnlocks(unlocked);
   emitCategoryUnlocks(categoryUnlocked);
   emitCategoryTicketEarned(ticketEarned);
@@ -1420,6 +1877,7 @@ function endSession(){
   var crewFeedback=buildCrewFeedback(crewBefore,crewAfter);
   var feedback=crewFeedback.length?crewFeedback:buildSessionFeedback(s);
   save();
+  queueProgressIntegritySeal();
   emitAchievementUnlocks(unlocked);
   emitCategoryUnlocks(categoryUnlocked);
   emitMotivationalFeedback(feedback);
@@ -1487,10 +1945,10 @@ function devPatchStats(scope,profileId,patch){
     var safeProfile=sanitizeImportedProfileStats(source)[profileId];
     if(!safeProfile)return null;
     data.profileStats[profileId]=safeProfile;
-    evaluateCategoryUnlocks();evaluateAchievements();save();return clone(safeProfile);
+    evaluateCategoryUnlocks();evaluateAchievements();markIntegrityDevDirty();save();return clone(safeProfile);
   }
   data.stats=sanitizeImportedStats(Object.assign({},data.stats,patch));
-  evaluateCategoryUnlocks();evaluateAchievements();save();return clone(data.stats);
+  evaluateCategoryUnlocks();evaluateAchievements();markIntegrityDevDirty();save();return clone(data.stats);
 }
 function devReplaceStats(scope,profileId,next){
   next=next&&typeof next==="object"&&!Array.isArray(next)?next:{};
@@ -1500,10 +1958,10 @@ function devReplaceStats(scope,profileId,next){
     var safeProfile=sanitizeImportedProfileStats(source)[profileId];
     if(!safeProfile)return null;
     data.profileStats[profileId]=safeProfile;
-    evaluateCategoryUnlocks();evaluateAchievements();save();return clone(safeProfile);
+    evaluateCategoryUnlocks();evaluateAchievements();markIntegrityDevDirty();save();return clone(safeProfile);
   }
   data.stats=sanitizeImportedStats(next);
-  evaluateCategoryUnlocks();evaluateAchievements();save();return clone(data.stats);
+  evaluateCategoryUnlocks();evaluateAchievements();markIntegrityDevDirty();save();return clone(data.stats);
 }
 function devResetStats(scope,profileId){
   return devReplaceStats(scope,profileId,scope==="profile"?baseProfileStats():baseStats());
@@ -1511,7 +1969,7 @@ function devResetStats(scope,profileId){
 function devSetUsage(next){
   data.usage=normalizeUsage(next);
   data.usage.lastTickAt=null;data.usage.activeGame=null;
-  save();return getUsageStats();
+  markIntegrityDevDirty();save();return getUsageStats();
 }
 function devSetAchievementOverride(id,value,profileId){
   id=String(id||"").trim().slice(0,100);if(!id)return false;
@@ -1533,12 +1991,13 @@ function devClearAchievementOverrides(profileId){
 }
 function devGetAchievementOverrides(){return clone(devState);}
 function devClearSessions(){
-  data.sessions=[];data.activeSessionId=null;save();return true;
+  data.sessions=[];data.activeSessionId=null;markIntegrityDevDirty();save();return true;
 }
 function devDeleteSession(id){
   var before=data.sessions.length;
   data.sessions=data.sessions.filter(function(session){return session.id!==id;});
   if(data.activeSessionId===id)data.activeSessionId=null;
+  if(data.sessions.length<before)markIntegrityDevDirty();
   save();return data.sessions.length<before;
 }
 function getSessions(){return clone(data.sessions.slice().reverse());}
@@ -1728,6 +2187,7 @@ function importLegacyCirca(){
   data.imports.legacyCirca=true;
   rebuildAggregates();
   save();
+  queueProgressIntegritySeal();
   return {ok:true,updated:!!previous,players:source.players.length,rounds:source.rounds,questions:source.qids.length};
 }
 function sanitizeImportedProfile(p){
@@ -1929,10 +2389,12 @@ async function importSnapshot(input){
 
   if(imported.categoryProgress.ticketNotices===null)imported.categoryProgress.ticketNotices=ticketsEarnedForRounds(imported.stats.rounds);
   data=imported;
+  integrityRepairInitialProgressState(data);
   evaluateCategoryUnlocks();
   evaluateAchievements();
   if(!save())return {ok:false,reason:"storage"};
   restoreGameStorage(gameStorage);
+  await acceptCurrentProgressAsTrusted();
   return {ok:true,profiles:data.profiles.length,sessions:data.sessions.length,rounds:data.stats.rounds,gameStorage:!!gameStorage};
 }
 function applyCircaQuestionMetadata(items){
@@ -1962,7 +2424,7 @@ function applyCircaQuestionMetadata(items){
     var profileCategories=categoriesFor(st.circaQids);
     if(!sameList(st.categories,profileCategories)){st.categories=profileCategories;changed=true;}
   });
-  if(changed)save();
+  if(changed){save();queueProgressIntegritySeal();}
   return changed;
 }
 function getMigrationStatus(){
@@ -2003,9 +2465,12 @@ function reset(){
     resetAt:now()
   };
   save();
+  restartProgressIntegrityFromCurrent();
 }
 function snapshot(){return clone(data);}
 async function createBackup(){
+  var integrity=await validateProgressIntegrity();
+  if(integrity&&integrity.ok===false)throw new Error("progress-integrity");
   var backup={
     format:BACKUP_FORMAT,
     formatVersion:BACKUP_VERSION,
@@ -2021,8 +2486,10 @@ async function createBackup(){
   return backup;
 }
 
+integrityStarted=true;
+integrityReadyPromise=initializeProgressIntegrity(false,false);
 var categoryBackfill=evaluateCategoryUnlocks();
-if(categoryBackfill.length)save();
+if(categoryBackfill.length){save();queueProgressIntegritySeal();}
 else save();
 window.CIAppState={
   storageKey:KEY,
@@ -2084,6 +2551,9 @@ window.CIAppState={
   getMigrationStatus:getMigrationStatus,
   completeMigrationProfileChoice:completeMigrationProfileChoice,
   applyCircaQuestionMetadata:applyCircaQuestionMetadata,
+  validateProgressIntegrity:validateProgressIntegrity,
+  getProgressIntegrityStatus:function(){return clone(integrityStatus);},
+  flushProgressIntegrity:function(){return Promise.all([integrityReadyPromise,integritySealPromise]).then(function(){return clone(integrityStatus);});},
   importSnapshot:importSnapshot,
   createBackup:createBackup,
   reset:reset

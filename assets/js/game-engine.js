@@ -111,6 +111,19 @@ var experimentGameRunId="run_"+Date.now().toString(36)+"_"+Math.random().toStrin
 var experimentSessionId=null;
 var experimentPreferences=experimentAppState?experimentAppState.getPreferences():{sound:true,haptics:true,animations:true};
 
+async function experimentValidateProgressBeforeRound(){
+  if(!experimentAppState||typeof experimentAppState.validateProgressIntegrity!=="function")return true;
+  var result=await experimentAppState.validateProgressIntegrity();
+  if(!result||result.ok!==false){
+    selectedCategories=experimentFilterCategories(selectedCategories);
+    saveSelectedCategories();
+    if(byId("categoryDeck"))syncCategoryUI();
+    return true;
+  }
+  byId("error").textContent="Fortschritt konnte nicht sicher geprüft werden. Bitte App neu laden oder ein gültiges Backup wiederherstellen.";
+  return false;
+}
+
 function experimentProgressGame(){return gameMode==="classic"?"classic":"circa";}
 function experimentCategoryUnlocked(category){
   return category==="Alle"||!experimentAppState||!experimentAppState.isCategoryUnlocked||experimentAppState.isCategoryUnlocked(experimentProgressGame(),category);
@@ -1775,8 +1788,9 @@ function refreshClassicTimerFromClock(){
   if(gameMode!=="classic"||classicTimerPaused||!classicTimerDeadline||classicResolved)return;
   tickClassicTimer();
 }
-function classicNewRound(confirmFirst){
+async function classicNewRound(confirmFirst){
   if(confirmFirst && !window.confirm("Aktuelle Runde abbrechen und eine neue Runde starten?"))return;
+  if(!(await experimentValidateProgressBeforeRound()))return;
   if(confirmFirst&&round>0&&!classicResolved)rollbackCurrentImpostorSelection();
   resetClassicTimerRuntime();
   if(typeof clearRevealTimers==="function")clearRevealTimers();
@@ -1873,8 +1887,9 @@ function classicReveal(){
   diagLog("Classic Auflösung","Impostor: "+imp.name+" · Wort: "+classicCurrent.word);
 }
 
-function newRound(confirmFirst){
+async function newRound(confirmFirst){
   if(confirmFirst && !window.confirm("Aktuelle Runde abbrechen und eine neue Runde starten?"))return;
+  if(!(await experimentValidateProgressBeforeRound()))return;
   var previousRoundCompleted=roundStatsRecorded;
   if(confirmFirst&&round>0&&!previousRoundCompleted){
     rollbackCurrentImpostorSelection();

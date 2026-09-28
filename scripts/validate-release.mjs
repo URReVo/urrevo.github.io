@@ -214,7 +214,7 @@ const readme=read("README.md");
 assert(!readme.includes("\\n"),"README contains literal \\n text");
 assert(["Circa Imposter","Klassisches Imposter","Wer bin ich?","Scharade","Persönlicher Impostor"].every(name=>readme.includes(name)),"README must describe the five-game app");
 const changelog=read("CHANGELOG.md");
-assert(changelog.includes("V74R16")&&changelog.includes("Offline-Cache **r16**"),"V74R16 changelog entry missing");
+assert(changelog.includes("V74R17")&&changelog.includes("Offline-Cache **r17**"),"V74R17 changelog entry missing");
 
 const appStateSource=read("assets/js/app-state.js");
 const launcherSource=read("assets/js/launcher.js");
@@ -230,6 +230,7 @@ const charadesSource=read("assets/js/charades.js");
 const charadesCss=read("assets/css/charades.css");
 const personalSource=read("assets/js/personal-impostor.js");
 const personalCss=read("assets/css/personal-impostor.css");
+const integrityTestSource=read("scripts/test-progress-integrity.mjs");
 for(const [name,source] of [["app-state",appStateSource],["launcher",launcherSource],["launcher-dev",launcherDevSource],["pwa",pwaSource],["game-engine",engineSource],["who-am-i",whoSource],["charades",charadesSource],["personal-impostor",personalSource]]){
   try{new Function(source);}catch(error){fail(name+" syntax error: "+error.message);}
 }
@@ -289,9 +290,25 @@ assert(whoCss.includes(".whoViewerScreen .whoBottomButton{margin-top:auto}"),"R1
 assert(!html["index.html"].includes("--profile-progress:0deg"),"R15 launcher avatar must not carry inline progress paint");
 assert(!launcherSource.includes('byId("headerAvatar").style.setProperty("--profile-progress"'),"R15 launcher must not repaint the header avatar with XP progress");
 assert(!launcherCss.includes("conic-gradient(var(--accent) var(--profile-progress")&&launcherCss.includes("background:#37383d;")&&launcherCss.includes("margin-bottom:10px"),"R15 launcher avatar/hero spacing fix missing");
-assert(sw.includes('const CACHE_REVISION="r16"'),"V74 cache revision mismatch");
+assert(sw.includes('const CACHE_REVISION="r17"'),"V74 cache revision mismatch");
 assert(sw.includes('versioned("/assets/js/launcher-dev.js")'),"service worker launcher DEV cache missing");
 assert(appStateSource.includes("var BACKUP_VERSION=3"),"backup format v3 missing");
+assert(appStateSource.includes('INTEGRITY_DB_NAME="imposterGames.progressIntegrity.v1"'),"R17 progress-integrity IndexedDB namespace missing");
+assert(appStateSource.includes('generateKey({name:"HMAC",hash:"SHA-256",length:256},false,["sign","verify"])'),"R17 non-exportable HMAC key generation missing");
+assert(appStateSource.includes("function integrityRepairInitialProgressState("),"R17 first-run plausibility repair missing");
+assert(appStateSource.includes("function validateProgressIntegrity("),"R17 progress integrity validator missing");
+assert(appStateSource.includes("pre-r17-recovery"),"R17 pre-migration recovery snapshot missing");
+assert(appStateSource.includes("checkpoint-missing"),"R17 missing-checkpoint guard missing");
+assert(appStateSource.includes("queueProgressIntegritySeal();"),"R17 legitimate progress reseal missing");
+assert(engineSource.includes("await experimentValidateProgressBeforeRound()"),"R17 Circa/Classic round gate missing");
+assert(whoSource.includes("await validateProgressBeforeRound()"),"R17 WhoAmI round gate missing");
+assert(charadesSource.includes("await validateProgressBeforeRound()"),"R17 Scharade round gate missing");
+assert(personalSource.includes("await validateProgressBeforeRound()"),"R17 Personal round gate missing");
+assert(engineSource.includes("selectedCategories=experimentFilterCategories(selectedCategories);"),"R17 Circa/Classic category re-filter after integrity check missing");
+assert(whoSource.includes("selectedCategories=filterCategories(selectedCategories);"),"R17 WhoAmI category re-filter after integrity check missing");
+assert(charadesSource.includes("selectedCategories=filterCategories(selectedCategories);"),"R17 Scharade category re-filter after integrity check missing");
+assert(appStateSource.includes("progressIntegrityV1InitializedAt"),"R17 secondary initialized-state marker missing");
+assert(integrityTestSource.includes("51 legitimate rounds were not retained")&&integrityTestSource.includes("fake Tech unlock was not removed")&&integrityTestSource.includes("fake session round survived repair"),"R17 integrity regression scenarios missing");
 assert(engineSource.includes("experimentRecordCirca(null);"),"Circa shared base-round recording missing");
 assert(engineSource.includes("impostorEscaped:outcome===true?true:outcome===false?false:null"),"Circa unresolved outcome state missing");
 assert((engineSource.match(/experimentGameRunId="run_"/g)||[]).length>=2,"new game run IDs are not regenerated per party");

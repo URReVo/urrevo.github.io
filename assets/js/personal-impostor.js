@@ -5,6 +5,13 @@ var PREFIX="imposterGames.v74.game.personal.";
 var STORAGE_PLAYERS=PREFIX+"players.v1",STORAGE_DECK=PREFIX+"deck.v1";
 var avatarPool=["😎","🕵️","🥷","🤠","👻","🤖","🦊","🐼","🐸","🦁","🐙","🦄"];
 var appState=window.CIAppState||null;
+async function validateProgressBeforeRound(){
+  if(!appState||typeof appState.validateProgressIntegrity!=="function")return true;
+  var result=await appState.validateProgressIntegrity();
+  if(!result||result.ok!==false)return true;
+  byId("error").textContent="Fortschritt konnte nicht sicher geprüft werden. Bitte App neu laden oder ein gültiges Backup wiederherstellen.";
+  return false;
+}
 var launchPreset=appState&&appState.consumeLaunchPreset?appState.consumeLaunchPreset("personal"):null;
 var preferences=appState&&appState.getPreferences?appState.getPreferences():{sound:true,haptics:true,animations:true};
 var soundEnabled=preferences.sound!==false,audioCtx=null,bank=[];
@@ -95,7 +102,7 @@ function drawPair(){var used=storageGet(STORAGE_DECK,[]);if(!Array.isArray(used)
 function resetFairness(){impostorCounts=Array(players.length).fill(0);lastImpostor=-1;}
 function selectImpostor(){if(impostorCounts.length!==players.length)resetFairness();var min=Math.min.apply(null,impostorCounts),candidates=[];for(var i=0;i<impostorCounts.length;i++)if(impostorCounts[i]===min)candidates.push(i);if(candidates.length>1&&lastImpostor!==-1)candidates=candidates.filter(function(i){return i!==lastImpostor;});var chosen=candidates[randomIndex(candidates.length)];impostorCounts[chosen]++;lastImpostor=chosen;return chosen;}
 function startParty(){var result=collectPlayers();if(!result.ok){byId("error").textContent=result.message;return;}byId("error").textContent="";resetFairness();round=0;startRound(true);}
-function startRound(useExisting){clearRevealTimers();if(!useExisting&&players.length<3){startParty();return;}var pair=drawPair();if(!pair){byId("error").textContent="Keine Fragepaare verfügbar.";show("setup");return;}currentPair=pair;impostorIndex=selectImpostor();activeIndex=0;answers=Array(players.length).fill("");round++;currentRoundKey="personal_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,7);if(appState&&appState.beginSession){appState.beginSession(players);if(appState.setActiveSessionGame)appState.setActiveSessionGame("personal","Runde "+round,true);}showHandoff();sound("start");pulse(8);}
+async function startRound(useExisting){clearRevealTimers();if(!useExisting&&players.length<3){startParty();return;}if(!(await validateProgressBeforeRound()))return;var pair=drawPair();if(!pair){byId("error").textContent="Keine Fragepaare verfügbar.";show("setup");return;}currentPair=pair;impostorIndex=selectImpostor();activeIndex=0;answers=Array(players.length).fill("");round++;currentRoundKey="personal_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,7);if(appState&&appState.beginSession){appState.beginSession(players);if(appState.setActiveSessionGame)appState.setActiveSessionGame("personal","Runde "+round,true);}showHandoff();sound("start");pulse(8);}
 function showHandoff(){var p=players[activeIndex];byId("handoffAvatar").textContent=p.avatar;byId("handoffName").textContent=p.name;if(appState&&appState.setActiveSessionGame)appState.setActiveSessionGame("personal","Runde "+round+" · Spieler "+(activeIndex+1)+"/"+players.length,false);show("handoff");}
 function showQuestion(){var p=players[activeIndex],isImpostor=activeIndex===impostorIndex;byId("questionAvatar").textContent=p.avatar;byId("questionName").textContent=p.name;byId("questionProgress").textContent=(activeIndex+1)+"/"+players.length;byId("questionText").textContent=isImpostor?currentPair.impostor:currentPair.normal;renderAnswerControl();byId("answerError").textContent="";show("question");sound("tap");pulse(6);setTimeout(function(){var input=byId("answerInput");try{input&&input.focus({preventScroll:true});}catch(e){try{input&&input.focus();}catch(e2){}}},180);}
 function saveAnswer(){var parsed=readAnswer();if(!parsed.ok){byId("answerError").textContent=parsed.message||"Bitte gib zuerst deine Antwort ein.";pulse(12);return;}answers[activeIndex]=parsed.value;byId("answerError").textContent="";sound("save");pulse(7);if(activeIndex<players.length-1){activeIndex++;showHandoff();}else showSharedQuestionReveal();}

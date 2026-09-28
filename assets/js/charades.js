@@ -5,6 +5,17 @@ var PREFIX="imposterGames.v74.game.charades.";
 var STORAGE_PLAYERS=PREFIX+"players.v1",STORAGE_CATEGORIES=PREFIX+"categories.v1",STORAGE_DECK=PREFIX+"deck.v1",STORAGE_TIMER=PREFIX+"timer.v1",STORAGE_FLIP=PREFIX+"motionFlip.v2";
 var avatarPool=["😎","🕵️","🥷","🤠","👻","🤖","🦊","🐼","🐸","🦁","🐙","🦄"];
 var appState=window.CIAppState||null;
+async function validateProgressBeforeRound(){
+  if(!appState||typeof appState.validateProgressIntegrity!=="function")return true;
+  var result=await appState.validateProgressIntegrity();
+  if(!result||result.ok!==false){
+    selectedCategories=filterCategories(selectedCategories);
+    saveCategories();renderCategories();updatePoolCount();
+    return true;
+  }
+  byId("error").textContent="Fortschritt konnte nicht sicher geprüft werden. Bitte App neu laden oder ein gültiges Backup wiederherstellen.";
+  return false;
+}
 var launchPreset=appState&&appState.consumeLaunchPreset?appState.consumeLaunchPreset("charades"):null;
 function categoryUnlocked(name){return name==="Alle"||!appState||!appState.isCategoryUnlocked||appState.isCategoryUnlocked("charades",name);}
 function categoryLock(name){return appState&&appState.getCategoryLock?appState.getCategoryLock("charades",name):null;}
@@ -83,7 +94,7 @@ function loadTimer(){var presetTimer=launchPreset?Number(launchPreset.timer):NaN
 function renderTimer(){byId("timerControl").querySelectorAll("[data-seconds]").forEach(function(btn){var selected=Number(btn.getAttribute("data-seconds"))===timerSeconds;btn.classList.toggle("selected",selected);btn.setAttribute("aria-pressed",selected?"true":"false");});}
 function collectPlayers(){var nodes=byId("names").querySelectorAll("input"),names=[],seen={};if(nodes.length<count)return {ok:false,message:"Spielerliste konnte nicht vollständig geladen werden."};for(var i=0;i<count;i++){var name=clean(nodes[i].value);if(!name)return {ok:false,message:"Bitte für jeden Spieler einen Namen eintragen."};var key=name.toLocaleLowerCase("de-DE");if(seen[key])return {ok:false,message:"Jeder Spieler braucht einen anderen Namen."};seen[key]=true;names.push(name);}players=[];for(var j=0;j<count;j++){var id=validProfileId(savedIds[j],names[j]);if(!id&&appState&&appState.ensureProfileForPlayer&&!/^spieler\s+\d+$/i.test(names[j]))id=appState.ensureProfileForPlayer({name:names[j],avatar:avatars[j]});savedIds[j]=id||null;players.push({name:names[j],avatar:avatars[j]||avatarPool[j%avatarPool.length],profileId:id||null});}savePlayers();return {ok:true};}
 
-function beginParty(reuse){if(!reuse){var check=collectPlayers();if(!check.ok){byId("error").textContent=check.message;return;}}byId("error").textContent="";playerIndex=0;results=[];currentPartyKey="charades_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,7);if(appState&&appState.beginSession){appState.beginSession(players);if(appState.setActiveSessionGame)appState.setActiveSessionGame("charades","Spieler 1/"+players.length,true);}prepareHandoff();}
+async function beginParty(reuse){if(!reuse){var check=collectPlayers();if(!check.ok){byId("error").textContent=check.message;return;}}if(!(await validateProgressBeforeRound()))return;byId("error").textContent="";playerIndex=0;results=[];currentPartyKey="charades_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,7);if(appState&&appState.beginSession){appState.beginSession(players);if(appState.setActiveSessionGame)appState.setActiveSessionGame("charades","Spieler 1/"+players.length,true);}prepareHandoff();}
 function prepareHandoff(){clearTurnRuntime();var p=players[playerIndex];byId("handoffAvatar").textContent=p.avatar;byId("handoffName").textContent=p.name;byId("permissionNote").textContent="";remaining=timerSeconds;if(appState&&appState.setActiveSessionGame)appState.setActiveSessionGame("charades","Spieler "+(playerIndex+1)+"/"+players.length,false);show("handoff");}
 
 function attachOrientation(){if(orientationAttached)return;window.addEventListener("deviceorientation",onOrientation,true);orientationAttached=true;}
