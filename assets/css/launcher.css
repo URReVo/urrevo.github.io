@@ -354,3 +354,51 @@ button.categoryProgressCard{cursor:pointer}
 @media(max-width:380px){.crewMetrics{grid-template-columns:repeat(2,1fr)}}
 @media(prefers-reduced-motion:reduce){.crewLevelFill,.crewChallengeTrack i{transition:none}}
 .reduceExperimentMotion .crewLevelFill,.reduceExperimentMotion .crewChallengeTrack i{transition:none}
+
+
+/* V74R11 individual profile levels */
+.profileLevelMini{
+  display:block;margin-top:2px;color:#a88965!important;font-size:7px!important;font-weight:950;letter-spacing:.35px
+}
+.playerNameRow{display:flex;align-items:center;gap:7px;min-width:0}
+.playerNameRow>strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.playerLevelBadge{
+  flex:0 0 auto;padding:3px 6px;border-radius:999px;background:rgba(243,154,50,.1);
+  color:#e3aa6a;font-size:7px;font-weight:950;letter-spacing:.2px
+}
+.playerLevelTrack{
+  width:100%;height:4px;margin-top:7px;border-radius:99px;background:#393a3f;overflow:hidden
+}
+.playerLevelTrack i{
+  display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#d78632,#f3b36d);
+  transition:width 260ms cubic-bezier(.2,.75,.25,1)
+}
+.playerInfo .playerLevelNext{margin-top:4px;color:#777980;font-size:7px;line-height:1.2}
+.profileLevelCard{
+  display:grid;grid-template-columns:72px minmax(0,1fr);gap:14px;align-items:center;
+  margin-top:10px;padding:14px 15px;border-radius:21px;border:1px solid rgba(243,154,50,.15);
+  background:radial-gradient(circle at 8% 10%,rgba(243,154,50,.08),transparent 34%),#242529
+}
+.profileLevelOrb{
+  --profile-progress:0deg;position:relative;width:68px;height:68px;border-radius:50%;
+  display:grid;place-items:center;isolation:isolate;
+  background:conic-gradient(#ef9f45 var(--profile-progress),rgba(255,255,255,.08) 0);
+  box-shadow:0 0 24px rgba(243,154,50,.07)
+}
+.profileLevelOrb::before{content:"";position:absolute;inset:5px;border-radius:50%;background:#292a2f;z-index:-1}
+.profileLevelOrb span{position:absolute;top:16px;color:#8d8f94;font-size:6px;font-weight:950;letter-spacing:.9px}
+.profileLevelOrb strong{padding-top:9px;color:#f0b06a;font-size:23px;line-height:1}
+.profileLevelMain{display:flex;flex-direction:column;min-width:0}
+.profileLevelHeading{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.profileLevelHeading>div{display:flex;flex-direction:column;min-width:0}
+.profileLevelHeading small{color:#86888e;font-size:7px;font-weight:950;letter-spacing:.75px}
+.profileLevelHeading strong{margin-top:3px;font-size:16px}
+.profileLevelHeading>b{flex:0 0 auto;color:#c39b70;font-size:9px}
+.profileLevelTrack{height:7px;margin-top:11px;border-radius:99px;background:#393a3f;overflow:hidden}
+.profileLevelTrack i{
+  display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#d78632,#f3b36d);
+  transition:width 260ms cubic-bezier(.2,.75,.25,1)
+}
+.profileLevelMain>span{margin-top:5px;color:#7e8086;font-size:8px}
+@media(prefers-reduced-motion:reduce){.playerLevelTrack i,.profileLevelTrack i{transition:none}}
+.reduceExperimentMotion .playerLevelTrack i,.reduceExperimentMotion .profileLevelTrack i{transition:none}
