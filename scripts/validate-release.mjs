@@ -363,7 +363,7 @@ assert(whoCss.includes(".whoViewerScreen .whoBottomButton{margin-top:auto}"),"R1
 assert(!html["index.html"].includes("--profile-progress:0deg"),"R15 launcher avatar must not carry inline progress paint");
 assert(!launcherSource.includes('byId("headerAvatar").style.setProperty("--profile-progress"'),"R15 launcher must not repaint the header avatar with XP progress");
 assert(!launcherCss.includes("conic-gradient(var(--accent) var(--profile-progress")&&launcherCss.includes("background:#37383d;")&&launcherCss.includes("margin-bottom:10px"),"R15 launcher avatar/hero spacing fix missing");
-assert(sw.includes('const CACHE_REVISION="r22"'),"V74 cache revision mismatch");
+assert(sw.includes('const CACHE_REVISION="r23"'),"V74 cache revision mismatch");
 assert(sw.includes('versioned("/assets/js/launcher-dev.js")'),"service worker launcher DEV cache missing");
 assert(appStateSource.includes("var BACKUP_VERSION=3"),"backup format v3 missing");
 assert(appStateSource.includes('INTEGRITY_DB_NAME="imposterGames.progressIntegrity.v1"'),"R17 progress-integrity IndexedDB namespace missing");
