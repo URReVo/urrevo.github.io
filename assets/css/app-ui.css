@@ -24,3 +24,62 @@ body.ciPageLeaving{opacity:.02;transform:scale(.992)}
 .reduceExperimentMotion .ciToast,.experimentReduceMotion .ciToast{animation:none!important}
 
 body.game-active .ciToastHost{top:calc(12px + env(safe-area-inset-top));bottom:auto}
+
+
+/* V74R8 category progression */
+.categoryCard.locked,.presetChoice.locked{
+  position:relative;border-style:dashed;opacity:.76
+}
+.categoryCard.locked::after,.presetChoice.locked::after{
+  content:"🔒";position:absolute;right:8px;top:7px;font-size:11px;line-height:1
+}
+.categoryCard.locked .categoryEmoji{filter:saturate(.7);opacity:.78}
+.categoryCard.locked .categoryName{padding-right:14px}
+.categoryLockMeta{
+  display:block;margin-top:3px;color:#9a9ca2;font-size:7px;font-weight:850;line-height:1.25
+}
+.ciProgressOverlay{
+  position:fixed;z-index:12000;inset:0;background:rgba(0,0,0,.58);
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  display:flex;align-items:flex-end;justify-content:center
+}
+.ciProgressSheet{
+  width:min(100%,720px);max-height:88dvh;overflow:auto;
+  padding:7px 17px calc(20px + env(safe-area-inset-bottom));
+  border-radius:26px 26px 0 0;border:1px solid rgba(255,255,255,.09);
+  background:#292a2f;box-shadow:0 -24px 60px rgba(0,0,0,.38);
+  animation:ciProgressIn var(--ci-motion-slow) var(--ci-ease)
+}
+@keyframes ciProgressIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.ciProgressHandle{width:38px;height:4px;margin:2px auto 13px;border-radius:99px;background:#55565c}
+.ciProgressHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.ciProgressHeader h2{margin:3px 0 0;font-size:21px;line-height:1.12}
+.ciProgressEyebrow{display:block;color:#8c8e94;font-size:8px;font-weight:950;letter-spacing:.8px}
+.ciProgressClose{width:36px;height:36px;border:0;border-radius:12px;background:#38393e;color:#eee;font-size:22px}
+.ciProgressIntro{margin:0 0 12px;color:#aaa;font-size:10px;line-height:1.5}
+.ciProgressCoverage,.ciProgressCard{
+  border:1px solid rgba(255,255,255,.065);border-radius:16px;background:#232428
+}
+.ciProgressCoverage{display:flex;flex-direction:column;gap:4px;padding:11px 12px;margin-bottom:9px}
+.ciProgressCoverage strong{font-size:8px;letter-spacing:.7px;color:#898b91}
+.ciProgressCoverage span{font-size:9px;line-height:1.35;color:#c6c7ca}
+.ciProgressCard{padding:12px;margin-top:9px}
+.ciProgressCardTop{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.ciProgressCardTop>div{display:flex;flex-direction:column;gap:2px}
+.ciProgressCardTop span{font-size:8px;font-weight:950;letter-spacing:.7px;color:#92949a}
+.ciProgressCardTop strong{font-size:12px}
+.ciProgressCardTop b{font-size:11px;color:#efb574}
+.ciProgressCard p{margin:8px 0;color:#a3a5aa;font-size:9px;line-height:1.45}
+.ciProgressCard small{display:block;margin-top:7px;color:#72747a;font-size:8px}
+.ciProgressTrack{height:7px;border-radius:99px;background:#393a3f;overflow:hidden}
+.ciProgressFill{height:100%;min-width:0;border-radius:inherit;background:linear-gradient(90deg,#d58a34,#f3b36d);transition:width 220ms ease}
+.ciProgressTicketCard{border-color:rgba(243,154,50,.16)}
+.ciProgressUnlockButton{
+  width:100%;min-height:45px;margin-top:10px;border:0;border-radius:14px;
+  background:#f39a32;color:#171717;font-size:10px;font-weight:950
+}
+.ciToastProgression{
+  background:linear-gradient(145deg,rgba(55,48,39,.98),rgba(34,35,39,.98));
+  border-color:rgba(243,154,50,.26)
+}
+@media(prefers-reduced-motion:reduce){.ciProgressSheet{animation:none}.ciProgressFill{transition:none}}
