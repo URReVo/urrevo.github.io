@@ -1022,7 +1022,7 @@ document.querySelectorAll("[data-stats-scope]").forEach(function(button){
 byId("endSession").addEventListener("click",function(){
   var s=store.getActiveSession();if(!s)return;
   if(!s.rounds.length&&!window.confirm("Die Session enthält noch keine abgeschlossene Runde. Trotzdem beenden?"))return;
-  var ended=store.endSession();if(ended){uiSound("end");appToast("Session beendet",ended.rounds.length+" "+(ended.rounds.length===1?"Runde":"Runden")+" gespeichert.","🏆");}renderAll();if(ended)renderSessionSheet(ended);
+  var ended=store.endSession();renderAll();if(ended)renderSessionSheet(ended);
 });
 
 ["Sound","Haptics","Animations"].forEach(function(name){
