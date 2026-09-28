@@ -6,7 +6,7 @@
     {
       "id": "personal-0001",
       "normal": "Wie alt sollte deine Freundin oder dein Freund idealerweise sein?",
-      "impostor": "Wie alt warst du, als du das erste Mal Bier getrunken hast?",
+      "impostor": "Wie alt sollte man deiner Meinung nach sein, um wirklich erwachsen zu wirken?",
       "unit": "Jahre",
       "answerType": "integer",
       "min": 0,
@@ -15,7 +15,7 @@
     {
       "id": "personal-0002",
       "normal": "Wie alt möchtest du ungefähr sein, wenn du ausziehst oder ausgezogen sein willst?",
-      "impostor": "Wie alt warst du bei deinem ersten Kuss?",
+      "impostor": "Mit welchem Alter würdest du gern finanziell komplett auf eigenen Beinen stehen?",
       "unit": "Jahre",
       "answerType": "integer",
       "min": 0,
@@ -24,7 +24,7 @@
     {
       "id": "personal-0003",
       "normal": "Mit welchem Alter würdest du gern eine eigene Immobilie besitzen?",
-      "impostor": "Wie alt warst du bei deinem ersten Urlaub ohne Eltern?",
+      "impostor": "Mit welchem Alter würdest du gern dein erstes wirklich teures Auto kaufen?",
       "unit": "Jahre",
       "answerType": "integer",
       "min": 0,
@@ -33,7 +33,7 @@
     {
       "id": "personal-0004",
       "normal": "Mit welchem Alter könntest du dir eine Hochzeit vorstellen?",
-      "impostor": "Wie alt warst du, als du dein erstes eigenes Smartphone bekommen hast?",
+      "impostor": "Mit welchem Alter könntest du dir vorstellen, dauerhaft mit einem Partner zusammenzuwohnen?",
       "unit": "Jahre",
       "answerType": "integer",
       "min": 0,
@@ -42,7 +42,7 @@
     {
       "id": "personal-0005",
       "normal": "Mit welchem Alter könntest du dir Kinder vorstellen?",
-      "impostor": "Wie alt warst du bei deinem ersten richtigen Nebenjob?",
+      "impostor": "Mit welchem Alter würdest du gern beruflich wirklich angekommen sein?",
       "unit": "Jahre",
       "answerType": "integer",
       "min": 0,
@@ -69,7 +69,7 @@
     {
       "id": "personal-0008",
       "normal": "Mit welchem Alter würdest du am liebsten in Rente gehen?",
-      "impostor": "Wie alt warst du, als du dein erstes eigenes Auto bekommen hast?",
+      "impostor": "Mit welchem Alter würdest du gern spätestens finanziell unabhängig sein?",
       "unit": "Jahre",
       "answerType": "integer",
       "min": 0,
@@ -78,7 +78,7 @@
     {
       "id": "personal-0009",
       "normal": "Wie viel würdest du maximal für ein Paar Schuhe ausgeben?",
-      "impostor": "Wie viel Bargeld hast du normalerweise ungefähr dabei?",
+      "impostor": "Wie viel würdest du spontan für einen richtig guten Restaurantabend ausgeben?",
       "unit": "€",
       "answerType": "number",
       "min": 0,
@@ -105,7 +105,7 @@
     {
       "id": "personal-0012",
       "normal": "Wie viel gibst du im Monat ungefähr für Kleidung aus?",
-      "impostor": "Wie viel zahlst du im Monat ungefähr für Abos und Streaming?",
+      "impostor": "Wie viel gibst du im Monat ungefähr für Freizeit und Hobbys aus?",
       "unit": "€",
       "answerType": "number",
       "min": 0,
@@ -114,7 +114,7 @@
     {
       "id": "personal-0013",
       "normal": "Wie viel würdest du maximal pro Person in einem Restaurant ausgeben?",
-      "impostor": "Wie viel kostet für dich ein typischer Kinoabend mit allem drum und dran?",
+      "impostor": "Wie viel würdest du maximal für einen besonderen Abend mit Freunden ausgeben?",
       "unit": "€",
       "answerType": "number",
       "min": 0,
@@ -123,7 +123,7 @@
     {
       "id": "personal-0014",
       "normal": "Wie viel würdest du maximal für ein neues Handy ausgeben?",
-      "impostor": "Wie viel würdest du für einen spontanen Wochenendtrip ausgeben?",
+      "impostor": "Wie viel würdest du maximal für einen neuen Laptop oder PC ausgeben?",
       "unit": "€",
       "answerType": "number",
       "min": 0,
@@ -195,7 +195,7 @@
     {
       "id": "personal-0022",
       "normal": "Wie viel hat dein aktuelles Auto ungefähr gekostet oder wie viel wäre dir ein Auto wert?",
-      "impostor": "Wie viel würdest du maximal für eine richtig große Reise ausgeben?",
+      "impostor": "Wie viel Erspartes würdest du gerne als finanzielles Polster haben?",
       "unit": "€",
       "answerType": "number",
       "min": 0,
@@ -275,8 +275,8 @@
     },
     {
       "id": "personal-0031",
-      "normal": "Wie viele Tage im Voraus planst du einen größeren Urlaub normalerweise?",
-      "impostor": "Wie viele Tage könntest du problemlos komplett ohne Auto auskommen?",
+      "normal": "Wie viele Tage im Voraus buchst du einen Wochenendtrip normalerweise?",
+      "impostor": "Wie viele Tage im Voraus planst du eine größere Geburtstagsfeier?",
       "unit": "Tage",
       "answerType": "integer",
       "min": 0,
@@ -312,7 +312,7 @@
     {
       "id": "personal-0035",
       "normal": "Wie viele Leute würdest du ungefähr zu deiner Hochzeit einladen?",
-      "impostor": "Mit wie vielen Leuten schreibst du ungefähr regelmäßig auf WhatsApp oder anderen Messengern?",
+      "impostor": "Wie viele Leute würdest du zu einer richtig großen Geburtstagsfeier einladen?",
       "unit": "Personen",
       "answerType": "integer",
       "min": 0,
@@ -329,8 +329,8 @@
     },
     {
       "id": "personal-0037",
-      "normal": "Wie viele Leute würdest du zu deinem Geburtstag einladen?",
-      "impostor": "Mit wie vielen Leuten würdest du spontan einen mehrtägigen Roadtrip machen?",
+      "normal": "Wie viele Leute würdest du zu einem gemütlichen Geburtstag einladen?",
+      "impostor": "Mit wie vielen Leuten würdest du am liebsten gemeinsam in ein Ferienhaus fahren?",
       "unit": "Personen",
       "answerType": "integer",
       "min": 0,
@@ -393,7 +393,7 @@
     {
       "id": "personal-0044",
       "normal": "Wie viele Wecker stellst du morgens normalerweise?",
-      "impostor": "Wie viele Browser-Tabs hast du gerade ungefähr offen?",
+      "impostor": "Wie viele Getränke trinkst du morgens normalerweise, bevor du das Haus verlässt?",
       "unit": "Anzahl",
       "answerType": "integer",
       "min": 0,
@@ -447,7 +447,7 @@
     {
       "id": "personal-0050",
       "normal": "Wie viele Minuten snoozest du morgens insgesamt?",
-      "impostor": "Wie viele Minuten brauchst du morgens ungefähr, bis du das Haus verlassen kannst?",
+      "impostor": "Wie viele Minuten bleibst du morgens nach dem ersten Wecker noch im Bett?",
       "unit": "Minuten",
       "answerType": "integer",
       "min": 0,
@@ -501,7 +501,7 @@
     {
       "id": "personal-0056",
       "normal": "Wie viele Kilometer Entfernung wären für dich beim Dating noch okay?",
-      "impostor": "Wie viele Kilometer würdest du für ein richtig gutes Gebraucht-Angebot fahren?",
+      "impostor": "Wie viele Kilometer würdest du spontan fahren, um einen guten Freund abzuholen?",
       "unit": "km",
       "answerType": "integer",
       "min": 0,
@@ -547,7 +547,7 @@
     {
       "id": "personal-0061",
       "normal": "Bei wie viel Prozent Akku wirst du langsam nervös?",
-      "impostor": "Ab wie viel Prozent Regenwahrscheinlichkeit nimmst du einen Schirm mit?",
+      "impostor": "Ab wie viel Prozent Rabatt würdest du bei einem geplanten Kauf direkt zuschlagen?",
       "unit": "%",
       "answerType": "percent",
       "min": 0,
@@ -601,7 +601,7 @@
     {
       "id": "personal-0067",
       "normal": "Um wie viel Uhr isst du normalerweise Abendessen?",
-      "impostor": "Um wie viel Uhr würdest du einen Clubabend ungefähr verlassen?",
+      "impostor": "Um wie viel Uhr würdest du einen entspannten Abend mit Freunden am liebsten starten?",
       "unit": "Uhrzeit",
       "answerType": "time"
     },
@@ -622,7 +622,7 @@
     {
       "id": "personal-0070",
       "normal": "Wie viele Monate nutzt du ein Handy ungefähr, bevor du es ersetzen möchtest?",
-      "impostor": "Wie viele Monate Beziehung würdest du ungefähr abwarten, bevor Zusammenziehen für dich realistisch wäre?",
+      "impostor": "Wie viele Monate würdest du ein Auto mindestens fahren, bevor du über einen Wechsel nachdenkst?",
       "unit": "Monate",
       "answerType": "integer",
       "min": 0,
@@ -768,7 +768,7 @@
     {
       "id": "personal-0085",
       "normal": "Wie schnell vertraust du fremden Menschen?",
-      "impostor": "Wie sehr liebst du Hunde?",
+      "impostor": "Wie spontan gehst du auf neue Menschen zu?",
       "unit": "1–10",
       "answerType": "rating",
       "min": 1,
@@ -853,7 +853,7 @@
     {
       "id": "personal-0095",
       "normal": "Welches Wort beschreibt deinen idealen Partner am besten?",
-      "impostor": "Welches Wort beschreibt deinen Traumjob am besten?",
+      "impostor": "Welches Wort beschreibt einen richtig guten Freund für dich am besten?",
       "unit": "Freitext",
       "answerType": "text"
     },

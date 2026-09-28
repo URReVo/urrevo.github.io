@@ -1,0 +1,137 @@
+:root{--ci-motion-fast:120ms;--ci-motion:190ms;--ci-motion-slow:260ms;--ci-ease:cubic-bezier(.2,.75,.25,1)}
+html{background:#292929}
+body{transition:opacity var(--ci-motion) var(--ci-ease),transform var(--ci-motion) var(--ci-ease);transform-origin:50% 50%}
+body.ciPageLeaving{opacity:.02;transform:scale(.992)}
+.ciPressable{transition:transform var(--ci-motion-fast) ease,filter var(--ci-motion-fast) ease,opacity var(--ci-motion-fast) ease}
+.ciPressable.ciPressed{transform:scale(.972);filter:brightness(1.08)}
+.ciToastHost{position:fixed;z-index:10000;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));width:min(calc(100% - 28px),560px);transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.ciToast{pointer-events:auto;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;min-height:56px;padding:10px 11px;border-radius:17px;background:rgba(35,36,40,.96);border:1px solid rgba(255,255,255,.09);box-shadow:0 18px 50px rgba(0,0,0,.36);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);animation:ciToastIn var(--ci-motion) var(--ci-ease) both}
+.ciToast.ciToastLeaving{animation:ciToastOut 150ms ease both}
+.ciToastIcon{width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.055);display:grid;place-items:center;font-size:21px}
+.ciToastText{min-width:0;display:flex;flex-direction:column}.ciToastText strong{font-size:11px;line-height:1.25}.ciToastText span{margin-top:3px;color:#92949a;font-size:9px;line-height:1.35}
+.ciToastAction{min-height:34px;padding:0 10px;border-radius:10px;border:1px solid rgba(243,154,50,.28);background:rgba(243,154,50,.1);color:#efb574;font-size:8px;font-weight:950}
+.ciToastAchievement{background:linear-gradient(145deg,rgba(56,53,43,.98),rgba(34,35,39,.98));border-color:rgba(243,154,50,.22)}
+.ciToastUpdate{background:linear-gradient(145deg,rgba(43,50,57,.98),rgba(34,35,39,.98));border-color:rgba(111,163,214,.22)}
+.ciToastOffline .ciToastIcon{opacity:.8}
+@keyframes ciToastIn{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes ciToastOut{to{opacity:0;transform:translateY(8px) scale(.985)}}
+@keyframes ciViewInForward{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
+@keyframes ciViewInBack{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:none}}
+@keyframes ciSheetIn{from{opacity:0;transform:translate(-50%,18px) scale(.985)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
+@keyframes ciBackdropIn{from{opacity:0}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){body,.ciPressable{transition:none!important}.ciToast{animation:none!important}}
+.reduceExperimentMotion body,.reduceExperimentMotion .ciPressable,.experimentReduceMotion body,.experimentReduceMotion .ciPressable{transition:none!important}
+.reduceExperimentMotion .ciToast,.experimentReduceMotion .ciToast{animation:none!important}
+
+body.game-active .ciToastHost{top:calc(12px + env(safe-area-inset-top));bottom:auto}
+
+
+/* V74R8 category progression */
+.categoryCard.locked,.presetChoice.locked{
+  position:relative;border-style:dashed;opacity:.76
+}
+.categoryCard.locked::after,.presetChoice.locked::after{
+  content:"🔒";position:absolute;right:8px;top:7px;font-size:11px;line-height:1
+}
+.categoryCard.locked .categoryEmoji{filter:saturate(.7);opacity:.78}
+.categoryCard.locked .categoryName{padding-right:14px}
+.categoryLockMeta{
+  display:block;margin-top:3px;color:#9a9ca2;font-size:7px;font-weight:850;line-height:1.25
+}
+.ciProgressOverlay{
+  position:fixed;z-index:12000;inset:0;background:rgba(0,0,0,.58);
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  display:flex;align-items:flex-end;justify-content:center
+}
+.ciProgressSheet{
+  width:min(100%,720px);max-height:88dvh;overflow:auto;
+  padding:7px 17px calc(20px + env(safe-area-inset-bottom));
+  border-radius:26px 26px 0 0;border:1px solid rgba(255,255,255,.09);
+  background:#292a2f;box-shadow:0 -24px 60px rgba(0,0,0,.38);
+  animation:ciProgressIn var(--ci-motion-slow) var(--ci-ease)
+}
+@keyframes ciProgressIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.ciProgressHandle{width:38px;height:4px;margin:2px auto 13px;border-radius:99px;background:#55565c}
+.ciProgressHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.ciProgressHeader h2{margin:3px 0 0;font-size:21px;line-height:1.12}
+.ciProgressEyebrow{display:block;color:#8c8e94;font-size:8px;font-weight:950;letter-spacing:.8px}
+.ciProgressClose{width:36px;height:36px;border:0;border-radius:12px;background:#38393e;color:#eee;font-size:22px}
+.ciProgressIntro{margin:0 0 12px;color:#aaa;font-size:10px;line-height:1.5}
+.ciProgressCoverage,.ciProgressCard{
+  border:1px solid rgba(255,255,255,.065);border-radius:16px;background:#232428
+}
+.ciProgressCoverage{display:flex;flex-direction:column;gap:4px;padding:11px 12px;margin-bottom:9px}
+.ciProgressCoverage strong{font-size:8px;letter-spacing:.7px;color:#898b91}
+.ciProgressCoverage span{font-size:9px;line-height:1.35;color:#c6c7ca}
+.ciProgressCard{padding:12px;margin-top:9px}
+.ciProgressCardTop{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.ciProgressCardTop>div{display:flex;flex-direction:column;gap:2px}
+.ciProgressCardTop span{font-size:8px;font-weight:950;letter-spacing:.7px;color:#92949a}
+.ciProgressCardTop strong{font-size:12px}
+.ciProgressCardTop b{font-size:11px;color:#efb574}
+.ciProgressCard p{margin:8px 0;color:#a3a5aa;font-size:9px;line-height:1.45}
+.ciProgressCard small{display:block;margin-top:7px;color:#72747a;font-size:8px}
+.ciProgressTrack{height:7px;border-radius:99px;background:#393a3f;overflow:hidden}
+.ciProgressFill{height:100%;min-width:0;border-radius:inherit;background:linear-gradient(90deg,#d58a34,#f3b36d);transition:width 220ms ease}
+.ciProgressTicketCard{border-color:rgba(243,154,50,.16)}
+.ciProgressUnlockButton{
+  width:100%;min-height:45px;margin-top:10px;border:0;border-radius:14px;
+  background:#f39a32;color:#171717;font-size:10px;font-weight:950
+}
+.ciToastProgression{
+  background:linear-gradient(145deg,rgba(55,48,39,.98),rgba(34,35,39,.98));
+  border-color:rgba(243,154,50,.26)
+}
+@media(prefers-reduced-motion:reduce){.ciProgressSheet{animation:none}.ciProgressFill{transition:none}}
+
+
+/* V74R9 motivational feedback engine */
+.ciToastFeedback1{border-color:rgba(243,154,50,.13);background:rgba(38,39,43,.97)}
+.ciToastFeedback2{
+  border-color:rgba(243,154,50,.28);
+  background:linear-gradient(145deg,rgba(54,48,41,.98),rgba(35,36,40,.98));
+  box-shadow:0 18px 54px rgba(0,0,0,.4),0 0 28px rgba(243,154,50,.07)
+}
+.ciToastFeedback2 .ciToastIcon{background:rgba(243,154,50,.11)}
+.ciFeedbackHero{
+  position:fixed;z-index:13000;inset:0;display:grid;place-items:center;
+  padding:20px;pointer-events:none;background:radial-gradient(circle at center,rgba(243,154,50,.08),transparent 56%);
+  animation:ciFeedbackHeroBackdropIn 180ms ease both
+}
+.ciFeedbackHeroCard{
+  position:relative;isolation:isolate;width:min(86vw,380px);min-height:220px;padding:28px 24px;
+  overflow:hidden;border:1px solid rgba(243,154,50,.28);border-radius:28px;
+  background:linear-gradient(155deg,rgba(58,50,42,.98),rgba(31,32,36,.98));
+  box-shadow:0 28px 80px rgba(0,0,0,.48),0 0 55px rgba(243,154,50,.11);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  animation:ciFeedbackHeroIn 330ms cubic-bezier(.18,.86,.28,1.12) both
+}
+.ciFeedbackHeroLabel{font-size:8px;font-weight:950;letter-spacing:1.25px;color:#bc9870}
+.ciFeedbackHeroIcon{
+  position:relative;z-index:2;width:76px;height:76px;margin:12px 0 10px;border-radius:24px;
+  display:grid;place-items:center;font-size:42px;background:rgba(255,255,255,.055);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);
+  animation:ciFeedbackIconPop 440ms cubic-bezier(.18,.88,.26,1.25) both
+}
+.ciFeedbackHeroCard>strong{position:relative;z-index:2;font-size:24px;line-height:1.05;letter-spacing:-.5px}
+.ciFeedbackHeroMessage{position:relative;z-index:2;margin-top:9px;color:#b5b6ba;font-size:10px;line-height:1.45}
+.ciFeedbackBurst{position:absolute;z-index:1;inset:50% auto auto 50%;width:1px;height:1px}
+.ciFeedbackBurst i{
+  --angle:calc(var(--i) * 36deg);
+  position:absolute;width:6px;height:6px;border-radius:99px;background:#e6a55c;opacity:0;
+  transform:rotate(var(--angle)) translateY(-44px) scale(.4);
+  animation:ciFeedbackBurst 800ms calc(var(--i) * 18ms) ease-out both
+}
+.ciFeedbackHeroLeaving{animation:ciFeedbackHeroBackdropOut 280ms ease both}
+.ciFeedbackHeroLeaving .ciFeedbackHeroCard{animation:ciFeedbackHeroOut 280ms ease both}
+@keyframes ciFeedbackHeroBackdropIn{from{opacity:0}to{opacity:1}}
+@keyframes ciFeedbackHeroBackdropOut{to{opacity:0}}
+@keyframes ciFeedbackHeroIn{from{opacity:0;transform:translateY(18px) scale(.88)}to{opacity:1;transform:none}}
+@keyframes ciFeedbackHeroOut{to{opacity:0;transform:translateY(-8px) scale(.96)}}
+@keyframes ciFeedbackIconPop{0%{transform:scale(.65) rotate(-7deg)}65%{transform:scale(1.1) rotate(2deg)}100%{transform:none}}
+@keyframes ciFeedbackBurst{0%{opacity:0}22%{opacity:.85}100%{opacity:0;transform:rotate(var(--angle)) translateY(-118px) scale(1)}}
+@media(prefers-reduced-motion:reduce){
+  .ciFeedbackHero,.ciFeedbackHeroCard,.ciFeedbackHeroIcon,.ciFeedbackBurst i{animation:none!important}
+}
+.reduceExperimentMotion .ciFeedbackHero,.reduceExperimentMotion .ciFeedbackHeroCard,.reduceExperimentMotion .ciFeedbackHeroIcon,.reduceExperimentMotion .ciFeedbackBurst i,
+.experimentReduceMotion .ciFeedbackHero,.experimentReduceMotion .ciFeedbackHeroCard,.experimentReduceMotion .ciFeedbackHeroIcon,.experimentReduceMotion .ciFeedbackBurst i{animation:none!important}

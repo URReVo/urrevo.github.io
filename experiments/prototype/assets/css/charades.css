@@ -51,3 +51,29 @@
 @media(orientation:landscape) and (max-height:500px){.charadesPlayMeta{display:none}.charadesTermCard{min-height:0;border-radius:24px}.charadesTermText{font-size:clamp(38px,9vw,72px)}.charadesMotionFeedback{margin-top:8px}.charadesMotionBar{margin:4px 1px}.charadesActions button{min-height:46px}}
 
 .charadesActions button:disabled{opacity:.42;transform:none!important;filter:saturate(.55)}
+
+
+/* V74R13 time energy */
+.charadesTimeRail{
+  flex:0 0 5px;height:5px;margin:-1px 2px 9px;border-radius:999px;
+  overflow:hidden;background:rgba(255,255,255,.07)
+}
+.charadesTimeRail i{
+  display:block;width:100%;height:100%;border-radius:inherit;
+  background:linear-gradient(90deg,#48c4a7,#87e0cb);
+  box-shadow:0 0 18px rgba(72,196,167,.30);
+  transform-origin:left center;transition:width .22s linear,background .18s ease,box-shadow .18s ease
+}
+.charadesTimeRail.urgent i{
+  background:linear-gradient(90deg,#f39a32,#ffbf68);
+  box-shadow:0 0 18px rgba(243,154,50,.26)
+}
+.charadesTimeRail.critical i{
+  background:linear-gradient(90deg,#ef6b65,#ff9c7e);
+  box-shadow:0 0 22px rgba(239,107,101,.30)
+}
+.charadesTimeRail.critical{animation:charadesTimePulse .72s ease-in-out infinite alternate}
+@keyframes charadesTimePulse{from{opacity:.74}to{opacity:1}}
+.experimentReduceMotion .charadesTimeRail.critical{animation:none}
+.experimentReduceMotion .charadesTimeRail i{transition:none}
+@media(prefers-reduced-motion:reduce){.charadesTimeRail.critical{animation:none}.charadesTimeRail i{transition:none}}
