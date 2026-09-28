@@ -269,7 +269,7 @@ function handleAchievement(event){
   queueFeedback(items.slice(0,3).map(function(item){
     return {
       id:"achievement-"+item.id,icon:item.icon||"🏆",title:"Achievement · "+(item.title||"Freigeschaltet"),
-      message:item.text||"Neuer Meilenstein",type:"achievement",label:"ACHIEVEMENT FREIGESCHALTET",
+      message:(item.progress?item.progress+" · ":"")+(item.text||"Neuer Meilenstein"),type:"achievement",label:"ACHIEVEMENT FREIGESCHALTET",
       intensity:heroIds[item.id]?3:2
     };
   }));
