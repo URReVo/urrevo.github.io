@@ -387,6 +387,13 @@ assert(launcherSource.includes("store.setCrewChallenge"),"crew goal choice inter
 assert(launcherCss.includes(".crewPassCard")&&launcherCss.includes(".crewChallengeChoice")&&launcherCss.includes(".crewMemory"),"Party-Pass visual system missing");
 assert(launcherCss.includes("conic-gradient(#ef9f45 var(--crew-progress)"),"crew level progress ring missing");
 assert(pwaSource.includes('"crew-level"')&&pwaSource.includes('"crew-challenge"'),"DEV crew feedback previews missing");
+assert(appStateSource.includes("function profileLevelInfo(")&&appStateSource.includes("function computeProfileLevel(")&&appStateSource.includes("function buildProfileLevelFeedback("),"personal profile level model missing");
+assert(appStateSource.includes("getProfileLevel:getProfileLevel"),"personal profile level API not exported");
+assert(appStateSource.includes("crewFeedback.length?crewFeedback.slice():(profileLevelFeedback?[profileLevelFeedback]:buildSessionFeedback(s))"),"crew/profile session feedback priority mismatch");
+assert(html["index.html"].includes('id="headerLevel"')&&html["index.html"].includes('id="profileLevelSummary"')&&html["index.html"].includes('id="profileLevelFill"'),"personal level launcher UI missing");
+assert(launcherSource.includes("store.getProfileLevel")&&launcherSource.includes('byId("headerLevel")')&&launcherSource.includes('byId("profileLevelNumber")'),"personal level launcher rendering missing");
+assert(launcherCss.includes(".profileLevelPill")&&launcherCss.includes(".profileLevelSummary")&&launcherCss.includes(".playerLevelTrack"),"personal level visual system missing");
+assert(pwaSource.includes('"profile-level"')&&pwaSource.includes("PERSÖNLICHER FORTSCHRITT"),"DEV personal level feedback preview missing");
 assert(appStateSource.includes("var CATEGORY_TICKET_THRESHOLDS=[8,20,40]"),"category unlock thresholds mismatch");
 assert(["popculture","tech","spicy"].every(id=>appStateSource.includes('id:"'+id+'"')),"category progression pack definitions missing");
 assert(appStateSource.includes("function getCategoryProgress()")&&appStateSource.includes("function unlockCategoryPack("),"category progression APIs missing");
@@ -722,6 +729,46 @@ assert(feedbackEnded&&feedbackEnded.rounds.length===9,"feedback audit session ro
 assert(feedbackItems.some(item=>(item.type==="session-end"||item.type==="crew")&&item.intensity>=2),"session completion feedback missing");
 assert(feedbackItems.every(item=>item.intensity>=1&&item.intensity<=3),"feedback intensity outside 1..3");
 
+/* V74R10 personal-level audit: derived profile XP, feedback and independence from crew/content progression. */
+const profileLevelMem=auditStorage(),profileLevelEvents=[];
+const profileLevelState=auditStore(profileLevelMem,profileLevelEvents);
+const profileLevelProfile=profileLevelState.getProfiles()[0];
+profileLevelState.updateProfile(profileLevelProfile.id,{name:"Level One",avatar:"⭐️"});
+let personalLevel=profileLevelState.getProfileLevel(profileLevelProfile.id);
+assert(personalLevel&&personalLevel.xp===0&&personalLevel.level.level===1&&personalLevel.level.title==="Neuling","fresh personal level must start at level 1 / 0 XP");
+const categoryBeforeLevelRead=JSON.stringify(profileLevelState.getCategoryProgress());
+profileLevelState.getProfileLevel(profileLevelProfile.id);
+assert(JSON.stringify(profileLevelState.getCategoryProgress())===categoryBeforeLevelRead,"reading personal level mutated category progression");
+assert(profileLevelState.getCrews().length===0,"personal level read created a crew");
+
+profileLevelState.beginSession([{profileId:profileLevelProfile.id,name:"Level One"}]);
+for(let i=0;i<10;i++){
+  profileLevelEvents.length=0;
+  profileLevelState.recordRound({
+    roundKey:"profile-level-"+i,game:"classic",category:"Allgemein",wid:"profile-level-w"+i,
+    players:[{profileId:profileLevelProfile.id,role:"impostor"}]
+  });
+}
+personalLevel=profileLevelState.getProfileLevel(profileLevelProfile.id);
+let personalLevelFeedback=profileLevelEvents.filter(event=>event.type==="ci:motivational-feedback").flatMap(event=>event.detail.items||[]);
+assert(personalLevel.level.level>=2&&personalLevel.xp>=16,"personal level did not advance from real profile activity");
+assert(personalLevelFeedback.some(item=>item.type==="profile-level"&&item.title==="Level-Up!"&&item.intensity>=2),"personal level-up feedback missing");
+assert(profileLevelState.getCrews().length===0,"single-profile personal progression incorrectly created a crew");
+assert(!Object.prototype.hasOwnProperty.call(profileLevelState.snapshot(),"profileLevels")&&!Object.prototype.hasOwnProperty.call(profileLevelState.snapshot(),"profileXp"),"personal level must stay derived instead of creating mutable duplicate state");
+
+const profileLevelReload=auditStore(profileLevelMem);
+const reloadedPersonalLevel=profileLevelReload.getProfileLevel(profileLevelProfile.id);
+assert(reloadedPersonalLevel.xp===personalLevel.xp&&reloadedPersonalLevel.level.level===personalLevel.level.level,"personal level did not survive reload through derived stats");
+
+const isolatedProgressMem=auditStorage(),isolatedProgressState=auditStore(isolatedProgressMem);
+const isolatedProfile=isolatedProgressState.getProfiles()[0];
+const isolatedCategoriesBefore=JSON.stringify(isolatedProgressState.getCategoryProgress());
+isolatedProgressState.devPatchStats("profile",isolatedProfile.id,{rounds:80,charadesCorrect:120,impostorEscapes:6,perfect:2});
+const isolatedLevel=isolatedProgressState.getProfileLevel(isolatedProfile.id);
+assert(isolatedLevel.level.level>1&&isolatedLevel.breakdown.rounds===80,"DEV profile stats did not drive derived personal level");
+assert(JSON.stringify(isolatedProgressState.getCategoryProgress())===isolatedCategoriesBefore,"personal profile-level/stat changes polluted global category progression");
+assert(isolatedProgressState.getCrews().length===0,"personal profile-level/stat changes polluted crew progression");
+
 /* V74R10 Party-Pass audit: exact-group identity, persistent goal choice, crew memories and feedback. */
 const crewMem=auditStorage(),crewEvents=[];
 const crewState=auditStore(crewMem,crewEvents);
@@ -762,6 +809,7 @@ for(let sessionNo=1;sessionNo<=3;sessionNo++){
     const items=crewEvents.filter(event=>event.type==="ci:motivational-feedback").flatMap(event=>event.detail.items||[]);
     assert(items.some(item=>item.title==="Neue Crew gestartet"&&item.intensity===2),"first crew evening did not create Party-Pass feedback");
     assert(!items.some(item=>item.type==="session-end"),"generic session finale should yield to new-crew feedback");
+    assert(!items.some(item=>item.type==="profile-level"),"simultaneous personal level-up should yield to first-crew feedback at session end");
   }
   if(sessionNo===3){
     const items=crewEvents.filter(event=>event.type==="ci:motivational-feedback").flatMap(event=>event.detail.items||[]);
@@ -985,6 +1033,9 @@ assert(JSON.parse(restoreMem.storage.getItem("imposterGames.v74.game.charades.de
 assert(JSON.parse(restoreMem.storage.getItem("imposterGames.v74.game.charades.timer.v1"))===60,"Scharade timer was not restored");
 assert(JSON.stringify(restoreState.getCategoryProgress())===JSON.stringify(auditState.getCategoryProgress()),"category progression was not restored from backup");
 assert(JSON.stringify(restoreState.snapshot().crewProgress)===JSON.stringify(auditState.snapshot().crewProgress),"crew progress was not restored from backup");
+const auditPrimaryProfile=auditState.getProfiles()[0];
+const restorePrimaryProfile=restoreState.getProfileById(auditPrimaryProfile.id);
+assert(restorePrimaryProfile&&restoreState.getProfileLevel(auditPrimaryProfile.id).xp===auditState.getProfileLevel(auditPrimaryProfile.id).xp,"derived personal level was not preserved by backup restore");
 
 const downgradedBackup=structuredClone(auditBackup);
 downgradedBackup.formatVersion=2;
