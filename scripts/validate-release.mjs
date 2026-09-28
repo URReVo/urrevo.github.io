@@ -204,7 +204,7 @@ const readme=read("README.md");
 assert(!readme.includes("\\n"),"README contains literal \\n text");
 assert(["Circa Imposter","Klassisches Imposter","Wer bin ich?","Scharade","Persönlicher Impostor"].every(name=>readme.includes(name)),"README must describe the five-game app");
 const changelog=read("CHANGELOG.md");
-assert(changelog.includes("V74R10")&&changelog.includes("Offline-Cache **r10**"),"V74R10 changelog entry missing");
+assert(changelog.includes("V74R11")&&changelog.includes("Offline-Cache **r11**"),"V74R11 changelog entry missing");
 
 const appStateSource=read("assets/js/app-state.js");
 const launcherSource=read("assets/js/launcher.js");
@@ -261,7 +261,7 @@ assert(prototypePersonalSource.includes('PREFIX="imposterGames.prototype.game.pe
 assert(!prototypePersonalSource.includes('PREFIX="imposterGames.v74.game.personal."'),"prototype Personal must not use production storage");
 assert(!html["index.html"].includes("APP-SHELL TEST"),"production launcher still contains experiment badge");
 assert(launcherCss.includes("padding:calc(18px + var(--safeTop)) 16px 26px"),"launcher safe-area top padding missing");
-assert(sw.includes('const CACHE_REVISION="r10"'),"V74 cache revision mismatch");
+assert(sw.includes('const CACHE_REVISION="r11"'),"V74 cache revision mismatch");
 assert(sw.includes('versioned("/assets/js/launcher-dev.js")'),"service worker launcher DEV cache missing");
 assert(appStateSource.includes("var BACKUP_VERSION=3"),"backup format v3 missing");
 assert(engineSource.includes("experimentRecordCirca(null);"),"Circa shared base-round recording missing");
@@ -276,7 +276,7 @@ assert(html["games/personal-impostor/index.html"].includes("100 Fragepaare"),"Pe
 assert(!html["games/personal-impostor/index.html"].includes("89 Fragepaare"),"Personal stale question count remains");
 assert(html["index.html"].includes("IMPOSTOR · GESAMT"),"launcher Impostor aggregate label mismatch");
 assert(html["index.html"].includes("DAVON · PERSÖNLICH"),"launcher Personal Impostor label mismatch");
-assert(html["index.html"].includes("Profile, Presets, Sessions, Crews, Statistik, Spielzeit"),"launcher backup/reset copy missing V74R10 data scope");
+assert(html["index.html"].includes("Profile, Presets, Sessions, Crews, Statistik, Spielzeit"),"launcher backup/reset copy missing V74R11 data scope");
 assert(html["index.html"].includes('id="launcherDevTrigger"'),"launcher DEV trigger missing");
 assert(html["index.html"].includes('id="launcherDevPanelOverlay"'),"launcher DEV panel missing");
 assert(launcherCss.includes(".launcherDevOverlay")&&launcherCss.includes(".launcherDevAchievements"),"launcher DEV styles missing");
@@ -387,6 +387,15 @@ assert(launcherSource.includes("store.setCrewChallenge"),"crew goal choice inter
 assert(launcherCss.includes(".crewPassCard")&&launcherCss.includes(".crewChallengeChoice")&&launcherCss.includes(".crewMemory"),"Party-Pass visual system missing");
 assert(launcherCss.includes("conic-gradient(#ef9f45 var(--crew-progress)"),"crew level progress ring missing");
 assert(pwaSource.includes('"crew-level"')&&pwaSource.includes('"crew-challenge"'),"DEV crew feedback previews missing");
+assert(appStateSource.includes("function profileXpBreakdown(")&&appStateSource.includes("function profileLevelInfoFromStats("),"profile level model missing");
+assert(appStateSource.includes("var breakdown=profileXpBreakdown(st),base=crewLevelInfo(breakdown.total)"),"profile and crew levels must share one progression curve");
+assert(appStateSource.includes("function profileLevelFeedback("),"profile level-up feedback missing");
+assert(appStateSource.includes("getProfileLevel:getProfileLevel"),"profile level API not exported");
+assert(html["index.html"].includes('id="headerLevel"')&&html["index.html"].includes('id="profileLevelBlock"')&&html["index.html"].includes('id="profileLevelOrb"'),"profile level launcher UI missing");
+assert(launcherSource.includes("store.getProfileLevel")&&launcherSource.includes('byId("profileLevelFill")'),"profile level launcher rendering missing");
+assert(launcherCss.includes(".profileLevelCard")&&launcherCss.includes(".profileLevelOrb")&&launcherCss.includes(".playerLevelTrack"),"profile level visual system missing");
+assert(launcherCss.includes("conic-gradient(#ef9f45 var(--profile-progress)"),"profile level progress ring missing");
+assert(pwaSource.includes('"profile-level"')&&pwaSource.includes("Profil Level-Up"),"DEV profile level feedback preview missing");
 assert(appStateSource.includes("var CATEGORY_TICKET_THRESHOLDS=[8,20,40]"),"category unlock thresholds mismatch");
 assert(["popculture","tech","spicy"].every(id=>appStateSource.includes('id:"'+id+'"')),"category progression pack definitions missing");
 assert(appStateSource.includes("function getCategoryProgress()")&&appStateSource.includes("function unlockCategoryPack("),"category progression APIs missing");
@@ -500,6 +509,7 @@ assert(marlonStats.rounds===8&&marlonStats.circaRounds===8,"Marlon V72 rounds no
 assert(marlonStats.impostor===2&&marlonStats.impostorEscapes===1,"Marlon Impostor stats not migrated");
 assert(marlonStats.closest===3&&marlonStats.farthest===1,"Marlon estimate stats not migrated");
 assert(marlonStats.circaQids.length===legacyQids.length,"full-participation V72 QIDs not attributed to Marlon");
+assert(migratedStore.getProfileLevel(byName.marlon.id).level>=2,"migrated profile level did not backfill from existing stats");
 const leonStats=migratedStore.getProfileStats(byName.leon.id);
 assert(leonStats.circaQids.length===0&&leonStats.legacyCategoryUnknown===true,"partial V72 player must not receive unverifiable QIDs");
 migratedStore.applyCircaQuestionMetadata(questions.items);
@@ -721,6 +731,59 @@ feedbackItems=feedbackEvents.filter(event=>event.type==="ci:motivational-feedbac
 assert(feedbackEnded&&feedbackEnded.rounds.length===9,"feedback audit session round count mismatch");
 assert(feedbackItems.some(item=>(item.type==="session-end"||item.type==="crew")&&item.intensity>=2),"session completion feedback missing");
 assert(feedbackItems.every(item=>item.intensity>=1&&item.intensity<=3),"feedback intensity outside 1..3");
+
+/* V74R11 progression harmony audit: personal level, crew level, categories and feedback stay independent. */
+const harmonyMem=auditStorage(),harmonyEvents=[];
+const harmonyState=auditStore(harmonyMem,harmonyEvents);
+const harmonyP1=harmonyState.getProfiles()[0];
+harmonyState.updateProfile(harmonyP1.id,{name:"Harmony One",avatar:"😎"});
+const harmonyP2=harmonyState.addProfile({name:"Harmony Two",avatar:"🦊"});
+const harmonyP3=harmonyState.addProfile({name:"Harmony Three",avatar:"🐼"});
+const harmonyIds=[harmonyP1.id,harmonyP2,harmonyP3];
+harmonyIds.forEach(id=>{
+  const level=harmonyState.getProfileLevel(id);
+  assert(level.level===1&&level.xp===0&&level.remaining===20,"fresh profile level must start at LVL 1 / 0 XP");
+});
+harmonyState.beginSession(harmonyIds.map(id=>({profileId:id,name:id})));
+for(let i=1;i<=10;i++){
+  harmonyState.recordRound({
+    roundKey:"harmony-"+i,game:"classic",category:"Allgemein",wid:"harmony-w"+i,
+    impostorEscaped:i===3,
+    players:harmonyIds.map((id,index)=>({profileId:id,role:index===2?"impostor":"normal"}))
+  });
+}
+const harmonyBeforeEndLevels=harmonyIds.map(id=>harmonyState.getProfileLevel(id));
+assert(harmonyBeforeEndLevels.every(level=>level.level>=2),"profiles did not progress independently during play");
+assert(harmonyBeforeEndLevels.every(level=>level.progress>=0&&level.progress<=1&&level.nextXp>level.startXp),"profile level progress model invalid");
+let harmonyItems=harmonyEvents.filter(event=>event.type==="ci:motivational-feedback").flatMap(event=>event.detail.items||[]);
+assert(harmonyItems.some(item=>item.type==="profile-level"&&item.intensity===2),"profile level-up feedback missing");
+const harmonyCrewBefore=harmonyState.getCrew(harmonyIds);
+assert(harmonyCrewBefore&&!harmonyCrewBefore.hasHistory&&harmonyCrewBefore.xp===0,"crew XP must not grow before a shared session is completed");
+const harmonyCategoryBefore=JSON.stringify(harmonyState.getCategoryProgress());
+harmonyEvents.length=0;
+harmonyState.endSession();
+const harmonyAfterEndLevels=harmonyIds.map(id=>harmonyState.getProfileLevel(id));
+assert(harmonyAfterEndLevels.every((level,index)=>level.xp===harmonyBeforeEndLevels[index].xp&&level.level===harmonyBeforeEndLevels[index].level),"ending a session must not change personal profile XP");
+const harmonyCrewAfter=harmonyState.getCrew(harmonyIds);
+assert(harmonyCrewAfter.hasHistory&&harmonyCrewAfter.stats.sessions===1&&harmonyCrewAfter.level.level>=2,"completed shared session did not progress crew independently");
+assert(JSON.stringify(harmonyState.getCategoryProgress())===harmonyCategoryBefore,"crew/session completion changed category progression unexpectedly");
+harmonyItems=harmonyEvents.filter(event=>event.type==="ci:motivational-feedback").flatMap(event=>event.detail.items||[]);
+assert(harmonyItems.some(item=>item.type==="crew"),"crew completion feedback missing in harmony audit");
+assert(!harmonyItems.some(item=>item.type==="profile-level"),"session completion emitted a false personal level-up");
+const harmonyReload=auditStore(harmonyMem);
+harmonyIds.forEach((id,index)=>{
+  const level=harmonyReload.getProfileLevel(id);
+  assert(level.level===harmonyAfterEndLevels[index].level&&level.xp===harmonyAfterEndLevels[index].xp,"profile level did not survive reload through source stats");
+});
+const harmonyBackup=await harmonyState.createBackup();
+const harmonyRestoreMem=auditStorage(),harmonyRestore=auditStore(harmonyRestoreMem);
+const harmonyRestoreResult=await harmonyRestore.importSnapshot(harmonyBackup);
+assert(harmonyRestoreResult.ok,"profile/crew harmony backup restore failed");
+harmonyIds.forEach((id,index)=>{
+  const level=harmonyRestore.getProfileLevel(id);
+  assert(level.level===harmonyAfterEndLevels[index].level&&level.xp===harmonyAfterEndLevels[index].xp,"profile level changed after backup restore");
+});
+assert(harmonyRestore.getCrew(harmonyIds).level.level===harmonyCrewAfter.level.level,"crew level changed after backup restore");
 
 /* V74R10 Party-Pass audit: exact-group identity, persistent goal choice, crew memories and feedback. */
 const crewMem=auditStorage(),crewEvents=[];
