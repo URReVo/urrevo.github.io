@@ -6,6 +6,10 @@ var STORAGE_PLAYERS=PREFIX+"players.v1",STORAGE_CATEGORIES=PREFIX+"categories.v1
 var avatarPool=["😎","🕵️","🥷","🤠","👻","🤖","🦊","🐼","🐸","🦁","🐙","🦄"];
 var appState=window.CIAppState||null;
 var launchPreset=appState&&appState.consumeLaunchPreset?appState.consumeLaunchPreset("charades"):null;
+function categoryUnlocked(name){return name==="Alle"||!appState||!appState.isCategoryUnlocked||appState.isCategoryUnlocked("charades",name);}
+function categoryLock(name){return appState&&appState.getCategoryLock?appState.getCategoryLock("charades",name):null;}
+function filterCategories(list){return appState&&appState.filterUnlockedCategories?appState.filterUnlockedCategories("charades",list):(Array.isArray(list)&&list.length?list.slice():["Alle"]);}
+function openCategoryUnlock(name){if(window.CIAppUI&&window.CIAppUI.openCategoryUnlock)window.CIAppUI.openCategoryUnlock("charades",name);}
 var preferences=appState&&appState.getPreferences?appState.getPreferences():{sound:true,haptics:true,animations:true};
 var soundEnabled=preferences.sound!==false,audioCtx=null;
 var bank=[],categoryMeta=[],count=3,players=[],savedNames=[],savedIds=[],avatars=[];
@@ -40,11 +44,38 @@ function applyPreferred(){var presetProfiles=launchPreset&&Array.isArray(launchP
 function savePlayers(){var nodes=byId("names").querySelectorAll("input"),list=[];for(var i=0;i<count;i++){var name=clean(nodes[i]&&nodes[i].value)||("Spieler "+(i+1));var id=validProfileId(savedIds[i],name);savedIds[i]=id;list.push({name:name,avatar:avatars[i]||avatarPool[i%avatarPool.length],profileId:id});}savedNames=list.map(function(x){return x.name;});set(STORAGE_PLAYERS,{players:list});}
 function renderPlayers(){var box=byId("names");box.innerHTML="";while(savedNames.length<count)savedNames.push("Spieler "+(savedNames.length+1));while(savedIds.length<count)savedIds.push(null);while(avatars.length<count)avatars.push(avatarPool[avatars.length%avatarPool.length]);savedNames=savedNames.slice(0,count);savedIds=savedIds.slice(0,count);avatars=avatars.slice(0,count);for(let i=0;i<count;i++){var row=document.createElement("div");row.className="playerRow";var av=document.createElement("button");av.type="button";av.className="playerAvatarButton";av.textContent=avatars[i];av.addEventListener("click",function(){var pos=avatarPool.indexOf(avatars[i]);avatars[i]=avatarPool[(pos+1)%avatarPool.length];av.textContent=avatars[i];savePlayers();tone(510,.04);});var input=document.createElement("input");input.type="text";input.className="playerInput";input.autocomplete="off";input.maxLength=24;input.value=savedNames[i];input.placeholder="Spieler "+(i+1);input.addEventListener("input",function(){savedIds[i]=validProfileId(savedIds[i],input.value);});input.addEventListener("blur",savePlayers);row.append(av,input);box.appendChild(row);}byId("minus").disabled=count<=2;byId("plus").disabled=count>=12;}
 
-function loadCategories(){if(launchPreset&&Array.isArray(launchPreset.categories)&&launchPreset.categories.length){selectedCategories=launchPreset.categories.slice();saveCategories();return;}var saved=get(STORAGE_CATEGORIES,["Alle"]);var valid=categoryMeta.map(function(x){return x.name;});if(!Array.isArray(saved)||saved.indexOf("Alle")!==-1){selectedCategories=["Alle"];return;}selectedCategories=saved.filter(function(x,i){return valid.indexOf(x)!==-1&&saved.indexOf(x)===i;});if(!selectedCategories.length)selectedCategories=["Alle"];}
+function loadCategories(){
+  if(launchPreset&&Array.isArray(launchPreset.categories)&&launchPreset.categories.length){selectedCategories=filterCategories(launchPreset.categories);saveCategories();return;}
+  var saved=get(STORAGE_CATEGORIES,["Alle"]);var valid=categoryMeta.map(function(x){return x.name;});
+  if(!Array.isArray(saved)||saved.indexOf("Alle")!==-1){selectedCategories=["Alle"];return;}
+  selectedCategories=saved.filter(function(x,i){return valid.indexOf(x)!==-1&&categoryUnlocked(x)&&saved.indexOf(x)===i;});
+  if(!selectedCategories.length)selectedCategories=["Alle"];saveCategories();
+}
 function saveCategories(){set(STORAGE_CATEGORIES,selectedCategories.slice());}
-function pool(){if(selectedCategories.indexOf("Alle")!==-1)return bank.slice();return bank.filter(function(item){return selectedCategories.indexOf(item.cat)!==-1;});}
-function renderCategories(){var deck=byId("categoryDeck");deck.innerHTML="";[{name:"Alle",emoji:"✨"}].concat(categoryMeta).forEach(function(meta){var name=meta.name,btn=document.createElement("button");btn.type="button";btn.className="categoryCard"+(selectedCategories.indexOf(name)!==-1?" selected":"");btn.setAttribute("aria-pressed",selectedCategories.indexOf(name)!==-1?"true":"false");var em=document.createElement("span");em.className="categoryEmoji";em.textContent=meta.emoji||"❔";var nm=document.createElement("span");nm.className="categoryName";nm.textContent=name;btn.append(em,nm);btn.addEventListener("click",function(){if(name==="Alle")selectedCategories=["Alle"];else{selectedCategories=selectedCategories.filter(function(x){return x!=="Alle";});var at=selectedCategories.indexOf(name);if(at===-1)selectedCategories.push(name);else selectedCategories.splice(at,1);if(!selectedCategories.length)selectedCategories=["Alle"];}saveCategories();renderCategories();updatePoolCount();tone(540,.04);pulse(5);});deck.appendChild(btn);});}
+function pool(){
+  if(selectedCategories.indexOf("Alle")!==-1)return bank.filter(function(item){return categoryUnlocked(item.cat);});
+  return bank.filter(function(item){return selectedCategories.indexOf(item.cat)!==-1&&categoryUnlocked(item.cat);});
+}
+function renderCategories(){
+  var deck=byId("categoryDeck");deck.innerHTML="";
+  [{name:"Alle",emoji:"✨"}].concat(categoryMeta).forEach(function(meta){
+    var name=meta.name,locked=name!=="Alle"&&!categoryUnlocked(name),lock=locked?categoryLock(name):null,btn=document.createElement("button");
+    btn.type="button";btn.className="categoryCard"+(selectedCategories.indexOf(name)!==-1?" selected":"")+(locked?" locked":"");
+    btn.setAttribute("aria-pressed",selectedCategories.indexOf(name)!==-1?"true":"false");
+    var em=document.createElement("span");em.className="categoryEmoji";em.textContent=meta.emoji||"❔";
+    var nm=document.createElement("span");nm.className="categoryName";nm.textContent=name;btn.append(em,nm);
+    if(lock){var lm=document.createElement("small");lm.className="categoryLockMeta";lm.textContent=(lock.tickets&&lock.tickets.available>0)?"Freischaltung verfügbar":lock.challenge.progress+" · "+lock.challenge.title;btn.appendChild(lm);btn.setAttribute("aria-label",name+" gesperrt · "+lock.challenge.progress);}
+    btn.addEventListener("click",function(){
+      if(locked){openCategoryUnlock(name);tone(390,.04);return;}
+      if(name==="Alle")selectedCategories=["Alle"];
+      else{selectedCategories=selectedCategories.filter(function(x){return x!=="Alle";});var at=selectedCategories.indexOf(name);if(at===-1)selectedCategories.push(name);else selectedCategories.splice(at,1);if(!selectedCategories.length)selectedCategories=["Alle"];}
+      saveCategories();renderCategories();updatePoolCount();tone(540,.04);pulse(5);
+    });
+    deck.appendChild(btn);
+  });
+}
 function updatePoolCount(){byId("poolCount").textContent=pool().length+" Begriffe verfügbar";}
+window.addEventListener("ci:category-unlocked",function(){loadCategories();renderCategories();updatePoolCount();});
 function deckKey(){return selectedCategories.indexOf("Alle")!==-1?"Alle":selectedCategories.slice().sort().join("|");}
 function drawOne(){var list=pool(),state=get(STORAGE_DECK,{});if(!state||typeof state!=="object"||Array.isArray(state))state={};var key=deckKey(),used=Array.isArray(state[key])?state[key].map(String):[],available=list.filter(function(x){return used.indexOf(String(x.id))===-1;});if(!available.length){used=[];available=list.slice();}if(!available.length)return null;var item=available[Math.floor(randomUnit()*available.length)];state[key]=used.concat(String(item.id));set(STORAGE_DECK,state);return item;}
 
