@@ -3,6 +3,7 @@
 
 var KEY="imposterGames.appState.v1";
 var LEGACY_KEY="imposterGames.appState.legacy";
+var DEV_STORAGE_KEY="imposterGames.devState.v1";
 var MAX_SESSIONS=50;
 var BACKUP_FORMAT="imposter-games-backup";
 var BACKUP_VERSION=3;
@@ -65,6 +66,46 @@ function normalizeUsage(src){
   out.lastTickAt=Number(src.lastTickAt)>0?Number(src.lastTickAt):null;
   out.activeGame=GAME_IDS.indexOf(src.activeGame)!==-1?src.activeGame:null;
   return out;
+}
+function baseDevState(){
+  return {globalAchievements:{},profileAchievements:{}};
+}
+function normalizeDevOverrideMap(src){
+  var out={};
+  if(!src||typeof src!=="object"||Array.isArray(src))return out;
+  Object.keys(src).slice(0,250).forEach(function(id){
+    if(src[id]===true||src[id]===false)out[String(id).slice(0,100)]=src[id];
+  });
+  return out;
+}
+function loadDevState(){
+  var parsed=null;
+  try{parsed=JSON.parse(localStorage.getItem(DEV_STORAGE_KEY)||"null");}catch(e){}
+  var out=baseDevState();
+  if(!parsed||typeof parsed!=="object"||Array.isArray(parsed))return out;
+  out.globalAchievements=normalizeDevOverrideMap(parsed.globalAchievements);
+  var profiles=parsed.profileAchievements;
+  if(profiles&&typeof profiles==="object"&&!Array.isArray(profiles)){
+    Object.keys(profiles).slice(0,250).forEach(function(id){
+      var map=normalizeDevOverrideMap(profiles[id]);
+      if(Object.keys(map).length)out.profileAchievements[String(id).slice(0,80)]=map;
+    });
+  }
+  return out;
+}
+function saveDevState(){
+  try{
+    var hasGlobal=Object.keys(devState.globalAchievements||{}).length>0;
+    var hasProfiles=Object.keys(devState.profileAchievements||{}).length>0;
+    if(!hasGlobal&&!hasProfiles)localStorage.removeItem(DEV_STORAGE_KEY);
+    else localStorage.setItem(DEV_STORAGE_KEY,JSON.stringify(devState));
+    return true;
+  }catch(e){return false;}
+}
+function achievementOverride(id,profileId){
+  var map=profileId?(devState.profileAchievements&&devState.profileAchievements[profileId]):devState.globalAchievements;
+  if(!map||!Object.prototype.hasOwnProperty.call(map,id))return null;
+  return map[id]===true?true:map[id]===false?false:null;
 }
 function defaults(){
   var id=uid("player");
@@ -330,6 +371,7 @@ function load(){
 }
 migrateV73GameStorageOnce();
 var data=load();
+var devState=loadDevState();
 
 function save(){
   try{localStorage.setItem(KEY,JSON.stringify(data));return true;}catch(e){return false;}
@@ -723,13 +765,17 @@ function endSession(){
 function getAchievements(){
   evaluateAchievements();save();
   return achievementDefs().map(function(def){
-    return {id:def.id,icon:def.icon,title:def.title,text:def.text,unlocked:!!data.achievements[def.id],unlockedAt:data.achievements[def.id]&&data.achievements[def.id].unlockedAt,progress:def.progress()};
+    var override=achievementOverride(def.id,null);
+    var actual=!!data.achievements[def.id];
+    return {id:def.id,icon:def.icon,title:def.title,text:def.text,unlocked:override===null?actual:override,unlockedAt:data.achievements[def.id]&&data.achievements[def.id].unlockedAt,progress:def.progress(),devOverride:override};
   });
 }
 function getProfileAchievements(id){
   if(!profileById(id)&&!data.profileArchive[id])return [];
   return profileAchievementDefs(id).map(function(def){
-    return {id:def.id,icon:def.icon,title:def.title,text:def.text,unlocked:!!def.done(),progress:def.progress()};
+    var override=achievementOverride(def.id,id);
+    var actual=!!def.done();
+    return {id:def.id,icon:def.icon,title:def.title,text:def.text,unlocked:override===null?actual:override,progress:def.progress(),devOverride:override};
   });
 }
 function usageCommit(ts){
@@ -769,6 +815,68 @@ function getUsageStats(){
 }
 function getStats(){return clone(data.stats);}
 function getProfileStats(id){return clone(data.profileStats[id]||baseProfileStats());}
+function devPatchStats(scope,profileId,patch){
+  patch=patch&&typeof patch==="object"&&!Array.isArray(patch)?patch:{};
+  if(scope==="profile"){
+    if(!profileById(profileId))return null;
+    var source={};source[profileId]=Object.assign({},ensureStat(profileId),patch);
+    var safeProfile=sanitizeImportedProfileStats(source)[profileId];
+    if(!safeProfile)return null;
+    data.profileStats[profileId]=safeProfile;
+    evaluateAchievements();save();return clone(safeProfile);
+  }
+  data.stats=sanitizeImportedStats(Object.assign({},data.stats,patch));
+  evaluateAchievements();save();return clone(data.stats);
+}
+function devReplaceStats(scope,profileId,next){
+  next=next&&typeof next==="object"&&!Array.isArray(next)?next:{};
+  if(scope==="profile"){
+    if(!profileById(profileId))return null;
+    var source={};source[profileId]=next;
+    var safeProfile=sanitizeImportedProfileStats(source)[profileId];
+    if(!safeProfile)return null;
+    data.profileStats[profileId]=safeProfile;
+    evaluateAchievements();save();return clone(safeProfile);
+  }
+  data.stats=sanitizeImportedStats(next);
+  evaluateAchievements();save();return clone(data.stats);
+}
+function devResetStats(scope,profileId){
+  return devReplaceStats(scope,profileId,scope==="profile"?baseProfileStats():baseStats());
+}
+function devSetUsage(next){
+  data.usage=normalizeUsage(next);
+  data.usage.lastTickAt=null;data.usage.activeGame=null;
+  save();return getUsageStats();
+}
+function devSetAchievementOverride(id,value,profileId){
+  id=String(id||"").trim().slice(0,100);if(!id)return false;
+  var map;
+  if(profileId){
+    if(!profileById(profileId)&&!data.profileArchive[profileId])return false;
+    if(!devState.profileAchievements[profileId])devState.profileAchievements[profileId]={};
+    map=devState.profileAchievements[profileId];
+  }else map=devState.globalAchievements;
+  if(value===true||value===false)map[id]=value;
+  else delete map[id];
+  if(profileId&&Object.keys(map).length===0)delete devState.profileAchievements[profileId];
+  return saveDevState();
+}
+function devClearAchievementOverrides(profileId){
+  if(profileId)delete devState.profileAchievements[profileId];
+  else devState.globalAchievements={};
+  return saveDevState();
+}
+function devGetAchievementOverrides(){return clone(devState);}
+function devClearSessions(){
+  data.sessions=[];data.activeSessionId=null;save();return true;
+}
+function devDeleteSession(id){
+  var before=data.sessions.length;
+  data.sessions=data.sessions.filter(function(session){return session.id!==id;});
+  if(data.activeSessionId===id)data.activeSessionId=null;
+  save();return data.sessions.length<before;
+}
 function getSessions(){return clone(data.sessions.slice().reverse());}
 function getActiveSession(){var s=data.activeSessionId&&sessionById(data.activeSessionId);return s?clone(s):null;}
 function getPreferences(){return clone(data.preferences);}
@@ -1211,11 +1319,13 @@ function reset(){
   try{
     localStorage.removeItem(KEY);
     localStorage.removeItem(LEGACY_KEY);
+    localStorage.removeItem(DEV_STORAGE_KEY);
     clearCurrentGameStorage();
     localStorage.setItem(GAME_STORAGE_PREFIX+"v72Migration.v1",JSON.stringify({completed:true,reset:true,at:now()}));
     localStorage.setItem(GAME_STORAGE_PREFIX+"v73Migration.v1",JSON.stringify({completed:true,reset:true,at:now()}));
   }catch(e){}
   data=defaults();
+  devState=baseDevState();
   data.imports={
     v72MigrationCompleted:true,
     v72ProfileChoicePending:false,
@@ -1267,6 +1377,15 @@ window.CIAppState={
   getStats:getStats,
   getProfileStats:getProfileStats,
   getUsageStats:getUsageStats,
+  devPatchStats:devPatchStats,
+  devReplaceStats:devReplaceStats,
+  devResetStats:devResetStats,
+  devSetUsage:devSetUsage,
+  devSetAchievementOverride:devSetAchievementOverride,
+  devClearAchievementOverrides:devClearAchievementOverrides,
+  devGetAchievementOverrides:devGetAchievementOverrides,
+  devClearSessions:devClearSessions,
+  devDeleteSession:devDeleteSession,
   trackUsage:trackUsage,
   pauseUsage:pauseUsage,
   getAchievements:getAchievements,
