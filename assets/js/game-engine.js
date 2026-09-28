@@ -111,6 +111,20 @@ var experimentGameRunId="run_"+Date.now().toString(36)+"_"+Math.random().toStrin
 var experimentSessionId=null;
 var experimentPreferences=experimentAppState?experimentAppState.getPreferences():{sound:true,haptics:true,animations:true};
 
+function experimentProgressGame(){return gameMode==="classic"?"classic":"circa";}
+function experimentCategoryUnlocked(category){
+  return category==="Alle"||!experimentAppState||!experimentAppState.isCategoryUnlocked||experimentAppState.isCategoryUnlocked(experimentProgressGame(),category);
+}
+function experimentCategoryLock(category){
+  return experimentAppState&&experimentAppState.getCategoryLock?experimentAppState.getCategoryLock(experimentProgressGame(),category):null;
+}
+function experimentOpenCategoryUnlock(category){
+  if(window.CIAppUI&&window.CIAppUI.openCategoryUnlock)window.CIAppUI.openCategoryUnlock(experimentProgressGame(),category);
+}
+function experimentFilterCategories(categories){
+  if(experimentAppState&&experimentAppState.filterUnlockedCategories)return experimentAppState.filterUnlockedCategories(experimentProgressGame(),categories);
+  return Array.isArray(categories)&&categories.length?categories.slice():["Alle"];
+}
 function experimentActiveProfile(profileId){
   if(!experimentAppState||!profileId||!experimentAppState.getProfileById)return null;
   var profile=experimentAppState.getProfileById(profileId);
@@ -200,7 +214,7 @@ function experimentApplyLaunchPreset(){
   if(preset){
     if(Array.isArray(preset.profileIds))presetProfiles=preset.profileIds.map(function(id){return experimentAppState.getProfileById(id);}).filter(function(p){return p&&!p.deletedAt;});
     count=presetProfiles.length?Math.max(3,Math.min(12,presetProfiles.length)):Math.max(3,Math.min(12,Number(preset.playerCount)||count));
-    if(Array.isArray(preset.categories)&&preset.categories.length)selectedCategories=preset.categories.slice();
+    if(Array.isArray(preset.categories)&&preset.categories.length)selectedCategories=experimentFilterCategories(preset.categories);
     if(gameMode==="classic"){
       classicHintEnabled=preset.hint!==false;
       classicTimerSeconds=[0,60,90,120,150,180,210,240,270,300].indexOf(Number(preset.timer))!==-1?Number(preset.timer):classicTimerSeconds;
@@ -535,6 +549,7 @@ function classicEligibleCategories(){
   for(var i=0;i<classicWords.length;i++){
     if(!seen[classicWords[i].cat]){seen[classicWords[i].cat]=true;all.push(classicWords[i].cat);}
   }
+  all=all.filter(experimentCategoryUnlocked);
   if(selectedCategories.indexOf("Alle")!==-1)return all;
   var out=[];
   for(var j=0;j<selectedCategories.length;j++){
@@ -1007,12 +1022,13 @@ function loadSavedCategories(){
   }
 
   for(var i=0;i<saved.length;i++){
-    if(valid.indexOf(saved[i])!==-1&&clean.indexOf(saved[i])===-1){
+    if(valid.indexOf(saved[i])!==-1&&experimentCategoryUnlocked(saved[i])&&clean.indexOf(saved[i])===-1){
       clean.push(saved[i]);
     }
   }
 
   selectedCategories=clean.length?clean:["Alle"];
+  saveSelectedCategories();
 }
 
 var avatarPool=["😎","🦊","🐼","🤠","👾","🐸","🦁","🐯","🦄","🐵","🧸","🥷","👽","🤖","😈","🐧"];
@@ -1058,6 +1074,12 @@ function syncSetupScrollFit(){
     }
   });
 }
+window.addEventListener("ci:category-unlocked",function(){
+  loadSavedCategories();
+  initCategories();
+  updateToolbar();
+  syncSetupScrollFit();
+});
 window.addEventListener("resize",syncSetupScrollFit,{passive:true});
 window.addEventListener("orientationchange",function(){setTimeout(syncSetupScrollFit,80);},{passive:true});
 
@@ -1257,6 +1279,11 @@ function syncCategoryUI(){
   }
 }
 function toggleCategory(cat){
+  if(cat!=="Alle"&&!experimentCategoryUnlocked(cat)){
+    experimentOpenCategoryUnlock(cat);
+    tone(390,0.04,0.012,"sine",0);
+    return;
+  }
   if(cat==="Alle"){
     selectedCategories=["Alle"];
     saveSelectedCategories();
@@ -1293,11 +1320,18 @@ function initCategories(){
     var c=cats[j];
 
     var b=document.createElement("button");
-    b.type="button";b.className="categoryCard";b.setAttribute("aria-pressed","false");
+    var locked=c!=="Alle"&&!experimentCategoryUnlocked(c),lock=locked?experimentCategoryLock(c):null;
+    b.type="button";b.className="categoryCard"+(locked?" locked":"");b.setAttribute("aria-pressed","false");
     b.setAttribute("data-category",c);
     var em=document.createElement("span");em.className="categoryEmoji";em.textContent=categoryIcons[c]||"🎲";
     var nm=document.createElement("span");nm.className="categoryName";nm.textContent=c;
     b.appendChild(em);b.appendChild(nm);
+    if(lock){
+      var meta=document.createElement("small");meta.className="categoryLockMeta";
+      meta.textContent=(lock.tickets&&lock.tickets.available>0)?"Freischaltung verfügbar":lock.challenge.progress+" · "+lock.challenge.title;
+      b.appendChild(meta);
+      b.setAttribute("aria-label",c+" gesperrt · "+lock.challenge.progress);
+    }
     b.addEventListener("click",function(){toggleCategory(this.getAttribute("data-category"));});
     deck.appendChild(b);
   }
@@ -1556,7 +1590,8 @@ function pickRound(){
   for(var j=0;j<bank.length;j++){
     if(!seenCats[bank[j].cat]){seenCats[bank[j].cat]=true;allCats.push(bank[j].cat);}
   }
-  var requestedCats=selectedCategories.indexOf("Alle")!==-1?allCats:selectedCategories.slice();
+  allCats=allCats.filter(experimentCategoryUnlocked);
+  var requestedCats=selectedCategories.indexOf("Alle")!==-1?allCats:selectedCategories.filter(experimentCategoryUnlocked);
   if(!requestedCats.length)requestedCats=allCats;
 
   /* Keep category weighting fair, but only include categories that have
