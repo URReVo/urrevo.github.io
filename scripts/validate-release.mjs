@@ -215,7 +215,7 @@ assert(prototypePersonalSource.includes('PREFIX="imposterGames.prototype.game.pe
 assert(!prototypePersonalSource.includes('PREFIX="imposterGames.v74.game.personal."'),"prototype Personal must not use production storage");
 assert(!html["index.html"].includes("APP-SHELL TEST"),"production launcher still contains experiment badge");
 assert(launcherCss.includes("padding:calc(18px + var(--safeTop)) 16px 26px"),"launcher safe-area top padding missing");
-assert(sw.includes('const CACHE_REVISION="r1"'),"V74 cache revision mismatch");
+assert(sw.includes('const CACHE_REVISION="r2"'),"V74 cache revision mismatch");
 assert(appStateSource.includes("var BACKUP_VERSION=3"),"backup format v3 missing");
 assert(engineSource.includes("experimentRecordCirca(null);"),"Circa shared base-round recording missing");
 assert(engineSource.includes("impostorEscaped:outcome===true?true:outcome===false?false:null"),"Circa unresolved outcome state missing");
@@ -224,6 +224,12 @@ assert(engineSource.includes("function experimentActiveProfile"),"active-profile
 assert(engineSource.includes('setPreference("sound",soundEnabled)'),"in-game sound preference persistence missing");
 assert(engineSource.includes("function motionEnabled()"),"game animation preference helper missing");
 assert(gameCss.includes(".experimentReduceMotion *"),"game reduced-motion CSS missing");
+assert(gameCss.includes("body.booting .app{visibility:hidden}"),"game boot state must hide uninitialized UI");
+assert(html["games/personal-impostor/index.html"].includes("100 Fragepaare"),"Personal static question count mismatch");
+assert(!html["games/personal-impostor/index.html"].includes("89 Fragepaare"),"Personal stale question count remains");
+assert(html["index.html"].includes("IMPOSTOR · GESAMT"),"launcher Impostor aggregate label mismatch");
+assert(html["index.html"].includes("DAVON · PERSÖNLICH"),"launcher Personal Impostor label mismatch");
+assert(html["index.html"].includes("Profile, Presets, Sessions, Statistik, Spielzeit"),"launcher backup/reset copy missing V74R2 data scope");
 assert(launcherSource.includes("function launcherSoundEnabled()"),"launcher sound preference guard missing");
 assert(launcherSource.includes("function uiSound(kind)"),"launcher UI sound generator missing");
 assert(launcherSource.includes("function navigateWithSound(href)"),"launcher start-sound navigation missing");
@@ -231,6 +237,16 @@ assert(launcherSource.includes("store.getPreferences().sound!==false"),"launcher
 assert(launcherSource.includes("function renderUsageStats()"),"launcher playtime statistics missing");
 assert(appStateSource.includes("function trackUsage(game)"),"foreground playtime tracking missing");
 assert(appStateSource.includes("function getUsageStats()"),"playtime stats API missing");
+assert(appStateSource.includes("function profileMatchesName(profile,lower)"),"profile alias matching helper missing");
+assert(appStateSource.includes('if(game==="circa"&&round.category)addUnique(st.categories,round.category);'),"profile Circa category guard missing");
+assert(appStateSource.includes('if(game==="circa"&&round.category)addUnique(data.stats.categories,round.category);'),"global Circa category guard missing");
+assert(appStateSource.includes("data.stats.categories=globalCategories"),"Circa category repair missing");
+assert(appStateSource.includes("preset.profileIds=preset.profileIds.filter"),"stale preset profile cleanup missing");
+assert(launcherSource.includes("activeProfilesForLaunch(session).length>=gameMeta(sessionGame(session)).min"),"session replay must use per-game minimum");
+assert(launcherSource.includes('byId("presetOpenGame").disabled=!playable'),"incomplete preset launch guard missing");
+assert(whoSource.includes('if(currentRoundKey&&!window.confirm("Aktuelle Runde abbrechen und neue Begriffe verteilen?"))return;'),"WhoAmI active-round restart guard missing");
+assert(personalSource.includes('if(currentRoundKey&&!window.confirm("Aktuelle Runde abbrechen und ein neues Fragepaar starten?"))return;'),"Personal active-round restart guard missing");
+assert(charadesSource.includes('function leave(){if(currentPartyKey&&!window.confirm'),"Charades active-party leave guard missing");
 assert(launcherSource.includes('byId("presetAddPlayer")'),"preset direct player creation missing");
 assert(launcherSource.includes('openProfileEditor(null,"preset")'),"preset player creation flow missing");
 assert(launcherSource.includes('querySelectorAll("a.gameCard[href]")'),"game-card sound/navigation binding missing");
