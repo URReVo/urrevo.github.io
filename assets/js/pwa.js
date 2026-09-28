@@ -451,7 +451,7 @@ function previewMiniSession(){
 }
 function runDevUiTest(action){
   action=String(action||"");
-  if(["achievement","achievement-stack","success","offline","update","feedback-1","feedback-2","feedback-3","feedback-session","crew-level","crew-challenge"].indexOf(action)!==-1)closeDevPanelForPreview();
+  if(["achievement","achievement-stack","success","offline","update","feedback-1","feedback-2","feedback-3","feedback-session","profile-level","crew-level","crew-challenge"].indexOf(action)!==-1)closeDevPanelForPreview();
   setTimeout(function(){
     if(action==="achievement"){
       emitTestAchievements([{id:"dev-preview",icon:"🏆",title:"Warmgelaufen",text:"DEV-Vorschau"}]);
@@ -481,6 +481,8 @@ function runDevUiTest(action){
       emitTestFeedback({id:"dev-feedback-3-"+Date.now(),icon:"🎯",title:"Punktlandung!",message:"Exakt richtig geschätzt.",label:"AUSSERGEWÖHNLICH",intensity:3,type:"performance"});
     }else if(action==="feedback-session"){
       emitTestFeedback({id:"dev-feedback-session-"+Date.now(),icon:"🏁",title:"Starker Spieleabend",message:"20 Runden · 4 Awards",label:"SESSION ABGESCHLOSSEN",intensity:3,type:"session-end"});
+    }else if(action==="profile-level"){
+      emitTestFeedback({id:"dev-profile-level-"+Date.now(),icon:"⭐️",title:"Level-Up!",message:"Spieler erreicht Level 5 · Routinier",label:"PERSÖNLICHER FORTSCHRITT",intensity:3,type:"profile-level"});
     }else if(action==="crew-level"){
       emitTestFeedback({id:"dev-crew-level-"+Date.now(),icon:"🔥",title:"Crew-Level 5",message:"Stammcrew · 42 gemeinsame Runden",label:"CREW LEVEL-UP",intensity:3,type:"crew"});
     }else if(action==="crew-challenge"){
@@ -518,6 +520,7 @@ function buildGameDevTestCard(){
     ["Feedback · mittel","feedback-2"],
     ["Feedback · Hero","feedback-3"],
     ["Session-Finale","feedback-session"],
+    ["Profil Level-Up","profile-level"],
     ["Crew Level-Up","crew-level"],
     ["Crew-Challenge","crew-challenge"],
     ["Update-Hinweis","update"],
@@ -575,6 +578,7 @@ function installDevUiTests(){
       ["Feedback 2","feedback-2"],
       ["Feedback 3","feedback-3"],
       ["Session-Finale","feedback-session"],
+      ["Profil Level-Up","profile-level"],
       ["Crew Level-Up","crew-level"],
       ["Crew-Challenge","crew-challenge"],
       ["Update","update"],
