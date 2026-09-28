@@ -276,24 +276,43 @@ const prototypePwaSource=read("experiments/prototype/assets/js/pwa.js");
 const prototypeSwSource=read("experiments/prototype/service-worker.js");
 assert(prototypePwaSource.includes('/experiments/prototype/service-worker.js')&&prototypePwaSource.includes('scope:"/experiments/prototype/"'),"prototype PWA registration lost isolated scope");
 assert(prototypeSwSource.includes('const BASE="/experiments/prototype"')&&prototypeSwSource.includes('CACHE_PREFIX="imposter-games-prototype-"'),"prototype service worker lost isolated base/cache namespace");
-const prototypePartyCss=read("experiments/prototype/assets/css/party-makeover.css");
-const prototypePartyJs=read("experiments/prototype/assets/js/party-makeover.js");
-const prototypeP3Css=read("experiments/prototype/assets/css/party-launcher-p3.css");
-const prototypeP3Js=read("experiments/prototype/assets/js/party-launcher-p3.js");
-const prototypeIndex=read("experiments/prototype/index.html");
-assert(prototypePartyCss.includes("Party Makeover Prototype P2"),"prototype shared game makeover layer missing");
-assert(!prototypePartyCss.includes("body.party-game{padding:0"),"prototype makeover must not replace game viewport padding");
-assert(!prototypePartyCss.includes("body.party-game .app{max-width"),"prototype makeover must not replace game app geometry");
-assert(!prototypePartyJs.includes("IntersectionObserver"),"prototype shared makeover must not hide content behind reveal observers");
-assert(!prototypePartyJs.includes("partyLabBadge"),"prototype audit badge must not overlap live UI");
-assert(prototypeP3Css.includes("Party Launcher P3"),"prototype P3 launcher design marker missing");
-assert(prototypeP3Css.includes('grid-template-areas:')&&prototypeP3Css.includes('"circa classic"')&&prototypeP3Css.includes('"circa whoami"')&&prototypeP3Css.includes('"charades personal"'),"prototype P3 game arena must remain asymmetric");
-assert(!prototypeP3Css.includes("grid-auto-flow:column"),"prototype P3 games must not become a horizontal carousel");
-assert(!prototypeP3Js.includes("IntersectionObserver"),"prototype P3 launcher must not hide content behind reveal observers");
-assert(prototypeIndex.includes('class="partyCommandBar"')&&prototypeIndex.includes('class="partyArena"')&&prototypeIndex.includes('class="partyLiveDeck"'),"prototype P3 shell markup missing");
-assert(prototypeIndex.indexOf('class="partyArena"')<prototypeIndex.indexOf('id="homeHero"'),"prototype P3 game arena must appear before live progress");
-assert(!prototypeIndex.includes('class="sectionBlock partyGameHub"')&&!prototypeIndex.includes('class="gameGrid"'),"prototype P3 must not fall back to the legacy launcher game layout");
-assert(prototypeIndex.includes("party-launcher-p3.css?v=74p3")&&prototypeIndex.includes("party-launcher-p3.js?v=74p3"),"prototype launcher must use P3 cache-busted assets");
+const prototypeMirrorPairs=[
+  ["experiments/prototype/index.html","index.html"],
+  ["experiments/prototype/assets/css/launcher.css","assets/css/launcher.css"],
+  ["experiments/prototype/assets/css/app-ui.css","assets/css/app-ui.css"],
+  ["experiments/prototype/assets/css/game.css","assets/css/game.css"],
+  ["experiments/prototype/assets/css/charades.css","assets/css/charades.css"],
+  ["experiments/prototype/assets/css/who-am-i.css","assets/css/who-am-i.css"],
+  ["experiments/prototype/assets/css/personal-impostor.css","assets/css/personal-impostor.css"],
+  ["experiments/prototype/assets/js/launcher.js","assets/js/launcher.js"],
+  ["experiments/prototype/assets/js/launcher-dev.js","assets/js/launcher-dev.js"],
+  ["experiments/prototype/games/circa-imposter/index.html","games/circa-imposter/index.html"],
+  ["experiments/prototype/games/classic-imposter/index.html","games/classic-imposter/index.html"],
+  ["experiments/prototype/games/who-am-i/index.html","games/who-am-i/index.html"],
+  ["experiments/prototype/games/charades/index.html","games/charades/index.html"],
+  ["experiments/prototype/games/personal-impostor/index.html","games/personal-impostor/index.html"],
+  ["experiments/prototype/data/games.json","data/games.json"],
+  ["experiments/prototype/data/circa-questions.json","data/circa-questions.json"],
+  ["experiments/prototype/data/classic-words.json","data/classic-words.json"],
+  ["experiments/prototype/data/who-am-i.json","data/who-am-i.json"],
+  ["experiments/prototype/data/charades.json","data/charades.json"],
+  ["experiments/prototype/data/personal-impostor.json","data/personal-impostor.json"]
+];
+for(const [prototypeFile,productionFile] of prototypeMirrorPairs){
+  assert(read(prototypeFile)===read(productionFile),"prototype baseline drift: "+prototypeFile+" differs from "+productionFile);
+}
+for(const obsoletePrototypeFile of [
+  "experiments/prototype/assets/css/party-makeover.css",
+  "experiments/prototype/assets/css/party-launcher-p3.css",
+  "experiments/prototype/assets/js/party-makeover.js",
+  "experiments/prototype/assets/js/party-launcher-p3.js"
+]){
+  assert(!fs.existsSync(path.join(root,obsoletePrototypeFile)),"obsolete prototype makeover asset still present: "+obsoletePrototypeFile);
+}
+assert(prototypeSwSource.includes('CACHE_REVISION="r22-baseline"'),"prototype baseline cache revision missing");
+assert(!prototypeSwSource.includes("party-makeover")&&!prototypeSwSource.includes("party-launcher-p3"),"prototype service worker still caches discarded makeover assets");
+const prototypeManifest=JSON.parse(read("experiments/prototype/manifest.webmanifest"));
+assert(prototypeManifest.start_url==="/experiments/prototype/"&&prototypeManifest.scope==="/experiments/prototype/","prototype manifest lost isolated scope");
 assert(!html["index.html"].includes("APP-SHELL TEST"),"production launcher still contains experiment badge");
 assert(launcherCss.includes("padding:calc(18px + var(--safeTop)) 16px 26px"),"launcher safe-area top padding missing");
 assert(html["index.html"].includes('id="heroGoal"')&&html["index.html"].includes('id="surpriseGame"'),"R13 motivational launcher surfaces missing");
