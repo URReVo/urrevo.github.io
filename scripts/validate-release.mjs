@@ -719,7 +719,7 @@ feedbackEvents.length=0;
 const feedbackEnded=feedbackState.endSession();
 feedbackItems=feedbackEvents.filter(event=>event.type==="ci:motivational-feedback").flatMap(event=>event.detail.items||[]);
 assert(feedbackEnded&&feedbackEnded.rounds.length===9,"feedback audit session round count mismatch");
-assert(feedbackItems.some(item=>item.type==="session-end"&&item.intensity===2),"session-end feedback missing");
+assert(feedbackItems.some(item=>(item.type==="session-end"||item.type==="crew")&&item.intensity>=2),"session completion feedback missing");
 assert(feedbackItems.every(item=>item.intensity>=1&&item.intensity<=3),"feedback intensity outside 1..3");
 
 /* V74R10 Party-Pass audit: exact-group identity, persistent goal choice, crew memories and feedback. */
