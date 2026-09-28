@@ -302,12 +302,24 @@ function load(){
         if(round.game==="whoami"&&rp.termId)addUnique(pst.whoamiTermIds,rp.termId);
         if(round.game==="charades"&&Array.isArray(rp.termIds))rp.termIds.forEach(function(id){addUnique(pst.charadesTermIds,id);});
         if(round.game==="personal"&&round.qid)addUnique(pst.personalQids,round.qid);
-        if(round.category)addUnique(pst.categories,round.category);
+        if(round.game==="circa"&&round.category)addUnique(pst.categories,round.category);
       });
     });
   });
   if(!data.achievements||typeof data.achievements!=="object")data.achievements={};
   if(!Array.isArray(data.presets))data.presets=[];
+  data.presets=data.presets.filter(function(preset){return preset&&typeof preset==="object";});
+  data.presets.forEach(function(preset){
+    var hadExplicitProfiles=Array.isArray(preset.profileIds)&&preset.profileIds.length>0;
+    if(!Array.isArray(preset.profileIds))preset.profileIds=[];
+    preset.profileIds=preset.profileIds.filter(function(profileId,index,arr){
+      return !!profileById(profileId)&&arr.indexOf(profileId)===index;
+    }).slice(0,12);
+    if(hadExplicitProfiles){
+      preset.playerCount=preset.profileIds.length;
+      preset.summary=presetSummary(preset);
+    }
+  });
   if(!data.preferences||typeof data.preferences!=="object")data.preferences={sound:true,haptics:true,animations:true};
   if(!data.imports||typeof data.imports!=="object")data.imports={v72MigrationCompleted:true,v72ProfileChoicePending:false};
   if(typeof data.imports.v72MigrationCompleted!=="boolean")data.imports.v72MigrationCompleted=true;
@@ -326,6 +338,13 @@ function profileById(id){
   for(var i=0;i<data.profiles.length;i++)if(data.profiles[i].id===id)return data.profiles[i];
   return null;
 }
+function profileMatchesName(profile,lower){
+  if(!profile)return false;
+  if(cleanName(profile.name).toLocaleLowerCase("de-DE")===lower)return true;
+  return Array.isArray(profile.aliases)&&profile.aliases.some(function(alias){
+    return cleanName(alias).toLocaleLowerCase("de-DE")===lower;
+  });
+}
 function ensureStat(id){
   if(!data.profileStats[id])data.profileStats[id]=baseProfileStats();
   return data.profileStats[id];
@@ -337,7 +356,7 @@ function normalizeProfile(p){
 }
 function addProfile(input){
   var p=normalizeProfile(input);
-  var duplicate=data.profiles.find(function(x){return x.name.toLocaleLowerCase("de-DE")===p.name.toLocaleLowerCase("de-DE");});
+  var duplicate=data.profiles.find(function(x){return profileMatchesName(x,p.name.toLocaleLowerCase("de-DE"));});
   if(duplicate)return duplicate.id;
   var id=uid("player");
   data.profiles.push({id:id,name:p.name,avatar:p.avatar,aliases:[],createdAt:now()});
@@ -347,7 +366,7 @@ function updateProfile(id,input){
   var p=profileById(id);if(!p)return false;
   var n=normalizeProfile(input);
   var lower=n.name.toLocaleLowerCase("de-DE");
-  var duplicate=data.profiles.some(function(x){return x.id!==id&&x.name.toLocaleLowerCase("de-DE")===lower;});
+  var duplicate=data.profiles.some(function(x){return x.id!==id&&profileMatchesName(x,lower);});
   if(duplicate)return false;
   if(p.name.toLocaleLowerCase("de-DE")!==n.name.toLocaleLowerCase("de-DE")){
     if(!Array.isArray(p.aliases))p.aliases=[];
@@ -365,6 +384,17 @@ function deleteProfile(id){
   var removed=data.profiles[idx];
   data.profileArchive[id]={id:removed.id,name:removed.name,avatar:removed.avatar,aliases:Array.isArray(removed.aliases)?removed.aliases.slice():[],createdAt:removed.createdAt||null,deletedAt:now()};
   data.profiles.splice(idx,1);
+  (data.presets||[]).forEach(function(preset){
+    if(!preset||!Array.isArray(preset.profileIds)||preset.profileIds.indexOf(id)===-1)return;
+    preset.profileIds=preset.profileIds.filter(function(profileId){return profileId!==id&&!!profileById(profileId);});
+    preset.playerCount=preset.profileIds.length;
+    preset.summary=presetSummary(preset);
+  });
+  if(data.launchPreset&&Array.isArray(data.launchPreset.profileIds)&&data.launchPreset.profileIds.indexOf(id)!==-1)data.launchPreset=null;
+  if(Array.isArray(data.launchGroup)){
+    data.launchGroup=data.launchGroup.filter(function(profileId){return profileId!==id&&!!profileById(profileId);});
+    if(!data.launchGroup.length)data.launchGroup=null;
+  }
   if(data.selectedProfileId===id||data.primaryProfileId===id){
     data.selectedProfileId=data.profiles[0].id;
     data.primaryProfileId=data.selectedProfileId;
@@ -392,7 +422,7 @@ function ensureProfileForPlayer(player){
   }
   var name=cleanName(player&&player.name)||"Spieler";
   var lower=name.toLocaleLowerCase("de-DE");
-  var match=data.profiles.find(function(p){return p.name.toLocaleLowerCase("de-DE")===lower;});
+  var match=data.profiles.find(function(p){return profileMatchesName(p,lower);});
   if(match){
     ensureStat(match.id);
     return match.id;
@@ -481,7 +511,7 @@ function contribution(round,dir){
       if(game==="whoami"&&rp.termId)addUnique(st.whoamiTermIds,rp.termId);
       if(game==="charades"&&Array.isArray(rp.termIds))rp.termIds.forEach(function(id){addUnique(st.charadesTermIds,id);});
       if(game==="personal"&&round.qid)addUnique(st.personalQids,round.qid);
-      if(round.category)addUnique(st.categories,round.category);
+      if(game==="circa"&&round.category)addUnique(st.categories,round.category);
     }
     if(game==="circa"&&Number.isFinite(Number(rp.error))){
       st.errorSum=Math.max(0,st.errorSum+dir*Number(rp.error));
@@ -495,7 +525,7 @@ function contribution(round,dir){
     if(game==="whoami") (round.players||[]).forEach(function(rp){if(rp.termId)addUnique(data.stats.whoamiTermIds,rp.termId);});
     if(game==="charades") (round.players||[]).forEach(function(rp){if(Array.isArray(rp.termIds))rp.termIds.forEach(function(id){addUnique(data.stats.charadesTermIds,id);});});
     if(game==="personal"&&round.qid)addUnique(data.stats.personalQids,round.qid);
-    if(round.category)addUnique(data.stats.categories,round.category);
+    if(game==="circa"&&round.category)addUnique(data.stats.categories,round.category);
   }
 }
 function hourSessionDone(){return data.sessions.some(function(s){if(!s.endedAt||!(s.rounds||[]).length)return false;return new Date(s.endedAt).getTime()-new Date(s.startedAt).getTime()>=60*60*1000;});}
@@ -746,6 +776,14 @@ function setPreference(key,value){
   if(["sound","haptics","animations"].indexOf(key)===-1)return false;
   data.preferences[key]=!!value;save();return true;
 }
+function presetSummary(p){
+  var game=GAME_IDS.indexOf(p&&p.game)!==-1?p.game:"circa";
+  var label={circa:"Circa",classic:"Classic",whoami:"Wer bin ich?",charades:"Scharade",personal:"Persönlich"}[game];
+  var categories=Array.isArray(p&&p.categories)?p.categories:[];
+  var categoryText=!categories.length?"":categories[0]==="Alle"?" · Alle":categories.length===1?" · "+categories[0]:" · "+categories.length+" Kat.";
+  var optionText=game==="circa"?" · "+(p&&p.difficulty==="zufaellig"?"Zufall":(p&&p.difficulty||"mittel")):game==="classic"&&Number(p&&p.timer)?" · "+Math.round(Number(p.timer)/60)+" Min.":game==="charades"?" · "+(Number(p&&p.timer)||60)+" Sek.":"";
+  return label+" · "+Math.max(0,Number(p&&p.playerCount)||0)+" Spieler"+categoryText+optionText;
+}
 function builtInPresets(){
   return [
     {id:"builtin-quick",builtIn:true,name:"Schnelle Runde",icon:"⚡️",game:"circa",playerCount:4,profileIds:[],categories:["Alle"],difficulty:"zufaellig",summary:"Circa · 4 Spieler · Zufall"},
@@ -780,10 +818,7 @@ function savePreset(input){
     hint:input.hint!==false,
     timer:game==="charades"?(allowedCharadesTimers.indexOf(Number(input.timer))!==-1?Number(input.timer):60):(allowedClassicTimers.indexOf(Number(input.timer))!==-1?Number(input.timer):0)
   };
-  var label={circa:"Circa",classic:"Classic",whoami:"Wer bin ich?",charades:"Scharade",personal:"Persönlich"}[game];
-  var categoryText=!p.categories.length?"":p.categories[0]==="Alle"?" · Alle":p.categories.length===1?" · "+p.categories[0]:" · "+p.categories.length+" Kat.";
-  var optionText=game==="circa"?" · "+(p.difficulty==="zufaellig"?"Zufall":p.difficulty):game==="classic"&&p.timer?" · "+Math.round(p.timer/60)+" Min.":game==="charades"?" · "+p.timer+" Sek.":"";
-  p.summary=label+" · "+p.playerCount+" Spieler"+categoryText+optionText;
+  p.summary=presetSummary(p);
   var idx=data.presets.findIndex(function(x){return x.id===p.id;});
   if(idx>=0)data.presets[idx]=p;else data.presets.push(p);
   save();return clone(p);
@@ -1130,19 +1165,26 @@ function applyCircaQuestionMetadata(items){
   items.forEach(function(item){
     if(item&&item.qid&&item.cat)categoryByQid[String(item.qid)]=String(item.cat);
   });
+  function categoriesFor(qids){
+    var out=[];
+    (Array.isArray(qids)?qids:[]).forEach(function(qid){
+      var cat=categoryByQid[String(qid)];
+      if(cat&&out.indexOf(cat)===-1)out.push(cat);
+    });
+    return out;
+  }
+  function sameList(a,b){
+    a=Array.isArray(a)?a:[];b=Array.isArray(b)?b:[];
+    return a.length===b.length&&a.every(function(value,index){return value===b[index];});
+  }
   var changed=false;
-  (data.stats.circaQids||[]).forEach(function(qid){
-    var cat=categoryByQid[String(qid)];
-    if(cat&&data.stats.categories.indexOf(cat)===-1){data.stats.categories.push(cat);changed=true;}
-  });
+  var globalCategories=categoriesFor(data.stats.circaQids);
+  if(!sameList(data.stats.categories,globalCategories)){data.stats.categories=globalCategories;changed=true;}
   Object.keys(data.profileStats||{}).forEach(function(id){
     var st=data.profileStats[id];
     if(!st)return;
-    if(!Array.isArray(st.categories))st.categories=[];
-    (st.circaQids||[]).forEach(function(qid){
-      var cat=categoryByQid[String(qid)];
-      if(cat&&st.categories.indexOf(cat)===-1){st.categories.push(cat);changed=true;}
-    });
+    var profileCategories=categoriesFor(st.circaQids);
+    if(!sameList(st.categories,profileCategories)){st.categories=profileCategories;changed=true;}
   });
   if(changed)save();
   return changed;
