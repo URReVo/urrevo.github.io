@@ -861,7 +861,7 @@ function evaluateAchievements(){
   achievementDefs().forEach(function(def){
     if(def.done()&&!data.achievements[def.id]){
       data.achievements[def.id]={unlockedAt:now()};
-      unlocked.push({id:def.id,icon:def.icon,title:def.title,text:def.text});
+      unlocked.push({id:def.id,icon:def.icon,title:def.title,text:def.text,progress:def.progress()});
     }
   });
   return unlocked;
