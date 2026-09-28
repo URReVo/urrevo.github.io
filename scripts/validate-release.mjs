@@ -204,7 +204,7 @@ const readme=read("README.md");
 assert(!readme.includes("\\n"),"README contains literal \\n text");
 assert(["Circa Imposter","Klassisches Imposter","Wer bin ich?","Scharade","Persönlicher Impostor"].every(name=>readme.includes(name)),"README must describe the five-game app");
 const changelog=read("CHANGELOG.md");
-assert(changelog.includes("V74R5")&&changelog.includes("Offline-Cache **r5**"),"V74R5 changelog entry missing");
+assert(changelog.includes("V74R6")&&changelog.includes("Offline-Cache **r6**"),"V74R6 changelog entry missing");
 
 const appStateSource=read("assets/js/app-state.js");
 const launcherSource=read("assets/js/launcher.js");
@@ -261,7 +261,7 @@ assert(prototypePersonalSource.includes('PREFIX="imposterGames.prototype.game.pe
 assert(!prototypePersonalSource.includes('PREFIX="imposterGames.v74.game.personal."'),"prototype Personal must not use production storage");
 assert(!html["index.html"].includes("APP-SHELL TEST"),"production launcher still contains experiment badge");
 assert(launcherCss.includes("padding:calc(18px + var(--safeTop)) 16px 26px"),"launcher safe-area top padding missing");
-assert(sw.includes('const CACHE_REVISION="r5"'),"V74 cache revision mismatch");
+assert(sw.includes('const CACHE_REVISION="r6"'),"V74 cache revision mismatch");
 assert(sw.includes('versioned("/assets/js/launcher-dev.js")'),"service worker launcher DEV cache missing");
 assert(appStateSource.includes("var BACKUP_VERSION=3"),"backup format v3 missing");
 assert(engineSource.includes("experimentRecordCirca(null);"),"Circa shared base-round recording missing");
@@ -276,7 +276,7 @@ assert(html["games/personal-impostor/index.html"].includes("100 Fragepaare"),"Pe
 assert(!html["games/personal-impostor/index.html"].includes("89 Fragepaare"),"Personal stale question count remains");
 assert(html["index.html"].includes("IMPOSTOR · GESAMT"),"launcher Impostor aggregate label mismatch");
 assert(html["index.html"].includes("DAVON · PERSÖNLICH"),"launcher Personal Impostor label mismatch");
-assert(html["index.html"].includes("Profile, Presets, Sessions, Statistik, Spielzeit"),"launcher backup/reset copy missing V74R5 data scope");
+assert(html["index.html"].includes("Profile, Presets, Sessions, Statistik, Spielzeit"),"launcher backup/reset copy missing V74R6 data scope");
 assert(html["index.html"].includes('id="launcherDevTrigger"'),"launcher DEV trigger missing");
 assert(html["index.html"].includes('id="launcherDevPanelOverlay"'),"launcher DEV panel missing");
 assert(launcherCss.includes(".launcherDevOverlay")&&launcherCss.includes(".launcherDevAchievements"),"launcher DEV styles missing");
@@ -316,6 +316,17 @@ assert(pwaSource.includes("function installInteractionLayer()"),"shared touch in
 assert(pwaSource.includes("function showUpdateReady(worker)"),"in-app update prompt missing");
 assert(pwaSource.includes('postMessage({type:"SKIP_WAITING"})'),"in-app update activation message missing");
 assert(pwaSource.includes('window.addEventListener("ci:achievement-unlocked"'),"achievement toast listener missing");
+assert(pwaSource.includes('var DEV_SESSION_KEY="ci.diag.session.v1"'),"shared DEV preview session key mismatch");
+assert(pwaSource.includes("function installDevUiTests()"),"shared DEV preview installer missing");
+assert(pwaSource.includes("function installSharedGameDevEntry()"),"shared in-game DEV preview entry missing");
+assert(pwaSource.includes("function buildGameDevTestCard()"),"shared in-game DEV preview card missing");
+assert(pwaSource.includes('["Achievement anzeigen","achievement"]'),"DEV achievement preview button missing");
+assert(pwaSource.includes('["3 Achievements","achievement-stack"]'),"DEV achievement stack preview missing");
+assert(pwaSource.includes('["Update-Hinweis","update"]'),"DEV update preview missing");
+assert(pwaSource.includes('["Haptik testen","haptic"]'),"DEV haptic preview missing");
+assert(pwaSource.includes('["Mini-Session","mini-session"]'),"launcher mini-session DEV preview missing");
+assert(pwaSource.includes('closeDevPanelForPreview()'),"DEV visual previews must close overlays before display");
+assert(!pwaSource.includes("devSetAchievementOverride("),"shared UI previews must not mutate achievement overrides");
 assert(appStateSource.includes('new CustomEvent("ci:achievement-unlocked"'),"achievement unlock event missing");
 assert(appStateSource.includes("emitAchievementUnlocks(unlocked)"),"achievement unlock dispatch not wired");
 assert(appStateSource.includes("function profileMatchesName(profile,lower)"),"profile alias matching helper missing");
