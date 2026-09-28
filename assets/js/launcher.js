@@ -379,7 +379,6 @@ function renderHeader(){
   if(store.getProfileLevel){
     var level=store.getProfileLevel(p.id);
     byId("headerLevel").textContent=level?("LVL "+level.level+" · "+level.title):"LVL 1 · Neuling";
-    byId("headerAvatar").style.setProperty("--profile-progress",Math.round((level?level.progress:0)*360)+"deg");
   }
   updateGreeting();
 }
