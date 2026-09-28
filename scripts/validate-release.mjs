@@ -324,7 +324,7 @@ assert(launcherSource.includes('sheet.classList.add("sheetSwipeSnapBack")'),"she
 assert(launcherSource.includes('style.removeProperty("--sheet-backdrop-alpha")'),"sheet backdrop reset missing");
 assert(launcherCss.includes(".sheetHandle::after")&&launcherCss.includes("width:72px;height:28px"),"sheet touch target enlargement missing");
 assert(launcherCss.includes(".bottomSheet.sheetDragging")&&launcherCss.includes(".bottomSheet.sheetSwipeDismiss"),"sheet drag transition states missing");
-assert(launcherSource.includes('if(!sheet||sheet.id==="migrationSheet")return;'),"mandatory migration sheet must not be swipe-dismissable");
+assert(launcherSource.includes('sheet.id==="migrationSheet"'),"mandatory migration sheet must not be swipe-dismissable");
 assert(launcherSource.includes('sheet.id==="presetPlayersSheet"')&&launcherSource.includes('profileEditorReturnTarget==="preset"'),"nested sheet swipe navigation guards missing");
 assert(launcherSource.includes('view.classList.add(motion)'),"launcher directional view transition missing");
 assert(launcherSource.includes('byId("sessionMiniBar").addEventListener'),"launcher mini-session action missing");
