@@ -319,6 +319,15 @@ assert(pwaSource.includes('window.addEventListener("ci:achievement-unlocked"'),"
 assert(pwaSource.includes('var DEV_SESSION_KEY="ci.diag.session.v1"'),"shared DEV preview session key mismatch");
 assert(pwaSource.includes("function installDevUiTests()"),"shared DEV preview installer missing");
 assert(pwaSource.includes("function installSharedGameDevEntry()"),"shared in-game DEV preview entry missing");
+assert(pwaSource.includes("!devSessionUnlocked()"),"shared in-game DEV preview must require existing DEV unlock");
+assert(pwaSource.includes('DEV_SESSION_KEY="ci.diag.session.v1"'),"shared in-game DEV preview must use common unlock session");
+assert(!pwaSource.includes("recordRound(")&&!pwaSource.includes("devPatchStats(")&&!pwaSource.includes("devSetAchievementOverride("),"shared UI previews must not mutate game/stat state");
+for(const file of ["games/circa-imposter/index.html","games/classic-imposter/index.html"]){
+  assert(html[file].includes('id="devPanelOverlay"')&&html[file].includes('class="devGrid"'),file+" native DEV panel missing for app-feel injection");
+}
+for(const file of ["games/who-am-i/index.html","games/charades/index.html","games/personal-impostor/index.html"]){
+  assert(html[file].includes('class="toolbarActions"'),file+" toolbar missing for shared DEV test entry");
+}
 assert(pwaSource.includes("function buildGameDevTestCard()"),"shared in-game DEV preview card missing");
 assert(pwaSource.includes('["Achievement anzeigen","achievement"]'),"DEV achievement preview button missing");
 assert(pwaSource.includes('["3 Achievements","achievement-stack"]'),"DEV achievement stack preview missing");
@@ -326,7 +335,6 @@ assert(pwaSource.includes('["Update-Hinweis","update"]'),"DEV update preview mis
 assert(pwaSource.includes('["Haptik testen","haptic"]'),"DEV haptic preview missing");
 assert(pwaSource.includes('["Mini-Session","mini-session"]'),"launcher mini-session DEV preview missing");
 assert(pwaSource.includes('closeDevPanelForPreview()'),"DEV visual previews must close overlays before display");
-assert(!pwaSource.includes("devSetAchievementOverride("),"shared UI previews must not mutate achievement overrides");
 assert(appStateSource.includes('new CustomEvent("ci:achievement-unlocked"'),"achievement unlock event missing");
 assert(appStateSource.includes("emitAchievementUnlocks(unlocked)"),"achievement unlock dispatch not wired");
 assert(appStateSource.includes("function profileMatchesName(profile,lower)"),"profile alias matching helper missing");
