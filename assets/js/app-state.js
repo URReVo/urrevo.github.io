@@ -947,15 +947,21 @@ function addUnique(arr,value){
 }
 function preserveRoundContentIdentity(previous,next){
   if(!previous||!next)return next;
-  next.game=previous.game;
-  ["qid","wid","word","category"].forEach(function(key){
+  Object.keys(previous).forEach(function(key){
+    if(key!=="players"&&!Object.prototype.hasOwnProperty.call(next,key))next[key]=clone(previous[key]);
+  });
+  ["game","qid","wid","word","category","impostorId","at"].forEach(function(key){
     if(Object.prototype.hasOwnProperty.call(previous,key))next[key]=clone(previous[key]);
-    else delete next[key];
+    else if(["qid","wid","word","category","impostorId"].indexOf(key)!==-1)delete next[key];
   });
   var previousPlayers={};
   (previous.players||[]).forEach(function(player){if(player&&player.profileId)previousPlayers[player.profileId]=player;});
   (next.players||[]).forEach(function(player){
     var old=previousPlayers[player&&player.profileId];if(!old)return;
+    Object.keys(old).forEach(function(key){
+      if(!Object.prototype.hasOwnProperty.call(player,key))player[key]=clone(old[key]);
+    });
+    if(Object.prototype.hasOwnProperty.call(old,"role"))player.role=clone(old.role);
     if(Object.prototype.hasOwnProperty.call(old,"termId"))player.termId=clone(old.termId);
     else delete player.termId;
     if(Array.isArray(old.termIds))player.termIds=old.termIds.slice();
