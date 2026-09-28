@@ -17,7 +17,8 @@
 - V74R6 ergänzt DEV-Vorschauen für Achievement-Popups, Toasts, Offline-/Update-Hinweise, Haptik und Mini-Session. Circa/Classic erhalten sie im bestehenden DEV-Panel; die übrigen Spiele bekommen nach DEV-Entsperrung einen gemeinsamen Testzugang in der Spiel-Toolbar.
 - V74R7 überarbeitet die Launcher-Bottom-Sheet-Geste mit größerem Touch-Ziel, Header-Drag, Distanz- und Flick-Erkennung, Horizontal-Abbruch, Backdrop-Feedback und sauberem Snap-back.
 - V74R8 führt eine freiwillige Kategorie-Progression ein: rund 70–75 % der Kategorien bleiben sofort offen, drei sichtbare Bonus-Packs können entweder über transparente Challenges oder frei wählbare Freischaltungen bei 8/20/40 Gesamtrunden geöffnet werden. Gesperrte Kategorien bleiben sichtbar, „Alle“ respektiert Locks und Presets können sie nicht umgehen.
-- Produktionsstand auf **V74R8** / Offline-Cache **r8** angehoben.
+- V74R9 ergänzt die zentrale Feedback Engine V1: leistungsabhängige Feedback-Stufen 1–3, Sound/Haptik, seltene Hero-Momente, persönliche Rekorde, Session-Meilensteine, ehrliche Fast-geschafft-Hinweise, Session-Finale und eine gemeinsame Prioritäts-Queue für Achievements, Kategorie-Unlocks und Rundenfeedback. DEV-Vorschauen decken alle drei Stufen und das Session-Finale ab.
+- Produktionsstand auf **V74R9** / Offline-Cache **r9** angehoben.
 
 
 ## V73
