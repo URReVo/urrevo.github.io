@@ -254,8 +254,14 @@ function openPreset(p){
   selectedPreset=p;
   byId("presetTitle").textContent=p.name;
   byId("presetGame").textContent=gameMeta(p.game).icon+" "+gameMeta(p.game).full;
-  var names=presetProfileNames(p);
-  byId("presetDetail").textContent=(p.summary||"")+(names.length?" · "+names.join(", "):"");
+  var names=presetProfileNames(p),min=presetMinPlayers(p.game);
+  var boundProfiles=Array.isArray(p.profileIds)&&p.profileIds.length>0;
+  var playable=!!p.builtIn||(boundProfiles?names.length>=min:Math.max(0,Number(p.playerCount)||0)>=min);
+  var detail=(p.summary||"")+(names.length?" · "+names.join(", "):"");
+  if(!playable)detail+=" · Zu wenige vorhandene Profile";
+  byId("presetDetail").textContent=detail;
+  byId("presetOpenGame").disabled=!playable;
+  byId("presetOpenGame").textContent=playable?"Mit Preset starten":"Preset unvollständig";
   byId("deletePreset").classList.toggle("hidden",!!p.builtIn);
   openSheet("presetSheet");
 }
@@ -399,7 +405,7 @@ function renderSessionSheet(session){
   }
 
   var replay=byId("replaySession");
-  var replayable=!!session.endedAt&&activeProfilesForLaunch(session).length>=3;
+  var replayable=!!session.endedAt&&activeProfilesForLaunch(session).length>=gameMeta(sessionGame(session)).min;
   replay.classList.toggle("hidden",!replayable);
   replay.textContent="Noch einmal mit dieser Gruppe · "+gameMeta(sessionGame(session)).title;
   replay.onclick=function(){launchSessionGroup(session);};
@@ -689,7 +695,7 @@ byId("savePreset").addEventListener("click",function(){
   uiSound("confirm");closeSheets();renderAll();
 });
 byId("presetOpenGame").addEventListener("click",function(){
-  if(!selectedPreset)return;
+  if(!selectedPreset||this.disabled)return;
   store.setLaunchPreset(selectedPreset);
   navigateWithSound(gameMeta(selectedPreset.game).path);
 });
