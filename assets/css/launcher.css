@@ -179,7 +179,7 @@ select,
 /* V74R5 app-feel layer */
 .view.ciViewForward{animation:ciViewInForward var(--ci-motion) var(--ci-ease) both}
 .view.ciViewBack{animation:ciViewInBack var(--ci-motion) var(--ci-ease) both}
-.bottomSheet:not(.hidden){--sheet-drag:0px;transform:translate(-50%,var(--sheet-drag));animation:ciSheetIn var(--ci-motion-slow) var(--ci-ease) both;transition:transform 160ms ease}
+.bottomSheet:not(.hidden){--sheet-drag:0px;transform:translate(-50%,var(--sheet-drag));animation:ciSheetIn var(--ci-motion-slow) var(--ci-ease);transition:transform 160ms ease}
 .sheetBackdrop:not(.hidden){animation:ciBackdropIn var(--ci-motion) ease both}
 .sheetHandle{touch-action:none;cursor:grab}.sheetHandle:active{cursor:grabbing}
 .sessionMiniBar{
