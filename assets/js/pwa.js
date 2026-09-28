@@ -8,6 +8,7 @@ var lastOnlineState=navigator.onLine;
 var toastHost=null;
 var feedbackQueue=[];
 var feedbackBusy=false;
+var feedbackPumpScheduled=false;
 var feedbackRecent={};
 var feedbackAudioContext=null;
 var DEV_SESSION_KEY="ci.diag.session.v1";
@@ -149,9 +150,13 @@ function queueFeedback(items){
     feedbackRecent[item.id]=nowMs;fresh.push(item);
   });
   Object.keys(feedbackRecent).forEach(function(id){if(nowMs-feedbackRecent[id]>60000)delete feedbackRecent[id];});
-  fresh.sort(function(a,b){return b.intensity-a.intensity;});
-  feedbackQueue=feedbackQueue.concat(fresh).slice(-12);
-  pumpFeedback();
+  feedbackQueue=feedbackQueue.concat(fresh);
+  feedbackQueue.sort(function(a,b){return b.intensity-a.intensity;});
+  feedbackQueue=feedbackQueue.slice(0,12);
+  if(!feedbackPumpScheduled){
+    feedbackPumpScheduled=true;
+    setTimeout(function(){feedbackPumpScheduled=false;pumpFeedback();},0);
+  }
 }
 function setOfflineStatus(text,state){
   var el=statusElement();
