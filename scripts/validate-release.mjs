@@ -214,7 +214,7 @@ const readme=read("README.md");
 assert(!readme.includes("\\n"),"README contains literal \\n text");
 assert(["Circa Imposter","Klassisches Imposter","Wer bin ich?","Scharade","Persönlicher Impostor"].every(name=>readme.includes(name)),"README must describe the five-game app");
 const changelog=read("CHANGELOG.md");
-assert(changelog.includes("V74R18")&&changelog.includes("Offline-Cache **r18**"),"V74R18 changelog entry missing");
+assert(changelog.includes("V74R19")&&changelog.includes("Offline-Cache **r19**"),"V74R19 changelog entry missing");
 
 const appStateSource=read("assets/js/app-state.js");
 const launcherSource=read("assets/js/launcher.js");
@@ -284,13 +284,16 @@ assert(personalSource.includes('else showSharedQuestionReveal();')&&personalSour
 assert(personalSource.includes('byId("answersSharedQuestion").textContent=currentPair.normal'),"R14 Personal answers must retain the shared question");
 assert(html["games/personal-impostor/index.html"].includes("Anders, aber vergleichbar"),"R16 Personal balancing copy missing");
 assert(!html["games/personal-impostor/index.html"].includes("Absichtlich weit auseinander"),"R16 obsolete Personal distance copy still present");
-assert(personalCss.includes(".personalQuestionRevealScreen:not(.hidden){display:flex}")&&personalCss.includes(".personalBottomButton{flex:0 0 48px;min-height:48px;margin-top:auto!important}")&&!personalCss.includes(".personalEdgeAction{")&&!personalCss.includes(".personalEdgeActions{")&&!html["games/personal-impostor/index.html"].includes("personalEdgeAction")&&personalCss.includes(".personalResultActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:0 0 auto;margin-top:6px}"),"R18 Personal actions must follow Circa in-flow bottom anchoring");
+assert(personalCss.includes(".personalQuestionRevealScreen:not(.hidden){display:flex}")&&!personalCss.includes(".personalBottomButton{")&&!personalCss.includes(".personalResultActions{")&&!personalCss.includes(".personalEdgeAction{")&&!personalCss.includes(".personalEdgeActions{")&&!html["games/personal-impostor/index.html"].includes("personalEdgeAction"),"R19 Personal must not override shared Circa action geometry");
+assert(html["games/personal-impostor/index.html"].includes('id="saveAnswer" type="button" class="full confirmButton personalBottomButton"'),"R19 Personal save action must use Circa confirmButton");
+assert(html["games/personal-impostor/index.html"].includes('id="revealSharedQuestion" type="button" class="full stageButton personalBottomButton"')&&html["games/personal-impostor/index.html"].includes('id="reveal" type="button" class="full stageButton personalBottomButton"'),"R19 Personal reveal actions must use Circa stageButton");
+assert(html["games/personal-impostor/index.html"].includes('class="grid2 resultActions personalResultActions"'),"R19 Personal result actions must use Circa resultActions/grid2");
 assert(gameCss.includes(".gameScreen:not(.hidden){flex:1 1 0;height:0;min-height:0}")&&gameCss.includes(".confirmButton,.stageButton,.classicRoleButton,.classicResultActions,.resultActions{margin-top:auto!important}"),"R14 shared bottom-action anchoring missing");
 assert(whoCss.includes(".whoViewerScreen .whoBottomButton{margin-top:auto}"),"R14 WhoAmI bottom action anchoring missing");
 assert(!html["index.html"].includes("--profile-progress:0deg"),"R15 launcher avatar must not carry inline progress paint");
 assert(!launcherSource.includes('byId("headerAvatar").style.setProperty("--profile-progress"'),"R15 launcher must not repaint the header avatar with XP progress");
 assert(!launcherCss.includes("conic-gradient(var(--accent) var(--profile-progress")&&launcherCss.includes("background:#37383d;")&&launcherCss.includes("margin-bottom:10px"),"R15 launcher avatar/hero spacing fix missing");
-assert(sw.includes('const CACHE_REVISION="r18"'),"V74 cache revision mismatch");
+assert(sw.includes('const CACHE_REVISION="r19"'),"V74 cache revision mismatch");
 assert(sw.includes('versioned("/assets/js/launcher-dev.js")'),"service worker launcher DEV cache missing");
 assert(appStateSource.includes("var BACKUP_VERSION=3"),"backup format v3 missing");
 assert(appStateSource.includes('INTEGRITY_DB_NAME="imposterGames.progressIntegrity.v1"'),"R17 progress-integrity IndexedDB namespace missing");

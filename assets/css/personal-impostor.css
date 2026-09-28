@@ -23,7 +23,6 @@
 .personalAnswerWrap input::placeholder,.personalAnswerWrap textarea::placeholder{color:#62646a;font-size:14px;font-weight:700}
 .personalAnswerUnitBadge{position:absolute;right:13px;top:50%;transform:translateY(-50%);max-width:62px;color:#e9a8d2;font-size:10px;font-weight:900;text-align:right;pointer-events:none}
 .personalAnswerHint{margin:-3px 2px 0;color:#777980;font-size:9px;font-weight:750;line-height:1.35}
-.personalBottomButton{flex:0 0 48px;min-height:48px;margin-top:auto!important}
 .personalRevealHeader{flex:0 0 auto;margin:1px 2px 10px}
 .personalRevealHeader h2{margin:4px 0 5px;font-size:27px;line-height:1.08}
 .personalRevealHeader p{margin:0;color:#85878e;font-size:11px;line-height:1.45}
@@ -66,8 +65,6 @@
 .personalResultScreen.revealSequence .personalRevealItem{opacity:0;transform:translateY(12px) scale(.985)}
 .personalResultScreen.revealSequence .personalRevealItem.revealed{animation:personalRevealIn .42s cubic-bezier(.2,.8,.2,1) forwards}
 @keyframes personalRevealIn{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:none}}
-.personalResultActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:0 0 auto;margin-top:6px}
-.personalResultActions>button{min-height:46px}
 @media(prefers-reduced-motion:reduce){
   .personalAnswerRow,.personalRevealItem,.personalSharedQuestionCard{transition:none!important;animation:none!important}
   .personalAnswerRow.impostorCaught .impostorX{transform:rotate(-10deg) scale(1)!important;opacity:1!important;animation:none!important}

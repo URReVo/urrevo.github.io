@@ -77,7 +77,7 @@
     <div id="answerControl" class="personalAnswerWrap"></div>
     <div id="answerFormat" class="personalAnswerHint">Antwortformat wird aus der Frage übernommen.</div>
     <div id="answerError" class="notice" aria-live="polite"></div>
-    <button id="saveAnswer" type="button" class="full personalBottomButton">Antwort speichern</button>
+    <button id="saveAnswer" type="button" class="full confirmButton personalBottomButton">Antwort speichern</button>
   </section>
 
   <section id="questionReveal" class="hidden gameScreen personalQuestionRevealScreen">
@@ -91,7 +91,7 @@
       <strong id="sharedQuestionText">?</strong>
       <span id="sharedQuestionHint">Die Impostor-Frage bleibt weiterhin geheim.</span>
     </div>
-    <button id="revealSharedQuestion" type="button" class="full personalBottomButton">Richtige Frage aufdecken</button>
+    <button id="revealSharedQuestion" type="button" class="full stageButton personalBottomButton">Richtige Frage aufdecken</button>
   </section>
 
   <section id="answers" class="hidden gameScreen personalAnswersScreen">
@@ -105,7 +105,7 @@
       <strong id="answersSharedQuestion"></strong>
     </div>
     <div id="answersList" class="personalAnswersList"></div>
-    <button id="reveal" type="button" class="full personalBottomButton">Auflösung</button>
+    <button id="reveal" type="button" class="full stageButton personalBottomButton">Auflösung</button>
   </section>
 
   <section id="result" class="hidden gameScreen personalResultScreen">
@@ -124,7 +124,7 @@
         <strong id="impostorQuestion"></strong>
       </div>
     </div>
-    <div class="personalResultActions">
+    <div class="grid2 resultActions personalResultActions">
       <button id="backSetup" type="button" class="full secondary">Zum Start</button>
       <button id="nextRound" type="button" class="full">Nächste Runde</button>
     </div>
