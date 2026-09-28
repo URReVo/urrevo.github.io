@@ -10,6 +10,28 @@ function assert(condition,message){
 
 function clone(value){return JSON.parse(JSON.stringify(value));}
 
+function canonicalBackupJson(value){
+  if(value===null)return "null";
+  if(Array.isArray(value))return "["+value.map(item=>canonicalBackupJson(item===undefined?null:item)).join(",")+"]";
+  if(typeof value==="object"){
+    return "{"+Object.keys(value).sort().filter(key=>value[key]!==undefined&&typeof value[key]!=="function")
+      .map(key=>JSON.stringify(key)+":"+canonicalBackupJson(value[key])).join(",")+"}";
+  }
+  return JSON.stringify(value);
+}
+async function resealBackup(backup){
+  const payload={
+    format:backup.format,
+    formatVersion:Number(backup.formatVersion),
+    exportedAt:backup.exportedAt||null,
+    data:backup.data,
+    gameStorage:backup.gameStorage&&typeof backup.gameStorage==="object"&&!Array.isArray(backup.gameStorage)?backup.gameStorage:{}
+  };
+  const digest=await webcrypto.subtle.digest("SHA-256",new TextEncoder().encode(canonicalBackupJson(payload)));
+  backup.integrity={...(backup.integrity||{}),algorithm:"SHA-256",sha256:Array.from(new Uint8Array(digest)).map(byte=>byte.toString(16).padStart(2,"0")).join("")};
+  return backup;
+}
+
 function makeLocalStorage(initial={}){
   const map=new Map(Object.entries(initial));
   return {
@@ -257,4 +279,89 @@ const initializedWithoutCheckpoint=clone(state);
 const missingCheckpoint=await createHarness(initializedWithoutCheckpoint,true);
 assert(missingCheckpoint.status&&missingCheckpoint.status.ok===false&&missingCheckpoint.status.reason==="checkpoint-missing","initialized state without checkpoint was silently trusted");
 
-console.log("Progress integrity runtime checks passed.");
+/* R22: a correctly re-hashed but logically impossible backup must be rejected
+   before it can replace the current local state. */
+const importSource=await createHarness();
+const importProfile=importSource.store.getSelectedProfile();
+importSource.store.beginSession([{profileId:importProfile.id,name:importProfile.name,avatar:importProfile.avatar}]);
+for(let i=0;i<2;i++){
+  importSource.store.recordRound({
+    game:"circa",
+    roundKey:"strict-import-circa-"+i,
+    qid:"strict-import-q-"+i,
+    category:"Alltag",
+    players:[{profileId:importProfile.id,role:"normal",error:12}]
+  });
+}
+importSource.store.endSession();
+await importSource.store.flushProgressIntegrity();
+const cleanBackup=await importSource.store.createBackup();
+
+async function expectRejectedBackup(mutator,expectedReason,label){
+  const forged=clone(cleanBackup);
+  mutator(forged);
+  await resealBackup(forged);
+  const destination=await createHarness();
+  const before=destination.store.snapshot();
+  const result=await destination.store.importSnapshot(forged);
+  assert(!result.ok&&result.reason===expectedReason,label+" was not rejected with "+expectedReason+": "+JSON.stringify(result));
+  assert(JSON.stringify(destination.store.snapshot())===JSON.stringify(before),label+" changed current app state before rejection");
+}
+
+await expectRejectedBackup(
+  backup=>{backup.data.stats.rounds=9999;},
+  "plausibility",
+  "re-hashed impossible total-round backup"
+);
+await expectRejectedBackup(
+  backup=>{backup.data.categoryProgress.unlocks.popculture={method:"challenge",at:"2026-09-28T12:00:00.000Z"};},
+  "category-unlock",
+  "impossible Popkultur challenge unlock"
+);
+await expectRejectedBackup(
+  backup=>{backup.data.categoryProgress.unlocks.tech={method:"challenge",at:"2026-09-28T12:00:00.000Z"};},
+  "category-unlock",
+  "impossible Technik challenge unlock"
+);
+await expectRejectedBackup(
+  backup=>{backup.data.categoryProgress.unlocks.spicy={method:"challenge",at:"2026-09-28T12:00:00.000Z"};},
+  "category-unlock",
+  "impossible Spicy challenge unlock"
+);
+await expectRejectedBackup(
+  backup=>{backup.data.categoryProgress.unlocks.tech={method:"ticket",at:"2026-09-28T12:00:00.000Z"};},
+  "category-unlock",
+  "unearned category ticket unlock"
+);
+await expectRejectedBackup(
+  backup=>{backup.data.categoryProgress.unlocks.unknownPack={method:"challenge",at:"2026-09-28T12:00:00.000Z"};},
+  "category-unlock",
+  "unknown category pack unlock"
+);
+
+/* A real challenge unlock must still import unchanged. */
+const validUnlockSource=await createHarness();
+const validProfile=validUnlockSource.store.getSelectedProfile();
+validUnlockSource.store.beginSession([{profileId:validProfile.id,name:validProfile.name,avatar:validProfile.avatar}]);
+validUnlockSource.store.recordRound({game:"circa",roundKey:"valid-variety-circa",qid:"valid-q",category:"Alltag",players:[{profileId:validProfile.id,role:"normal",error:5}]});
+validUnlockSource.store.recordRound({game:"classic",roundKey:"valid-variety-classic",wid:"valid-w",word:"Test",category:"Alltag",players:[{profileId:validProfile.id,role:"normal"}]});
+validUnlockSource.store.recordRound({game:"whoami",roundKey:"valid-variety-who",category:"Tiere",players:[{profileId:validProfile.id,termId:"valid-term"}]});
+validUnlockSource.store.endSession();
+await validUnlockSource.store.flushProgressIntegrity();
+const validUnlockBackup=await validUnlockSource.store.createBackup();
+assert(validUnlockBackup.data.categoryProgress.unlocks.popculture?.method==="challenge","test fixture did not earn Popkultur challenge unlock");
+const validUnlockDestination=await createHarness();
+const validUnlockResult=await validUnlockDestination.store.importSnapshot(validUnlockBackup);
+assert(validUnlockResult.ok,"legitimate challenge unlock backup was rejected: "+JSON.stringify(validUnlockResult));
+assert(validUnlockDestination.store.snapshot().categoryProgress.unlocks.popculture?.method==="challenge","legitimate Popkultur unlock was not preserved");
+
+/* With bounded 50-session history, an old session-based unlock stays plausible
+   when lifetime rounds prove that retained sessions no longer contain all history. */
+const historicalBackup=await store.createBackup();
+historicalBackup.data.categoryProgress.unlocks.spicy={method:"challenge",at:"2026-09-28T12:00:00.000Z"};
+await resealBackup(historicalBackup);
+const historicalDestination=await createHarness();
+const historicalResult=await historicalDestination.store.importSnapshot(historicalBackup);
+assert(historicalResult.ok,"historically plausible Spicy unlock was rejected despite truncated session history: "+JSON.stringify(historicalResult));
+
+console.log("Progress integrity and strict backup-import runtime checks passed.");

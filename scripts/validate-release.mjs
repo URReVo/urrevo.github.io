@@ -214,7 +214,7 @@ const readme=read("README.md");
 assert(!readme.includes("\\n"),"README contains literal \\n text");
 assert(["Circa Imposter","Klassisches Imposter","Wer bin ich?","Scharade","Persönlicher Impostor"].every(name=>readme.includes(name)),"README must describe the five-game app");
 const changelog=read("CHANGELOG.md");
-assert(changelog.includes("V74R21")&&changelog.includes("Offline-Cache **r21**"),"V74R21 changelog entry missing");
+assert(changelog.includes("V74R22")&&changelog.includes("Offline-Cache **r22**"),"V74R22 changelog entry missing");
 
 const appStateSource=read("assets/js/app-state.js");
 const launcherSource=read("assets/js/launcher.js");
@@ -306,12 +306,17 @@ assert(whoCss.includes(".whoViewerScreen .whoBottomButton{margin-top:auto}"),"R1
 assert(!html["index.html"].includes("--profile-progress:0deg"),"R15 launcher avatar must not carry inline progress paint");
 assert(!launcherSource.includes('byId("headerAvatar").style.setProperty("--profile-progress"'),"R15 launcher must not repaint the header avatar with XP progress");
 assert(!launcherCss.includes("conic-gradient(var(--accent) var(--profile-progress")&&launcherCss.includes("background:#37383d;")&&launcherCss.includes("margin-bottom:10px"),"R15 launcher avatar/hero spacing fix missing");
-assert(sw.includes('const CACHE_REVISION="r21"'),"V74 cache revision mismatch");
+assert(sw.includes('const CACHE_REVISION="r22"'),"V74 cache revision mismatch");
 assert(sw.includes('versioned("/assets/js/launcher-dev.js")'),"service worker launcher DEV cache missing");
 assert(appStateSource.includes("var BACKUP_VERSION=3"),"backup format v3 missing");
 assert(appStateSource.includes('INTEGRITY_DB_NAME="imposterGames.progressIntegrity.v1"'),"R17 progress-integrity IndexedDB namespace missing");
 assert(appStateSource.includes('generateKey({name:"HMAC",hash:"SHA-256",length:256},false,["sign","verify"])'),"R17 non-exportable HMAC key generation missing");
 assert(appStateSource.includes("function integrityRepairInitialProgressState("),"R17 first-run plausibility repair missing");
+assert(appStateSource.includes("function validateBackupPlausibility(")&&appStateSource.includes("function validateBackupCategoryProgress("),"R22 strict backup plausibility validator missing");
+assert(appStateSource.includes("var plausibility=validateBackupPlausibility(imported,src);")&&appStateSource.includes("if(!plausibility.ok)return plausibility;"),"R22 backup must be rejected before replacing app state");
+assert(!appStateSource.includes("data=imported;\n  integrityRepairInitialProgressState(data);"),"R22 backup import must not silently repair imported progress");
+assert(launcherSource.includes("Die Fortschrittsdaten sind widersprüchlich. Dein aktueller Spielstand wurde nicht verändert.")&&launcherSource.includes("Die Kategorie-Freischaltungen passen nicht zum gespeicherten Fortschritt."),"R22 backup rejection UX missing");
+assert(integrityTestSource.includes("re-hashed impossible total-round backup")&&integrityTestSource.includes("impossible Popkultur challenge unlock")&&integrityTestSource.includes("impossible Technik challenge unlock")&&integrityTestSource.includes("impossible Spicy challenge unlock")&&integrityTestSource.includes("unearned category ticket unlock"),"R22 strict backup regression scenarios missing");
 assert(appStateSource.includes("function validateProgressIntegrity("),"R17 progress integrity validator missing");
 assert(appStateSource.includes("pre-r17-recovery"),"R17 pre-migration recovery snapshot missing");
 assert(appStateSource.includes("checkpoint-missing"),"R17 missing-checkpoint guard missing");

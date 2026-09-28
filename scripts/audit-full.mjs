@@ -136,7 +136,7 @@ const prototypePersonal=prototypeGames&&prototypeGames.games&&prototypeGames.gam
 assert(prototypePersonal&&!/ganz andere frage/i.test(prototypePersonal.description||""),"Prototype launcher still uses stale Personal description");
 
 const sw=read("service-worker.js");
-assert(sw.includes('const CACHE_REVISION="r21"'),"service worker revision is not r21");
+assert(sw.includes('const CACHE_REVISION="r22"'),"service worker revision is not r22");
 const coreMatch=sw.match(/const CORE_URLS=\[([\s\S]*?)\];/);
 assert(coreMatch,"service worker CORE_URLS not found");
 if(coreMatch){
@@ -149,6 +149,14 @@ if(coreMatch){
   }
 }
 note("Service-worker core paths checked");
+
+const appStateSource=read("assets/js/app-state.js");
+const launcherSource=read("assets/js/launcher.js");
+assert(appStateSource.includes("function validateBackupPlausibility(")&&appStateSource.includes("function validateBackupCategoryProgress("),"Strict backup plausibility validation missing");
+assert(appStateSource.includes("if(!plausibility.ok)return plausibility;"),"Backup plausibility rejection does not occur before import");
+assert(!appStateSource.includes("data=imported;\n  integrityRepairInitialProgressState(data);"),"Backup import still silently repairs progress");
+assert(launcherSource.includes("Dein aktueller Spielstand wurde nicht verändert."),"Strict backup rejection UX missing");
+note("Strict backup plausibility/import immutability checked");
 
 const parity=[
   "charades.json","circa-questions.json","classic-words.json","who-am-i.json"

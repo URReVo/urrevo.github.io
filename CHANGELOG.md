@@ -38,6 +38,10 @@
 - Die Action-Geometrie des Persönlichen Impostors ist jetzt auch strukturell an Circa gekoppelt: `questionReveal` nutzt dieselbe feste Stage-Button-Höhe, die Ergebnisleiste verwendet dieselbe `resultActions`-ID wie Circa und ein später alter `.resultActions { margin-top: 7px }`-Override wurde entfernt. Dadurch bleibt die untere Flex-Baseline in allen Reveal-/Result-Screens einheitlich.
 - Die mit R17 asynchron gewordenen Rundenstarts sind gegen schnelle Doppeltipps abgesichert. Circa, Classic, Wer bin ich?, Scharade und Persönlicher Impostor erlauben jeweils nur einen laufenden Startvorgang, bis Integritätsprüfung und Rundenvorbereitung abgeschlossen sind.
 - Produktionsstand auf **V74R21** / Offline-Cache **r21** angehoben.
+- V74R22 trennt Altstands-Migration und Backup-Import klar: Die lokale Erst-Migration darf weiterhin eindeutig inkonsistente Altwerte vorsichtig reparieren; ein bewusst importiertes Backup wird dagegen vor jeder Zustandsänderung vollständig auf Plausibilität geprüft und bei nötiger Reparatur komplett abgelehnt.
+- Die Importprüfung validiert zusätzlich Kategorie-Freischaltungen: unbekannte Packs/Methoden werden abgelehnt, Ticket-Unlocks dürfen die anhand der Gesamtrunden verdienten Tickets nicht überschreiten, Popkultur muss die Spielvielfalt und Technik die erforderliche Unique-Content-Menge belegen. Beim sessionbasierten Spicy-Unlock wird die begrenzte 50-Session-Historie berücksichtigt: Ein sichtbarer 10-Runden-Abend gilt als Beleg; fehlt er, bleibt der Unlock nur plausibel, wenn die Lifetime-Runden zeigen, dass ältere Runden bereits aus der gespeicherten Historie gefallen sind.
+- Manipulierte Backups werden auch dann abgelehnt, wenn nach der Änderung eine neue korrekte SHA-256-Prüfsumme berechnet wurde. Bei Ablehnung bleiben App-State, Game-Storage und lokaler Integrity-Checkpoint unverändert.
+- Produktionsstand auf **V74R22** / Offline-Cache **r22** angehoben.
 
 
 ## V73
