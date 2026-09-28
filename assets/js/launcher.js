@@ -373,8 +373,10 @@ function renderCrewHistory(){
 
 function renderHeader(){
   var p=store.getSelectedProfile?store.getSelectedProfile():store.getPrimaryProfile();
+  var level=store.getProfileLevel?store.getProfileLevel(p.id):null;
   byId("headerAvatar").textContent=p.avatar||"😎";
   byId("headerName").textContent=p.name||"Spieler";
+  byId("headerLevel").textContent="LVL "+(level?level.level.level:1);
   updateGreeting();
 }
 function renderPlayers(){
@@ -386,11 +388,20 @@ function renderPlayers(){
     card.setAttribute("role","button");card.setAttribute("tabindex","0");
     card.setAttribute("aria-label",p.name+" auswählen");
     if(p.id===selected.id)card.setAttribute("aria-current","true");
+    var level=store.getProfileLevel?store.getProfileLevel(p.id):null;
     var av=document.createElement("div");av.className="playerAvatarBig";av.textContent=p.avatar||"😎";
     var info=document.createElement("div");info.className="playerInfo";
+    var nameRow=document.createElement("div");nameRow.className="playerNameRow";
     var name=document.createElement("strong");name.textContent=p.name;
+    var levelBadge=document.createElement("span");levelBadge.className="playerLevelBadge";levelBadge.textContent="LVL "+(level?level.level.level:1);
+    nameRow.append(name,levelBadge);
     var meta=document.createElement("span");meta.textContent=st.rounds+" Runden · "+st.impostor+"× Imposter · "+st.impostorEscapes+"× unentdeckt";
-    info.appendChild(name);info.appendChild(meta);
+    var levelMeta=document.createElement("div");levelMeta.className="playerLevelMeta";
+    var levelTitle=document.createElement("small");levelTitle.textContent=level?level.level.title:"Neuling";
+    var levelTrack=document.createElement("span");levelTrack.className="playerLevelTrack";
+    var levelFill=document.createElement("i");levelFill.style.width=Math.round((level?level.level.progress:0)*100)+"%";levelTrack.appendChild(levelFill);
+    levelMeta.append(levelTitle,levelTrack);
+    info.appendChild(nameRow);info.appendChild(meta);info.appendChild(levelMeta);
     if(p.id===selected.id){var tag=document.createElement("span");tag.className="primaryTag";tag.textContent="AUSGEWÄHLT";info.appendChild(tag);}
     function selectProfile(){
       var selectedNow=store.getSelectedProfile?store.getSelectedProfile():store.getPrimaryProfile();
@@ -735,6 +746,20 @@ function renderStats(){
   byId("statsScopeGlobal").classList.toggle("active",!personal);
   byId("statsScopeLabel").textContent=personal?"Gespielt von "+selected.name:"Gesamt gespielt";
   byId("statsScopeSub").textContent=personal?"Runden dieses lokalen Profils":"Runden auf diesem Gerät";
+
+  var levelSummary=byId("profileLevelSummary");
+  levelSummary.classList.toggle("hidden",!personal);
+  if(personal&&store.getProfileLevel){
+    var level=store.getProfileLevel(selected.id);
+    if(level){
+      byId("profileLevelNumber").textContent=level.level.level;
+      byId("profileLevelTitle").textContent=level.level.title;
+      byId("profileLevelXp").textContent=level.xp+" XP";
+      byId("profileLevelFill").style.width=Math.round(level.level.progress*100)+"%";
+      byId("profileLevelOrb").style.setProperty("--profile-progress",Math.round(level.level.progress*360)+"deg");
+      byId("profileLevelNext").textContent=level.level.remaining+" XP bis Level "+(level.level.level+1)+" · "+level.achievementCount+" Achievements";
+    }
+  }
 
   byId("totalRounds").textContent=st.rounds||0;
   byId("circaRounds").textContent=st.circaRounds||0;
