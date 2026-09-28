@@ -313,7 +313,7 @@ function load(){
     var hadExplicitProfiles=Array.isArray(preset.profileIds)&&preset.profileIds.length>0;
     if(!Array.isArray(preset.profileIds))preset.profileIds=[];
     preset.profileIds=preset.profileIds.filter(function(profileId,index,arr){
-      return !!profileById(profileId)&&arr.indexOf(profileId)===index;
+      return data.profiles.some(function(profile){return profile.id===profileId;})&&arr.indexOf(profileId)===index;
     }).slice(0,12);
     if(hadExplicitProfiles){
       preset.playerCount=preset.profileIds.length;
