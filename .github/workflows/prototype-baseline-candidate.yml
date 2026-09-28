@@ -1,0 +1,82 @@
+name: Prototype baseline candidate
+on:
+  push:
+    branches: ["prototype/reset-to-production-baseline"]
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+
+      - name: Full project audit
+        run: node scripts/audit-full.mjs
+      - name: Validate release
+        run: node scripts/validate-release.mjs
+      - name: Test local progress integrity
+        run: node scripts/test-progress-integrity.mjs
+      - name: Validate iOS readiness
+        run: node scripts/validate-ios-readiness.mjs
+
+      - name: Install visual parity tools
+        run: npm install --no-save puppeteer-core@24.17.0 pixelmatch@7.1.0 pngjs@7.0.0
+
+      - name: Start local server
+        run: |
+          python3 -m http.server 8080 --bind 127.0.0.1 > /tmp/baseline-http.log 2>&1 &
+          sleep 2
+
+      - name: Compare production and prototype rendering
+        run: |
+          CHROME="$(command -v google-chrome || command -v chromium-browser || command -v chromium || true)"
+          test -n "$CHROME"
+          export CHROME
+          cat > /tmp/compare-baseline.mjs <<'NODE'
+          import puppeteer from "puppeteer-core";
+          import pixelmatch from "pixelmatch";
+          import {PNG} from "pngjs";
+
+          const browser=await puppeteer.launch({headless:true,executablePath:process.env.CHROME,args:["--no-sandbox","--disable-gpu"]});
+          const base="http://127.0.0.1:8080";
+          const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+          async function capture(path,width,height){
+            const page=await browser.newPage();
+            const errors=[];
+            page.on("pageerror",e=>errors.push("pageerror: "+e.message));
+            page.on("console",m=>{if(m.type()==="error")errors.push("console: "+m.text());});
+            await page.setViewport({width,height,deviceScaleFactor:1,isMobile:true,hasTouch:true});
+            await page.setBypassServiceWorker(true);
+            await page.goto(base+path,{waitUntil:"networkidle0",timeout:30000});
+            await sleep(600);
+            const state=await page.evaluate(()=>({
+              text:document.body.innerText,
+              width:document.documentElement.scrollWidth,
+              height:document.documentElement.scrollHeight,
+              games:[...document.querySelectorAll("[data-game-card]")].map(el=>el.getBoundingClientRect().toJSON()),
+              title:document.title
+            }));
+            const png=PNG.sync.read(await page.screenshot({type:"png",fullPage:false}));
+            await page.close();
+            if(errors.length)throw new Error(path+" browser errors: "+errors.join(" | "));
+            return {state,png};
+          }
+
+          for(const [w,h] of [[375,667],[402,874],[430,932]]){
+            const prod=await capture("/",w,h);
+            const proto=await capture("/experiments/prototype/",w,h);
+            if(prod.state.text!==proto.state.text)throw new Error(`${w}x${h}: visible text differs between production and prototype`);
+            if(prod.state.width!==proto.state.width||prod.state.height!==proto.state.height)throw new Error(`${w}x${h}: document geometry differs`);
+            if(prod.state.games.length!==5||proto.state.games.length!==5)throw new Error(`${w}x${h}: game card count mismatch`);
+            const diff=pixelmatch(prod.png.data,proto.png.data,null,prod.png.width,prod.png.height,{threshold:0.08});
+            const ratio=diff/(prod.png.width*prod.png.height);
+            console.log(`PARITY ${w}x${h}: diff=${diff} ratio=${ratio}`);
+            if(ratio>0.001)throw new Error(`${w}x${h}: visual drift ratio ${ratio}`);
+          }
+          await browser.close();
+          NODE
+          node /tmp/compare-baseline.mjs
