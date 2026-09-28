@@ -639,9 +639,18 @@ function achievementDefs(){
   ];
 }
 function evaluateAchievements(){
+  var unlocked=[];
   achievementDefs().forEach(function(def){
-    if(def.done()&&!data.achievements[def.id])data.achievements[def.id]={unlockedAt:now()};
+    if(def.done()&&!data.achievements[def.id]){
+      data.achievements[def.id]={unlockedAt:now()};
+      unlocked.push({id:def.id,icon:def.icon,title:def.title,text:def.text});
+    }
   });
+  return unlocked;
+}
+function emitAchievementUnlocks(items){
+  if(!items||!items.length||!window||typeof window.dispatchEvent!=="function"||typeof CustomEvent==="undefined")return;
+  try{window.dispatchEvent(new CustomEvent("ci:achievement-unlocked",{detail:{items:clone(items)}}));}catch(e){}
 }
 function profileAchievementDefs(id){
   var st=ensureStat(id);
@@ -722,7 +731,7 @@ function recordRound(input){
   });
   if(roundProfileIds.length)session.lastProfileIds=roundProfileIds;
 
-  evaluateAchievements();save();return true;
+  var unlocked=evaluateAchievements();save();emitAchievementUnlocks(unlocked);return true;
 }
 function computeAwards(session){
   var best=null,wild=null,escapes={},impostors={},charadesCorrect={},charadesSkipped={},charadesTurns={};
@@ -760,7 +769,7 @@ function endSession(){
   var s=data.activeSessionId&&sessionById(data.activeSessionId);
   if(!s||s.endedAt)return null;
   s.endedAt=now();s.awards=computeAwards(s);data.activeSessionId=null;
-  evaluateAchievements();save();return clone(s);
+  var unlocked=evaluateAchievements();save();emitAchievementUnlocks(unlocked);return clone(s);
 }
 function getAchievements(){
   evaluateAchievements();save();
@@ -794,7 +803,8 @@ function trackUsage(game){
   var ts=Date.now();usageCommit(ts);
   data.usage.lastTickAt=ts;
   data.usage.activeGame=GAME_IDS.indexOf(game)!==-1?game:null;
-  save();return true;
+  var unlocked=evaluateAchievements();
+  save();emitAchievementUnlocks(unlocked);return true;
 }
 function pauseUsage(){
   var ts=Date.now();usageCommit(ts);
