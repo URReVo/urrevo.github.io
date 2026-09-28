@@ -1,7 +1,7 @@
 "use strict";
 
 const RELEASE="74";
-const CACHE_REVISION="r22-party-p2";
+const CACHE_REVISION="r22-party-p3";
 const BASE="/experiments/prototype";
 const CACHE_PREFIX="imposter-games-prototype-";
 const CACHE_NAME=CACHE_PREFIX+"v"+RELEASE+"-"+CACHE_REVISION;
@@ -9,9 +9,9 @@ const versioned=path=>BASE+path+"?v="+RELEASE;
 
 const CORE_URLS=[
   BASE+"/",BASE+"/manifest.webmanifest",
-  versioned("/assets/css/launcher.css"),versioned("/assets/css/app-ui.css"),BASE+"/assets/css/party-makeover.css?v=74p2",
+  versioned("/assets/css/launcher.css"),versioned("/assets/css/app-ui.css"),BASE+"/assets/css/party-makeover.css?v=74p2",BASE+"/assets/css/party-launcher-p3.css?v=74p3",
   versioned("/assets/js/launcher.js"),versioned("/assets/js/launcher-dev.js"),versioned("/assets/js/app-state.js"),
-  versioned("/assets/js/pwa.js"),BASE+"/assets/js/party-makeover.js?v=74p2",
+  versioned("/assets/js/pwa.js"),BASE+"/assets/js/party-makeover.js?v=74p2",BASE+"/assets/js/party-launcher-p3.js?v=74p3",
   versioned("/assets/css/game.css"),versioned("/assets/js/game-engine.js"),
   versioned("/assets/js/who-am-i.js"),versioned("/assets/css/who-am-i.css"),
   versioned("/assets/js/charades.js"),versioned("/assets/css/charades.css"),
