@@ -22,6 +22,7 @@
         <span class="profileText">
           <span id="greeting" class="profileGreeting">Willkommen</span>
           <strong id="headerName">Spieler</strong>
+          <span id="headerLevel" class="profileLevelMini">LVL 1 · Neuling</span>
         </span>
         <span class="chevron">›</span>
       </button>
@@ -161,6 +162,18 @@
       <span id="statsScopeLabel">Gespielt</span>
       <strong id="totalRounds">0</strong>
       <small id="statsScopeSub">Runden des ausgewählten Profils</small>
+    </section>
+
+    <section id="profileLevelBlock" class="profileLevelCard">
+      <div id="profileLevelOrb" class="profileLevelOrb" aria-hidden="true"><span>LVL</span><strong id="profileLevelNumber">1</strong></div>
+      <div class="profileLevelMain">
+        <div class="profileLevelHeading">
+          <div><small>SPIELER-LEVEL</small><strong id="profileLevelTitle">Neuling</strong></div>
+          <b id="profileLevelXp">0 XP</b>
+        </div>
+        <div class="profileLevelTrack" aria-hidden="true"><i id="profileLevelFill"></i></div>
+        <span id="profileLevelNext">Noch 20 XP bis LVL 2</span>
+      </div>
     </section>
 
     <div class="statGrid gameProgressGrid">
