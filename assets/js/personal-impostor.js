@@ -10,8 +10,8 @@ var preferences=appState&&appState.getPreferences?appState.getPreferences():{sou
 var soundEnabled=preferences.sound!==false,audioCtx=null,bank=[];
 var count=3,players=[],savedPlayerNames=[],savedPlayerProfileIds=[],avatarSelections=[];
 var currentPair=null,impostorIndex=0,activeIndex=0,answers=[],round=0,impostorCounts=[],lastImpostor=-1,currentRoundKey=null;
-var revealRunning=false,revealTimers=[];
-var sections=["setup","handoff","question","answers","result"];
+var revealRunning=false,revealTimers=[],sharedQuestionRevealed=false;
+var sections=["setup","handoff","question","questionReveal","answers","result"];
 function storageGet(key,fallback){try{var raw=localStorage.getItem(key);return raw===null?fallback:JSON.parse(raw);}catch(e){return fallback;}}
 function storageSet(key,value){try{localStorage.setItem(key,JSON.stringify(value));return true;}catch(e){return false;}}
 function cleanName(v){return String(v==null?"":v).trim().slice(0,24);}
@@ -98,8 +98,31 @@ function startParty(){var result=collectPlayers();if(!result.ok){byId("error").t
 function startRound(useExisting){clearRevealTimers();if(!useExisting&&players.length<3){startParty();return;}var pair=drawPair();if(!pair){byId("error").textContent="Keine Fragepaare verfügbar.";show("setup");return;}currentPair=pair;impostorIndex=selectImpostor();activeIndex=0;answers=Array(players.length).fill("");round++;currentRoundKey="personal_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,7);if(appState&&appState.beginSession){appState.beginSession(players);if(appState.setActiveSessionGame)appState.setActiveSessionGame("personal","Runde "+round,true);}showHandoff();sound("start");pulse(8);}
 function showHandoff(){var p=players[activeIndex];byId("handoffAvatar").textContent=p.avatar;byId("handoffName").textContent=p.name;if(appState&&appState.setActiveSessionGame)appState.setActiveSessionGame("personal","Runde "+round+" · Spieler "+(activeIndex+1)+"/"+players.length,false);show("handoff");}
 function showQuestion(){var p=players[activeIndex],isImpostor=activeIndex===impostorIndex;byId("questionAvatar").textContent=p.avatar;byId("questionName").textContent=p.name;byId("questionProgress").textContent=(activeIndex+1)+"/"+players.length;byId("questionText").textContent=isImpostor?currentPair.impostor:currentPair.normal;renderAnswerControl();byId("answerError").textContent="";show("question");sound("tap");pulse(6);setTimeout(function(){var input=byId("answerInput");try{input&&input.focus({preventScroll:true});}catch(e){try{input&&input.focus();}catch(e2){}}},180);}
-function saveAnswer(){var parsed=readAnswer();if(!parsed.ok){byId("answerError").textContent=parsed.message||"Bitte gib zuerst deine Antwort ein.";pulse(12);return;}answers[activeIndex]=parsed.value;byId("answerError").textContent="";sound("save");pulse(7);if(activeIndex<players.length-1){activeIndex++;showHandoff();}else renderAnswers();}
-function renderAnswers(){clearRevealTimers();var box=byId("answersList");box.innerHTML="";players.forEach(function(player,index){var row=document.createElement("div");row.className="personalAnswerRow";row.dataset.playerIndex=String(index);var av=document.createElement("div");av.className="personalAnswerAvatar";av.textContent=player.avatar;var info=document.createElement("div");info.className="personalAnswerInfo";var name=document.createElement("span");name.textContent=player.name;var value=document.createElement("strong");value.textContent=formatAnswer(answers[index]);info.append(name,value);var mark=document.createElement("div");mark.className="impostorX";mark.textContent="×";row.append(av,info,mark);box.appendChild(row);});show("answers");sound("start");pulse(9);}
+function saveAnswer(){var parsed=readAnswer();if(!parsed.ok){byId("answerError").textContent=parsed.message||"Bitte gib zuerst deine Antwort ein.";pulse(12);return;}answers[activeIndex]=parsed.value;byId("answerError").textContent="";sound("save");pulse(7);if(activeIndex<players.length-1){activeIndex++;showHandoff();}else showSharedQuestionReveal();}
+function showSharedQuestionReveal(){
+  clearRevealTimers();
+  sharedQuestionRevealed=false;
+  var card=byId("sharedQuestionCard"),text=byId("sharedQuestionText"),button=byId("revealSharedQuestion");
+  card.classList.add("concealed");
+  card.classList.remove("revealed");
+  text.textContent="?";
+  button.textContent="Richtige Frage aufdecken";
+  show("questionReveal");sound("start");pulse(9);
+}
+function toggleSharedQuestionReveal(){
+  var card=byId("sharedQuestionCard"),text=byId("sharedQuestionText"),button=byId("revealSharedQuestion");
+  if(!sharedQuestionRevealed){
+    sharedQuestionRevealed=true;
+    text.textContent=currentPair.normal;
+    card.classList.remove("concealed");
+    card.classList.add("revealed");
+    button.textContent="Antworten anzeigen";
+    sound("reveal");pulse(12);
+    return;
+  }
+  renderAnswers();
+}
+function renderAnswers(){clearRevealTimers();byId("answersSharedQuestion").textContent=currentPair.normal;var box=byId("answersList");box.innerHTML="";players.forEach(function(player,index){var row=document.createElement("div");row.className="personalAnswerRow";row.dataset.playerIndex=String(index);var av=document.createElement("div");av.className="personalAnswerAvatar";av.textContent=player.avatar;var info=document.createElement("div");info.className="personalAnswerInfo";var name=document.createElement("span");name.textContent=player.name;var value=document.createElement("strong");value.textContent=formatAnswer(answers[index]);info.append(name,value);var mark=document.createElement("div");mark.className="impostorX";mark.textContent="×";row.append(av,info,mark);box.appendChild(row);});show("answers");sound("start");pulse(9);}
 function showResolution(){var impostor=players[impostorIndex],screen=byId("result");if(appState&&appState.recordRound&&currentRoundKey){appState.recordRound({game:"personal",roundKey:currentRoundKey,qid:currentPair.id,unit:currentPair.unit||"",players:players.map(function(player,index){return {profileId:player.profileId,name:player.name,avatar:player.avatar,role:index===impostorIndex?"impostor":"normal",answer:answers[index]};})});currentRoundKey=null;}byId("resultAvatar").textContent=impostor.avatar;byId("resultName").textContent=impostor.name+" war der Impostor";byId("normalQuestion").textContent=currentPair.normal;byId("impostorQuestion").textContent=currentPair.impostor;screen.classList.remove("revealSequence");screen.querySelectorAll(".personalRevealItem").forEach(function(el){el.classList.remove("revealed");});show("result");if(!motionEnabled()){screen.querySelectorAll(".personalRevealItem").forEach(function(el){el.classList.add("revealed");});revealRunning=false;return;}screen.classList.add("revealSequence");var items=screen.querySelectorAll(".personalRevealItem");for(var i=0;i<items.length;i++){(function(el,delay){revealTimers.push(setTimeout(function(){el.classList.add("revealed");sound("save");},delay));})(items[i],120+i*260);}revealTimers.push(setTimeout(function(){screen.classList.remove("revealSequence");revealRunning=false;},120+items.length*260+420));}
 function reveal(){if(revealRunning)return;revealRunning=true;var screen=byId("answers"),button=byId("reveal"),rows=byId("answersList").querySelectorAll(".personalAnswerRow");screen.classList.add("revealRunning");button.disabled=true;button.textContent="Wer ist es…?";for(var i=0;i<rows.length;i++){rows[i].classList.add("dimmed");rows[i].classList.remove("focused","impostorCaught");}var impostorRow=byId("answersList").querySelector('[data-player-index="'+impostorIndex+'"]');if(!motionEnabled()){if(impostorRow){impostorRow.classList.remove("dimmed");impostorRow.classList.add("focused","impostorCaught");}sound("reveal");pulse(14);revealTimers.push(setTimeout(showResolution,520));return;}var order=[];for(var j=0;j<players.length;j++)if(j!==impostorIndex)order.push(j);for(var oi=order.length-1;oi>0;oi--){var oj=randomIndex(oi+1),tmp=order[oi];order[oi]=order[oj];order[oj]=tmp;}var steps=Math.min(3,order.length);for(var s=0;s<steps;s++){(function(idx,delay){revealTimers.push(setTimeout(function(){for(var z=0;z<rows.length;z++)rows[z].classList.remove("focused");var candidate=byId("answersList").querySelector('[data-player-index="'+idx+'"]');if(candidate){candidate.classList.remove("dimmed");candidate.classList.add("focused");}tone(250+delay*.25,.055,0);},delay));})(order[s],260+s*260);}var finalDelay=260+steps*260+140;revealTimers.push(setTimeout(function(){for(var z=0;z<rows.length;z++){rows[z].classList.add("dimmed");rows[z].classList.remove("focused");}if(impostorRow){impostorRow.classList.remove("dimmed");impostorRow.classList.add("focused","impostorCaught");}button.textContent="Auflösung…";sound("reveal");pulse(14);},finalDelay));revealTimers.push(setTimeout(showResolution,finalDelay+900));}
 function backSetup(){clearRevealTimers();show("setup");window.scrollTo(0,0);}
@@ -111,6 +134,7 @@ byId("plus").addEventListener("click",function(){if(count<12){savePlayersFromInp
 byId("start").addEventListener("click",startParty);
 byId("showQuestion").addEventListener("click",showQuestion);
 byId("saveAnswer").addEventListener("click",saveAnswer);
+byId("revealSharedQuestion").addEventListener("click",toggleSharedQuestionReveal);
 byId("reveal").addEventListener("click",reveal);
 byId("nextRound").addEventListener("click",function(){startRound(true);});
 byId("backSetup").addEventListener("click",backSetup);

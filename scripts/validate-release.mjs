@@ -204,7 +204,7 @@ const readme=read("README.md");
 assert(!readme.includes("\\n"),"README contains literal \\n text");
 assert(["Circa Imposter","Klassisches Imposter","Wer bin ich?","Scharade","Persönlicher Impostor"].every(name=>readme.includes(name)),"README must describe the five-game app");
 const changelog=read("CHANGELOG.md");
-assert(changelog.includes("V74R13")&&changelog.includes("Offline-Cache **r13**"),"V74R13 changelog entry missing");
+assert(changelog.includes("V74R14")&&changelog.includes("Offline-Cache **r14**"),"V74R14 changelog entry missing");
 
 const appStateSource=read("assets/js/app-state.js");
 const launcherSource=read("assets/js/launcher.js");
@@ -268,7 +268,13 @@ assert(gameCss.includes("V74R13 game feel")&&gameCss.includes('body[data-game="c
 assert(engineSource.includes('card.classList.toggle("isImpostor",isImp)'),"R13 Classic role styling state missing");
 assert(html["games/charades/index.html"].includes('id="charadesTimeRail"'),"R13 Scharade time rail markup missing");
 assert(charadesSource.includes('byId("charadesTimeFill")')&&charadesCss.includes(".charadesTimeRail.critical"),"R13 Scharade time rail behavior missing");
-assert(sw.includes('const CACHE_REVISION="r13"'),"V74 cache revision mismatch");
+assert(html["games/personal-impostor/index.html"].includes('id="questionReveal"')&&html["games/personal-impostor/index.html"].includes('id="revealSharedQuestion"'),"R14 Personal shared-question reveal markup missing");
+assert(personalSource.includes('else showSharedQuestionReveal();')&&personalSource.includes("function toggleSharedQuestionReveal()"),"R14 Personal flow must reveal the shared question before answers");
+assert(personalSource.includes('byId("answersSharedQuestion").textContent=currentPair.normal'),"R14 Personal answers must retain the shared question");
+assert(personalCss.includes(".personalQuestionRevealScreen:not(.hidden){display:flex}")&&personalCss.includes(".personalEdgeAction{margin-top:auto!important"),"R14 Personal bottom-action layout missing");
+assert(gameCss.includes(".gameScreen:not(.hidden){flex:1 1 0;height:0;min-height:0}")&&gameCss.includes(".confirmButton,.stageButton,.classicRoleButton,.classicResultActions,.resultActions{margin-top:auto!important}"),"R14 shared bottom-action anchoring missing");
+assert(whoCss.includes(".whoViewerScreen .whoBottomButton{margin-top:auto}"),"R14 WhoAmI bottom action anchoring missing");
+assert(sw.includes('const CACHE_REVISION="r14"'),"V74 cache revision mismatch");
 assert(sw.includes('versioned("/assets/js/launcher-dev.js")'),"service worker launcher DEV cache missing");
 assert(appStateSource.includes("var BACKUP_VERSION=3"),"backup format v3 missing");
 assert(engineSource.includes("experimentRecordCirca(null);"),"Circa shared base-round recording missing");
@@ -473,7 +479,7 @@ assert(html["games/classic-imposter/index.html"].includes('apple-mobile-web-app-
 assert(html["games/who-am-i/index.html"].includes('apple-mobile-web-app-status-bar-style\" content=\"black\"'),"WhoAmI opaque iOS status bar missing");
 assert(html["games/charades/index.html"].includes('apple-mobile-web-app-status-bar-style\" content=\"black\"'),"Scharade opaque iOS status bar missing");
 assert(html["games/personal-impostor/index.html"].includes('apple-mobile-web-app-status-bar-style\" content=\"black\"'),"Personal opaque iOS status bar missing");
-assert(whoCss.includes(".whoViewerScreen .whoBottomButton{margin-top:18px}"),"WhoAmI reveal spacing missing");
+assert(whoCss.includes(".whoViewerScreen .whoBottomButton{margin-top:auto}"),"WhoAmI bottom reveal action anchoring missing");
 assert(whoCss.includes(".whoViewerHeader{flex:0 0 auto;margin:-7px 2px 10px}"),"WhoAmI reveal content vertical position missing");
 assert(html["index.html"].includes('href="games/who-am-i/"'),"WhoAmI launcher card missing");
 assert(games.games.some(game=>game.id==="who-am-i"&&game.path==="games/who-am-i/"),"WhoAmI registry entry missing");

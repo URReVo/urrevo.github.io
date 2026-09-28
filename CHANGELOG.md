@@ -22,7 +22,8 @@
 - V74R11 ergänzt ein persönliches Level-System für jedes Profil. Profil-XP entsteht aus eigenen Runden, Spielvielfalt, entdecktem Content und kleinen Leistungsboni; Profil und Crew nutzen dieselbe Level-Kurve, bleiben aber logisch getrennt. Level-Up-Feedback, Header-/Profilkarten-Anzeige, persönliche Statistik und DEV-Vorschau wurden ergänzt.
 - V74R12 härtet die gemeinsame Progression: persönliche XP bleibt erfahrungsgetrieben, Leistungsboni sind bewusst gedeckelt und Crew-/Profil-Semantik ist technisch getrennt. Updates derselben Runden-ID dürfen Ergebnisse korrigieren, aber keine neue Content-Identität und damit keine künstliche Discovery-XP erzeugen; partielle Outcome-Updates behalten bestehende Rundendaten.
 - V74R13 ist ein motivierender Design-/Game-Feel-Pass ohne neue Zwangsmechaniken: dynamischer Home-Hero, Avatar-XP-Ring, ein einziges kontextabhängiges nächstes Ziel, sichtbarer Profilfortschritt direkt auf den Spielkarten, Zufallsentscheidung für Unentschlossene und ein stärkeres Session-Highlight. Die fünf Spiele erhalten klarere visuelle Identitäten, taktilere Press-States und weichere Screen-Transitions; Classic inszeniert die Impostor-Rolle deutlicher und Scharade zeigt die verbleibende Zeit zusätzlich als Energie-Leiste.
-- Produktionsstand auf **V74R13** / Offline-Cache **r13** angehoben.
+- V74R14 korrigiert den Ablauf des Persönlichen Impostors: Nach der letzten Eingabe wird zuerst die gemeinsame richtige Frage aufgedeckt, erst danach erscheinen die Antworten; die Impostor-Frage bleibt bis zur Auflösung geheim. Gleichzeitig wurden die aktiven Spielscreens auf die verbleibende Viewport-Höhe fixiert und primäre Spielaktionen in Circa, Classic, Wer bin ich? und Persönlicher Impostor konsequent am unteren Rand verankert.
+- Produktionsstand auf **V74R14** / Offline-Cache **r14** angehoben.
 
 
 ## V73

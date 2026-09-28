@@ -63,7 +63,7 @@
       <div id="handoffName" class="handoffName">Spieler</div>
       <p class="sub">Nur diese Person darf jetzt auf den Bildschirm schauen.</p>
     </div>
-    <button id="showQuestion" type="button" class="full handoffButton">Ich bin bereit</button>
+    <button id="showQuestion" type="button" class="full handoffButton personalEdgeAction">Ich bin bereit</button>
   </section>
 
   <section id="question" class="hidden gameScreen personalQuestionScreen">
@@ -77,17 +77,35 @@
     <div id="answerControl" class="personalAnswerWrap"></div>
     <div id="answerFormat" class="personalAnswerHint">Antwortformat wird aus der Frage übernommen.</div>
     <div id="answerError" class="notice" aria-live="polite"></div>
-    <button id="saveAnswer" type="button" class="full personalBottomButton">Antwort speichern</button>
+    <button id="saveAnswer" type="button" class="full personalBottomButton personalEdgeAction">Antwort speichern</button>
+  </section>
+
+  <section id="questionReveal" class="hidden gameScreen personalQuestionRevealScreen">
+    <div class="personalRevealHeader">
+      <div class="sectionEyebrow">GEMEINSAME FRAGE</div>
+      <h2>Welche Frage hatten die meisten?</h2>
+      <p>Jetzt darf jeder wieder auf den Bildschirm schauen.</p>
+    </div>
+    <div id="sharedQuestionCard" class="personalSharedQuestionCard concealed">
+      <div class="sectionEyebrow">RICHTIGE FRAGE</div>
+      <strong id="sharedQuestionText">?</strong>
+      <span id="sharedQuestionHint">Die Impostor-Frage bleibt weiterhin geheim.</span>
+    </div>
+    <button id="revealSharedQuestion" type="button" class="full personalBottomButton personalEdgeAction">Richtige Frage aufdecken</button>
   </section>
 
   <section id="answers" class="hidden gameScreen personalAnswersScreen">
     <div class="personalAnswersHeader">
       <div class="sectionEyebrow">EURE ANTWORTEN</div>
       <h2>Wer fällt auf?</h2>
-      <p>Diskutiert jetzt miteinander. Die beiden Fragen bleiben bis zur Auflösung geheim.</p>
+      <p>Vergleicht eure Antworten. Nur die Impostor-Frage bleibt bis zur Auflösung geheim.</p>
+    </div>
+    <div class="personalAnswersQuestion">
+      <small>GEMEINSAME FRAGE</small>
+      <strong id="answersSharedQuestion"></strong>
     </div>
     <div id="answersList" class="personalAnswersList"></div>
-    <button id="reveal" type="button" class="full personalBottomButton">Auflösung</button>
+    <button id="reveal" type="button" class="full personalBottomButton personalEdgeAction">Auflösung</button>
   </section>
 
   <section id="result" class="hidden gameScreen personalResultScreen">
@@ -106,7 +124,7 @@
         <strong id="impostorQuestion"></strong>
       </div>
     </div>
-    <div class="personalResultActions">
+    <div class="personalResultActions personalEdgeActions">
       <button id="backSetup" type="button" class="full secondary">Zum Start</button>
       <button id="nextRound" type="button" class="full">Nächste Runde</button>
     </div>

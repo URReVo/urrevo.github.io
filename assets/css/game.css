@@ -186,7 +186,7 @@ button:disabled{opacity:.4}
 .iconButton svg{width:22px;height:22px;display:block}
 
 /* Every game stage occupies only the remaining iPhone viewport. */
-.gameScreen:not(.hidden){flex:1 1 auto;min-height:0}
+.gameScreen:not(.hidden){flex:1 1 0;height:0;min-height:0}
 #handoff:not(.hidden),#question:not(.hidden),#normalReveal:not(.hidden),#answers:not(.hidden),#result:not(.hidden){
   display:flex;flex-direction:column
 }
@@ -235,6 +235,7 @@ button:disabled{opacity:.4}
 .stageHeader h2{margin:2px 0 4px}
 .stageHeader p{margin-bottom:7px}
 .stageButton{flex:0 0 48px}
+.confirmButton,.stageButton,.classicRoleButton,.classicResultActions,.resultActions{margin-top:auto!important}
 
 .normalRevealScreen{justify-content:flex-start}
 
