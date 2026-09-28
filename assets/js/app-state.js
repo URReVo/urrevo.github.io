@@ -1167,6 +1167,23 @@ function nearAchievementFeedback(before,unlockedIds){
   if(best)delete best.score;
   return best;
 }
+function buildProfileLevelFeedback(beforeMap,profileIds,eventId){
+  var levelUps=[];
+  (Array.isArray(profileIds)?profileIds:[]).forEach(function(id){
+    var before=beforeMap&&beforeMap[id],after=computeProfileLevel(id);
+    if(before&&after&&after.level.level>before.level.level)levelUps.push(after);
+  });
+  if(!levelUps.length)return null;
+  levelUps.sort(function(a,b){return b.level.level-a.level.level;});
+  var top=levelUps[0],message=top.name+" erreicht Level "+top.level.level+" · "+top.level.title;
+  if(levelUps.length>1)message=levelUps.length+" Spieler sind aufgestiegen · höchstes Level "+top.level.level;
+  return {
+    id:"profile-level-"+String(eventId||"event")+"-"+levelUps.map(function(item){return item.profileId+"-"+item.level.level;}).join("-"),
+    type:"profile-level",icon:"⭐️",title:levelUps.length>1?"Level-Ups!":"Level-Up!",
+    message:message,label:"PERSÖNLICHER FORTSCHRITT",intensity:top.level.level>=5?3:2
+  };
+}
+
 function buildRoundFeedback(round,session,context,unlockedItems,categoryUnlockedItems){
   var items=[],unlockedIds={},categoryUnlockedIds={};
   (unlockedItems||[]).forEach(function(item){unlockedIds[item.id]=true;});
@@ -1227,24 +1244,8 @@ function buildRoundFeedback(round,session,context,unlockedItems,categoryUnlocked
   }
 
   if(context.isNew){
-    var levelUps=[];
-    (round.players||[]).forEach(function(p){
-      var beforeLevel=context.profileLevelsBefore&&context.profileLevelsBefore[p.profileId];
-      var afterLevel=computeProfileLevel(p.profileId);
-      if(beforeLevel&&afterLevel&&afterLevel.level.level>beforeLevel.level.level){
-        levelUps.push(afterLevel);
-      }
-    });
-    if(levelUps.length){
-      levelUps.sort(function(a,b){return b.level.level-a.level.level;});
-      var top=levelUps[0],message=top.name+" erreicht Level "+top.level.level+" · "+top.level.title;
-      if(levelUps.length>1)message=levelUps.length+" Spieler sind aufgestiegen · höchstes Level "+top.level.level;
-      add({
-        id:"profile-level-"+round.roundKey+"-"+levelUps.map(function(item){return item.profileId+"-"+item.level.level;}).join("-"),
-        type:"profile-level",icon:"⭐️",title:levelUps.length>1?"Level-Ups!":"Level-Up!",
-        message:message,label:"PERSÖNLICHER FORTSCHRITT",intensity:top.level.level>=5?3:2
-      });
-    }
+    var profileLevelFeedback=buildProfileLevelFeedback(context.profileLevelsBefore,(round.players||[]).map(function(p){return p.profileId;}),round.roundKey);
+    if(profileLevelFeedback)add(profileLevelFeedback);
 
     var count=(session.rounds||[]).length;
     var milestone={5:1,10:2,20:3,30:2,50:3}[count];
@@ -1385,13 +1386,17 @@ function computeAwards(session){
 function endSession(){
   var s=data.activeSessionId&&sessionById(data.activeSessionId);
   if(!s||s.endedAt)return null;
-  var crewBefore=computeCrew(s.profileIds);
+  var crewBefore=computeCrew(s.profileIds),profileLevelsBefore={};
+  (s.profileIds||[]).forEach(function(id){profileLevelsBefore[id]=computeProfileLevel(id);});
   s.endedAt=now();s.awards=computeAwards(s);data.activeSessionId=null;
   var crewAfter=computeCrew(s.profileIds);
   var categoryUnlocked=evaluateCategoryUnlocks();
   var unlocked=evaluateAchievements();
   var crewFeedback=buildCrewFeedback(crewBefore,crewAfter);
-  var feedback=crewFeedback.length?crewFeedback:buildSessionFeedback(s);
+  var profileLevelFeedback=buildProfileLevelFeedback(profileLevelsBefore,s.profileIds,"session-"+s.id);
+  var feedback=crewFeedback.slice();
+  if(profileLevelFeedback)feedback.push(profileLevelFeedback);
+  if(!feedback.length)feedback=buildSessionFeedback(s);
   save();
   emitAchievementUnlocks(unlocked);
   emitCategoryUnlocks(categoryUnlocked);
