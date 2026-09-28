@@ -478,6 +478,60 @@ function crewLevelInfo(xp){
   var title=level>=10?"Legendäre Runde":level>=7?"Stammcrew":level>=4?"Eingespielt":level>=2?"Auf Kurs":"Neue Crew";
   return {level:level,title:title,xp:xp,startXp:start,nextXp:next,progress:Math.max(0,Math.min(1,into/span)),remaining:Math.max(0,next-xp)};
 }
+function profileXpBreakdown(st){
+  st=st&&typeof st==="object"?st:baseProfileStats();
+  var games=["circaRounds","classicRounds","whoamiRounds","charadesRounds","personalRounds"].filter(function(key){return Number(st[key])>0;}).length;
+  var content=uniqueContentCount(st);
+  var breakdown={
+    rounds:Math.max(0,Number(st.rounds)||0)*2,
+    variety:games*5,
+    discovery:Math.floor(content/10)*2,
+    precision:Math.max(0,Number(st.perfect)||0)*5,
+    escapes:Math.max(0,Number(st.impostorEscapes)||0)*2,
+    charades:Math.floor(Math.max(0,Number(st.charadesCorrect)||0)/10)*2
+  };
+  breakdown.total=Object.keys(breakdown).reduce(function(total,key){return key==="total"?total:total+breakdown[key];},0);
+  return breakdown;
+}
+function profileLevelInfoFromStats(st){
+  var breakdown=profileXpBreakdown(st),base=crewLevelInfo(breakdown.total),level=base.level;
+  var title=level>=15?"Ikone":level>=10?"Legende":level>=7?"Spielmacher":level>=4?"Routinier":level>=2?"Mitspieler":"Neuling";
+  return {
+    level:level,title:title,xp:base.xp,startXp:base.startXp,nextXp:base.nextXp,
+    progress:base.progress,remaining:base.remaining,breakdown:breakdown
+  };
+}
+function getProfileLevel(id){
+  id=String(id||"");
+  if(!profileById(id)&&!data.profileArchive[id])return null;
+  return clone(profileLevelInfoFromStats(data.profileStats[id]||baseProfileStats()));
+}
+function profileLevelFeedback(round,context){
+  if(!context||!context.isNew)return null;
+  var changes=[],seen={};
+  (round.players||[]).forEach(function(player){
+    var id=player.profileId;if(!id||seen[id])return;seen[id]=true;
+    var before=profileLevelInfoFromStats(context.beforeProfiles[id]||baseProfileStats());
+    var after=profileLevelInfoFromStats(data.profileStats[id]||baseProfileStats());
+    if(after.level>before.level)changes.push({id:id,name:profileDisplayName(id),before:before,after:after});
+  });
+  if(!changes.length)return null;
+  changes.sort(function(a,b){return b.after.level-a.after.level;});
+  if(changes.length===1){
+    var change=changes[0];
+    return {
+      id:"profile-level-"+round.roundKey+"-"+change.id+"-"+change.after.level,
+      type:"profile-level",icon:"⭐",title:change.name+" · LVL "+change.after.level,
+      message:change.after.title+" · "+change.after.xp+" XP",label:"LEVEL-UP",intensity:2
+    };
+  }
+  return {
+    id:"profile-level-"+round.roundKey+"-"+changes.map(function(change){return change.id+"-"+change.after.level;}).join("-"),
+    type:"profile-level",icon:"⭐",title:changes.length+"× Level-Up",
+    message:changes.slice(0,3).map(function(change){return change.name+" · LVL "+change.after.level;}).join(" · "),
+    label:"LEVEL-UP",intensity:2
+  };
+}
 function crewChallengeDefs(stats){
   return [
     {id:"reunion-3",icon:"🤝",title:"Wiedersehen",text:"Schließt 3 gemeinsame Spieleabende ab.",current:stats.sessions,target:3},
@@ -1198,6 +1252,8 @@ function buildRoundFeedback(round,session,context,unlockedItems,categoryUnlocked
       message:"Alle fünf Spielmodi in einer Session gespielt.",intensity:3
     });
 
+    var levelUp=profileLevelFeedback(round,context);
+    if(levelUp)add(levelUp);
     var near=nearAchievementFeedback(context.achievementBefore,unlockedIds);
     if(near)add(near);
   }
@@ -1954,6 +2010,7 @@ window.CIAppState={
   getActiveSession:getActiveSession,
   getStats:getStats,
   getProfileStats:getProfileStats,
+  getProfileLevel:getProfileLevel,
   getUsageStats:getUsageStats,
   getCrew:getCrew,
   getCrews:getCrews,
