@@ -1,107 +1,39 @@
-# Imposter Games Prototype
+# Imposter Games · Party Makeover Prototype
 
-Isolierter Arbeitsstand auf Basis des aktuellen produktiven **V73R14**-Stands.
+Isolierter Design- und UX-Prototyp auf Basis des produktiven **V74R22**-Stands.
 
-Basis-Commit vor dieser Änderung: `b4f47f70125da2b85bc7f0fa7d27254ceb9f18ab`
+Basis-main vor dem Makeover: `a3bc63b49ce06afcc3738e3a67e4280f3201e268`
 
 URL: `/experiments/prototype/`
 
-## Aktueller Prototyp
+## Stand P1
 
-Zusätzlich zu den vier produktiven Modi enthält der Prototyp den neuen Modus **Persönlicher Impostor**:
+Der Prototyp ist technisch auf den aktuellen Produktionsumfang gebracht. Enthalten sind alle fünf Spiele, Profile, Presets, Sessions, Statistiken, Spielzeit, persönliche Level, Crew-Level, Achievements, Kategorie-Freischaltungen, Challenges/Tickets, Feedback/Next Goals, DEV-Tools, Progress Integrity V1 und der Strict Backup Import V3 aus V74R22.
 
-- 3–12 Spieler
-- keine Kategorien
-- alle normalen Spieler erhalten dieselbe persönliche Alltagsfrage
-- der Impostor erhält eine thematisch deutlich andere Frage mit kompatiblem Antwortformat
-- jeder antwortet geheim für sich
-- danach werden nur alle Antworten gemeinsam gezeigt
-- keine Abstimmung in der App
-- Auflösung zeigt Impostor, normale Frage und Impostor-Frage
-- 100 kuratierte Fragepaare im Prototyp-Pool, davon 11 echte Freitext-Paare
+## Party Makeover P1
+
+- swipebare **Game Stage** statt statischem Kartenraster
+- dynamische Farbwelt je Spiel
+- größere Typografie und weniger „Standard-Overlay“-Anmutung
+- atmosphärische Lichtflächen und subtile Bewegung
+- neu inszenierter Launcher-Hero
+- schwebende Navigation und modernisierte Bottom Sheets
+- stärker inszenierte Spielkarten, Reveal-Flächen und Primäraktionen
+- gemeinsame visuelle Sprache über alle fünf Spiele
+- Safe-Area-, Touch- und Reduced-Motion-Unterstützung
 
 ## Isolation
 
+Der Prototyp darf Produktionsdaten weder lesen noch überschreiben:
+
 - App-State: `imposterGames.prototype.appState.v1`
+- DEV-State: `imposterGames.prototype.devState.v1`
 - Game-State: `imposterGames.prototype.game.*`
-- persönlicher Modus: `imposterGames.prototype.game.personal.*`
-- eigener Service-Worker-Scope: `/experiments/prototype/`
-- eigener Cache: `imposter-games-prototype-*`
-- eigenes Backup-Format: `imposter-games-prototype-backup`
-- keine automatische Übernahme von V72- oder Produktionsdaten
+- Integrity IndexedDB: `imposterGames.prototype.progressIntegrity.v1`
+- Integrity-Marker: `imposterGames.prototype.progressIntegrity.marker.v1`
+- Service-Worker-Scope: `/experiments/prototype/`
+- Cache: `imposter-games-prototype-*`
+- Backup-Format: `imposter-games-prototype-backup`
+- keine automatische Übernahme alter Produktions-/V72-Daten
 
-Die Produktivseite im Repository-Root bleibt durch diese Änderungen unangetastet.
-
-## Gemeinsame Sessions und Statistik
-
-Im Prototyp werden jetzt alle fünf Spiele in derselben Session-Historie erfasst.
-
-- aktive Session zeigt aktuellen Spielmodus, Laufzeit und aktuellen Spielstatus
-- Wer bin ich?: Runden und verteilte Begriffe
-- Scharade: richtige / übersprungene Begriffe, Durchschnitt und persönlicher Bestwert
-- Persönlicher Impostor: gespielte Fragepaare und Impostor-Einsätze
-- Achievements u. a. für alle fünf Modi, Scharade-Leistungen, Impostor-Häufigkeit und lange Sessions
-- Session-Awards berücksichtigen zusätzlich Scharade-Leistungen
-
-## Presets V2
-
-Eigene Presets speichern im Prototyp jetzt eine vollständige Spielkonfiguration:
-
-- alle fünf Spielmodi auswählbar
-- konkrete lokale Spielerprofile statt nur einer Spielerzahl
-- beliebige Mehrfachauswahl von Kategorien; `Alle` bleibt exklusiv
-- Circa: Schwierigkeit
-- Classic: Hinweis + Diskussionstimer
-- Scharade: Kategorien + Zeit pro Spieler
-- Wer bin ich?: Kategorien
-- Persönlicher Impostor: Spieler ohne künstliche Kategorien
-
-Die Statistik-Karten haben zusätzlich feste Bezeichnungen oberhalb jeder Kennzahl, damit der Wert ohne Kontextwechsel verständlich bleibt.
-
-## Audit 2026-09-27
-
-- Presets ohne feste Profile überschreiben jetzt auch bei bereits gespeicherten Spielern zuverlässig die Spielerzahl.
-- Scharade fragt vor dem Stoppen von Timer/Sensor nach, ob die Partie wirklich verlassen werden soll.
-- Wer bin ich? und Persönlicher Impostor warnen vor dem Verlassen einer laufenden Runde.
-- Web Audio der drei neuen Modi wird nach echtem Touch sowie nach App-/Tab-Rückkehr wieder aufgenommen, analog zu Circa/Classic.
-- Scharade synchronisiert zusätzlich den zugänglichen Sound-Button-Text.
-
-- Numerische Antworten respektieren jetzt auch den definierten Schritt: Ganzzahlen bleiben ganzzahlig, 1–10 und Prozent akzeptieren keine Zwischenwerte, Stunden können z. B. 0,5-Schritte nutzen.
-
-## Multi-Game-Presets und Spielzeit
-
-- Eigene Presets können jetzt mehrere Spielmodi gleichzeitig enthalten.
-- Jedes ausgewählte Spiel besitzt innerhalb des Presets seine eigene Kategorie-/Timer-/Schwierigkeitskonfiguration.
-- Beim Öffnen eines Multi-Game-Presets wird der gewünschte Modus direkt aus dem Preset gewählt.
-- Die PWA erfasst sichtbare Vordergrundzeit geräteweit: App insgesamt sowie getrennt für alle fünf Spielmodi.
-- Hintergrundzeit, Lockscreen und lange inaktive Browser-Gaps werden nicht als Spielzeit gewertet.
-- Spielzeit wird im Statistikbereich in Minuten bzw. Stunden angezeigt und ist Bestandteil des V3-Backups.
-
-- Spielzeit-Herzschlag korrigiert: Der aktive Zeitstempel bleibt während einer sichtbaren Seite erhalten; gespeicherte oder importierte Laufzeitstempel werden beim Neustart weiterhin verworfen.
-
-## Preset-Spieler direkt anlegen
-
-Korrektur der Preset-Idee:
-
-- Ein Preset enthält wieder genau einen Spielmodus.
-- Im Preset-Menü „Wer spielt mit?“ kann über „Neuen Spieler anlegen“ direkt ein lokales Profil erstellt werden.
-- Der neue Spieler wird automatisch für das aktuelle Preset ausgewählt.
-- Das neu angelegte Preset-Profil ersetzt nicht ungefragt das aktuell ausgewählte Hauptprofil im Launcher.
-- Nach Speichern oder Abbrechen geht es direkt zurück zur Preset-Spielerauswahl.
-- Die geräteweite Spielzeitstatistik aus r26 bleibt erhalten.
-
-## Achievement-Ausbau
-
-Die Sammlung wurde erweitert. Bestehende Achievement-IDs bleiben erhalten.
-
-Neue Bereiche:
-- Gesamtmeilensteine bei 10 und 50 Runden
-- 20 Runden in einer Session
-- 3 bzw. alle 5 Spielmodi in einer Session
-- 25-Runden-Meilensteine für jeden Spielmodus
-- 25 Impostor-Einsätze und 10 erfolgreiche Fluchten
-- 100 richtige Scharade-Begriffe und 5 saubere Scharade-Runden
-- Circa-Präzision: 20 Schätzungen bei höchstens 10 % Durchschnittsfehler
-- 100 unterschiedliche Inhalte erlebt
-- globale Spielzeit-Meilensteine bei 1, 5 und 10 Stunden sichtbarer App-Zeit
-- Statistik zeigt jetzt freigeschaltete Achievements als X / Y
+Das Makeover bleibt zunächst im Testbereich. Eine Übernahme nach Produktion erfolgt erst nach separater Freigabe.

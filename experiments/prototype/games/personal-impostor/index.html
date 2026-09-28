@@ -11,11 +11,13 @@
 <link rel="apple-touch-icon" sizes="180x180" href="../../circa_impostor_detective_icon_180.png">
 <link rel="icon" type="image/png" sizes="180x180" href="../../circa_impostor_detective_icon_180.png">
 <link rel="manifest" href="../../manifest.webmanifest">
-<link rel="stylesheet" href="../../assets/css/game.css?v=73">
-<link rel="stylesheet" href="../../assets/css/personal-impostor.css?v=73">
-<title>Persönlicher Impostor · Prototyp V73</title>
+<link rel="stylesheet" href="../../assets/css/game.css?v=74">
+<link rel="stylesheet" href="../../assets/css/app-ui.css?v=74">
+<link rel="stylesheet" href="../../assets/css/personal-impostor.css?v=74">
+<title>Persönlicher Impostor · V74</title>
+<link rel="stylesheet" href="../../assets/css/party-makeover.css?v=74p1">
 </head>
-<body data-game="personal-impostor" class="booting" aria-busy="true">
+<body data-game="personal-impostor" class="booting party-makeover party-game" aria-busy="true">
 <div class="app" id="app">
   <div id="gameTopbar" class="gameTopbar hidden">
     <div class="toolbarLeft"><div class="toolbarBadge">Persönlich</div><div id="topRound" class="toolbarBadge roundBadge">R1</div></div>
@@ -34,12 +36,12 @@
     <div class="hero center personalSetupHero">
       <div class="personalLogo" aria-hidden="true">💬</div>
       <h1>Persönlicher Impostor</h1>
-      <p class="sub">Alle beantworten dieselbe persönliche Frage – nur der Impostor bekommt heimlich eine ganz andere.</p>
+      <p class="sub">Alle beantworten dieselbe persönliche Frage – nur der Impostor bekommt heimlich eine andere, aber vergleichbare.</p>
     </div>
 
     <div class="personalInfoCard">
       <div class="personalInfoIcon">↔</div>
-      <div><strong>Absichtlich weit auseinander</strong><span>Die beiden Fragen haben denselben Antworttyp, springen aber bewusst zwischen völlig verschiedenen Alltagsthemen.</span></div>
+      <div><strong>Anders, aber vergleichbar</strong><span>Die beiden Fragen haben denselben Antworttyp und unterschiedliche Themen, ihre typischen Antworten sollen sich aber plausibel überschneiden.</span></div>
     </div>
 
     <div class="row between playerControlsRow">
@@ -52,8 +54,8 @@
     <div id="names"></div>
     <button id="start" type="button" class="full">Spiel starten</button>
     <div id="error" class="notice" aria-live="polite"></div>
-    <div id="poolCount" class="count">89 Fragepaare</div>
-    <div class="savedHint">Spieler &amp; Frage-Fortschritt bleiben nur im Prototyp gespeichert</div>
+    <div id="poolCount" class="count">100 Fragepaare</div>
+    <div class="savedHint">Spieler &amp; Frage-Fortschritt werden lokal auf diesem Gerät gespeichert</div>
   </section>
 
   <section id="handoff" class="hidden gameScreen personalHandoffScreen">
@@ -76,17 +78,35 @@
     <div id="answerControl" class="personalAnswerWrap"></div>
     <div id="answerFormat" class="personalAnswerHint">Antwortformat wird aus der Frage übernommen.</div>
     <div id="answerError" class="notice" aria-live="polite"></div>
-    <button id="saveAnswer" type="button" class="full personalBottomButton">Antwort speichern</button>
+    <button id="saveAnswer" type="button" class="full confirmButton">Antwort speichern</button>
+  </section>
+
+  <section id="questionReveal" class="hidden gameScreen personalQuestionRevealScreen">
+    <div class="personalRevealHeader">
+      <div class="sectionEyebrow">GEMEINSAME FRAGE</div>
+      <h2>Welche Frage hatten die meisten?</h2>
+      <p>Jetzt darf jeder wieder auf den Bildschirm schauen.</p>
+    </div>
+    <div id="sharedQuestionCard" class="personalSharedQuestionCard concealed">
+      <div class="sectionEyebrow">RICHTIGE FRAGE</div>
+      <strong id="sharedQuestionText">?</strong>
+      <span id="sharedQuestionHint">Die Impostor-Frage bleibt weiterhin geheim.</span>
+    </div>
+    <button id="revealSharedQuestion" type="button" class="full stageButton">Richtige Frage aufdecken</button>
   </section>
 
   <section id="answers" class="hidden gameScreen personalAnswersScreen">
     <div class="personalAnswersHeader">
       <div class="sectionEyebrow">EURE ANTWORTEN</div>
       <h2>Wer fällt auf?</h2>
-      <p>Diskutiert jetzt miteinander. Die beiden Fragen bleiben bis zur Auflösung geheim.</p>
+      <p>Vergleicht eure Antworten. Nur die Impostor-Frage bleibt bis zur Auflösung geheim.</p>
+    </div>
+    <div class="personalAnswersQuestion">
+      <small>GEMEINSAME FRAGE</small>
+      <strong id="answersSharedQuestion"></strong>
     </div>
     <div id="answersList" class="personalAnswersList"></div>
-    <button id="reveal" type="button" class="full personalBottomButton">Auflösung</button>
+    <button id="reveal" type="button" class="full stageButton">Auflösung</button>
   </section>
 
   <section id="result" class="hidden gameScreen personalResultScreen">
@@ -105,14 +125,15 @@
         <strong id="impostorQuestion"></strong>
       </div>
     </div>
-    <div class="personalResultActions">
+    <div id="resultActions" class="grid2 resultActions">
       <button id="backSetup" type="button" class="full secondary">Zum Start</button>
       <button id="nextRound" type="button" class="full">Nächste Runde</button>
     </div>
   </section>
 </div>
-<script src="../../assets/js/app-state.js?v=73"></script>
-<script src="../../assets/js/personal-impostor.js?v=73"></script>
-<script src="../../assets/js/pwa.js?v=73"></script>
+<script src="../../assets/js/app-state.js?v=74"></script>
+<script src="../../assets/js/pwa.js?v=74"></script>
+<script src="../../assets/js/personal-impostor.js?v=74"></script>
+<script src="../../assets/js/party-makeover.js?v=74p1"></script>
 </body>
 </html>
