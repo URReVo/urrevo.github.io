@@ -13,7 +13,8 @@
 - V74R2 behebt Statistik-/Profil-/Preset-Regressionsfehler, repariert verunreinigte Circa-Kategorien und vereinheitlicht Rundenschutz sowie Beschriftungen.
 - V74R3 sortiert Achievements in der Statistik nach benötigter Zielmenge.
 - V74R4 ergänzt geschützte Launcher-DEV-Tools für Statistik, Spielzeit, Achievements, Content-Fortschritt und Sessions und erweitert die Release-Validierung um Content-Qualitäts- und Logiktests.
-- Produktionsstand auf **V74R4** / Offline-Cache **r4** angehoben.
+- V74R5 bündelt das App-Feeling in einer gemeinsamen UI-Schicht: Touch-Pressed-Feedback, weichere Navigation, Toasts, Achievement-Unlock-Hinweise, explizite In-App-Updates, animierte Launcher-Tabs, Swipe-down-Sheets und eine persistente Mini-Session-Leiste.
+- Produktionsstand auf **V74R5** / Offline-Cache **r5** angehoben.
 
 
 ## V73
