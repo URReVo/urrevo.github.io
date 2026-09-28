@@ -35,7 +35,7 @@ jobs:
           CHROME="$(command -v google-chrome || command -v chromium-browser || command -v chromium || true)"
           test -n "$CHROME"
           export CHROME
-          cat > /tmp/compare-baseline.mjs <<'NODE'
+          cat > compare-baseline.mjs <<'NODE'
           import puppeteer from "puppeteer-core";
           import pixelmatch from "pixelmatch";
           import {PNG} from "pngjs";
@@ -79,4 +79,5 @@ jobs:
           }
           await browser.close();
           NODE
-          node /tmp/compare-baseline.mjs
+          node compare-baseline.mjs
+          rm compare-baseline.mjs
