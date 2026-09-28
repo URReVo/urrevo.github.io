@@ -192,6 +192,8 @@ assert(manifest.description.includes("Wer bin ich?")&&manifest.description.inclu
 const readme=read("README.md");
 assert(!readme.includes("\\n"),"README contains literal \\n text");
 assert(["Circa Imposter","Klassisches Imposter","Wer bin ich?","Scharade","Persönlicher Impostor"].every(name=>readme.includes(name)),"README must describe the five-game app");
+const changelog=read("CHANGELOG.md");
+assert(changelog.includes("V74R4")&&changelog.includes("Offline-Cache **r4**"),"V74R4 changelog entry missing");
 
 const appStateSource=read("assets/js/app-state.js");
 const launcherSource=read("assets/js/launcher.js");
@@ -264,6 +266,7 @@ assert(html["index.html"].includes("DAVON · PERSÖNLICH"),"launcher Personal Im
 assert(html["index.html"].includes("Profile, Presets, Sessions, Statistik, Spielzeit"),"launcher backup/reset copy missing V74R4 data scope");
 assert(html["index.html"].includes('id="launcherDevTrigger"'),"launcher DEV trigger missing");
 assert(html["index.html"].includes('id="launcherDevPanelOverlay"'),"launcher DEV panel missing");
+assert(launcherCss.includes(".launcherDevOverlay")&&launcherCss.includes(".launcherDevAchievements"),"launcher DEV styles missing");
 assert(launcherSource.includes("function launcherSoundEnabled()"),"launcher sound preference guard missing");
 assert(launcherSource.includes("function uiSound(kind)"),"launcher UI sound generator missing");
 assert(launcherSource.includes("function navigateWithSound(href)"),"launcher start-sound navigation missing");
