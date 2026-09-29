@@ -49,6 +49,11 @@
 - Die DEV-Tools enthalten einen **Reminder-Test**: Nach Auswahl wird beim nächsten Verlassen der App sofort dieselbe Systembenachrichtigungsstrecke ausgelöst, damit Berechtigung, Darstellung und Rücksprung ohne zehn Minuten Wartezeit geprüft werden können.
 - Die 10-Minuten-Erinnerung der reinen PWA bleibt technisch Best-Effort: Browser dürfen Hintergrund-JavaScript einfrieren, insbesondere iOS. Für garantiert zeitgenaue Zustellung im Hintergrund ist später Web Push mit Sender oder die native iOS-App erforderlich.
 - Produktionsstand auf **V74R24** / Offline-Cache **r24** angehoben.
+- V74R25 macht den DEV-Test der Spielerinnerung aussagekräftiger: Statt nur einen Test scharfzuschalten, öffnet „Reminder-Vorschau“ zuerst eine kompakte Spieleransicht mit exakt dem Titel und Text der späteren Systembenachrichtigung. Eine aktive Session kann direkt übernommen werden; alternativ stehen realistische Beispiele für alle fünf Spiele bereit. Von dort lässt sich der echte Systemtest beim Verlassen starten – ohne sichtbare DEV-Markierung in der Spieler-Benachrichtigung.
+- Die Einstellung „Spielerinnerung“ ist bewusst als Spieleinstellung formuliert: **„Erinnert nach 10 Min. an eine offene Session“**. Browser-/Berechtigungsdetails werden dort nicht mehr angezeigt.
+- Aktive Sessions werden nach **60 Minuten ohne Spielaktivität** automatisch abgeschlossen. Beim Wechsel zurück in die App, beim nächsten Spielstart und zusätzlich während längerer Vordergrund-Inaktivität wird geprüft. Leere vergessene Sessions werden verworfen; Sessions mit Runden enden am letzten echten Aktivitätszeitpunkt, damit stundenlang offen gelassene Sessions keine künstlich lange Session-Dauer und damit kein Marathon-Achievement erzeugen.
+- Ein alter Reminder kann nach dieser Grenze keine abgelaufene Session wieder öffnen; stattdessen bleibt der Spieler im Launcher und bekommt einen kurzen normalen Hinweis.
+- Produktionsstand auf **V74R25** / Offline-Cache **r25** angehoben.
 
 
 ## V73
