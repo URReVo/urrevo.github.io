@@ -135,3 +135,72 @@ body.game-active .ciToastHost{top:calc(12px + env(safe-area-inset-top));bottom:a
 }
 .reduceExperimentMotion .ciFeedbackHero,.reduceExperimentMotion .ciFeedbackHeroCard,.reduceExperimentMotion .ciFeedbackHeroIcon,.reduceExperimentMotion .ciFeedbackBurst i,
 .experimentReduceMotion .ciFeedbackHero,.experimentReduceMotion .ciFeedbackHeroCard,.experimentReduceMotion .ciFeedbackHeroIcon,.experimentReduceMotion .ciFeedbackBurst i{animation:none!important}
+
+
+/* V74R25 DEV player-facing session reminder preview */
+.ciReminderPreviewOverlay{
+  position:fixed;z-index:14500;inset:0;display:flex;align-items:flex-end;justify-content:center;
+  background:rgba(0,0,0,.6);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)
+}
+.ciReminderPreviewOverlay.hidden{display:none}
+.ciReminderPreviewSheet{
+  width:min(100%,560px);max-height:90dvh;overflow:auto;
+  padding:7px 17px calc(20px + env(safe-area-inset-bottom));
+  border-radius:27px 27px 0 0;border:1px solid rgba(255,255,255,.09);
+  background:#292a2f;box-shadow:0 -26px 70px rgba(0,0,0,.44);
+  animation:ciProgressIn var(--ci-motion-slow) var(--ci-ease)
+}
+.ciReminderPreviewHandle{width:38px;height:4px;margin:2px auto 13px;border-radius:99px;background:#56575d}
+.ciReminderPreviewHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.ciReminderPreviewHeader h2{margin:3px 0 0;font-size:21px;line-height:1.12}
+.ciReminderPreviewEyebrow{display:block;color:#8e9097;font-size:8px;font-weight:950;letter-spacing:.85px}
+.ciReminderPreviewClose{
+  width:36px;height:36px;border:0;border-radius:12px;background:#393a3f;color:#eee;font-size:22px;line-height:1
+}
+.ciReminderPreviewIntro{margin:10px 0 13px;color:#a4a6ab;font-size:9px;line-height:1.5}
+.ciReminderPreviewPicker{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.ciReminderPreviewPicker>span{color:#85878d;font-size:8px;font-weight:950;letter-spacing:.7px}
+.ciReminderPreviewPicker select{
+  width:100%;height:43px;padding:0 12px;border-radius:13px;
+  border:1px solid rgba(255,255,255,.08);background:#222328;color:#eee;
+  font:inherit;font-size:10px;font-weight:850;outline:none
+}
+.ciReminderNotification{
+  padding:11px 12px 13px;border-radius:21px;
+  background:rgba(246,246,248,.94);color:#151518;
+  border:1px solid rgba(255,255,255,.42);
+  box-shadow:0 14px 42px rgba(0,0,0,.27),inset 0 1px 0 rgba(255,255,255,.6);
+  backdrop-filter:blur(25px);-webkit-backdrop-filter:blur(25px)
+}
+.ciReminderNotificationTop{display:flex;align-items:center;gap:5px;color:#6e6e73;font-size:8px;line-height:1}
+.ciReminderNotificationTop strong{font-size:8px;letter-spacing:.1px;color:#5e5e63}
+.ciReminderNotificationIcon{width:19px;height:19px;border-radius:5px;object-fit:cover;margin-right:2px}
+.ciReminderNotificationTitle{margin-top:9px;font-size:13px;font-weight:850;letter-spacing:-.15px;line-height:1.22}
+.ciReminderNotificationBody{margin-top:3px;color:#3f3f44;font-size:10px;line-height:1.4}
+.ciReminderPreviewTap{
+  display:flex;align-items:flex-start;gap:8px;margin:10px 2px 0;
+  color:#91939a;font-size:8px;line-height:1.45
+}
+.ciReminderPreviewTap>span:first-child{
+  width:22px;height:22px;flex:0 0 22px;border-radius:8px;display:grid;place-items:center;
+  background:rgba(255,255,255,.055);color:#c2c3c6;font-size:11px;font-weight:900
+}
+.ciReminderPreviewActions{display:grid;grid-template-columns:1.45fr 1fr;gap:8px;margin-top:14px}
+.ciReminderPreviewActions button{min-height:46px;border-radius:14px;font-size:9px;font-weight:950}
+.ciReminderPreviewPrimary{
+  border:1px solid rgba(243,154,50,.38);background:rgba(243,154,50,.16);color:#efbd85
+}
+.ciReminderPreviewSecondary{border:1px solid rgba(255,255,255,.08);background:#38393e;color:#ddd}
+@media(prefers-color-scheme:dark){
+  .ciReminderNotification{
+    background:rgba(53,53,57,.95);color:#fff;border-color:rgba(255,255,255,.11);
+    box-shadow:0 14px 42px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.07)
+  }
+  .ciReminderNotificationTop,.ciReminderNotificationTop strong{color:#b6b6bb}
+  .ciReminderNotificationBody{color:#d2d2d6}
+}
+@media(max-width:380px){
+  .ciReminderPreviewActions{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){.ciReminderPreviewSheet{animation:none!important}}
+.reduceExperimentMotion .ciReminderPreviewSheet,.experimentReduceMotion .ciReminderPreviewSheet{animation:none!important}

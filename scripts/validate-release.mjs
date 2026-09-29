@@ -216,7 +216,7 @@ const readme=read("README.md");
 assert(!readme.includes("\\n"),"README contains literal \\n text");
 assert(["Circa Imposter","Klassisches Imposter","Wer bin ich?","Scharade","Persönlicher Impostor"].every(name=>readme.includes(name)),"README must describe the five-game app");
 const changelog=read("CHANGELOG.md");
-assert(changelog.includes("V74R24")&&changelog.includes("Offline-Cache **r24**"),"V74R24 changelog entry missing");
+assert(changelog.includes("V74R25")&&changelog.includes("Offline-Cache **r25**"),"V74R25 changelog entry missing");
 
 const appStateSource=read("assets/js/app-state.js");
 const launcherSource=read("assets/js/launcher.js");
@@ -240,6 +240,9 @@ assert(appStateSource.includes('var KEY="imposterGames.appState.v1"'),"productio
 assert(appStateSource.includes('BACKUP_FORMAT="imposter-games-backup"'),"production backup format missing");
 assert(appStateSource.includes("sessionReminders:true"),"session reminder default-on preference missing");
 assert(appStateSource.includes('"sessionReminders"'),"session reminder preference persistence missing");
+assert(appStateSource.includes("SESSION_IDLE_TIMEOUT_MS=60*60*1000"),"one-hour inactive session timeout missing");
+assert(appStateSource.includes("function expireInactiveSession()"),"inactive session expiry API missing");
+assert(appStateSource.includes("touchSessionActivity(session"),"session activity tracking missing");
 assert(engineSource.includes('EXP_STORAGE="imposterGames.v74.game."'),"V74 isolated game storage missing");
 assert(!appStateSource.includes("imposterGames.prototype."),"production app-state must not reference prototype storage");
 assert(!engineSource.includes("imposterGames.prototype."),"production game engine must not reference prototype storage");
@@ -327,7 +330,7 @@ for(const obsoletePrototypeFile of [
 ]){
   assert(!fs.existsSync(path.join(root,obsoletePrototypeFile)),"obsolete prototype makeover asset still present: "+obsoletePrototypeFile);
 }
-assert(prototypeSwSource.includes('CACHE_REVISION="r24-baseline"'),"prototype baseline cache revision missing");
+assert(prototypeSwSource.includes('CACHE_REVISION="r25-baseline"'),"prototype baseline cache revision missing");
 assert(!prototypeSwSource.includes("party-makeover")&&!prototypeSwSource.includes("party-launcher-p3"),"prototype service worker still caches discarded makeover assets");
 const prototypeManifest=JSON.parse(read("experiments/prototype/manifest.webmanifest"));
 assert(prototypeManifest.start_url==="/experiments/prototype/"&&prototypeManifest.scope==="/experiments/prototype/","prototype manifest lost isolated scope");
@@ -367,7 +370,7 @@ assert(whoCss.includes(".whoViewerScreen .whoBottomButton{margin-top:auto}"),"R1
 assert(!html["index.html"].includes("--profile-progress:0deg"),"R15 launcher avatar must not carry inline progress paint");
 assert(!launcherSource.includes('byId("headerAvatar").style.setProperty("--profile-progress"'),"R15 launcher must not repaint the header avatar with XP progress");
 assert(!launcherCss.includes("conic-gradient(var(--accent) var(--profile-progress")&&launcherCss.includes("background:#37383d;")&&launcherCss.includes("margin-bottom:10px"),"R15 launcher avatar/hero spacing fix missing");
-assert(sw.includes('const CACHE_REVISION="r24"'),"V74 cache revision mismatch");
+assert(sw.includes('const CACHE_REVISION="r25"'),"V74 cache revision mismatch");
 assert(sw.includes('versioned("/assets/js/launcher-dev.js")'),"service worker launcher DEV cache missing");
 assert(appStateSource.includes("var BACKUP_VERSION=3"),"backup format v3 missing");
 assert(appStateSource.includes('INTEGRITY_DB_NAME="imposterGames.progressIntegrity.v1"'),"R17 progress-integrity IndexedDB namespace missing");
@@ -413,6 +416,12 @@ assert(pwaSource.includes("SESSION_REMINDER_DELAY_MS=10*60*1000"),"10-minute ses
 assert(pwaSource.includes('action==="session-reminder"'),"DEV session reminder test missing");
 assert(pwaSource.includes("Notification.requestPermission"),"session reminder permission flow missing");
 assert(pwaSource.includes("showNotification"),"session reminder system notification delivery missing");
+assert(pwaSource.includes("function openReminderDevPreview()"),"realistic DEV reminder preview missing");
+assert(pwaSource.includes("Systemtest beim Verlassen"),"DEV reminder system-test action missing");
+assert(pwaSource.includes("function expireInactiveSessionIfNeeded("),"foreground/resume session expiry check missing");
+assert(appUiCss.includes(".ciReminderNotification")&&appUiCss.includes(".ciReminderPreviewSheet"),"DEV reminder preview styling missing");
+assert(launcherSource.includes('hint.textContent="Erinnert nach 10 Min. an eine offene Session"'),"player-facing reminder settings copy missing");
+assert(!launcherSource.includes("Systemfreigabe beim ersten Einsatz"),"technical reminder permission copy leaked into player settings");
 assert(launcherSource.includes("function uiSound(kind)"),"launcher UI sound generator missing");
 assert(launcherSource.includes("function navigateWithSound(href)"),"launcher start-sound navigation missing");
 assert(launcherSource.includes("store.getPreferences().sound!==false"),"launcher sound is not tied to global preference");
@@ -731,6 +740,40 @@ assert(JSON.parse(v73Storage.storage.getItem("imposterGames.v74.game.classic.tim
 assert(JSON.parse(v73Storage.storage.getItem("imposterGames.v74.game.whoami.deck.v1")).Alle[0]===who.items[0].id,"V73 WhoAmI storage was not copied to V74");
 assert(JSON.parse(v73Storage.storage.getItem("imposterGames.v74.game.charades.deck.v1")).Alle[0]===charades.items[0].id,"V73 Scharade storage was not copied to V74");
 assert(v73Storage.storage.getItem("imposterGames.v73.game.circa.deckProgress.v1")!==null,"V73 source storage must remain untouched");
+
+/* R25: a forgotten active session must end at its last real activity, not at the current wall clock. */
+const staleProfileId="player_stale";
+const staleSeed={
+  schemaVersion:1,
+  selectedProfileId:staleProfileId,
+  primaryProfileId:staleProfileId,
+  profiles:[{id:staleProfileId,name:"Stale Test",avatar:"😎",createdAt:"2020-01-01T00:00:00.000Z"}],
+  profileStats:{[staleProfileId]:{rounds:1,circaRounds:1,classicRounds:0,whoamiRounds:0,charadesRounds:0,personalRounds:0,impostor:0,personalImpostor:0,impostorEscapes:0,closest:0,farthest:0,perfect:0,errorSum:10,errorSamples:1,charadesCorrect:0,charadesSkipped:0,charadesTurns:0,charadesBestTurn:0,charadesCleanTurns:0,circaQids:["stale-q"],classicWids:[],whoamiTermIds:[],charadesTermIds:[],personalQids:[],categories:["Allgemein"]}},
+  profileArchive:{},
+  stats:{rounds:1,circaRounds:1,classicRounds:0,whoamiRounds:0,charadesRounds:0,personalRounds:0,impostor:0,personalImpostor:0,perfectEstimates:0,charadesCorrect:0,charadesSkipped:0,charadesTurns:0,charadesBestTurn:0,charadesCleanTurns:0,circaQids:["stale-q"],classicWids:[],whoamiTermIds:[],charadesTermIds:[],personalQids:[],categories:["Allgemein"]},
+  usage:{appMs:0,games:{circa:0,classic:0,whoami:0,charades:0,personal:0},lastTickAt:null,activeGame:null},
+  categoryProgress:{unlocks:{},ticketNotices:0},
+  crewProgress:{},
+  sessions:[{
+    id:"session_stale",startedAt:"2020-01-01T00:00:00.000Z",endedAt:null,
+    profileIds:[staleProfileId],lastProfileIds:[staleProfileId],
+    rounds:[{roundKey:"stale-round",game:"circa",qid:"stale-q",category:"Allgemein",at:"2020-01-01T00:05:00.000Z",players:[{profileId:staleProfileId,role:"normal",error:10}]}],
+    awards:[],lastGame:"circa",gameStartedAt:"2020-01-01T00:00:30.000Z",activity:"Ergebnis"
+  }],
+  activeSessionId:"session_stale",
+  achievements:{},presets:[],launchPreset:null,launchGroup:null,
+  preferences:{sound:true,haptics:true,animations:true,sessionReminders:true},
+  imports:{v72MigrationCompleted:true,v72ProfileChoicePending:false}
+};
+const staleMem=auditStorage([["imposterGames.appState.v1",JSON.stringify(staleSeed)]]);
+const staleState=auditStore(staleMem);
+const staleEnded=staleState.expireInactiveSession();
+assert(staleEnded&&staleEnded.autoExpired===true,"stale active session was not auto-ended");
+assert(staleState.getActiveSession()===null,"stale session remained active after timeout");
+assert(new Date(staleEnded.endedAt).getTime()===new Date("2020-01-01T00:05:00.000Z").getTime(),"stale session did not end at last real activity");
+assert(new Date(staleEnded.endedAt).getTime()-new Date(staleEnded.startedAt).getTime()<60*60*1000,"stale session duration still contains idle time");
+const staleMarathon=staleState.getAchievements().find(item=>item.id==="marathon");
+assert(staleMarathon&&staleMarathon.unlocked===false,"idle time incorrectly unlocked Marathon achievement");
 
 const auditMem=auditStorage();
 const auditState=auditStore(auditMem);
