@@ -1,7 +1,7 @@
 "use strict";
 
 const RELEASE="74";
-const CACHE_REVISION="r24";
+const CACHE_REVISION="r25";
 const CACHE_PREFIX="imposter-games-";
 const CACHE_NAME=CACHE_PREFIX+"v"+RELEASE+"-"+CACHE_REVISION;
 const versioned=path=>path+"?v="+RELEASE;
