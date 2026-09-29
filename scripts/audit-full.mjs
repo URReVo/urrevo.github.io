@@ -136,7 +136,7 @@ const prototypePersonal=prototypeGames&&prototypeGames.games&&prototypeGames.gam
 assert(prototypePersonal&&!/ganz andere frage/i.test(prototypePersonal.description||""),"Prototype launcher still uses stale Personal description");
 
 const sw=read("service-worker.js");
-assert(sw.includes('const CACHE_REVISION="r23"'),"service worker revision is not r23");
+assert(sw.includes('const CACHE_REVISION="r24"'),"service worker revision is not r24");
 const coreMatch=sw.match(/const CORE_URLS=\[([\s\S]*?)\];/);
 assert(coreMatch,"service worker CORE_URLS not found");
 if(coreMatch){
