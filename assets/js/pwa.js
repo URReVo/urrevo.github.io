@@ -15,6 +15,7 @@ var DEV_SESSION_KEY="ci.diag.session.v1";
 var SESSION_REMINDER_DELAY_MS=10*60*1000;
 var SESSION_REMINDER_TAG="imposter-games-active-session";
 var SESSION_REMINDER_DEV_KEY="ci.dev.sessionReminderOnHide.v1";
+var SESSION_REMINDER_DEV_PAYLOAD_KEY="ci.dev.sessionReminderPayload.v1";
 var SESSION_REMINDER_PROMPT_KEY="ci.sessionReminder.permissionPrompt.v1";
 var sessionReminderTimer=null;
 
@@ -70,11 +71,7 @@ function reminderGameMeta(session){
   };
   return map[game]||{title:"Imposter Games",icon:"🎭",notification:"Eure Runde wartet"};
 }
-function reminderCopy(session,isDev){
-  if(isDev&&!session)return {
-    title:"🔔 DEV · Spielerinnerung",
-    body:"Test erfolgreich. Im echten Betrieb erscheint sie nur bei aktiver Session."
-  };
+function reminderCopy(session){
   var meta=reminderGameMeta(session),rounds=session&&Array.isArray(session.rounds)?session.rounds.length:0;
   var players=session&&Array.isArray(session.profileIds)?session.profileIds.length:0;
   var parts=[meta.title];
@@ -82,7 +79,7 @@ function reminderCopy(session,isDev){
   if(rounds)parts.push(rounds+" "+(rounds===1?"Runde":"Runden"));
   else parts.push("laufende Session");
   return {
-    title:(isDev?"🔔 DEV · ":"")+meta.icon+" "+meta.notification,
+    title:meta.icon+" "+meta.notification,
     body:parts.join(" · ")+". Tippen & weiterspielen."
   };
 }
@@ -91,7 +88,7 @@ function showSessionReminder(session,isDev){
   var registrationPromise=activeRegistration?Promise.resolve(activeRegistration):navigator.serviceWorker.ready;
   return registrationPromise.then(function(registration){
     if(!registration||typeof registration.showNotification!=="function")return false;
-    var copy=reminderCopy(session,isDev),root=reminderAppRoot();
+    var copy=reminderCopy(session),root=reminderAppRoot();
     return registration.showNotification(copy.title,{
       body:copy.body,
       icon:root+"circa_impostor_detective_icon_180.png",
@@ -145,10 +142,38 @@ function maybeOfferReminderPermission(){
   });
   return true;
 }
-function armDevSessionReminderTest(){
+function devReminderSampleSession(game){
+  game=["circa","classic","whoami","charades","personal"].indexOf(game)!==-1?game:"classic";
+  return {
+    id:"dev-reminder-"+game,
+    lastGame:game,
+    profileIds:["dev-1","dev-2","dev-3","dev-4","dev-5"],
+    rounds:[{game:game},{game:game},{game:game}]
+  };
+}
+function compactReminderSession(session){
+  if(!session)return null;
+  var game=session.lastGame;
+  var rounds=Array.isArray(session.rounds)?session.rounds:[];
+  if(!game&&rounds.length)game=rounds[rounds.length-1].game;
+  game=["circa","classic","whoami","charades","personal"].indexOf(game)!==-1?game:"classic";
+  var playerCount=Array.isArray(session.profileIds)?session.profileIds.length:0;
+  var roundCount=rounds.length;
+  return {
+    id:String(session.id||("dev-reminder-"+game)).slice(0,120),
+    lastGame:game,
+    profileIds:Array.from({length:Math.max(0,Math.min(12,playerCount))},function(_,i){return "dev-"+i;}),
+    rounds:Array.from({length:Math.max(0,Math.min(99,roundCount))},function(){return {game:game};})
+  };
+}
+function armDevSessionReminderTest(session){
+  var payload=compactReminderSession(session)||devReminderSampleSession("classic");
   function arm(){
-    try{sessionStorage.setItem(SESSION_REMINDER_DEV_KEY,"1");}catch(e){}
-    toast({icon:"🔔",title:"DEV-Test bereit",message:"Verlass jetzt die App. Die Benachrichtigung kommt sofort.",duration:5200});
+    try{
+      sessionStorage.setItem(SESSION_REMINDER_DEV_KEY,"1");
+      sessionStorage.setItem(SESSION_REMINDER_DEV_PAYLOAD_KEY,JSON.stringify(payload));
+    }catch(e){}
+    toast({icon:"🔔",title:"Systemtest bereit",message:"Verlass jetzt die App. Es erscheint sofort exakt diese Spieler-Benachrichtigung.",duration:5600});
     return true;
   }
   var permission=getReminderPermission();
@@ -168,14 +193,18 @@ function armDevSessionReminderTest(){
   });
 }
 function consumeDevSessionReminder(){
-  var armed=false;
+  var armed=false,payload=null;
   try{
     armed=sessionStorage.getItem(SESSION_REMINDER_DEV_KEY)==="1";
-    if(armed)sessionStorage.removeItem(SESSION_REMINDER_DEV_KEY);
+    if(armed){
+      sessionStorage.removeItem(SESSION_REMINDER_DEV_KEY);
+      try{payload=JSON.parse(sessionStorage.getItem(SESSION_REMINDER_DEV_PAYLOAD_KEY)||"null");}catch(parseError){}
+      sessionStorage.removeItem(SESSION_REMINDER_DEV_PAYLOAD_KEY);
+    }
   }catch(e){}
   if(!armed)return false;
   cancelSessionReminder();
-  showSessionReminder(activeSessionForReminder(),true);
+  showSessionReminder(compactReminderSession(payload)||activeSessionForReminder()||devReminderSampleSession("classic"),true);
   return true;
 }
 function handleReminderVisibility(){
@@ -599,6 +628,100 @@ function emitTestFeedback(items){
     return true;
   }catch(e){return false;}
 }
+function ensureReminderDevPreview(){
+  var existing=document.getElementById("ciReminderDevPreview");
+  if(existing)return existing;
+  var overlay=document.createElement("div");overlay.id="ciReminderDevPreview";overlay.className="ciReminderPreviewOverlay hidden";overlay.setAttribute("aria-hidden","true");
+  var sheet=document.createElement("section");sheet.className="ciReminderPreviewSheet";sheet.setAttribute("role","dialog");sheet.setAttribute("aria-modal","true");sheet.setAttribute("aria-labelledby","ciReminderPreviewTitle");
+  var handle=document.createElement("div");handle.className="ciReminderPreviewHandle";
+  var header=document.createElement("div");header.className="ciReminderPreviewHeader";
+  var headText=document.createElement("div");
+  var eyebrow=document.createElement("span");eyebrow.className="ciReminderPreviewEyebrow";eyebrow.textContent="DEV · SPIELERANSICHT";
+  var title=document.createElement("h2");title.id="ciReminderPreviewTitle";title.textContent="Spielerinnerung";
+  var close=document.createElement("button");close.type="button";close.className="ciReminderPreviewClose";close.textContent="×";close.setAttribute("aria-label","Schließen");
+  headText.append(eyebrow,title);header.append(headText,close);
+
+  var intro=document.createElement("p");intro.className="ciReminderPreviewIntro";
+  intro.textContent="Das ist der echte Text, den Spieler als Systembenachrichtigung sehen. iOS kann Schriftgröße und Abstände leicht anders darstellen.";
+
+  var pickerWrap=document.createElement("label");pickerWrap.className="ciReminderPreviewPicker";
+  var pickerLabel=document.createElement("span");pickerLabel.textContent="VORSCHAU FÜR";
+  var picker=document.createElement("select");picker.id="ciReminderPreviewGame";
+  pickerWrap.append(pickerLabel,picker);
+
+  var notification=document.createElement("div");notification.className="ciReminderNotification";
+  var notificationTop=document.createElement("div");notificationTop.className="ciReminderNotificationTop";
+  var appIcon=document.createElement("img");appIcon.className="ciReminderNotificationIcon";appIcon.alt="";
+  var appName=document.createElement("strong");appName.textContent="IMPOSTER GAMES";
+  var dot=document.createElement("span");dot.textContent="·";
+  var time=document.createElement("span");time.textContent="jetzt";
+  notificationTop.append(appIcon,appName,dot,time);
+  var notificationTitle=document.createElement("div");notificationTitle.className="ciReminderNotificationTitle";
+  var notificationBody=document.createElement("div");notificationBody.className="ciReminderNotificationBody";
+  notification.append(notificationTop,notificationTitle,notificationBody);
+
+  var actionHint=document.createElement("div");actionHint.className="ciReminderPreviewTap";
+  var tapIcon=document.createElement("span");tapIcon.textContent="↗";
+  var tapText=document.createElement("span");tapText.textContent="Tippen öffnet die aktive Session und setzt die letzte Spielgruppe fort.";
+  actionHint.append(tapIcon,tapText);
+
+  var buttons=document.createElement("div");buttons.className="ciReminderPreviewActions";
+  var systemTest=document.createElement("button");systemTest.type="button";systemTest.className="ciReminderPreviewPrimary";systemTest.textContent="Systemtest beim Verlassen";
+  var done=document.createElement("button");done.type="button";done.className="ciReminderPreviewSecondary";done.textContent="Schließen";
+  buttons.append(systemTest,done);
+
+  sheet.append(handle,header,intro,pickerWrap,notification,actionHint,buttons);
+  overlay.appendChild(sheet);document.body.appendChild(overlay);
+
+  function currentSession(){
+    var mode=picker.value;
+    if(mode==="active")return compactReminderSession(activeSessionForReminder())||devReminderSampleSession("classic");
+    return devReminderSampleSession(mode);
+  }
+  function render(){
+    var active=activeSessionForReminder(),previous=picker.value;
+    picker.textContent="";
+    if(active){
+      var activeOption=document.createElement("option");activeOption.value="active";activeOption.textContent="Aktive Session · "+reminderGameMeta(active).title;picker.appendChild(activeOption);
+    }
+    [
+      ["classic","Classic · Beispiel"],
+      ["circa","Circa · Beispiel"],
+      ["whoami","Wer bin ich? · Beispiel"],
+      ["charades","Scharade · Beispiel"],
+      ["personal","Persönlich · Beispiel"]
+    ].forEach(function(item){var option=document.createElement("option");option.value=item[0];option.textContent=item[1];picker.appendChild(option);});
+    if(previous&&Array.from(picker.options).some(function(option){return option.value===previous;}))picker.value=previous;
+    else picker.value=active?"active":"classic";
+    renderNotification();
+  }
+  function renderNotification(){
+    var session=currentSession(),copy=reminderCopy(session);
+    appIcon.src=reminderAppRoot()+"circa_impostor_detective_icon_180.png";
+    notificationTitle.textContent=copy.title;
+    notificationBody.textContent=copy.body;
+    systemTest._reminderSession=session;
+  }
+  function closePreview(){overlay.classList.add("hidden");overlay.setAttribute("aria-hidden","true");}
+  picker.addEventListener("change",renderNotification);
+  close.addEventListener("click",closePreview);
+  done.addEventListener("click",closePreview);
+  overlay.addEventListener("click",function(event){if(event.target===overlay)closePreview();});
+  systemTest.addEventListener("click",function(){
+    var session=systemTest._reminderSession||currentSession();
+    closePreview();armDevSessionReminderTest(session);
+  });
+  document.addEventListener("keydown",function(event){if(event.key==="Escape"&&!overlay.classList.contains("hidden"))closePreview();});
+  overlay._renderReminderPreview=render;
+  overlay._closeReminderPreview=closePreview;
+  return overlay;
+}
+function openReminderDevPreview(){
+  closeDevPanelForPreview();
+  var overlay=ensureReminderDevPreview();
+  if(overlay._renderReminderPreview)overlay._renderReminderPreview();
+  overlay.classList.remove("hidden");overlay.setAttribute("aria-hidden","false");
+}
 function previewMiniSession(){
   var bar=document.getElementById("sessionMiniBar");
   if(!bar){toast({icon:"ℹ️",title:"Nur im Launcher",message:"Die Mini-Session-Leiste existiert nur im Launcher.",duration:2800});return;}
@@ -617,8 +740,7 @@ function previewMiniSession(){
 function runDevUiTest(action){
   action=String(action||"");
   if(action==="session-reminder"){
-    closeDevPanelForPreview();
-    armDevSessionReminderTest();
+    openReminderDevPreview();
     return;
   }
   if(["achievement","achievement-stack","success","offline","update","feedback-1","feedback-2","feedback-3","feedback-session","profile-level","crew-level","crew-challenge"].indexOf(action)!==-1)closeDevPanelForPreview();
@@ -695,7 +817,7 @@ function buildGameDevTestCard(){
     ["Crew-Challenge","crew-challenge"],
     ["Update-Hinweis","update"],
     ["Haptik testen","haptic"],
-    ["Reminder beim Verlassen","session-reminder"]
+    ["Spielerinnerung ansehen","session-reminder"]
   ].forEach(function(item){buttons.appendChild(devTestButton(item[0],item[1],"secondary"));});
   var note=document.createElement("div");note.className="devQuestionMeta";
   note.textContent="Vorschauen nutzen die echten Produktions-UI-Pfade, verändern aber keine Statistik oder Achievement-Freischaltung.";
@@ -754,7 +876,7 @@ function installDevUiTests(){
       ["Crew-Challenge","crew-challenge"],
       ["Update","update"],
       ["Haptik","haptic"],
-      ["Reminder-Test","session-reminder"],
+      ["Reminder-Vorschau","session-reminder"],
       ["Mini-Session","mini-session"]
     ].forEach(function(item){actions.appendChild(devTestButton(item[0],item[1],"launcherDevButton secondary"));});
     var hint=document.createElement("p");hint.className="launcherDevHint";
@@ -776,7 +898,7 @@ window.CIAppUI={
   toast:toast,navigate:navigate,haptic:haptic,queueFeedback:queueFeedback,showUpdateReady:showUpdateReady,
   openCategoryUnlock:openCategoryUnlock,devTest:runDevUiTest,
   getReminderPermission:getReminderPermission,requestReminderPermission:requestReminderPermission,
-  cancelSessionReminder:cancelSessionReminder,devSessionReminderTest:armDevSessionReminderTest
+  cancelSessionReminder:cancelSessionReminder,devSessionReminderTest:armDevSessionReminderTest,previewSessionReminder:openReminderDevPreview
 };
 installInteractionLayer();
 installDevUiTests();
