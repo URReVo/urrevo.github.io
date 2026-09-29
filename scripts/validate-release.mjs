@@ -97,6 +97,8 @@ assert(!sw.includes("localStorage"),"service worker must not touch localStorage"
 assert(sw.includes("caches.delete(CACHE_NAME)"),"failed install cache cleanup missing");
 assert(sw.includes('versioned("/assets/js/app-state.js")'),"service worker app-state cache missing");
 assert(sw.includes('versioned("/assets/css/app-ui.css")'),"service worker shared app UI cache missing");
+assert(sw.includes('self.addEventListener("notificationclick"'),"service worker notification click handler missing");
+assert(html["index.html"].includes('id="settingSessionReminders"'),"session reminder setting missing");
 
 const circaForbidden=["classicRole","classicDiscussion","classicResult","classicOptions","classicTimerSelect"];
 const classicForbidden=["stats","difficultyControl","question","normalReveal","answers","result","openStats","scrubber"];
@@ -214,7 +216,7 @@ const readme=read("README.md");
 assert(!readme.includes("\\n"),"README contains literal \\n text");
 assert(["Circa Imposter","Klassisches Imposter","Wer bin ich?","Scharade","Persönlicher Impostor"].every(name=>readme.includes(name)),"README must describe the five-game app");
 const changelog=read("CHANGELOG.md");
-assert(changelog.includes("V74R23")&&changelog.includes("Offline-Cache **r23**"),"V74R23 changelog entry missing");
+assert(changelog.includes("V74R24")&&changelog.includes("Offline-Cache **r24**"),"V74R24 changelog entry missing");
 
 const appStateSource=read("assets/js/app-state.js");
 const launcherSource=read("assets/js/launcher.js");
@@ -236,6 +238,8 @@ for(const [name,source] of [["app-state",appStateSource],["launcher",launcherSou
 }
 assert(appStateSource.includes('var KEY="imposterGames.appState.v1"'),"production app-state key missing");
 assert(appStateSource.includes('BACKUP_FORMAT="imposter-games-backup"'),"production backup format missing");
+assert(appStateSource.includes("sessionReminders:true"),"session reminder default-on preference missing");
+assert(appStateSource.includes('"sessionReminders"'),"session reminder preference persistence missing");
 assert(engineSource.includes('EXP_STORAGE="imposterGames.v74.game."'),"V74 isolated game storage missing");
 assert(!appStateSource.includes("imposterGames.prototype."),"production app-state must not reference prototype storage");
 assert(!engineSource.includes("imposterGames.prototype."),"production game engine must not reference prototype storage");
@@ -323,7 +327,7 @@ for(const obsoletePrototypeFile of [
 ]){
   assert(!fs.existsSync(path.join(root,obsoletePrototypeFile)),"obsolete prototype makeover asset still present: "+obsoletePrototypeFile);
 }
-assert(prototypeSwSource.includes('CACHE_REVISION="r23-baseline"'),"prototype baseline cache revision missing");
+assert(prototypeSwSource.includes('CACHE_REVISION="r24-baseline"'),"prototype baseline cache revision missing");
 assert(!prototypeSwSource.includes("party-makeover")&&!prototypeSwSource.includes("party-launcher-p3"),"prototype service worker still caches discarded makeover assets");
 const prototypeManifest=JSON.parse(read("experiments/prototype/manifest.webmanifest"));
 assert(prototypeManifest.start_url==="/experiments/prototype/"&&prototypeManifest.scope==="/experiments/prototype/","prototype manifest lost isolated scope");
@@ -404,6 +408,11 @@ assert(html["index.html"].includes('id="launcherDevTrigger"'),"launcher DEV trig
 assert(html["index.html"].includes('id="launcherDevPanelOverlay"'),"launcher DEV panel missing");
 assert(launcherCss.includes(".launcherDevOverlay")&&launcherCss.includes(".launcherDevAchievements"),"launcher DEV styles missing");
 assert(launcherSource.includes("function launcherSoundEnabled()"),"launcher sound preference guard missing");
+assert(launcherSource.includes("function resumeFromSessionReminder()"),"session reminder resume deep link missing");
+assert(pwaSource.includes("SESSION_REMINDER_DELAY_MS=10*60*1000"),"10-minute session reminder delay missing");
+assert(pwaSource.includes('action==="session-reminder"'),"DEV session reminder test missing");
+assert(pwaSource.includes("Notification.requestPermission"),"session reminder permission flow missing");
+assert(pwaSource.includes("showNotification"),"session reminder system notification delivery missing");
 assert(launcherSource.includes("function uiSound(kind)"),"launcher UI sound generator missing");
 assert(launcherSource.includes("function navigateWithSound(href)"),"launcher start-sound navigation missing");
 assert(launcherSource.includes("store.getPreferences().sound!==false"),"launcher sound is not tied to global preference");
