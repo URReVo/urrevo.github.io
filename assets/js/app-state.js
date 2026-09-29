@@ -197,7 +197,7 @@ function defaults(){
     presets:[],
     launchPreset:null,
     launchGroup:null,
-    preferences:{sound:true,haptics:true,animations:true},
+    preferences:{sound:true,haptics:true,animations:true,sessionReminders:true},
     imports:{legacyCirca:false}
   };
 }
@@ -437,7 +437,8 @@ function load(){
       preset.summary=presetSummary(preset);
     }
   });
-  if(!data.preferences||typeof data.preferences!=="object")data.preferences={sound:true,haptics:true,animations:true};
+  if(!data.preferences||typeof data.preferences!=="object")data.preferences={sound:true,haptics:true,animations:true,sessionReminders:true};
+  if(typeof data.preferences.sessionReminders!=="boolean")data.preferences.sessionReminders=true;
   if(!data.imports||typeof data.imports!=="object")data.imports={v72MigrationCompleted:true,v72ProfileChoicePending:false};
   if(typeof data.imports.v72MigrationCompleted!=="boolean")data.imports.v72MigrationCompleted=true;
   if(typeof data.imports.v72ProfileChoicePending!=="boolean")data.imports.v72ProfileChoicePending=false;
@@ -2096,7 +2097,7 @@ function getSessions(){return clone(data.sessions.slice().reverse());}
 function getActiveSession(){var s=data.activeSessionId&&sessionById(data.activeSessionId);return s?clone(s):null;}
 function getPreferences(){return clone(data.preferences);}
 function setPreference(key,value){
-  if(["sound","haptics","animations"].indexOf(key)===-1)return false;
+  if(["sound","haptics","animations","sessionReminders"].indexOf(key)===-1)return false;
   data.preferences[key]=!!value;save();return true;
 }
 function presetSummary(p){
@@ -2470,7 +2471,8 @@ async function importSnapshot(input){
     preferences:{
       sound:!src.preferences||src.preferences.sound!==false,
       haptics:!src.preferences||src.preferences.haptics!==false,
-      animations:!src.preferences||src.preferences.animations!==false
+      animations:!src.preferences||src.preferences.animations!==false,
+      sessionReminders:!src.preferences||src.preferences.sessionReminders!==false
     },
     imports:src.imports&&typeof src.imports==="object"&&!Array.isArray(src.imports)?clone(src.imports):{}
   };
