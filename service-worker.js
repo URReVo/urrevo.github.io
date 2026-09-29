@@ -1,7 +1,7 @@
 "use strict";
 
 const RELEASE="74";
-const CACHE_REVISION="r23";
+const CACHE_REVISION="r24";
 const CACHE_PREFIX="imposter-games-";
 const CACHE_NAME=CACHE_PREFIX+"v"+RELEASE+"-"+CACHE_REVISION;
 const versioned=path=>path+"?v="+RELEASE;
@@ -97,6 +97,25 @@ self.addEventListener("message",event=>{
   if(event.data&&event.data.type==="SKIP_WAITING"){
     event.waitUntil(self.skipWaiting());
   }
+});
+
+self.addEventListener("notificationclick",event=>{
+  event.notification.close();
+  const raw=event.notification&&event.notification.data&&event.notification.data.url;
+  const target=new URL(raw||"/",self.location.origin).href;
+  event.waitUntil(
+    self.clients.matchAll({type:"window",includeUncontrolled:true}).then(async windowClients=>{
+      if(windowClients.length){
+        const client=windowClients[0];
+        if("navigate" in client){
+          try{await client.navigate(target);}catch(error){}
+        }
+        if("focus" in client)return client.focus();
+      }
+      if(self.clients.openWindow)return self.clients.openWindow(target);
+      return undefined;
+    })
+  );
 });
 
 self.addEventListener("fetch",event=>{
