@@ -179,6 +179,19 @@ function launchSessionGroup(session){
   navigateWithSound(meta.path);
   return true;
 }
+function resumeFromSessionReminder(){
+  var params;
+  try{params=new URLSearchParams(window.location.search||"");}catch(e){return false;}
+  if(params.get("resumeSession")!=="1")return false;
+  try{history.replaceState(history.state,"",window.location.pathname+(window.location.hash||""));}catch(e){}
+  var session=store.getActiveSession?store.getActiveSession():null;
+  if(!session){
+    appToast("Session beendet","Die erinnerte Session ist nicht mehr aktiv.","ℹ️");
+    return false;
+  }
+  setTimeout(function(){launchSessionGroup(session);},120);
+  return true;
+}
 function updateGreeting(){
   var hour=new Date().getHours();
   byId("greeting").textContent=hour<11?"Guten Morgen":hour<18?"Hallo":"Guten Abend";
@@ -964,6 +977,16 @@ function renderSettings(){
   byId("settingSound").checked=p.sound!==false;
   byId("settingHaptics").checked=p.haptics!==false;
   byId("settingAnimations").checked=p.animations!==false;
+  var reminder=byId("settingSessionReminders"),hint=byId("sessionReminderHint");
+  if(reminder)reminder.checked=p.sessionReminders!==false;
+  if(hint){
+    var permission=window.CIAppUI&&window.CIAppUI.getReminderPermission?window.CIAppUI.getReminderPermission():"unsupported";
+    if(p.sessionReminders===false)hint.textContent="Deaktiviert";
+    else if(permission==="granted")hint.textContent="Nach 10 Min. im Hintergrund bei aktiver Session";
+    else if(permission==="denied")hint.textContent="Im System blockiert · dort Benachrichtigungen erlauben";
+    else if(permission==="default")hint.textContent="Nach 10 Min. · Systemfreigabe beim ersten Einsatz";
+    else hint.textContent="Auf diesem Gerät nicht verfügbar";
+  }
   document.documentElement.classList.toggle("reduceExperimentMotion",p.animations===false);
 }
 function renderAll(){
@@ -1166,6 +1189,19 @@ byId("endSession").addEventListener("click",function(){
     renderSettings();
   });
 });
+var sessionReminderSetting=byId("settingSessionReminders");
+if(sessionReminderSetting)sessionReminderSetting.addEventListener("change",function(){
+  var enabled=sessionReminderSetting.checked;
+  store.setPreference("sessionReminders",enabled);
+  uiSound("tap");
+  renderSettings();
+  if(enabled&&window.CIAppUI&&window.CIAppUI.requestReminderPermission){
+    var permissionRequest=window.CIAppUI.requestReminderPermission({source:"settings"});
+    if(permissionRequest&&typeof permissionRequest.then==="function")permissionRequest.then(renderSettings);
+  }else if(!enabled&&window.CIAppUI&&window.CIAppUI.cancelSessionReminder){
+    window.CIAppUI.cancelSessionReminder();
+  }
+});
 
 byId("exportData").addEventListener("click",async function(){
   try{
@@ -1349,6 +1385,7 @@ function installSheetSwipe(){
 }
 installSheetSwipe();
 renderAll();
+resumeFromSessionReminder();
 setInterval(function(){if(store.getActiveSession&&store.getActiveSession())renderSessions();},30000);
 hydrateCircaMetadata();
 renderMigrationChoice();
