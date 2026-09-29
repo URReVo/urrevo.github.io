@@ -10,6 +10,7 @@ var INTEGRITY_MARKER_KEY="imposterGames.progressIntegrity.marker.v1";
 var INTEGRITY_VERSION=1;
 var INTEGRITY_USAGE_ACHIEVEMENTS={"app-hour-1":true,"app-hours-5":true,"app-hours-10":true};
 var MAX_SESSIONS=50;
+var SESSION_IDLE_TIMEOUT_MS=60*60*1000;
 var BACKUP_FORMAT="imposter-games-backup";
 var BACKUP_VERSION=3;
 var GAME_STORAGE_PREFIX="imposterGames.v74.game.";
@@ -69,6 +70,33 @@ function isGenericPlayerName(v){
 }
 function clone(v){return JSON.parse(JSON.stringify(v));}
 function now(){return new Date().toISOString();}
+function sessionTimeMs(value){
+  var ms=new Date(value||0).getTime();
+  return Number.isFinite(ms)?ms:0;
+}
+function sessionLastActivityMs(session){
+  if(!session)return 0;
+  var currentMs=Date.now(),futureLimit=currentMs+5*60*1000;
+  var candidates=[session.startedAt,session.gameStartedAt,session.lastActivityAt];
+  (Array.isArray(session.rounds)?session.rounds:[]).forEach(function(round){if(round&&round.at)candidates.push(round.at);});
+  var best=0;
+  candidates.forEach(function(value){
+    var ms=sessionTimeMs(value);
+    if(ms>0&&ms<=futureLimit)best=Math.max(best,ms);
+  });
+  return best||currentMs;
+}
+function sessionLastActivityIso(session){
+  var ms=sessionLastActivityMs(session);
+  return ms>0?new Date(ms).toISOString():now();
+}
+function touchSessionActivity(session,at){
+  if(!session||session.endedAt)return false;
+  var ms=sessionTimeMs(at),currentMs=Date.now();
+  if(!ms||ms>currentMs+5*60*1000)ms=currentMs;
+  session.lastActivityAt=new Date(ms).toISOString();
+  return true;
+}
 function baseProfileStats(){
   return {
     rounds:0,circaRounds:0,classicRounds:0,whoamiRounds:0,charadesRounds:0,personalRounds:0,
@@ -403,6 +431,7 @@ function load(){
   data.usage.lastTickAt=null;data.usage.activeGame=null;
   if(!Array.isArray(data.sessions))data.sessions=[];
   data.sessions.forEach(function(session){
+    if(session&&!session.lastActivityAt)session.lastActivityAt=sessionLastActivityIso(session);
     (session&&Array.isArray(session.rounds)?session.rounds:[]).forEach(function(round){
       (round&&Array.isArray(round.players)?round.players:[]).forEach(function(rp){
         if(!rp||!rp.profileId)return;
@@ -660,7 +689,8 @@ function integrityApplyProtectedState(state){
       awards:Array.isArray(source.awards)?clone(source.awards.slice(0,12)):[],
       lastGame:GAME_IDS.indexOf(old.lastGame)!==-1?old.lastGame:null,
       gameStartedAt:old.gameStartedAt||null,
-      activity:old.activity?String(old.activity).slice(0,80):null
+      activity:old.activity?String(old.activity).slice(0,80):null,
+      lastActivityAt:old.lastActivityAt||sessionLastActivityIso(source)
     };
   });
   var restoredIds={};restored.forEach(function(session){restoredIds[session.id]=true;});
@@ -1469,6 +1499,7 @@ function sessionById(id){
   return data.sessions.find(function(s){return s.id===id;})||null;
 }
 function beginSession(players){
+  expireInactiveSession();
   var current=data.activeSessionId&&sessionById(data.activeSessionId);
   if(current&&!current.endedAt){
     var activeIds=[];
@@ -1478,6 +1509,7 @@ function beginSession(players){
       if(activeIds.indexOf(id)===-1)activeIds.push(id);
     });
     if(activeIds.length)current.lastProfileIds=activeIds;
+    touchSessionActivity(current);
     save();return current.id;
   }
   var profileIds=[];
@@ -1485,7 +1517,8 @@ function beginSession(players){
     var id=ensureProfileForPlayer(p);
     if(profileIds.indexOf(id)===-1)profileIds.push(id);
   });
-  var session={id:uid("session"),startedAt:now(),endedAt:null,profileIds:profileIds,lastProfileIds:profileIds.slice(),rounds:[],awards:[],lastGame:null,gameStartedAt:null,activity:null};
+  var started=now();
+  var session={id:uid("session"),startedAt:started,endedAt:null,profileIds:profileIds,lastProfileIds:profileIds.slice(),rounds:[],awards:[],lastGame:null,gameStartedAt:null,activity:null,lastActivityAt:started};
   data.sessions.push(session);
   data.activeSessionId=session.id;
   if(data.sessions.length>MAX_SESSIONS)data.sessions.splice(0,data.sessions.length-MAX_SESSIONS);
@@ -1890,6 +1923,7 @@ function recordRound(input){
   if(previousRound)round=preserveRoundContentIdentity(previousRound,round);
   session.lastGame=normalizeGame(round.game);
   if(!session.gameStartedAt)session.gameStartedAt=round.at||now();
+  touchSessionActivity(session,round.at||now());
   var beforeProfiles={},roundIds=round.players.map(function(p){return p.profileId;});
   roundIds.forEach(function(id){beforeProfiles[id]=clone(data.profileStats[id]||baseProfileStats());});
   var feedbackContext={
@@ -1959,11 +1993,15 @@ function computeAwards(session){
   if(wild)out.push({type:"wild",icon:"😵",title:"Wildeste Schätzung",profileId:wild.profileId,detail:wild.error.toLocaleString("de-DE",{maximumFractionDigits:0})+" % daneben"});
   return out.slice(0,4);
 }
-function endSession(){
-  var s=data.activeSessionId&&sessionById(data.activeSessionId);
+function finalizeSession(s,endedAt,silentFeedback){
   if(!s||s.endedAt)return null;
   var crewBefore=computeCrew(s.profileIds);
-  s.endedAt=now();s.awards=computeAwards(s);data.activeSessionId=null;
+  var startMs=sessionTimeMs(s.startedAt),endMs=sessionTimeMs(endedAt);
+  if(!endMs)endMs=Date.now();
+  if(startMs&&endMs<startMs)endMs=startMs;
+  s.endedAt=new Date(endMs).toISOString();
+  if(!silentFeedback)s.lastActivityAt=s.endedAt;
+  s.awards=computeAwards(s);data.activeSessionId=null;
   var crewAfter=computeCrew(s.profileIds);
   var categoryUnlocked=evaluateCategoryUnlocks();
   var unlocked=evaluateAchievements();
@@ -1973,8 +2011,27 @@ function endSession(){
   queueProgressIntegritySeal();
   emitAchievementUnlocks(unlocked);
   emitCategoryUnlocks(categoryUnlocked);
-  emitMotivationalFeedback(feedback);
+  if(!silentFeedback)emitMotivationalFeedback(feedback);
   return clone(s);
+}
+function endSession(){
+  var s=data.activeSessionId&&sessionById(data.activeSessionId);
+  if(!s||s.endedAt)return null;
+  return finalizeSession(s,now(),false);
+}
+function expireInactiveSession(){
+  var s=data.activeSessionId&&sessionById(data.activeSessionId);
+  if(!s||s.endedAt)return null;
+  var lastMs=sessionLastActivityMs(s),idleMs=Math.max(0,Date.now()-lastMs);
+  if(idleMs<SESSION_IDLE_TIMEOUT_MS)return null;
+  if(!(s.rounds||[]).length){
+    data.sessions=data.sessions.filter(function(session){return session.id!==s.id;});
+    data.activeSessionId=null;save();queueProgressIntegritySeal();
+    return {id:s.id,discarded:true,autoExpired:true,endedAt:new Date(lastMs).toISOString()};
+  }
+  var ended=finalizeSession(s,new Date(lastMs).toISOString(),true);
+  if(ended)ended.autoExpired=true;
+  return ended;
 }
 function getAchievements(){
   evaluateAchievements();save();
@@ -2176,12 +2233,14 @@ function consumeLaunchGroup(){
   return ids.map(function(id){return profileById(id);}).filter(Boolean).map(clone);
 }
 function setActiveSessionGame(game,activity,resetClock){
+  expireInactiveSession();
   var session=data.activeSessionId&&sessionById(data.activeSessionId);
   if(!session||session.endedAt)return false;
   var normalized=normalizeGame(game);
   if(resetClock===true||session.lastGame!==normalized||!session.gameStartedAt)session.gameStartedAt=now();
   session.lastGame=normalized;
   session.activity=activity?String(activity).slice(0,80):session.activity||null;
+  touchSessionActivity(session);
   save();return true;
 }
 function sanitizeLegacyCircaSource(){
@@ -2338,7 +2397,8 @@ function sanitizeImportedSessions(src){
       awards:Array.isArray(x.awards)?clone(x.awards.slice(0,12)):[],
       lastGame:GAME_IDS.indexOf(x.lastGame)!==-1?x.lastGame:null,
       gameStartedAt:x.gameStartedAt||null,
-      activity:x.activity?String(x.activity).slice(0,80):null
+      activity:x.activity?String(x.activity).slice(0,80):null,
+      lastActivityAt:x.lastActivityAt||sessionLastActivityIso(x)
     };
   });
 }
@@ -2609,6 +2669,8 @@ window.CIAppState={
   endSession:endSession,
   getSessions:getSessions,
   getActiveSession:getActiveSession,
+  expireInactiveSession:expireInactiveSession,
+  getSessionIdleTimeoutMs:function(){return SESSION_IDLE_TIMEOUT_MS;},
   getStats:getStats,
   getProfileStats:getProfileStats,
   getProfileLevel:getProfileLevel,
