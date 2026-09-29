@@ -44,6 +44,11 @@
 - Produktionsstand auf **V74R22** / Offline-Cache **r22** angehoben.
 - V74R23 behebt den verbliebenen iOS/PWA-Tastatur-Viewport-Fehler beim Persönlichen Impostor. Nach Texteingaben wird die aktive Spielhöhe nicht mehr allein aus `100dvh` abgeleitet, sondern mit `visualViewport.height` synchronisiert. Resize-/Scroll-/Focus-Hooks sowie gestaffelte Nachmessungen über die Tastatur-Schließanimation stellen sicher, dass Frage-, Handoff- und Folgescreens wieder bis zur unteren Safe-Area reichen.
 - Produktionsstand auf **V74R23** / Offline-Cache **r23** angehoben.
+- V74R24 ergänzt standardmäßig aktivierte, in den Einstellungen abschaltbare **Spielerinnerungen**. Bleibt eine Session aktiv und die PWA wird in den Hintergrund gelegt, plant die App lokal nach 10 Minuten eine kompakte Systembenachrichtigung mit Spielname, Spieler- und Rundenzahl; geheime Rollen, Wörter, Fragen oder Antworten werden niemals in der Benachrichtigung angezeigt.
+- Ein Tipp auf die Erinnerung öffnet den Launcher und setzt – sofern die Session noch aktiv und spielbar ist – direkt die zuletzt aktive Spielgruppe fort. Kehrt man vorher in die App zurück oder wird die Erinnerung deaktiviert, wird der lokale Timer verworfen.
+- Die DEV-Tools enthalten einen **Reminder-Test**: Nach Auswahl wird beim nächsten Verlassen der App sofort dieselbe Systembenachrichtigungsstrecke ausgelöst, damit Berechtigung, Darstellung und Rücksprung ohne zehn Minuten Wartezeit geprüft werden können.
+- Die 10-Minuten-Erinnerung der reinen PWA bleibt technisch Best-Effort: Browser dürfen Hintergrund-JavaScript einfrieren, insbesondere iOS. Für garantiert zeitgenaue Zustellung im Hintergrund ist später Web Push mit Sender oder die native iOS-App erforderlich.
+- Produktionsstand auf **V74R24** / Offline-Cache **r24** angehoben.
 
 
 ## V73
