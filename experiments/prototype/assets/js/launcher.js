@@ -184,12 +184,18 @@ function resumeFromSessionReminder(){
   try{params=new URLSearchParams(window.location.search||"");}catch(e){return false;}
   if(params.get("resumeSession")!=="1")return false;
   try{history.replaceState(history.state,"",window.location.pathname+(window.location.hash||""));}catch(e){}
-  var session=store.getActiveSession?store.getActiveSession():null;
-  if(!session){
-    appToast("Session beendet","Die erinnerte Session ist nicht mehr aktiv.","ℹ️");
-    return false;
-  }
-  setTimeout(function(){launchSessionGroup(session);},120);
+  var ready=store.flushProgressIntegrity?store.flushProgressIntegrity():Promise.resolve();
+  Promise.resolve(ready).then(function(){
+    var expired=store.expireInactiveSession?store.expireInactiveSession():null;
+    var session=store.getActiveSession?store.getActiveSession():null;
+    if(!session){
+      if(expired)appToast("Session abgeschlossen","Nach der längeren Pause wurde eine neue Session nötig.","🏁");
+      else appToast("Session beendet","Die erinnerte Session ist nicht mehr aktiv.","ℹ️");
+      renderAll();
+      return;
+    }
+    setTimeout(function(){launchSessionGroup(session);},120);
+  });
   return true;
 }
 function updateGreeting(){
