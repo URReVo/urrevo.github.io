@@ -1757,6 +1757,7 @@ function emitMotivationalFeedback(items){
 
 function recordRound(input){
   if(!input||!input.game)return false;
+  expireInactiveSession();
   var session=data.activeSessionId&&sessionById(data.activeSessionId);
   if(!session||session.endedAt){
     beginSession(input.players||[]);
