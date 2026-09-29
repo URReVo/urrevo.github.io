@@ -979,14 +979,7 @@ function renderSettings(){
   byId("settingAnimations").checked=p.animations!==false;
   var reminder=byId("settingSessionReminders"),hint=byId("sessionReminderHint");
   if(reminder)reminder.checked=p.sessionReminders!==false;
-  if(hint){
-    var permission=window.CIAppUI&&window.CIAppUI.getReminderPermission?window.CIAppUI.getReminderPermission():"unsupported";
-    if(p.sessionReminders===false)hint.textContent="Deaktiviert";
-    else if(permission==="granted")hint.textContent="Nach 10 Min. im Hintergrund bei aktiver Session";
-    else if(permission==="denied")hint.textContent="Im System blockiert · dort Benachrichtigungen erlauben";
-    else if(permission==="default")hint.textContent="Nach 10 Min. · Systemfreigabe beim ersten Einsatz";
-    else hint.textContent="Auf diesem Gerät nicht verfügbar";
-  }
+  if(hint)hint.textContent="Erinnert nach 10 Min. an eine offene Session";
   document.documentElement.classList.toggle("reduceExperimentMotion",p.animations===false);
 }
 function renderAll(){
