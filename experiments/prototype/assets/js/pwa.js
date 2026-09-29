@@ -109,6 +109,29 @@ function showSessionReminder(session,isDev){
 function cancelSessionReminder(){
   if(sessionReminderTimer){clearTimeout(sessionReminderTimer);sessionReminderTimer=null;}
 }
+var sessionExpiryCheckPromise=null;
+function expireInactiveSessionIfNeeded(options){
+  options=options||{};
+  if(!window.CIAppState||typeof window.CIAppState.expireInactiveSession!=="function")return Promise.resolve(null);
+  if(sessionExpiryCheckPromise)return sessionExpiryCheckPromise;
+  var ready=window.CIAppState.flushProgressIntegrity?window.CIAppState.flushProgressIntegrity():Promise.resolve();
+  sessionExpiryCheckPromise=Promise.resolve(ready).then(function(){
+    var ended=window.CIAppState.expireInactiveSession();
+    if(!ended)return null;
+    cancelSessionReminder();
+    if(window.CILauncherRefresh)try{window.CILauncherRefresh();}catch(e){}
+    if(!options.quiet){
+      toast({
+        icon:"🏁",
+        title:"Session abgeschlossen",
+        message:ended.discarded?"Die offene Runde war zu lange inaktiv.":"Nach einer längeren Pause wurde die alte Session automatisch beendet.",
+        duration:4200
+      });
+    }
+    return ended;
+  }).catch(function(){return null;}).finally(function(){sessionExpiryCheckPromise=null;});
+  return sessionExpiryCheckPromise;
+}
 function armSessionReminder(){
   cancelSessionReminder();
   if(!document.hidden||preferences().sessionReminders===false||getReminderPermission()!=="granted")return false;
@@ -212,7 +235,7 @@ function handleReminderVisibility(){
     if(!consumeDevSessionReminder())armSessionReminder();
   }else{
     cancelSessionReminder();
-    maybeOfferReminderPermission();
+    expireInactiveSessionIfNeeded().then(function(){maybeOfferReminderPermission();});
   }
 }
 function haptic(kind){
@@ -898,7 +921,8 @@ window.CIAppUI={
   toast:toast,navigate:navigate,haptic:haptic,queueFeedback:queueFeedback,showUpdateReady:showUpdateReady,
   openCategoryUnlock:openCategoryUnlock,devTest:runDevUiTest,
   getReminderPermission:getReminderPermission,requestReminderPermission:requestReminderPermission,
-  cancelSessionReminder:cancelSessionReminder,devSessionReminderTest:armDevSessionReminderTest,previewSessionReminder:openReminderDevPreview
+  cancelSessionReminder:cancelSessionReminder,devSessionReminderTest:armDevSessionReminderTest,previewSessionReminder:openReminderDevPreview,
+  expireInactiveSession:expireInactiveSessionIfNeeded
 };
 installInteractionLayer();
 installDevUiTests();
@@ -927,8 +951,12 @@ window.addEventListener("offline",function(){
   lastOnlineState=false;
 });
 document.addEventListener("visibilitychange",handleReminderVisibility);
-window.addEventListener("pageshow",function(){cancelSessionReminder();setTimeout(maybeOfferReminderPermission,250);});
-setTimeout(maybeOfferReminderPermission,1200);
+window.addEventListener("pageshow",function(){
+  cancelSessionReminder();
+  setTimeout(function(){expireInactiveSessionIfNeeded().then(function(){maybeOfferReminderPermission();});},250);
+});
+setTimeout(function(){expireInactiveSessionIfNeeded().then(function(){maybeOfferReminderPermission();});},1200);
+setInterval(function(){if(!document.hidden)expireInactiveSessionIfNeeded();},60000);
 setInterval(function(){if(!document.hidden)maybeOfferReminderPermission();},5000);
 refreshOfflineStatus();
 })();
