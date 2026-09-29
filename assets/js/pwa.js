@@ -12,15 +12,180 @@ var feedbackPumpScheduled=false;
 var feedbackRecent={};
 var feedbackAudioContext=null;
 var DEV_SESSION_KEY="ci.diag.session.v1";
+var SESSION_REMINDER_DELAY_MS=10*60*1000;
+var SESSION_REMINDER_TAG="imposter-games-active-session";
+var SESSION_REMINDER_DEV_KEY="ci.dev.sessionReminderOnHide.v1";
+var SESSION_REMINDER_PROMPT_KEY="ci.sessionReminder.permissionPrompt.v1";
+var sessionReminderTimer=null;
 
 function statusElement(){return document.getElementById("offlineStatus");}
 function preferences(){
   try{
     if(window.CIAppState&&window.CIAppState.getPreferences)return window.CIAppState.getPreferences();
   }catch(e){}
-  return {sound:true,haptics:true,animations:true};
+  return {sound:true,haptics:true,animations:true,sessionReminders:true};
 }
 function animationsEnabled(){return preferences().animations!==false&&!window.matchMedia("(prefers-reduced-motion: reduce)").matches;}
+function activeSessionForReminder(){
+  try{
+    if(window.CIAppState&&window.CIAppState.getActiveSession)return window.CIAppState.getActiveSession();
+  }catch(e){}
+  return null;
+}
+function reminderAppRoot(){
+  return window.location.pathname.indexOf("/experiments/prototype/")===0?"/experiments/prototype/":"/";
+}
+function getReminderPermission(){
+  if(!("Notification" in window)||!("serviceWorker" in navigator))return "unsupported";
+  return Notification.permission||"default";
+}
+function requestReminderPermission(options){
+  options=options||{};
+  var permission=getReminderPermission();
+  function announce(result){
+    if(options.quiet)return result;
+    if(result==="granted")toast({icon:"🔔",title:"Spielerinnerung aktiv",message:"Offene Sessions können dich jetzt erinnern.",duration:2800});
+    else if(result==="denied")toast({icon:"🔕",title:"Benachrichtigungen blockiert",message:"Erlaube sie in den System- bzw. Browser-Einstellungen.",duration:4200});
+    else if(result==="default")toast({icon:"ℹ️",title:"Noch nicht aktiviert",message:"Ohne Systemfreigabe kann keine Erinnerung erscheinen.",duration:3600});
+    else toast({icon:"ℹ️",title:"Nicht verfügbar",message:"Systembenachrichtigungen werden hier nicht unterstützt.",duration:3600});
+    return result;
+  }
+  if(permission!=="default")return Promise.resolve(announce(permission));
+  try{
+    return Promise.resolve(Notification.requestPermission()).then(announce,function(){return announce("default");});
+  }catch(e){
+    return Promise.resolve(announce("unsupported"));
+  }
+}
+function reminderGameMeta(session){
+  var game=session&&session.lastGame;
+  var rounds=session&&Array.isArray(session.rounds)?session.rounds:[];
+  if(!game&&rounds.length)game=rounds[rounds.length-1].game;
+  var map={
+    circa:{title:"Circa Imposter",icon:"🎯",notification:"Eure Schätzung wartet"},
+    classic:{title:"Klassisches Imposter",icon:"🎭",notification:"Der Impostor wartet"},
+    whoami:{title:"Wer bin ich?",icon:"❓",notification:"Noch nicht fertig geraten?"},
+    charades:{title:"Scharade",icon:"🎬",notification:"Die Bühne wartet"},
+    personal:{title:"Persönlicher Impostor",icon:"💬",notification:"Eure Runde wartet"}
+  };
+  return map[game]||{title:"Imposter Games",icon:"🎭",notification:"Eure Runde wartet"};
+}
+function reminderCopy(session,isDev){
+  if(isDev&&!session)return {
+    title:"🔔 DEV · Spielerinnerung",
+    body:"Test erfolgreich. Im echten Betrieb erscheint sie nur bei aktiver Session."
+  };
+  var meta=reminderGameMeta(session),rounds=session&&Array.isArray(session.rounds)?session.rounds.length:0;
+  var players=session&&Array.isArray(session.profileIds)?session.profileIds.length:0;
+  var parts=[meta.title];
+  if(players)parts.push(players+" Spieler");
+  if(rounds)parts.push(rounds+" "+(rounds===1?"Runde":"Runden"));
+  else parts.push("laufende Session");
+  return {
+    title:(isDev?"🔔 DEV · ":"")+meta.icon+" "+meta.notification,
+    body:parts.join(" · ")+". Tippen & weiterspielen."
+  };
+}
+function showSessionReminder(session,isDev){
+  if(getReminderPermission()!=="granted")return Promise.resolve(false);
+  var registrationPromise=activeRegistration?Promise.resolve(activeRegistration):navigator.serviceWorker.ready;
+  return registrationPromise.then(function(registration){
+    if(!registration||typeof registration.showNotification!=="function")return false;
+    var copy=reminderCopy(session,isDev),root=reminderAppRoot();
+    return registration.showNotification(copy.title,{
+      body:copy.body,
+      icon:root+"circa_impostor_detective_icon_180.png",
+      badge:root+"circa_impostor_detective_icon_180.png",
+      tag:isDev?SESSION_REMINDER_TAG+"-dev":SESSION_REMINDER_TAG,
+      renotify:false,
+      requireInteraction:false,
+      timestamp:Date.now(),
+      data:{
+        url:root+"?resumeSession=1&from=reminder",
+        sessionId:session&&session.id?session.id:null,
+        dev:isDev===true
+      },
+      actions:[{action:"resume",title:"Weiterspielen"}]
+    }).then(function(){return true;},function(){return false;});
+  },function(){return false;});
+}
+function cancelSessionReminder(){
+  if(sessionReminderTimer){clearTimeout(sessionReminderTimer);sessionReminderTimer=null;}
+}
+function armSessionReminder(){
+  cancelSessionReminder();
+  if(!document.hidden||preferences().sessionReminders===false||getReminderPermission()!=="granted")return false;
+  var session=activeSessionForReminder();
+  if(!session||session.endedAt)return false;
+  var sessionId=session.id;
+  sessionReminderTimer=setTimeout(function(){
+    sessionReminderTimer=null;
+    if(!document.hidden||preferences().sessionReminders===false)return;
+    var current=activeSessionForReminder();
+    if(!current||current.endedAt||current.id!==sessionId)return;
+    showSessionReminder(current,false);
+  },SESSION_REMINDER_DELAY_MS);
+  return true;
+}
+function maybeOfferReminderPermission(){
+  if(document.hidden||preferences().sessionReminders===false||getReminderPermission()!=="default")return false;
+  var session=activeSessionForReminder();
+  if(!session||session.endedAt)return false;
+  try{
+    if(sessionStorage.getItem(SESSION_REMINDER_PROMPT_KEY)===session.id)return false;
+    sessionStorage.setItem(SESSION_REMINDER_PROMPT_KEY,session.id);
+  }catch(e){}
+  toast({
+    icon:"🔔",
+    title:"Spielerinnerung aktivieren?",
+    message:"Bei offener Session können wir euch nach 10 Min. im Hintergrund erinnern.",
+    actionLabel:"Aktivieren",
+    duration:7200,
+    onAction:function(){requestReminderPermission({source:"session"});}
+  });
+  return true;
+}
+function armDevSessionReminderTest(){
+  function arm(){
+    try{sessionStorage.setItem(SESSION_REMINDER_DEV_KEY,"1");}catch(e){}
+    toast({icon:"🔔",title:"DEV-Test bereit",message:"Verlass jetzt die App. Die Benachrichtigung kommt sofort.",duration:5200});
+    return true;
+  }
+  var permission=getReminderPermission();
+  if(permission==="granted")return Promise.resolve(arm());
+  if(permission==="denied"){
+    toast({icon:"🔕",title:"DEV-Test blockiert",message:"Benachrichtigungen sind im System deaktiviert.",duration:4200});
+    return Promise.resolve(false);
+  }
+  if(permission==="unsupported"){
+    toast({icon:"ℹ️",title:"DEV-Test nicht verfügbar",message:"Dieses Gerät unterstützt hier keine Systembenachrichtigungen.",duration:4200});
+    return Promise.resolve(false);
+  }
+  return requestReminderPermission({quiet:true,source:"dev"}).then(function(result){
+    if(result==="granted")return arm();
+    toast({icon:"ℹ️",title:"DEV-Test nicht aktiviert",message:"Die Systemfreigabe wurde nicht erteilt.",duration:3600});
+    return false;
+  });
+}
+function consumeDevSessionReminder(){
+  var armed=false;
+  try{
+    armed=sessionStorage.getItem(SESSION_REMINDER_DEV_KEY)==="1";
+    if(armed)sessionStorage.removeItem(SESSION_REMINDER_DEV_KEY);
+  }catch(e){}
+  if(!armed)return false;
+  cancelSessionReminder();
+  showSessionReminder(activeSessionForReminder(),true);
+  return true;
+}
+function handleReminderVisibility(){
+  if(document.hidden){
+    if(!consumeDevSessionReminder())armSessionReminder();
+  }else{
+    cancelSessionReminder();
+    maybeOfferReminderPermission();
+  }
+}
 function haptic(kind){
   if(preferences().haptics===false||typeof navigator.vibrate!=="function")return false;
   var pattern=kind==="feedback3"?[14,28,18,30,24]:kind==="feedback2"?[10,24,14]:kind==="success"?[10,30,14]:kind==="warning"?[18,35,18]:[8];
@@ -451,6 +616,11 @@ function previewMiniSession(){
 }
 function runDevUiTest(action){
   action=String(action||"");
+  if(action==="session-reminder"){
+    closeDevPanelForPreview();
+    armDevSessionReminderTest();
+    return;
+  }
   if(["achievement","achievement-stack","success","offline","update","feedback-1","feedback-2","feedback-3","feedback-session","profile-level","crew-level","crew-challenge"].indexOf(action)!==-1)closeDevPanelForPreview();
   setTimeout(function(){
     if(action==="achievement"){
@@ -524,7 +694,8 @@ function buildGameDevTestCard(){
     ["Crew Level-Up","crew-level"],
     ["Crew-Challenge","crew-challenge"],
     ["Update-Hinweis","update"],
-    ["Haptik testen","haptic"]
+    ["Haptik testen","haptic"],
+    ["Reminder beim Verlassen","session-reminder"]
   ].forEach(function(item){buttons.appendChild(devTestButton(item[0],item[1],"secondary"));});
   var note=document.createElement("div");note.className="devQuestionMeta";
   note.textContent="Vorschauen nutzen die echten Produktions-UI-Pfade, verändern aber keine Statistik oder Achievement-Freischaltung.";
@@ -583,6 +754,7 @@ function installDevUiTests(){
       ["Crew-Challenge","crew-challenge"],
       ["Update","update"],
       ["Haptik","haptic"],
+      ["Reminder-Test","session-reminder"],
       ["Mini-Session","mini-session"]
     ].forEach(function(item){actions.appendChild(devTestButton(item[0],item[1],"launcherDevButton secondary"));});
     var hint=document.createElement("p");hint.className="launcherDevHint";
@@ -600,7 +772,12 @@ function installDevUiTests(){
   });
 }
 
-window.CIAppUI={toast:toast,navigate:navigate,haptic:haptic,queueFeedback:queueFeedback,showUpdateReady:showUpdateReady,openCategoryUnlock:openCategoryUnlock,devTest:runDevUiTest};
+window.CIAppUI={
+  toast:toast,navigate:navigate,haptic:haptic,queueFeedback:queueFeedback,showUpdateReady:showUpdateReady,
+  openCategoryUnlock:openCategoryUnlock,devTest:runDevUiTest,
+  getReminderPermission:getReminderPermission,requestReminderPermission:requestReminderPermission,
+  cancelSessionReminder:cancelSessionReminder,devSessionReminderTest:armDevSessionReminderTest
+};
 installInteractionLayer();
 installDevUiTests();
 window.addEventListener("ci:motivational-feedback",handleMotivationalFeedback);
@@ -627,5 +804,9 @@ window.addEventListener("offline",function(){
   if(lastOnlineState===true)toast({icon:"☁️",title:"Offline-Modus",message:"Die gespeicherten Spiele bleiben verfügbar.",kind:"Offline",duration:3000});
   lastOnlineState=false;
 });
+document.addEventListener("visibilitychange",handleReminderVisibility);
+window.addEventListener("pageshow",function(){cancelSessionReminder();setTimeout(maybeOfferReminderPermission,250);});
+setTimeout(maybeOfferReminderPermission,1200);
+setInterval(function(){if(!document.hidden)maybeOfferReminderPermission();},5000);
 refreshOfflineStatus();
 })();
